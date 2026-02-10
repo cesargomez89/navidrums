@@ -37,6 +37,8 @@ Optimized for Raspberry Pi 4B.
    sudo mv navidrums-* /usr/local/bin/navidrums
    ```
 
+**Note:** The binary is self-contained with all templates and assets embedded. You only need the single executable file to run the application.
+
 ### Option 2: Build from Source
 
 1. Clone the repository.

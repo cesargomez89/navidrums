@@ -7,6 +7,7 @@ import (
 
 	"github.com/cesargomez89/navidrums/internal/providers"
 	"github.com/cesargomez89/navidrums/internal/services"
+	"github.com/cesargomez89/navidrums/web"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -43,31 +44,34 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {
-	// Include all necessary fragments that might be used
-	files := []string{"web/templates/base.html", "web/templates/" + pageTmpl, "web/templates/queue_list.html", "web/templates/search_results.html"}
-	compFiles, _ := filepath.Glob("web/templates/components/*.html")
-	files = append(files, compFiles...)
-
-	tmpl, err := template.ParseFiles(files...)
+	// Use ParseFS to properly handle template names
+	tmpl, err := template.ParseFS(web.Files,
+		"templates/base.html",
+		"templates/"+pageTmpl,
+		"templates/queue_list.html",
+		"templates/search_results.html",
+		"templates/components/*.html",
+	)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
 	if err := tmpl.ExecuteTemplate(w, "base.html", data); err != nil {
 		http.Error(w, err.Error(), 500)
 	}
 }
 
 func (h *Handler) RenderFragment(w http.ResponseWriter, fragTmpl string, data interface{}) {
-	// Parse the fragment and all components to support inclusion
-	files, _ := filepath.Glob("web/templates/components/*.html")
-	files = append(files, "web/templates/"+fragTmpl)
+	// Use ParseFS to properly handle template names
+	patterns := []string{"templates/components/*.html", "templates/" + fragTmpl}
 
-	tmpl, err := template.ParseFiles(files...)
+	tmpl, err := template.ParseFS(web.Files, patterns...)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
+
 	// Execute the specific fragment template
 	if err := tmpl.ExecuteTemplate(w, filepath.Base(fragTmpl), data); err != nil {
 		http.Error(w, err.Error(), 500)
