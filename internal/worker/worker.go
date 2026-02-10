@@ -237,10 +237,20 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	// Update job info if it was generic
 	// (Note: Currently we don't have UpdateJobMetadata, but we can set title/artist in status update if we extend it)
 
+	// Prepare final destination path
+	folderName := fmt.Sprintf("%s - %s", sanitize(track.Artist), sanitize(track.Album))
+	finalDir := filepath.Join(w.Config.DownloadsDir, folderName)
+
+	if err := os.MkdirAll(finalDir, 0755); err != nil {
+		w.Logger.Printf("Failed to create dir: %v", err)
+		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", err))
+		return
+	}
+
 	w.Repo.UpdateJobStatus(job.ID, models.JobStatusDownloading, 0)
 
-	// Attempt download
-	var filePath string
+	// Attempt download directly to final destination
+	var finalPath string
 	var finalExt string
 	for attempt := 0; attempt < 3; attempt++ {
 		stream, mimeType, err := w.Provider.GetStream(ctx, track.ID, w.Config.Quality)
@@ -254,17 +264,21 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 			}
 			finalExt = ext
 
-			tempDir := os.TempDir()
-			tempFile := filepath.Join(tempDir, fmt.Sprintf("%s-%s%s", job.ID, track.ID, ext))
+			trackFile := fmt.Sprintf("%02d - %s%s", track.TrackNumber, sanitize(track.Title), finalExt)
+			finalPath = filepath.Join(finalDir, trackFile)
 
-			f, err := os.Create(tempFile)
+			f, err := os.Create(finalPath)
 			if err == nil {
 				_, err = io.Copy(f, stream)
 				stream.Close()
 				f.Close()
 				if err == nil {
-					filePath = tempFile
+					// Download successful
 					break
+				} else {
+					// Clean up partial file on error
+					os.Remove(finalPath)
+					finalPath = ""
 				}
 			}
 		}
@@ -272,25 +286,8 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		time.Sleep(time.Duration(attempt+1) * time.Second)
 	}
 
-	if filePath == "" {
+	if finalPath == "" {
 		w.Repo.UpdateJobError(job.ID, "Download failed after 3 attempts")
-		return
-	}
-
-	// Success, move to final destination
-	folderName := fmt.Sprintf("%s - %s", sanitize(track.Artist), sanitize(track.Album))
-	trackFile := fmt.Sprintf("%02d - %s%s", track.TrackNumber, sanitize(track.Title), finalExt)
-	finalPath := filepath.Join(w.Config.DownloadsDir, folderName, trackFile)
-
-	if err := os.MkdirAll(filepath.Dir(finalPath), 0755); err != nil {
-		w.Logger.Printf("Failed to create dir: %v", err)
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", err))
-		return
-	}
-
-	if err := os.Rename(filePath, finalPath); err != nil {
-		w.Logger.Printf("Failed to move file: %v", err)
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to move file: %v", err))
 		return
 	}
 
