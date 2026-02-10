@@ -1,0 +1,19 @@
+{{define "content"}}
+<h1>Search Music</h1>
+<div class="search-container">
+    <div class="input-group">
+        <input type="text" name="q" placeholder="Search for Artist, Album, Playlist..." hx-get="/htmx/search"
+            hx-trigger="keyup changed delay:500ms, search" hx-target="#search-results" hx-include="[name='type']">
+
+        <select name="type" hx-get="/htmx/search" hx-target="#search-results" hx-include="[name='q']">
+            <option value="album" selected>Album</option>
+            <option value="track">Track</option>
+            <option value="artist">Artist</option>
+            <option value="playlist">Playlist</option>
+        </select>
+    </div>
+</div>
+
+<div id="search-results"></div>
+
+{{end}}

@@ -1,0 +1,16 @@
+{{range .}}
+<div class="card">
+    <div><strong>{{.Title}}</strong></div>
+    <div>{{.Artist}}</div>
+    <div class="status-{{.Status}}">Status: {{.Status}}</div>
+    {{if eq .Status "downloading"}}
+    <progress value="{{.Progress}}" max="100"></progress> {{printf "%.0f" .Progress}}%
+    {{else if eq .Status "completed"}}
+    <div style="color: green;">Done</div>
+    {{else if eq .Status "failed"}}
+    <div style="color: red;">Error: {{.Error}}</div>
+    {{end}}
+</div>
+{{else}}
+<p>No active downloads.</p>
+{{end}}

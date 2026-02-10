@@ -1,0 +1,17 @@
+{{define "content"}}
+<div class="detail-header">
+    <h2>{{.Title}}</h2>
+    <button class="btn btn-primary" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none"
+        onclick="handleDownload(this)">
+        <i data-lucide="download"></i> Download Full Playlist
+    </button>
+</div>
+
+<div class="result-section">
+    <div class="track-list">
+        {{range .Tracks}}
+        {{template "track_card.html" .}}
+        {{end}}
+    </div>
+</div>
+{{end}}

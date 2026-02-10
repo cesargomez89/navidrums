@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>navidrums Downloader</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.447.0/dist/umd/lucide.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --bg-input: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaaaaa;
+            --accent: #1db954;
+            --accent-hover: #1ed760;
+            --border: #333333;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 24px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        nav {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: var(--text-primary);
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"],
+        select {
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        input[type="text"] {
+            flex: 1;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--accent);
+            background: #333;
+        }
+
+        .result-section {
+            margin-top: 40px;
+        }
+
+        .result-section h3 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: 18px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, background 0.2s, border-color 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            background: #252525;
+            border-color: #444;
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .card-info a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-info a:hover {
+            color: var(--accent);
+        }
+
+        .card-info span {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn i,
+        .btn svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: inline-block;
+            vertical-align: middle;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.5px;
+            flex-shrink: 0;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
+            aspect-ratio: 1/1;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: #fff;
+        }
+
+        .btn-outline:hover {
+            background: #222;
+        }
+
+        .status-queued {
+            color: var(--text-secondary);
+        }
+
+        .status-downloading {
+            color: #4af;
+        }
+
+        .status-completed {
+            color: var(--accent);
+        }
+
+        .status-failed {
+            color: #f44;
+        }
+
+        .track-number {
+            font-family: monospace;
+            opacity: 0.6;
+            margin-right: 8px;
+        }
+
+        .track-title {
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        /* Track List Styles */
+        .track-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .track-item {
+            display: grid;
+            grid-template-columns: 40px 2fr 1fr 1fr 60px;
+            align-items: center;
+            padding: 8px 16px;
+            gap: 20px;
+            transition: background 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .track-item:last-child {
+            border-bottom: none;
+        }
+
+        .track-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .track-item .track-number {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .track-item .track-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-item .track-artist,
+        .track-item .track-album {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-item .track-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 1024px) {
+            .track-item {
+                grid-template-columns: 40px 2fr 1fr 60px;
+            }
+
+            .track-item .track-album {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .track-item {
+                grid-template-columns: 40px 1fr 60px;
+                gap: 12px;
+            }
+
+            .track-item .track-artist,
+            .track-item .track-album {
+                display: none;
+            }
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-header h2 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+    <script>
+        function initIcons(root = document) {
+            if (window.lucide) {
+                lucide.createIcons({
+                    root: root,
+                    attrs: {
+                        'stroke-width': 2.5,
+                        'stroke': 'currentColor'
+                    }
+                });
+            }
+        }
+
+        if (typeof htmx !== 'undefined') {
+            htmx.onLoad(function (content) {
+                // Small delay to ensure DOM is settled
+                setTimeout(() => initIcons(content), 0);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', () => initIcons());
+
+        function handleDownload(btn) {
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+
+            if (btn.classList.contains('btn-icon')) {
+                btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i>';
+            } else {
+                btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Starting...';
+            }
+            initIcons(btn);
+
+            setTimeout(() => {
+                if (btn.disabled && btn.innerHTML.includes('loader-2')) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    initIcons(btn);
+                }
+            }, 10000);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <nav>
+            <a href="/">Search</a>
+            <a href="/queue">Queue</a>
+            <a href="/history">History</a>
+        </nav>
+        <div id="content">
+            {{block "content" .}}{{end}}
+        </div>
+    </div>
+</body>
+
+</html>

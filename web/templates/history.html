@@ -1,0 +1,33 @@
+{{define "content"}}
+<h1>Download History (Last 20)</h1>
+
+{{if .}}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #333; text-align: left;">
+                <th style="padding: 10px;">Title</th>
+                <th style="padding: 10px;">Artist</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px;">Finished</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .}}
+            <tr style="border-bottom: 1px solid #222;">
+                <td style="padding: 10px;">{{.Title}}</td>
+                <td style="padding: 10px;">{{.Artist}}</td>
+                <td style="padding: 10px;">
+                    <span class="status-{{.Status}}">{{.Status}}</span>
+                    {{if .Error}}
+                        <div style="font-size: 0.8em; color: #f44;">{{.Error}}</div>
+                    {{end}}
+                </td>
+                <td style="padding: 10px;">{{.UpdatedAt.Format "2006-01-02 15:04"}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+{{else}}
+    <p>No history found.</p>
+{{end}}
+{{end}}

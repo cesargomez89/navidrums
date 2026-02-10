@@ -1,0 +1,11 @@
+<div class="card playlist-card" id="playlist-{{.ID}}">
+    <div class="card-info">
+        <a href="/playlist/{{.ID}}" class="playlist-title">{{.Title}}</a>
+    </div>
+    <div class="card-actions">
+        <button class="btn btn-secondary btn-icon" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none"
+            onclick="handleDownload(this)" title="Download Playlist">
+            <i data-lucide="download"></i>
+        </button>
+    </div>
+</div>

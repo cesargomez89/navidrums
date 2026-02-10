@@ -1,0 +1,12 @@
+<div class="card artist-card" id="artist-{{.ID}}">
+    <div class="card-info">
+        <a href="/artist/{{.ID}}" class="artist-name">{{.Name}}</a>
+    </div>
+    <div class="card-actions">
+        <!-- Artists often don't have a direct "download" button unless it's for top tracks -->
+        <button class="btn btn-outline" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none"
+            onclick="handleDownload(this)">
+            <i data-lucide="music"></i> Top Tracks
+        </button>
+    </div>
+</div>

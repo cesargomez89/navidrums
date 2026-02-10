@@ -1,0 +1,29 @@
+{{define "content"}}
+<div class="detail-header">
+    <h2>{{.Name}}</h2>
+    <div class="actions">
+        <button class="btn btn-primary" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none"
+            onclick="handleDownload(this)">
+            <i data-lucide="music"></i> Download Top Tracks
+        </button>
+    </div>
+</div>
+
+<div class="result-section">
+    <h3>Top Tracks</h3>
+    <div class="track-list">
+        {{range .TopTracks}}
+        {{template "track_card.html" .}}
+        {{end}}
+    </div>
+</div>
+
+<div class="result-section">
+    <h3>Albums</h3>
+    <div class="card-grid">
+        {{range .Albums}}
+        {{template "album_card.html" .}}
+        {{end}}
+    </div>
+</div>
+{{end}}

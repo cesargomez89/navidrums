@@ -1,0 +1,6 @@
+{{define "content"}}
+<h1>Download Queue</h1>
+<div id="queue-list" hx-get="/htmx/queue" hx-trigger="every 2s">
+    {{template "queue_list.html" .}}
+</div>
+{{end}}
