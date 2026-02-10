@@ -15,6 +15,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/models"
 	"github.com/cesargomez89/navidrums/internal/providers"
 	"github.com/cesargomez89/navidrums/internal/repository"
+	"github.com/cesargomez89/navidrums/internal/tagging"
 	"github.com/google/uuid"
 )
 
@@ -142,6 +143,8 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	}
 
 	var tracks []models.Track
+	var albumArtURL string
+	var playlistImageURL string
 	var err error
 
 	// Fetch details based on type
@@ -151,18 +154,29 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		track, err = w.Provider.GetTrack(ctx, job.SourceID)
 		if err == nil {
 			tracks = []models.Track{*track}
+			albumArtURL = track.AlbumArtURL
 		}
 	case models.JobTypeAlbum:
 		var album *models.Album
 		album, err = w.Provider.GetAlbum(ctx, job.SourceID)
 		if err == nil {
 			tracks = album.Tracks
+			albumArtURL = album.AlbumArtURL
+			// Save album art to album folder
+			if albumArtURL != "" {
+				w.saveAlbumArt(album, albumArtURL)
+			}
 		}
 	case models.JobTypePlaylist:
 		var pl *models.Playlist
 		pl, err = w.Provider.GetPlaylist(ctx, job.SourceID)
 		if err == nil {
 			tracks = pl.Tracks
+			playlistImageURL = pl.ImageURL
+			// Save playlist image
+			if playlistImageURL != "" {
+				w.savePlaylistImage(pl, playlistImageURL)
+			}
 			w.generatePlaylistFile(pl)
 		}
 	case models.JobTypeArtist:
@@ -238,7 +252,11 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	// (Note: Currently we don't have UpdateJobMetadata, but we can set title/artist in status update if we extend it)
 
 	// Prepare final destination path
-	folderName := fmt.Sprintf("%s - %s", sanitize(track.Artist), sanitize(track.Album))
+	artistForFolder := track.AlbumArtist
+	if artistForFolder == "" {
+		artistForFolder = track.Artist
+	}
+	folderName := fmt.Sprintf("%s - %s", sanitize(artistForFolder), sanitize(track.Album))
 	finalDir := filepath.Join(w.Config.DownloadsDir, folderName)
 
 	if err := os.MkdirAll(finalDir, 0755); err != nil {
@@ -289,6 +307,33 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	if finalPath == "" {
 		w.Repo.UpdateJobError(job.ID, "Download failed after 3 attempts")
 		return
+	}
+
+	// Download album art for tagging
+	var albumArtData []byte
+	if track.AlbumArtURL != "" {
+		albumArtData, err = w.downloadImage(track.AlbumArtURL)
+		if err != nil {
+			w.Logger.Printf("Failed to download album art for tagging: %v", err)
+		}
+	}
+
+	// Tag the file with metadata
+	if err := w.tagFile(finalPath, &track, albumArtData); err != nil {
+		w.Logger.Printf("Failed to tag file %s: %v", finalPath, err)
+		// Don't fail the job if tagging fails, just log it
+	}
+
+	// Save album art to folder if not already saved
+	if len(albumArtData) > 0 {
+		artPath := filepath.Join(finalDir, "cover.jpg")
+		if _, err := os.Stat(artPath); os.IsNotExist(err) {
+			if err := os.WriteFile(artPath, albumArtData, 0644); err != nil {
+				w.Logger.Printf("Failed to save album art to %s: %v", artPath, err)
+			} else {
+				w.Logger.Printf("Saved cover.jpg to %s", artPath)
+			}
+		}
 	}
 
 	// Record download in DB
@@ -351,4 +396,79 @@ func sanitize(s string) string {
 		}
 		return r
 	}, s)
+}
+
+// downloadImage downloads an image from a URL and returns the image data
+func (w *Worker) downloadImage(url string) ([]byte, error) {
+	return tagging.DownloadImage(url)
+}
+
+// tagFile tags an audio file with metadata
+func (w *Worker) tagFile(filePath string, track *models.Track, albumArtData []byte) error {
+	return tagging.TagFile(filePath, track, albumArtData)
+}
+
+// saveAlbumArt saves album artwork to the album folder
+func (w *Worker) saveAlbumArt(album *models.Album, imageURL string) {
+	if imageURL == "" {
+		return
+	}
+
+	// Download image
+	imageData, err := w.downloadImage(imageURL)
+	if err != nil {
+		w.Logger.Printf("Failed to download album art for %s: %v", album.Title, err)
+		return
+	}
+
+	// Determine folder path
+	folderName := fmt.Sprintf("%s - %s", sanitize(album.Artist), sanitize(album.Title))
+	albumDir := filepath.Join(w.Config.DownloadsDir, folderName)
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(albumDir, 0755); err != nil {
+		w.Logger.Printf("Failed to create album directory: %v", err)
+		return
+	}
+
+	// Save image
+	imagePath := filepath.Join(albumDir, "cover.jpg")
+	if err := tagging.SaveImageToFile(imageData, imagePath); err != nil {
+		w.Logger.Printf("Failed to save album art to %s: %v", imagePath, err)
+		return
+	}
+
+	w.Logger.Printf("Saved album art to %s (URL: %s)", imagePath, imageURL)
+}
+
+// savePlaylistImage saves playlist cover image to the playlists folder
+func (w *Worker) savePlaylistImage(playlist *models.Playlist, imageURL string) {
+	if imageURL == "" {
+		return
+	}
+
+	// Download image
+	imageData, err := w.downloadImage(imageURL)
+	if err != nil {
+		w.Logger.Printf("Failed to download playlist image for %s: %v", playlist.Title, err)
+		return
+	}
+
+	// Determine folder path
+	playlistsDir := filepath.Join(w.Config.DownloadsDir, "playlists")
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(playlistsDir, 0755); err != nil {
+		w.Logger.Printf("Failed to create playlists directory: %v", err)
+		return
+	}
+
+	// Save image
+	imagePath := filepath.Join(playlistsDir, sanitize(playlist.Title)+".jpg")
+	if err := tagging.SaveImageToFile(imageData, imagePath); err != nil {
+		w.Logger.Printf("Failed to save playlist image to %s: %v", imagePath, err)
+		return
+	}
+
+	w.Logger.Printf("Saved playlist image to %s", imagePath)
 }

@@ -64,19 +64,38 @@ type Download struct {
 
 // Normalized structures for provider response
 type Track struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Artist      string `json:"artist"`
-	Album       string `json:"album"`
-	TrackNumber int    `json:"track_number"`
-	Duration    int    `json:"duration"` // seconds
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	Artist         string `json:"artist"`
+	AlbumArtist    string `json:"album_artist,omitempty"`
+	Album          string `json:"album"`
+	TrackNumber    int    `json:"track_number"`
+	DiscNumber     int    `json:"disc_number,omitempty"`
+	TotalTracks    int    `json:"total_tracks,omitempty"`
+	TotalDiscs     int    `json:"total_discs,omitempty"`
+	Duration       int    `json:"duration"` // seconds
+	Year           int    `json:"year,omitempty"`
+	Genre          string `json:"genre,omitempty"`
+	Label          string `json:"label,omitempty"`
+	ISRC           string `json:"isrc,omitempty"`
+	Copyright      string `json:"copyright,omitempty"`
+	Composer       string `json:"composer,omitempty"`
+	AlbumArtURL    string `json:"album_art_url,omitempty"`
+	ExplicitLyrics bool   `json:"explicit_lyrics,omitempty"`
 }
 
 type Album struct {
-	ID     string  `json:"id"`
-	Title  string  `json:"title"`
-	Artist string  `json:"artist"`
-	Tracks []Track `json:"tracks"`
+	ID          string  `json:"id"`
+	Title       string  `json:"title"`
+	Artist      string  `json:"artist"`
+	Year        int     `json:"year,omitempty"`
+	Genre       string  `json:"genre,omitempty"`
+	Label       string  `json:"label,omitempty"`
+	Copyright   string  `json:"copyright,omitempty"`
+	TotalTracks int     `json:"total_tracks,omitempty"`
+	TotalDiscs  int     `json:"total_discs,omitempty"`
+	AlbumArtURL string  `json:"album_art_url,omitempty"`
+	Tracks      []Track `json:"tracks"`
 }
 
 type Artist struct {
@@ -87,9 +106,11 @@ type Artist struct {
 }
 
 type Playlist struct {
-	ID     string  `json:"id"`
-	Title  string  `json:"title"`
-	Tracks []Track `json:"tracks"`
+	ID          string  `json:"id"`
+	Title       string  `json:"title"`
+	Description string  `json:"description,omitempty"`
+	ImageURL    string  `json:"image_url,omitempty"`
+	Tracks      []Track `json:"tracks"`
 }
 
 type SearchResult struct {

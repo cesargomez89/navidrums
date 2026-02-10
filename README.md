@@ -7,6 +7,13 @@ Optimized for Raspberry Pi 4B.
 
 - Browse Artists, Albums, and Playlists from remote Hifi API.
 - Download queuing system with concurrency control (Max 2 downloads).
+- **Comprehensive Metadata Tagging**: Automatically tags downloaded files with:
+  - Basic tags: Title, Artist, Album Artist, Album, Track/Disc Numbers
+  - Extended metadata: Year, Genre, Label, ISRC, Copyright, Composer
+  - Embedded album artwork in audio files
+  - Album cover images saved to album folders (`cover.jpg`)
+  - Playlist cover images saved to playlists folder
+- Supports FLAC, MP3, and MP4 audio formats.
 - Automatic retries and resume support.
 - HTMX-powered responsive UI (no JSON APIs for frontend).
 - Efficient SQLite database.

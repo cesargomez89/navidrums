@@ -33,6 +33,47 @@ type apiResponse struct {
 	Items []json.RawMessage `json:"items"` // sometimes top level?
 }
 
+type FlexCover []string
+
+func (f *FlexCover) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	if data[0] == '"' {
+		var s string
+		if err := json.Unmarshal(data, &s); err != nil {
+			return err
+		}
+		*f = []string{s}
+		return nil
+	}
+	if data[0] == '[' {
+		var items []struct {
+			URL string `json:"url"`
+		}
+		if err := json.Unmarshal(data, &items); err != nil {
+			return err
+		}
+		var urls []string
+		for _, item := range items {
+			urls = append(urls, item.URL)
+		}
+		*f = urls
+		return nil
+	}
+	if data[0] == '{' {
+		var item struct {
+			URL string `json:"url"`
+		}
+		if err := json.Unmarshal(data, &item); err != nil {
+			return err
+		}
+		*f = []string{item.URL}
+		return nil
+	}
+	return nil
+}
+
 func formatID(v interface{}) string {
 	switch val := v.(type) {
 	case string:
@@ -44,6 +85,19 @@ func formatID(v interface{}) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+func (p *HifiProvider) ensureAbsoluteURL(urlOrID string) string {
+	if urlOrID == "" {
+		return ""
+	}
+	if strings.HasPrefix(urlOrID, "http://") || strings.HasPrefix(urlOrID, "https://") {
+		return urlOrID
+	}
+	// It's a Tidal ID. Use Tidal's official CDN for high-quality images.
+	// We replace dashes with slashes if they are present, as many Tidal clients do.
+	path := strings.ReplaceAll(urlOrID, "-", "/")
+	return fmt.Sprintf("https://resources.tidal.com/images/%s/640x640.jpg", path)
 }
 
 // ... more helpers inside methods ...
@@ -277,18 +331,26 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 	u := fmt.Sprintf("%s/album/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Data struct {
-			ID     json.Number `json:"id"`
-			Title  string      `json:"title"`
-			Artist struct {
+			ID              json.Number `json:"id"`
+			Title           string      `json:"title"`
+			ReleaseDate     string      `json:"releaseDate"`
+			Copyright       string      `json:"copyright"`
+			NumberOfTracks  int         `json:"numberOfTracks"`
+			NumberOfVolumes int         `json:"numberOfVolumes"`
+			Artist          struct {
 				Name string `json:"name"`
 			} `json:"artist"`
+			Cover FlexCover `json:"cover"`
 			Items []struct {
 				Item struct {
-					Title       string      `json:"title"`
-					Duration    int         `json:"duration"`
-					TrackNumber int         `json:"trackNumber"`
-					ID          json.Number `json:"id"`
-					Artists     []struct {
+					Title        string      `json:"title"`
+					Duration     int         `json:"duration"`
+					TrackNumber  int         `json:"trackNumber"`
+					VolumeNumber int         `json:"volumeNumber"`
+					ID           json.Number `json:"id"`
+					ISRC         string      `json:"isrc"`
+					Explicit     bool        `json:"explicit"`
+					Artists      []struct {
 						Name string `json:"name"`
 					} `json:"artists"`
 				} `json:"item"`
@@ -299,10 +361,27 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 		return nil, err
 	}
 
+	// Extract year from release date
+	year := 0
+	if len(resp.Data.ReleaseDate) >= 4 {
+		fmt.Sscanf(resp.Data.ReleaseDate[:4], "%d", &year)
+	}
+
+	// Get album art URL
+	albumArtURL := ""
+	if len(resp.Data.Cover) > 0 {
+		albumArtURL = p.ensureAbsoluteURL(resp.Data.Cover[0])
+	}
+
 	album := &models.Album{
-		ID:     formatID(resp.Data.ID),
-		Title:  resp.Data.Title,
-		Artist: resp.Data.Artist.Name,
+		ID:          formatID(resp.Data.ID),
+		Title:       resp.Data.Title,
+		Artist:      resp.Data.Artist.Name,
+		Year:        year,
+		Copyright:   resp.Data.Copyright,
+		TotalTracks: resp.Data.NumberOfTracks,
+		TotalDiscs:  resp.Data.NumberOfVolumes,
+		AlbumArtURL: albumArtURL,
 	}
 
 	for _, wrapped := range resp.Data.Items {
@@ -313,12 +392,21 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 		}
 
 		album.Tracks = append(album.Tracks, models.Track{
-			ID:          formatID(item.ID),
-			Title:       item.Title,
-			Artist:      tArtist,
-			Album:       album.Title,
-			TrackNumber: item.TrackNumber,
-			Duration:    item.Duration,
+			ID:             formatID(item.ID),
+			Title:          item.Title,
+			Artist:         tArtist,
+			AlbumArtist:    album.Artist,
+			Album:          album.Title,
+			TrackNumber:    item.TrackNumber,
+			DiscNumber:     item.VolumeNumber,
+			TotalTracks:    album.TotalTracks,
+			TotalDiscs:     album.TotalDiscs,
+			Duration:       item.Duration,
+			Year:           album.Year,
+			Copyright:      album.Copyright,
+			ISRC:           item.ISRC,
+			AlbumArtURL:    album.AlbumArtURL,
+			ExplicitLyrics: item.Explicit,
 		})
 	}
 	return album, nil
@@ -328,8 +416,10 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 	u := fmt.Sprintf("%s/playlist/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Playlist struct {
-			Uuid  string `json:"uuid"`
-			Title string `json:"title"`
+			Uuid        string `json:"uuid"`
+			Title       string `json:"title"`
+			Description string `json:"description"`
+			SquareImage string `json:"squareImage"`
 		} `json:"playlist"`
 		Items []struct {
 			Item struct {
@@ -337,8 +427,11 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 				Title       string      `json:"title"`
 				TrackNumber int         `json:"trackNumber"`
 				Duration    int         `json:"duration"`
+				ISRC        string      `json:"isrc"`
+				Explicit    bool        `json:"explicit"`
 				Album       struct {
-					Title string `json:"title"`
+					Title string    `json:"title"`
+					Cover FlexCover `json:"cover"`
 				} `json:"album"`
 				Artists []struct {
 					Name string `json:"name"`
@@ -351,8 +444,10 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 	}
 
 	pl := &models.Playlist{
-		ID:    resp.Playlist.Uuid,
-		Title: resp.Playlist.Title,
+		ID:          resp.Playlist.Uuid,
+		Title:       resp.Playlist.Title,
+		Description: resp.Playlist.Description,
+		ImageURL:    p.ensureAbsoluteURL(resp.Playlist.SquareImage),
 	}
 
 	for _, wrapped := range resp.Items {
@@ -361,13 +456,22 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 		if len(item.Artists) > 0 {
 			artist = item.Artists[0].Name
 		}
+
+		albumArtURL := ""
+		if len(item.Album.Cover) > 0 {
+			albumArtURL = p.ensureAbsoluteURL(item.Album.Cover[0])
+		}
+
 		pl.Tracks = append(pl.Tracks, models.Track{
-			ID:          formatID(item.ID),
-			Title:       item.Title,
-			Artist:      artist,
-			Album:       item.Album.Title,
-			TrackNumber: item.TrackNumber,
-			Duration:    item.Duration,
+			ID:             formatID(item.ID),
+			Title:          item.Title,
+			Artist:         artist,
+			Album:          item.Album.Title,
+			TrackNumber:    item.TrackNumber,
+			Duration:       item.Duration,
+			ISRC:           item.ISRC,
+			AlbumArtURL:    albumArtURL,
+			ExplicitLyrics: item.Explicit,
 		})
 	}
 
@@ -378,29 +482,64 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, 
 	u := fmt.Sprintf("%s/info/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Data struct {
-			ID          json.Number `json:"id"`
-			Title       string      `json:"title"`
-			Duration    int         `json:"duration"`
-			TrackNumber int         `json:"trackNumber"`
-			Album       struct {
-				Title string `json:"title"`
+			ID           json.Number `json:"id"`
+			Title        string      `json:"title"`
+			Duration     int         `json:"duration"`
+			TrackNumber  int         `json:"trackNumber"`
+			VolumeNumber int         `json:"volumeNumber"`
+			ISRC         string      `json:"isrc"`
+			Explicit     bool        `json:"explicit"`
+			Copyright    string      `json:"copyright"`
+			Album        struct {
+				Title           string    `json:"title"`
+				ReleaseDate     string    `json:"releaseDate"`
+				NumberOfTracks  int       `json:"numberOfTracks"`
+				NumberOfVolumes int       `json:"numberOfVolumes"`
+				Cover           FlexCover `json:"cover"`
 			} `json:"album"`
 			Artist struct {
 				Name string `json:"name"`
 			} `json:"artist"`
+			Artists []struct {
+				Name string `json:"name"`
+			} `json:"artists"`
 		} `json:"data"`
 	}
 	if err := p.get(ctx, u, &resp); err != nil {
 		return nil, err
 	}
 
+	// Extract year from release date
+	year := 0
+	if len(resp.Data.Album.ReleaseDate) >= 4 {
+		fmt.Sscanf(resp.Data.Album.ReleaseDate[:4], "%d", &year)
+	}
+
+	// Get album art URL
+	albumArtURL := ""
+	if len(resp.Data.Album.Cover) > 0 {
+		albumArtURL = p.ensureAbsoluteURL(resp.Data.Album.Cover[0])
+	}
+
+	// Get album artist (use first artist or main artist)
+	albumArtist := resp.Data.Artist.Name
+
 	return &models.Track{
-		ID:          formatID(resp.Data.ID),
-		Title:       resp.Data.Title,
-		Artist:      resp.Data.Artist.Name,
-		Album:       resp.Data.Album.Title,
-		TrackNumber: resp.Data.TrackNumber,
-		Duration:    resp.Data.Duration,
+		ID:             formatID(resp.Data.ID),
+		Title:          resp.Data.Title,
+		Artist:         resp.Data.Artist.Name,
+		AlbumArtist:    albumArtist,
+		Album:          resp.Data.Album.Title,
+		TrackNumber:    resp.Data.TrackNumber,
+		DiscNumber:     resp.Data.VolumeNumber,
+		TotalTracks:    resp.Data.Album.NumberOfTracks,
+		TotalDiscs:     resp.Data.Album.NumberOfVolumes,
+		Duration:       resp.Data.Duration,
+		Year:           year,
+		ISRC:           resp.Data.ISRC,
+		Copyright:      resp.Data.Copyright,
+		AlbumArtURL:    albumArtURL,
+		ExplicitLyrics: resp.Data.Explicit,
 	}, nil
 }
 
