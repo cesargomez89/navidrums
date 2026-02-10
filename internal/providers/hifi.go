@@ -87,17 +87,21 @@ func formatID(v interface{}) string {
 	}
 }
 
-func (p *HifiProvider) ensureAbsoluteURL(urlOrID string) string {
+func (p *HifiProvider) ensureAbsoluteURL(urlOrID string, size ...string) string {
 	if urlOrID == "" {
 		return ""
 	}
 	if strings.HasPrefix(urlOrID, "http://") || strings.HasPrefix(urlOrID, "https://") {
 		return urlOrID
 	}
-	// It's a Tidal ID. Use Tidal's official CDN for high-quality images.
+	imgSize := "640x640"
+	if len(size) > 0 {
+		imgSize = size[0]
+	}
+	// It's a Tidal ID. Use Tidal's official CDN for images.
 	// We replace dashes with slashes if they are present, as many Tidal clients do.
 	path := strings.ReplaceAll(urlOrID, "-", "/")
-	return fmt.Sprintf("https://resources.tidal.com/images/%s/640x640.jpg", path)
+	return fmt.Sprintf("https://resources.tidal.com/images/%s/%s.jpg", path, imgSize)
 }
 
 // ... more helpers inside methods ...
@@ -147,8 +151,9 @@ func (p *HifiProvider) searchArtists(ctx context.Context, query string) ([]model
 		Data struct {
 			Artists struct {
 				Items []struct {
-					ID   json.Number `json:"id"`
-					Name string      `json:"name"`
+					ID      json.Number `json:"id"`
+					Name    string      `json:"name"`
+					Picture string      `json:"picture"`
 				} `json:"items"`
 			} `json:"artists"`
 		} `json:"data"`
@@ -160,8 +165,9 @@ func (p *HifiProvider) searchArtists(ctx context.Context, query string) ([]model
 	var artists []models.Artist
 	for _, item := range resp.Data.Artists.Items {
 		artists = append(artists, models.Artist{
-			ID:   formatID(item.ID),
-			Name: item.Name,
+			ID:         formatID(item.ID),
+			Name:       item.Name,
+			PictureURL: p.ensureAbsoluteURL(item.Picture, "320x320"),
 		})
 	}
 	return artists, nil
@@ -175,6 +181,7 @@ func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]models
 				Items []struct {
 					ID      json.Number `json:"id"`
 					Title   string      `json:"title"`
+					Cover   string      `json:"cover"`
 					Artists []struct {
 						Name string `json:"name"`
 					} `json:"artists"`
@@ -193,9 +200,10 @@ func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]models
 			artist = item.Artists[0].Name
 		}
 		albums = append(albums, models.Album{
-			ID:     formatID(item.ID),
-			Title:  item.Title,
-			Artist: artist,
+			ID:          formatID(item.ID),
+			Title:       item.Title,
+			Artist:      artist,
+			AlbumArtURL: p.ensureAbsoluteURL(item.Cover, "640x640"),
 		})
 	}
 	return albums, nil
@@ -212,6 +220,7 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]models
 				TrackNumber int         `json:"trackNumber"`
 				Album       struct {
 					Title string `json:"title"`
+					Cover string `json:"cover"`
 				} `json:"album"`
 				Artists []struct {
 					Name string `json:"name"`
@@ -236,6 +245,7 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]models
 			Album:       item.Album.Title,
 			TrackNumber: item.TrackNumber,
 			Duration:    item.Duration,
+			AlbumArtURL: p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 		})
 	}
 	return tracks, nil
@@ -247,8 +257,9 @@ func (p *HifiProvider) searchPlaylists(ctx context.Context, query string) ([]mod
 		Data struct {
 			Playlists struct {
 				Items []struct {
-					Uuid  string `json:"uuid"`
-					Title string `json:"title"`
+					Uuid        string `json:"uuid"`
+					Title       string `json:"title"`
+					SquareImage string `json:"squareImage"`
 				} `json:"items"`
 			} `json:"playlists"`
 		} `json:"data"`
@@ -260,8 +271,9 @@ func (p *HifiProvider) searchPlaylists(ctx context.Context, query string) ([]mod
 	var playlists []models.Playlist
 	for _, item := range resp.Data.Playlists.Items {
 		playlists = append(playlists, models.Playlist{
-			ID:    item.Uuid,
-			Title: item.Title,
+			ID:       item.Uuid,
+			Title:    item.Title,
+			ImageURL: p.ensureAbsoluteURL(item.SquareImage, "640x640"),
 		})
 	}
 	return playlists, nil
@@ -271,8 +283,9 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 	u := fmt.Sprintf("%s/artist/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Artist struct {
-			ID   json.Number `json:"id"`
-			Name string      `json:"name"`
+			ID      json.Number `json:"id"`
+			Name    string      `json:"name"`
+			Picture string      `json:"picture"`
 		} `json:"artist"`
 	}
 	if err := p.get(ctx, u, &resp); err != nil {
@@ -280,8 +293,9 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 	}
 
 	artist := &models.Artist{
-		ID:   formatID(resp.Artist.ID),
-		Name: resp.Artist.Name,
+		ID:         formatID(resp.Artist.ID),
+		Name:       resp.Artist.Name,
+		PictureURL: p.ensureAbsoluteURL(resp.Artist.Picture, "320x320"),
 	}
 
 	// Fetch Albums and Top Tracks using the aggregate endpoint
@@ -291,6 +305,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 			Items []struct {
 				ID    json.Number `json:"id"`
 				Title string      `json:"title"`
+				Cover string      `json:"cover"`
 			} `json:"items"`
 		} `json:"albums"`
 		Tracks []struct {
@@ -300,6 +315,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 			Duration    int         `json:"duration"`
 			Album       struct {
 				Title string `json:"title"`
+				Cover string `json:"cover"`
 			} `json:"album"`
 		} `json:"tracks"`
 	}
@@ -307,9 +323,10 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 	if err := p.get(ctx, aggUrl, &aggResp); err == nil {
 		for _, item := range aggResp.Albums.Items {
 			artist.Albums = append(artist.Albums, models.Album{
-				ID:     formatID(item.ID),
-				Title:  item.Title,
-				Artist: artist.Name,
+				ID:          formatID(item.ID),
+				Title:       item.Title,
+				Artist:      artist.Name,
+				AlbumArtURL: p.ensureAbsoluteURL(item.Cover, "640x640"),
 			})
 		}
 		for _, item := range aggResp.Tracks {
@@ -320,6 +337,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 				Album:       item.Album.Title,
 				TrackNumber: item.TrackNumber,
 				Duration:    item.Duration,
+				AlbumArtURL: p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 			})
 		}
 	}
@@ -370,7 +388,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 	// Get album art URL
 	albumArtURL := ""
 	if len(resp.Data.Cover) > 0 {
-		albumArtURL = p.ensureAbsoluteURL(resp.Data.Cover[0])
+		albumArtURL = p.ensureAbsoluteURL(resp.Data.Cover[0], "640x640")
 	}
 
 	album := &models.Album{
@@ -447,7 +465,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 		ID:          resp.Playlist.Uuid,
 		Title:       resp.Playlist.Title,
 		Description: resp.Playlist.Description,
-		ImageURL:    p.ensureAbsoluteURL(resp.Playlist.SquareImage),
+		ImageURL:    p.ensureAbsoluteURL(resp.Playlist.SquareImage, "640x640"),
 	}
 
 	for _, wrapped := range resp.Items {
@@ -459,7 +477,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 
 		albumArtURL := ""
 		if len(item.Album.Cover) > 0 {
-			albumArtURL = p.ensureAbsoluteURL(item.Album.Cover[0])
+			albumArtURL = p.ensureAbsoluteURL(item.Album.Cover[0], "640x640")
 		}
 
 		pl.Tracks = append(pl.Tracks, models.Track{
@@ -518,7 +536,7 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, 
 	// Get album art URL
 	albumArtURL := ""
 	if len(resp.Data.Album.Cover) > 0 {
-		albumArtURL = p.ensureAbsoluteURL(resp.Data.Album.Cover[0])
+		albumArtURL = p.ensureAbsoluteURL(resp.Data.Album.Cover[0], "640x640")
 	}
 
 	// Get album artist (use first artist or main artist)

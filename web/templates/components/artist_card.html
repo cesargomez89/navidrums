@@ -1,10 +1,13 @@
 <div class="card artist-card" id="artist-{{.ID}}">
+    <a href="/artist/{{.ID}}">
+        <img src="{{if .PictureURL}}{{.PictureURL}}{{else}}https://via.placeholder.com/300?text=Artist{{end}}"
+            class="card-image artist-img" alt="{{.Name}}" loading="lazy" style="border-radius: 50%;">
+    </a>
     <div class="card-info">
         <a href="/artist/{{.ID}}" class="artist-name">{{.Name}}</a>
     </div>
     <div class="card-actions">
-        <!-- Artists often don't have a direct "download" button unless it's for top tracks -->
-        <button class="btn btn-outline" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none"
+        <button class="btn btn-primary" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none"
             onclick="handleDownload(this)">
             <i data-lucide="music"></i> Top Tracks
         </button>

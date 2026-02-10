@@ -1,10 +1,14 @@
 <div class="card album-card" id="album-{{.ID}}">
+    <a href="/album/{{.ID}}">
+        <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/300?text=No+Cover{{end}}"
+            class="card-image" alt="{{.Title}}" loading="lazy">
+    </a>
     <div class="card-info">
         <a href="/album/{{.ID}}" class="album-title">{{.Title}}</a>
         <span class="album-artist">{{.Artist}}</span>
     </div>
     <div class="card-actions">
-        <button class="btn btn-secondary btn-icon" hx-post="/htmx/download/album/{{.ID}}" hx-swap="none"
+        <button class="btn btn-primary btn-icon" hx-post="/htmx/download/album/{{.ID}}" hx-swap="none"
             onclick="handleDownload(this)" title="Download Album">
             <i data-lucide="download"></i>
         </button>

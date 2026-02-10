@@ -1,5 +1,7 @@
 <div class="track-item" id="track-{{.ID}}">
     <div class="track-number">{{.TrackNumber}}</div>
+    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
+        class="track-img" alt="{{.Title}}" loading="lazy">
     <div class="track-title">{{.Title}}</div>
     <div class="track-artist">{{.Artist}}</div>
     <div class="track-album">{{.Album}}</div>

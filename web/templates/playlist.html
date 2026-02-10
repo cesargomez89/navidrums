@@ -1,10 +1,21 @@
 {{define "content"}}
 <div class="detail-header">
-    <h2>{{.Title}}</h2>
-    <button class="btn btn-primary" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none"
-        onclick="handleDownload(this)">
-        <i data-lucide="download"></i> Download Full Playlist
-    </button>
+    <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}"
+        class="detail-img" alt="{{.Title}}">
+    <div class="detail-info">
+        <span class="detail-type">Playlist</span>
+        <h2>{{.Title}}</h2>
+        <div class="detail-meta">
+            {{if .Description}}<span>{{.Description}}</span>{{end}}
+            <span>{{len .Tracks}} tracks</span>
+        </div>
+        <div style="margin-top: 24px;">
+            <button class="btn btn-primary" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none"
+                onclick="handleDownload(this)">
+                <i data-lucide="download"></i> Download Full Playlist
+            </button>
+        </div>
+    </div>
 </div>
 
 <div class="result-section">

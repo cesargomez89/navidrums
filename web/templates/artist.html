@@ -1,11 +1,20 @@
 {{define "content"}}
 <div class="detail-header">
-    <h2>{{.Name}}</h2>
-    <div class="actions">
-        <button class="btn btn-primary" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none"
-            onclick="handleDownload(this)">
-            <i data-lucide="music"></i> Download Top Tracks
-        </button>
+    <img src="{{if .PictureURL}}{{.PictureURL}}{{else}}https://via.placeholder.com/600?text=Artist{{end}}"
+        class="detail-img" alt="{{.Name}}" style="border-radius: 50%;">
+    <div class="detail-info">
+        <span class="detail-type">Artist</span>
+        <h2>{{.Name}}</h2>
+        <div class="detail-meta">
+            <span>{{len .Albums}} albums</span>
+            <span>{{len .TopTracks}} top tracks</span>
+        </div>
+        <div style="margin-top: 24px;">
+            <button class="btn btn-primary" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none"
+                onclick="handleDownload(this)">
+                <i data-lucide="music"></i> Download Top Tracks
+            </button>
+        </div>
     </div>
 </div>
 
@@ -20,7 +29,7 @@
 
 <div class="result-section">
     <h3>Albums</h3>
-    <div class="card-grid">
+    <div class="result-grid">
         {{range .Albums}}
         {{template "album_card.html" .}}
         {{end}}

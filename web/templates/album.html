@@ -1,11 +1,22 @@
 {{define "content"}}
 <div class="detail-header">
-    <h2>{{.Title}}</h2>
-    <p>Artist: {{.Artist}}</p>
-    <button class="btn btn-primary" hx-post="/htmx/download/album/{{.ID}}" hx-swap="none"
-        onclick="handleDownload(this)">
-        <i data-lucide="download"></i> Download Full Album
-    </button>
+    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/600?text=No+Cover{{end}}"
+        class="detail-img" alt="{{.Title}}">
+    <div class="detail-info">
+        <span class="detail-type">Album</span>
+        <h2>{{.Title}}</h2>
+        <div class="detail-meta">
+            <span>{{.Artist}}</span>
+            {{if .Year}}<span>{{.Year}}</span>{{end}}
+            {{if .TotalTracks}}<span>{{.TotalTracks}} tracks</span>{{end}}
+        </div>
+        <div style="margin-top: 24px;">
+            <button class="btn btn-primary" hx-post="/htmx/download/album/{{.ID}}" hx-swap="none"
+                onclick="handleDownload(this)">
+                <i data-lucide="download"></i> Download Full Album
+            </button>
+        </div>
+    </div>
 </div>
 
 <div class="result-section">

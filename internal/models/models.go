@@ -99,10 +99,11 @@ type Album struct {
 }
 
 type Artist struct {
-	ID        string  `json:"id"`
-	Name      string  `json:"name"`
-	Albums    []Album `json:"albums,omitempty"`
-	TopTracks []Track `json:"top_tracks,omitempty"`
+	ID         string  `json:"id"`
+	Name       string  `json:"name"`
+	PictureURL string  `json:"picture_url,omitempty"`
+	Albums     []Album `json:"albums,omitempty"`
+	TopTracks  []Track `json:"top_tracks,omitempty"`
 }
 
 type Playlist struct {
