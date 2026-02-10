@@ -98,7 +98,7 @@ func (w *Worker) processJobs() {
 			queuedJobs := []*models.Job{}
 
 			for _, j := range jobs {
-				if j.Status == models.JobStatusDownloading || j.Status == models.JobStatusTagging || j.Status == models.JobStatusResolve {
+				if j.Status == models.JobStatusDownloading || j.Status == models.JobStatusResolve {
 					activeCount++
 				} else if j.Status == models.JobStatusQueued {
 					queuedJobs = append(queuedJobs, j)

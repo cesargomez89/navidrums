@@ -1,4 +1,4 @@
-# Music Downloader (Go Version)
+# Navidrums
 
 A lightweight self-hosted web application for browsing and downloading music to your Navidrome library.
 Optimized for Raspberry Pi 4B.
@@ -8,24 +8,42 @@ Optimized for Raspberry Pi 4B.
 - Browse Artists, Albums, and Playlists from remote Hifi API.
 - Download queuing system with concurrency control (Max 2 downloads).
 - Automatic retries and resume support.
-- FLAC metadata tagging using ffmpeg.
 - HTMX-powered responsive UI (no JSON APIs for frontend).
 - Efficient SQLite database.
 
 ## Prerequisites
 
-- **Go 1.22+**
-- **ffmpeg** (must be in PATH for tagging)
+- **Go 1.22+** (for building from source)
 - **Hifi API** running (default: `http://127.0.0.1:8000`)
 
 ## Installation
 
-1.  Clone the repository.
-2.  Navigate to `golang_version`.
-3.  Build the server:
-    ```bash
-    go build -o server ./cmd/server
-    ```
+### Option 1: Download Pre-built Binary (Recommended)
+
+1. Download the latest release for your platform from the [Releases page](https://github.com/cesargomez89/navidrums/releases):
+   - **Linux (x86_64)**: `navidrums-linux-amd64`
+   - **Linux (ARM64/Raspberry Pi)**: `navidrums-linux-arm64`
+   - **macOS (Intel)**: `navidrums-darwin-amd64`
+   - **macOS (Apple Silicon)**: `navidrums-darwin-arm64`
+   - **Windows (x86_64)**: `navidrums-windows-amd64.exe`
+
+2. Make the binary executable (Linux/macOS):
+   ```bash
+   chmod +x navidrums-*
+   ```
+
+3. Optionally, move it to a directory in your PATH:
+   ```bash
+   sudo mv navidrums-* /usr/local/bin/navidrums
+   ```
+
+### Option 2: Build from Source
+
+1. Clone the repository.
+2. Build the server:
+   ```bash
+   go build -o navidrums ./cmd/server
+   ```
 
 ## Configuration
 
@@ -42,13 +60,82 @@ Environment variables:
 
 ## Usage
 
-1.  Start the server:
-    ```bash
-    ./server
-    ```
-2.  Open browser at `http://localhost:8080`.
-3.  Search for music and click download.
-4.  Check the "Queue" tab for progress.
+1. Start the server:
+   ```bash
+   ./navidrums
+   ```
+2. Open browser at `http://localhost:8080`.
+3. Search for music and click download.
+4. Check the "Queue" tab for progress.
+
+## Self-Hosted Server Setup
+
+### Running as a Systemd Service (Linux)
+
+1. Create a systemd service file at `/etc/systemd/system/navidrums.service`:
+
+   ```ini
+   [Unit]
+   Description=Navidrums Music Downloader
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=YOUR_USERNAME
+   WorkingDirectory=/home/YOUR_USERNAME/navidrums
+   Environment="PORT=8080"
+   Environment="DB_PATH=/home/YOUR_USERNAME/navidrums/navidrums.db"
+   Environment="DOWNLOADS_DIR=/home/YOUR_USERNAME/Music"
+   Environment="PROVIDER_URL=http://127.0.0.1:8000"
+   Environment="QUALITY=LOSSLESS"
+   ExecStart=/usr/local/bin/navidrums
+   Restart=always
+   RestartSec=10
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+2. Replace `YOUR_USERNAME` with your actual username and adjust paths as needed.
+
+3. Enable and start the service:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable navidrums
+   sudo systemctl start navidrums
+   ```
+
+4. Check service status:
+   ```bash
+   sudo systemctl status navidrums
+   ```
+
+### Reverse Proxy Setup (Optional)
+
+To expose Navidrums securely with HTTPS, use a reverse proxy like Nginx or Caddy.
+
+**Example Caddy configuration:**
+```
+navidrums.yourdomain.com {
+    reverse_proxy localhost:8080
+}
+```
+
+**Example Nginx configuration:**
+```nginx
+server {
+    listen 80;
+    server_name navidrums.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
 
 ## Development
 
@@ -56,3 +143,16 @@ Run tests:
 ```bash
 go test ./...
 ```
+
+## Creating a Release
+
+To create a new release:
+
+1. Tag the commit:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. GitHub Actions will automatically build binaries for all platforms and create a release.
+

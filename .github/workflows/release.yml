@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Build binaries
+        run: |
+          # Linux AMD64
+          GOOS=linux GOARCH=amd64 go build -o navidrums-linux-amd64 -ldflags="-s -w" ./cmd/server
+          
+          # Linux ARM64 (Raspberry Pi)
+          GOOS=linux GOARCH=arm64 go build -o navidrums-linux-arm64 -ldflags="-s -w" ./cmd/server
+          
+          # macOS AMD64
+          GOOS=darwin GOARCH=amd64 go build -o navidrums-darwin-amd64 -ldflags="-s -w" ./cmd/server
+          
+          # macOS ARM64 (Apple Silicon)
+          GOOS=darwin GOARCH=arm64 go build -o navidrums-darwin-arm64 -ldflags="-s -w" ./cmd/server
+          
+          # Windows AMD64
+          GOOS=windows GOARCH=amd64 go build -o navidrums-windows-amd64.exe -ldflags="-s -w" ./cmd/server
+
+      - name: Create checksums
+        run: |
+          sha256sum navidrums-* > checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            navidrums-linux-amd64
+            navidrums-linux-arm64
+            navidrums-darwin-amd64
+            navidrums-darwin-arm64
+            navidrums-windows-amd64.exe
+            checksums.txt
+          body: |
+            ## Installation
+            
+            Download the appropriate binary for your platform:
+            - **Linux (x86_64)**: `navidrums-linux-amd64`
+            - **Linux (ARM64/Raspberry Pi)**: `navidrums-linux-arm64`
+            - **macOS (Intel)**: `navidrums-darwin-amd64`
+            - **macOS (Apple Silicon)**: `navidrums-darwin-arm64`
+            - **Windows (x86_64)**: `navidrums-windows-amd64.exe`
+            
+            Make the binary executable (Linux/macOS):
+            ```bash
+            chmod +x navidrums-*
+            ```
+            
+            See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for configuration and usage instructions.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

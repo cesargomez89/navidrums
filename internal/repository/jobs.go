@@ -68,7 +68,7 @@ func (db *DB) ListJobs(limit int) ([]*models.Job, error) {
 }
 
 func (db *DB) ListActiveJobs() ([]*models.Job, error) {
-	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'resolving_tracks', 'downloading', 'tagging') ORDER BY created_at ASC`
+	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'resolving_tracks', 'downloading') ORDER BY created_at ASC`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (db *DB) UpdateJobItemFilePath(id int64, path string) error {
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType models.JobType) (*models.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at 
 		FROM jobs 
-		WHERE source_id = ? AND type = ? AND status IN ('queued', 'resolving_tracks', 'downloading', 'tagging')
+		WHERE source_id = ? AND type = ? AND status IN ('queued', 'resolving_tracks', 'downloading')
 		LIMIT 1`
 	row := db.QueryRow(query, sourceID, jobType)
 
@@ -170,14 +170,14 @@ func (db *DB) GetActiveJobBySourceID(sourceID string, jobType models.JobType) (*
 }
 
 func (db *DB) IsTrackActive(trackID string) (bool, error) {
-	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = 'track' AND status IN ('queued', 'resolving_tracks', 'downloading', 'tagging')`
+	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = 'track' AND status IN ('queued', 'resolving_tracks', 'downloading')`
 	var count int
 	err := db.QueryRow(query, trackID).Scan(&count)
 	return count > 0, err
 }
 
 func (db *DB) ResetStuckJobs() error {
-	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status IN ('resolving_tracks', 'downloading', 'tagging')`
+	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status IN ('resolving_tracks', 'downloading')`
 	_, err := db.Exec(query, models.JobStatusQueued, time.Now())
 	return err
 }

@@ -19,7 +19,6 @@ const (
 	JobStatusQueued      JobStatus = "queued"
 	JobStatusResolve     JobStatus = "resolving_tracks"
 	JobStatusDownloading JobStatus = "downloading"
-	JobStatusTagging     JobStatus = "tagging" // Not explicitly in spec but good for clarity
 	JobStatusCompleted   JobStatus = "completed"
 	JobStatusFailed      JobStatus = "failed"
 	JobStatusCancelled   JobStatus = "cancelled"
