@@ -1,14 +1,8 @@
-<div class="track-item" id="track-{{.ID}}">
-    <div class="track-number">{{.TrackNumber}}</div>
-    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
-        class="track-img" alt="{{.Title}}" loading="lazy">
-    <div class="track-title">{{.Title}}</div>
-    <div class="track-artist">{{.Artist}}</div>
-    <div class="track-album">{{.Album}}</div>
-    <div class="track-actions">
-        <button class="btn btn-primary btn-icon" hx-post="/htmx/download/track/{{.ID}}" hx-swap="none"
-            onclick="handleDownload(this)" title="Download Track">
-            <i data-lucide="download"></i>
-        </button>
+<div class="track">
+    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}" alt="{{.Title}}">
+    <div class="track-info">
+        <div class="track-title">{{.Title}}</div>
+        <div class="track-artist">{{.Artist}}</div>
     </div>
+    <button class="btn btn-primary btn-sm" hx-post="/htmx/download/track/{{.ID}}" hx-swap="none" onclick="handleDownload(this)">Download</button>
 </div>

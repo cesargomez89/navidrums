@@ -1,15 +1,7 @@
-<div class="card playlist-card" id="playlist-{{.ID}}">
+<div class="card">
     <a href="/playlist/{{.ID}}">
-        <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/300?text=Playlist{{end}}"
-            class="card-image" alt="{{.Title}}" loading="lazy">
+        <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/300?text=Playlist{{end}}" alt="{{.Title}}" loading="lazy">
     </a>
-    <div class="card-info">
-        <a href="/playlist/{{.ID}}" class="playlist-title">{{.Title}}</a>
-    </div>
-    <div class="card-actions">
-        <button class="btn btn-primary btn-icon" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none"
-            onclick="handleDownload(this)" title="Download Playlist">
-            <i data-lucide="download"></i>
-        </button>
-    </div>
+    <div class="card-title"><a href="/playlist/{{.ID}}">{{.Title}}</a></div>
+    <div class="card-sub">{{.Description}}</div>
 </div>

@@ -47,6 +47,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/htmx/queue", h.QueueHTMX)
 	r.Post("/htmx/cancel/{id}", h.CancelJobHTMX)
 	r.Get("/history", h.HistoryPage)
+	r.Get("/settings", h.SettingsPage)
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)
@@ -85,6 +86,17 @@ func (h *Handler) RenderFragment(w http.ResponseWriter, fragTmpl string, data in
 
 	// Execute the specific fragment template
 	if err := tmpl.ExecuteTemplate(w, filepath.Base(fragTmpl), data); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func (h *Handler) RenderQueueList(w http.ResponseWriter, data interface{}) {
+	tmpl, err := template.ParseFS(web.Files, "templates/queue_list.html")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if err := tmpl.ExecuteTemplate(w, "queue_list", data); err != nil {
 		http.Error(w, err.Error(), 500)
 	}
 }

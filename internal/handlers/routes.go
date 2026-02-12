@@ -89,9 +89,8 @@ func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
-	// Auto refresh
-	jobs, _ := h.JobService.Repo.ListActiveJobs() // Use db directly for simplicity
-	h.RenderFragment(w, "queue_list.html", jobs)
+	jobs, _ := h.JobService.Repo.ListActiveJobs()
+	h.RenderQueueList(w, jobs)
 }
 
 func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +100,10 @@ func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.RenderPage(w, "history.html", jobs)
+}
+
+func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
+	h.RenderPage(w, "settings.html", nil)
 }
 
 func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {

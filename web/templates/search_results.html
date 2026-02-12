@@ -1,49 +1,39 @@
 {{if .Artists}}
-<section class="result-section">
-    <h3>Artists</h3>
-    <div class="result-grid">
-        {{range .Artists}}
-        {{template "artist_card.html" .}}
-        {{end}}
-    </div>
-</section>
+<h2>Artists</h2>
+<div class="grid">
+    {{range .Artists}}
+    {{template "artist_card.html" .}}
+    {{end}}
+</div>
 {{end}}
 
 {{if .Albums}}
-<section class="result-section">
-    <h3>Albums</h3>
-    <div class="result-grid">
-        {{range .Albums}}
-        {{template "album_card.html" .}}
-        {{end}}
-    </div>
-</section>
+<h2>Albums</h2>
+<div class="grid">
+    {{range .Albums}}
+    {{template "album_card.html" .}}
+    {{end}}
+</div>
 {{end}}
 
 {{if .Playlists}}
-<section class="result-section">
-    <h3>Playlists</h3>
-    <div class="result-grid">
-        {{range .Playlists}}
-        {{template "playlist_card.html" .}}
-        {{end}}
-    </div>
-</section>
+<h2>Playlists</h2>
+<div class="grid">
+    {{range .Playlists}}
+    {{template "playlist_card.html" .}}
+    {{end}}
+</div>
 {{end}}
 
 {{if .Tracks}}
-<section class="result-section">
-    <h3>Tracks</h3>
-    <div class="track-list">
-        {{range .Tracks}}
-        {{template "track_card.html" .}}
-        {{end}}
-    </div>
-</section>
+<h2>Tracks</h2>
+<div class="track-list">
+    {{range .Tracks}}
+    {{template "track_card.html" .}}
+    {{end}}
+</div>
 {{end}}
 
 {{if not (or .Artists .Albums .Playlists .Tracks)}}
-<div class="no-results">
-    No results found for your search.
-</div>
+<div class="empty">No results found.</div>
 {{end}}

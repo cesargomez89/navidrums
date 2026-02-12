@@ -1,28 +1,19 @@
 {{define "content"}}
-<div class="detail-header">
-    <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}"
-        class="detail-img" alt="{{.Title}}">
+<div class="detail">
+    <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}" alt="{{.Title}}">
     <div class="detail-info">
-        <span class="detail-type">Playlist</span>
         <h2>{{.Title}}</h2>
         <div class="detail-meta">
             {{if .Description}}<span>{{.Description}}</span>{{end}}
-            <span>{{len .Tracks}} tracks</span>
+            <span>[ {{len .Tracks}} tracks ]</span>
         </div>
-        <div style="margin-top: 24px;">
-            <button class="btn btn-primary" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none"
-                onclick="handleDownload(this)">
-                <i data-lucide="download"></i> Download Full Playlist
-            </button>
-        </div>
+        <button class="btn btn-primary" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none" style="margin-top: 16px;">Download Full Playlist</button>
     </div>
 </div>
 
-<div class="result-section">
-    <div class="track-list">
-        {{range .Tracks}}
-        {{template "track_card.html" .}}
-        {{end}}
-    </div>
+<div class="track-list">
+    {{range .Tracks}}
+    {{template "track_card.html" .}}
+    {{end}}
 </div>
 {{end}}

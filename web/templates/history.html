@@ -1,36 +1,24 @@
 {{define "content"}}
-<h1>Download History <span style="font-size: 1rem; color: var(--text-secondary); font-weight: 400;">(Recent 20)</span>
-</h1>
+<h1>Download History</h1>
 
 {{if .}}
-<div class="track-list" style="margin-top: 32px;">
-    <div class="track-item"
-        style="grid-template-columns: 2fr 1fr 1fr 1fr; font-weight: 700; color: var(--text-secondary); border-bottom: 2px solid var(--border);">
-        <div style="padding-left: 16px;">Title</div>
-        <div>Artist</div>
-        <div>Status</div>
-        <div style="text-align: right; padding-right: 16px;">Finished</div>
-    </div>
+<div class="track-list">
     {{range .}}
-    <div class="track-item" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
-        <div class="track-title" style="padding-left: 16px;">{{.Title}}</div>
-        <div class="track-artist">{{.Artist}}</div>
-        <div class="track-status">
-            <span class="status-{{.Status}}" style="font-weight: 600;">{{.Status}}</span>
-            {{if .Error}}
-            <div style="font-size: 0.75rem; color: #ef4444; margin-top: 2px;">{{.Error}}</div>
-            {{end}}
+    <div class="track">
+        *
+        <div>
+            <div class="track-title">{{.Title}}</div>
+            <div class="track-artist">{{.Artist}}</div>
         </div>
-        <div style="text-align: right; padding-right: 16px; color: var(--text-secondary); font-size: 0.9rem;">
-            {{.UpdatedAt.Format "Jan 02, 15:04"}}
+        <div>
+            <span class="job-status status-{{.Status}}">{{.Status}}</span>
+            {{if .Error}}<div style="color: #ef4444; font-size: 0.75rem;">{{.Error}}</div>{{end}}
+            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">{{.UpdatedAt.Format "Jan 02, 15:04"}}</div>
         </div>
     </div>
     {{end}}
 </div>
 {{else}}
-<div class="no-results">
-    <i data-lucide="history" style="width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-    <p>No download history yet.</p>
-</div>
+<div class="empty">No download history yet.</div>
 {{end}}
 {{end}}

@@ -1,0 +1,88 @@
+{{define "content"}}
+<h1>Settings</h1>
+
+<div class="section">
+    <h2>Current Provider</h2>
+    <div id="current-provider">
+        <span class="provider-badge">Loading...</span>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Add Custom Provider</h2>
+    <form class="provider-form" onsubmit="addProvider(event)">
+        <input type="text" id="provider-name" placeholder="Name" required>
+        <input type="url" id="provider-url" placeholder="URL (https://api.example.com)" required>
+        <button type="submit" class="btn-primary">Add</button>
+    </form>
+</div>
+
+<div class="section">
+    <h2>Available Providers</h2>
+    <div id="providers-list"></div>
+</div>
+
+<script>
+function loadProviders() {
+    fetch('/htmx/providers', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+            document.querySelector('#current-provider .provider-badge').textContent = 
+                data.active === data.default ? 'Default' : data.active;
+            
+            const container = document.getElementById('providers-list');
+            container.innerHTML = '';
+            
+            let all = [];
+            if (data.default) all.push({ name: 'Default (env)', url: data.default, isDefault: true });
+            (data.custom || []).forEach(p => all.push(p));
+            
+            all.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'provider-card' + (p.url === data.active ? ' active' : '');
+                div.innerHTML = `
+                    <div class="provider-info">
+                        <strong>${p.name}</strong>
+                        <small>${p.url}</small>
+                    </div>
+                    <div class="provider-actions">
+                        ${p.url === data.active 
+                            ? '<span class="badge-success">Active</span>' 
+                            : `<button class="btn-sm" onclick="setProvider('${p.url}')">Select</button>`}
+                        ${p.isDefault ? '' : `<button class="btn-sm btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        });
+}
+
+function setProvider(url) {
+    fetch('/htmx/provider/set?url=' + encodeURIComponent(url), { method: 'POST' })
+        .then(r => r.json())
+        .then(() => loadProviders());
+}
+
+function addProvider(e) {
+    e.preventDefault();
+    const name = document.getElementById('provider-name').value;
+    const url = document.getElementById('provider-url').value;
+    fetch('/htmx/provider/add?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
+        .then(r => r.json())
+        .then(() => {
+            document.getElementById('provider-name').value = '';
+            document.getElementById('provider-url').value = '';
+            loadProviders();
+        });
+}
+
+function removeProvider(url) {
+    if (!confirm('Remove this provider?')) return;
+    fetch('/htmx/provider/remove?url=' + encodeURIComponent(url), { method: 'POST' })
+        .then(r => r.json())
+        .then(() => loadProviders());
+}
+
+loadProviders();
+</script>
+{{end}}
