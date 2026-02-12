@@ -43,17 +43,17 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize Provider (Mock for now, or real)
-	// We can switch based on env or config
-	var provider providers.Provider
-	if os.Getenv("USE_MOCK") == "true" {
-		provider = providers.NewMockProvider()
-	} else {
-		provider = providers.NewHifiProvider(cfg.ProviderURL)
+	// Initialize Provider Manager
+	providerManager := providers.NewProviderManager(cfg.ProviderURL)
+
+	// Load saved provider from settings if exists
+	settingsRepo := repository.NewSettingsRepo(db)
+	if savedProvider, err := settingsRepo.Get(repository.SettingActiveProvider); err == nil && savedProvider != "" {
+		providerManager.SetProvider(savedProvider)
 	}
 
 	// Initialize Worker
-	w := worker.NewWorker(db, provider, cfg, appLogger)
+	w := worker.NewWorker(db, providerManager, cfg, appLogger)
 	w.Start()
 	defer w.Stop()
 
@@ -71,7 +71,7 @@ func main() {
 	r.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
 	// Routes
-	h := handlers.NewHandler(jobService, provider)
+	h := handlers.NewHandler(jobService, providerManager, settingsRepo)
 	h.RegisterRoutes(r)
 
 	// Start Server

@@ -32,6 +32,7 @@ var (
 type Worker struct {
 	Repo              *repository.DB
 	Provider          providers.Provider
+	ProviderManager   *providers.ProviderManager
 	Config            *config.Config
 	MaxConcurrent     int
 	Logger            *logger.Logger
@@ -44,7 +45,7 @@ type Worker struct {
 }
 
 // NewWorker creates a new Worker with all dependencies
-func NewWorker(repo *repository.DB, provider providers.Provider, cfg *config.Config, log *logger.Logger) *Worker {
+func NewWorker(repo *repository.DB, pm *providers.ProviderManager, cfg *config.Config, log *logger.Logger) *Worker {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if log == nil {
@@ -52,17 +53,18 @@ func NewWorker(repo *repository.DB, provider providers.Provider, cfg *config.Con
 	}
 
 	worker := &Worker{
-		Repo:          repo,
-		Provider:      provider,
-		Config:        cfg,
-		MaxConcurrent: constants.DefaultConcurrency,
-		Logger:        log.WithComponent("worker"),
-		ctx:           ctx,
-		cancel:        cancel,
+		Repo:            repo,
+		ProviderManager: pm,
+		Provider:        pm,
+		Config:          cfg,
+		MaxConcurrent:   constants.DefaultConcurrency,
+		Logger:          log.WithComponent("worker"),
+		ctx:             ctx,
+		cancel:          cancel,
 	}
 
 	// Initialize services
-	worker.downloader = services.NewDownloader(provider, cfg, repo)
+	worker.downloader = services.NewDownloader(pm, cfg, repo)
 	worker.playlistGenerator = services.NewPlaylistGenerator(cfg)
 	worker.albumArtService = services.NewAlbumArtService(cfg)
 

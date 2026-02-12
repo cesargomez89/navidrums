@@ -6,21 +6,26 @@ import (
 	"path/filepath"
 
 	"github.com/cesargomez89/navidrums/internal/providers"
+	"github.com/cesargomez89/navidrums/internal/repository"
 	"github.com/cesargomez89/navidrums/internal/services"
 	"github.com/cesargomez89/navidrums/web"
 	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
-	JobService *services.JobService
-	Provider   providers.Provider
-	Templates  *template.Template
+	JobService      *services.JobService
+	Provider        providers.Provider
+	ProviderManager *providers.ProviderManager
+	SettingsRepo    *repository.SettingsRepo
+	Templates       *template.Template
 }
 
-func NewHandler(js *services.JobService, p providers.Provider) *Handler {
+func NewHandler(js *services.JobService, pm *providers.ProviderManager, sr *repository.SettingsRepo) *Handler {
 	h := &Handler{
-		JobService: js,
-		Provider:   p,
+		JobService:      js,
+		ProviderManager: pm,
+		Provider:        pm,
+		SettingsRepo:    sr,
 	}
 	h.ParseTemplates()
 	return h
@@ -42,6 +47,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/htmx/queue", h.QueueHTMX)
 	r.Post("/htmx/cancel/{id}", h.CancelJobHTMX)
 	r.Get("/history", h.HistoryPage)
+
+	r.Get("/htmx/providers", h.GetProvidersHTMX)
+	r.Post("/htmx/provider/set", h.SetProviderHTMX)
+	r.Post("/htmx/provider/add", h.AddCustomProviderHTMX)
+	r.Post("/htmx/provider/remove", h.RemoveCustomProviderHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {

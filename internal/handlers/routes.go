@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/providers"
+	"github.com/cesargomez89/navidrums/internal/repository"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -110,4 +113,100 @@ func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 	// Return updated queue
 	jobs, _ := h.JobService.ListActiveJobs()
 	h.RenderFragment(w, "queue_list.html", jobs)
+}
+
+func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
+	type ProviderData struct {
+		Predefined []struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"predefined"`
+		Custom  []providers.CustomProvider `json:"custom"`
+		Active  string                     `json:"active"`
+		Default string                     `json:"default"`
+	}
+
+	data := ProviderData{
+		Active:  h.ProviderManager.GetBaseURL(),
+		Default: h.ProviderManager.GetDefaultURL(),
+	}
+
+	customProvidersJSON, err := h.SettingsRepo.Get(repository.SettingCustomProviders)
+	if err == nil && customProvidersJSON != "" {
+		var customProviders []providers.CustomProvider
+		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err == nil {
+			data.Custom = customProviders
+		}
+	}
+
+	customJSON, _ := json.Marshal(data.Custom)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"predefined":` + providers.GetPredefinedProvidersJSON() + `,"custom":` + string(customJSON) + `,"active":"` + data.Active + `","default":"` + data.Default + `"}`))
+}
+
+func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	if url == "" {
+		http.Error(w, "url is required", 400)
+		return
+	}
+
+	h.ProviderManager.SetProvider(url)
+	h.SettingsRepo.Set(repository.SettingActiveProvider, url)
+
+	w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
+}
+
+func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	url := r.URL.Query().Get("url")
+	if name == "" || url == "" {
+		http.Error(w, "name and url are required", 400)
+		return
+	}
+
+	customProvidersJSON, _ := h.SettingsRepo.Get(repository.SettingCustomProviders)
+	var customProviders []providers.CustomProvider
+	if customProvidersJSON != "" {
+		json.Unmarshal([]byte(customProvidersJSON), &customProviders)
+	}
+
+	customProviders = append(customProviders, providers.CustomProvider{Name: name, URL: url})
+
+	newJSON, _ := json.Marshal(customProviders)
+	h.SettingsRepo.Set(repository.SettingCustomProviders, string(newJSON))
+
+	w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	if url == "" {
+		http.Error(w, "url is required", 400)
+		return
+	}
+
+	customProvidersJSON, err := h.SettingsRepo.Get(repository.SettingCustomProviders)
+	if err != nil || customProvidersJSON == "" {
+		w.Write([]byte(`{"success":false,"error":"no custom providers"}`))
+		return
+	}
+
+	var customProviders []providers.CustomProvider
+	if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
+		w.Write([]byte(`{"success":false,"error":"invalid data"}`))
+		return
+	}
+
+	var newProviders []providers.CustomProvider
+	for _, p := range customProviders {
+		if p.URL != url {
+			newProviders = append(newProviders, p)
+		}
+	}
+
+	newJSON, _ := json.Marshal(newProviders)
+	h.SettingsRepo.Set(repository.SettingCustomProviders, string(newJSON))
+
+	w.Write([]byte(`{"success":true}`))
 }

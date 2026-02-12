@@ -3,8 +3,9 @@
         style="color: var(--accent);">Music</span></h1>
 <div class="search-container">
     <div class="input-group">
-        <input type="text" name="q" placeholder="Search for Artist, Album, Playlist..." hx-get="/htmx/search"
-            hx-trigger="keyup changed delay:500ms, search" hx-target="#search-results" hx-include="[name='type']">
+        <input type="text" name="q" placeholder="Search for Artist, Album, Playlist..." 
+            hx-get="/htmx/search" hx-target="#search-results" hx-include="[name='type']"
+            hx-trigger="keyup[event.key==='Enter']">
 
         <select name="type" hx-get="/htmx/search" hx-target="#search-results" hx-include="[name='q']">
             <option value="album" selected>Album</option>
@@ -12,6 +13,10 @@
             <option value="artist">Artist</option>
             <option value="playlist">Playlist</option>
         </select>
+
+        <button hx-get="/htmx/search" hx-target="#search-results" hx-include="[name='q'], [name='type']">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
     </div>
 </div>
 
