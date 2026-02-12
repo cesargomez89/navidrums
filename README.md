@@ -7,6 +7,8 @@ Optimized for Raspberry Pi 4B.
 
 - Browse Artists, Albums, and Playlists from remote Hifi API.
 - Download queuing system with concurrency control (Max 2 downloads).
+- **Provider Management**: Switch between multiple Hifi API endpoints and add custom providers.
+- **Download History**: View last 20 completed/failed downloads.
 - **Comprehensive Metadata Tagging**: Automatically tags downloaded files with:
   - Basic tags: Title, Artist, Album Artist, Album, Track/Disc Numbers
   - Extended metadata: Year, Genre, Label, ISRC, Copyright, Composer
@@ -66,6 +68,8 @@ Environment variables:
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API |
 | `QUALITY` | `LOSSLESS` | Download quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `USE_MOCK` | `false` | Set to `true` to use Mock provider |
+| `LOG_LEVEL` | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
+| `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
 
 ## Usage
 
