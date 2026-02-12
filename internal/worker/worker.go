@@ -114,6 +114,13 @@ func (w *Worker) processJobs() {
 			// Launch workers for queued jobs
 			for i := 0; i < toStart && i < len(queuedJobs); i++ {
 				job := queuedJobs[i]
+
+				// Double check if it was cancelled while in memory
+				current, _ := w.Repo.GetJob(job.ID)
+				if current != nil && current.Status == models.JobStatusCancelled {
+					continue
+				}
+
 				sem <- struct{}{}
 				w.wg.Add(1)
 				go func(j *models.Job) {
@@ -139,6 +146,12 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	// 1. Resolution phase
 	if err := w.Repo.UpdateJobStatus(job.ID, models.JobStatusResolve, 0); err != nil {
 		w.Logger.Printf("Failed to update status: %v", err)
+		return
+	}
+
+	// Check if cancelled
+	if w.isCancelled(job.ID) {
+		w.Logger.Printf("Job %s cancelled before resolution finished", job.ID)
 		return
 	}
 
@@ -200,6 +213,10 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 
 	// 2. Handle Container Types (Album, Playlist, Artist)
 	if job.Type != models.JobTypeTrack {
+		if w.isCancelled(job.ID) {
+			w.Logger.Printf("Job %s cancelled before decomposition", job.ID)
+			return
+		}
 		w.Logger.Printf("Job %s: decomposing container job into %d tracks", job.ID, len(tracks))
 
 		for _, t := range tracks {
@@ -234,6 +251,22 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		}
 
 		w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100)
+		// Update job metadata with container info before completing
+		switch job.Type {
+		case models.JobTypeAlbum:
+			if len(tracks) > 0 {
+				w.Repo.UpdateJobMetadata(job.ID, tracks[0].Album, tracks[0].AlbumArtist)
+			}
+		case models.JobTypePlaylist:
+			// Try to get playlist title from provider if available
+			if pl, err := w.Provider.GetPlaylist(ctx, job.SourceID); err == nil && pl != nil {
+				w.Repo.UpdateJobMetadata(job.ID, pl.Title, "")
+			}
+		case models.JobTypeArtist:
+			if artist, err := w.Provider.GetArtist(ctx, job.SourceID); err == nil && artist != nil {
+				w.Repo.UpdateJobMetadata(job.ID, artist.Name, "")
+			}
+		}
 		return
 	}
 
@@ -244,12 +277,16 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	dl, _ := w.Repo.GetDownload(track.ID)
 	if dl != nil {
 		w.Logger.Printf("Track %s already downloaded at %s, completing job", track.ID, dl.FilePath)
+		// Update metadata even for already-downloaded tracks
+		w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist)
 		w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100)
 		return
 	}
 
-	// Update job info if it was generic
-	// (Note: Currently we don't have UpdateJobMetadata, but we can set title/artist in status update if we extend it)
+	// Update job metadata with actual track info
+	if err := w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist); err != nil {
+		w.Logger.Printf("Failed to update job metadata: %v", err)
+	}
 
 	// Prepare final destination path
 	artistForFolder := track.AlbumArtist
@@ -262,6 +299,11 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	if err := os.MkdirAll(finalDir, 0755); err != nil {
 		w.Logger.Printf("Failed to create dir: %v", err)
 		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", err))
+		return
+	}
+
+	if w.isCancelled(job.ID) {
+		w.Logger.Printf("Job %s cancelled before download", job.ID)
 		return
 	}
 
@@ -287,16 +329,30 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 
 			f, err := os.Create(finalPath)
 			if err == nil {
-				_, err = io.Copy(f, stream)
+				// Use a limited reader or just monitor progress
+				// For now, let's just do io.Copy but check for cancellation occasionally?
+				// Actually, we can use a custom writer that checks context
+				pw := &progressWriter{
+					jobID:  job.ID,
+					repo:   w.Repo,
+					logger: w.Logger,
+					ctx:    ctx,
+				}
+				_, err = io.Copy(io.MultiWriter(f, pw), stream)
 				stream.Close()
 				f.Close()
+
 				if err == nil {
 					// Download successful
 					break
 				} else {
-					// Clean up partial file on error
+					// Clean up partial file on error/cancel
 					os.Remove(finalPath)
 					finalPath = ""
+					if ctx.Err() != nil || w.isCancelled(job.ID) {
+						w.Logger.Printf("Download cancelled for track %s", track.ID)
+						return
+					}
 				}
 			}
 		}
@@ -308,6 +364,8 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		w.Repo.UpdateJobError(job.ID, "Download failed after 3 attempts")
 		return
 	}
+
+	w.Logger.Printf("Job %s: Download finished, starting tagging", job.ID)
 
 	// Download album art for tagging
 	var albumArtData []byte
@@ -337,13 +395,20 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	}
 
 	// Record download in DB
-	w.Repo.CreateDownload(&models.Download{
+	err = w.Repo.CreateDownload(&models.Download{
 		ProviderID:  track.ID,
 		FilePath:    finalPath,
 		CompletedAt: time.Now(),
 	})
+	if err != nil {
+		w.Logger.Printf("Failed to record download in DB for job %s: %v", job.ID, err)
+		// Still try to complete the job
+	}
 
-	w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100)
+	if err := w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100); err != nil {
+		w.Logger.Printf("Failed to update final status for job %s: %v", job.ID, err)
+	}
+	w.Logger.Printf("Job %s completed successfully", job.ID)
 }
 
 func (w *Worker) generatePlaylistFile(pl *models.Playlist) {
@@ -471,4 +536,49 @@ func (w *Worker) savePlaylistImage(playlist *models.Playlist, imageURL string) {
 	}
 
 	w.Logger.Printf("Saved playlist image to %s", imagePath)
+}
+
+func (w *Worker) isCancelled(id string) bool {
+	job, err := w.Repo.GetJob(id)
+	if err != nil {
+		return false
+	}
+	return job.Status == models.JobStatusCancelled
+}
+
+type progressWriter struct {
+	jobID      string
+	repo       *repository.DB
+	logger     *log.Logger
+	ctx        context.Context
+	total      int64
+	written    int64
+	lastUpdate time.Time
+}
+
+func (pw *progressWriter) Write(p []byte) (n int, err error) {
+	if pw.ctx.Err() != nil {
+		return 0, pw.ctx.Err()
+	}
+
+	n = len(p)
+	pw.written += int64(n)
+
+	// Since we don't always know the total size from the stream,
+	// we can't easily calculate percentage here unless we get it from elsewhere.
+	// But we can update 'updated_at' to show it's still alive.
+
+	if time.Since(pw.lastUpdate) > 2*time.Second {
+		// Just update status to keep it "fresh" in DB
+		_ = pw.repo.UpdateJobStatus(pw.jobID, models.JobStatusDownloading, 0) // Progress 0 if unknown
+		pw.lastUpdate = time.Now()
+
+		// Also check for cancellation in DB
+		job, _ := pw.repo.GetJob(pw.jobID)
+		if job != nil && job.Status == models.JobStatusCancelled {
+			return 0, fmt.Errorf("job cancelled")
+		}
+	}
+
+	return n, nil
 }

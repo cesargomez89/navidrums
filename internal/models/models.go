@@ -37,25 +37,6 @@ type Job struct {
 	Error     string    `json:"error,omitempty"`
 }
 
-type JobItemStatus string
-
-const (
-	JobItemStatusPending     JobItemStatus = "pending"
-	JobItemStatusDownloading JobItemStatus = "downloading"
-	JobItemStatusCompelted   JobItemStatus = "completed"
-	JobItemStatusFailed      JobItemStatus = "failed"
-)
-
-type JobItem struct {
-	ID       int64         `json:"id"` // SQLite ID
-	JobID    string        `json:"job_id"`
-	TrackID  string        `json:"track_id"`
-	Title    string        `json:"title"`
-	Status   JobItemStatus `json:"status"`
-	Progress float64       `json:"progress"`
-	FilePath string        `json:"file_path,omitempty"`
-}
-
 type Download struct {
 	ProviderID  string    `json:"provider_id"`
 	FilePath    string    `json:"file_path"` // Absolute path
@@ -81,7 +62,7 @@ type Track struct {
 	Copyright      string `json:"copyright,omitempty"`
 	Composer       string `json:"composer,omitempty"`
 	AlbumArtURL    string `json:"album_art_url,omitempty"`
-	ExplicitLyrics bool   `json:"explicit_lyrics,omitempty"`
+	ExplicitLyrics bool    `json:"explicit_lyrics,omitempty"`
 }
 
 type Album struct {

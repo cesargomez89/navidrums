@@ -43,6 +43,12 @@ func (db *DB) UpdateJobError(id string, errorMsg string) error {
 	return err
 }
 
+func (db *DB) UpdateJobMetadata(id string, title string, artist string) error {
+	query := `UPDATE jobs SET title = ?, artist = ?, updated_at = ? WHERE id = ?`
+	_, err := db.Exec(query, title, artist, time.Now(), id)
+	return err
+}
+
 func (db *DB) ListJobs(limit int) ([]*models.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
 	rows, err := db.Query(query, limit)
@@ -109,49 +115,6 @@ func (db *DB) ListFinishedJobs(limit int) ([]*models.Job, error) {
 		jobs = append(jobs, job)
 	}
 	return jobs, nil
-}
-
-// Job Items
-func (db *DB) CreateJobItem(item *models.JobItem) error {
-	query := `INSERT INTO job_items (job_id, track_id, status, progress, title) VALUES (?, ?, ?, ?, ?)`
-	_, err := db.Exec(query, item.JobID, item.TrackID, item.Status, item.Progress, item.Title)
-	return err
-}
-
-func (db *DB) GetJobItems(jobID string) ([]*models.JobItem, error) {
-	query := `SELECT id, job_id, track_id, status, progress, title, file_path FROM job_items WHERE job_id = ?`
-	rows, err := db.Query(query, jobID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var items []*models.JobItem
-	for rows.Next() {
-		item := &models.JobItem{}
-		var filePath sql.NullString
-		err := rows.Scan(&item.ID, &item.JobID, &item.TrackID, &item.Status, &item.Progress, &item.Title, &filePath)
-		if err != nil {
-			return nil, err
-		}
-		if filePath.Valid {
-			item.FilePath = filePath.String
-		}
-		items = append(items, item)
-	}
-	return items, nil
-}
-
-func (db *DB) UpdateJobItemStatus(id int64, status models.JobItemStatus, progress float64) error {
-	query := `UPDATE job_items SET status = ?, progress = ? WHERE id = ?`
-	_, err := db.Exec(query, status, progress, id)
-	return err
-}
-
-func (db *DB) UpdateJobItemFilePath(id int64, path string) error {
-	query := `UPDATE job_items SET file_path = ? WHERE id = ?`
-	_, err := db.Exec(query, path, id)
-	return err
 }
 
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType models.JobType) (*models.Job, error) {

@@ -55,3 +55,7 @@ func (s *JobService) GetJob(id string) (*models.Job, error) {
 func (s *JobService) ListActiveJobs() ([]*models.Job, error) {
 	return s.Repo.ListActiveJobs()
 }
+
+func (s *JobService) CancelJob(id string) error {
+	return s.Repo.UpdateJobStatus(id, models.JobStatusCancelled, 0)
+}

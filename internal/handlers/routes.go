@@ -99,3 +99,15 @@ func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
 	}
 	h.RenderPage(w, "history.html", jobs)
 }
+
+func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.JobService.CancelJob(id); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// Return updated queue
+	jobs, _ := h.JobService.ListActiveJobs()
+	h.RenderFragment(w, "queue_list.html", jobs)
+}

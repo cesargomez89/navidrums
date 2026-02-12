@@ -14,17 +14,6 @@ CREATE TABLE IF NOT EXISTS jobs (
 	error TEXT
 );
 
-CREATE TABLE IF NOT EXISTS job_items (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	job_id TEXT NOT NULL,
-	track_id TEXT NOT NULL,
-	status TEXT DEFAULT 'pending',
-	progress REAL DEFAULT 0,
-	title TEXT,
-	file_path TEXT,
-	FOREIGN KEY(job_id) REFERENCES jobs(id)
-);
-
 CREATE TABLE IF NOT EXISTS downloads (
 	provider_id TEXT PRIMARY KEY,
 	file_path TEXT NOT NULL,
@@ -36,4 +25,6 @@ CREATE TABLE IF NOT EXISTS cache (
 	data BLOB,
 	expires_at DATETIME
 );
+
+DROP TABLE IF EXISTS job_items;
 `

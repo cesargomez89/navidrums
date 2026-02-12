@@ -40,6 +40,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/download/{type}/{id}", h.DownloadHTMX)
 	r.Get("/queue", h.QueuePage)
 	r.Get("/htmx/queue", h.QueueHTMX)
+	r.Post("/htmx/cancel/{id}", h.CancelJobHTMX)
 	r.Get("/history", h.HistoryPage)
 }
 

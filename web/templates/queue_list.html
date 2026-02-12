@@ -22,6 +22,13 @@
         {{if eq .Status "failed"}}
         <div style="font-size: 0.8rem; color: #ef4444; margin-top: 4px;">{{.Error}}</div>
         {{end}}
+
+        {{if or (eq .Status "queued") (eq .Status "resolving_tracks") (eq .Status "downloading")}}
+        <button hx-post="/htmx/cancel/{{.ID}}" hx-target="#queue-list" hx-swap="innerHTML" class="btn btn-secondary"
+            style="margin-top: 10px; padding: 5px 10px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">
+            Cancel
+        </button>
+        {{end}}
     </div>
 </div>
 {{else}}
