@@ -1,8 +1,67 @@
-# Hifi API Specs
+# API Specifications
+
+This application provides a web interface for browsing and downloading music, consuming an external Hifi API for music data.
+
+---
+
+# Application API (Your Server)
 
 ## Base URL
-Default: `http://127.0.0.1:8000`
-Override via `API_URL` environment variable.
+Default: `http://localhost:8080`  
+Override via `PORT` environment variable.
+
+## Web Interface Routes
+
+### Navigation & Search
+- **GET `/`** - Main search page
+- **GET `/htmx/search`** - HTMX search endpoint
+  - `q`: search query string
+  - `type`: search type (`album`, `artist`, `playlist`, `track`) - default: `album`
+  - Returns: HTML fragment with search results
+
+### Entity Pages
+- **GET `/artist/{id}`** - Artist detail page with albums and tracks
+- **GET `/album/{id}`** - Album detail page with track listing
+- **GET `/playlist/{id}`** - Playlist detail page with tracks
+
+### Download Management
+- **POST `/htmx/download/{type}/{id}`** - Queue a download job
+  - `type`: resource type (`album`, `artist`, `playlist`, `track`)
+  - `id`: resource identifier
+- **GET `/queue`** - Active downloads queue page
+- **GET `/htmx/queue`** - HTMX queue status (auto-refresh)
+- **POST `/htmx/cancel/{id}`** - Cancel a queued job
+  - `id`: job ID to cancel
+- **GET `/history`** - Completed/failed downloads history (last 20 items)
+
+### Static Assets
+- **GET `/static/*`** - Static files (CSS, JS, images)
+
+## Configuration
+
+### Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8080` | HTTP server port |
+| `DB_PATH` | `navidrums.db` | SQLite database file path |
+| `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Download destination directory |
+| `PROVIDER_URL` | `http://127.0.0.1:8000` | Hifi API base URL |
+| `QUALITY` | `LOSSLESS` | Default download quality |
+| `USE_MOCK` | `false` | Use mock provider for testing |
+
+## Architecture Notes
+- Uses **HTMX** for dynamic content updates without full page reloads
+- Download jobs are processed asynchronously by background workers
+- SQLite database tracks job states (pending, processing, completed, failed, cancelled)
+- Artist downloads aggregate tracks from all albums with capped concurrency (6)
+
+---
+
+# Hifi API (External Service)
+
+## Base URL
+Default: `http://127.0.0.1:8000`  
+Override via `PROVIDER_URL` environment variable.
 
 ## Endpoints
 

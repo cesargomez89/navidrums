@@ -14,6 +14,7 @@ import (
 
 	"github.com/cesargomez89/navidrums/internal/config"
 	"github.com/cesargomez89/navidrums/internal/handlers"
+	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/providers"
 	"github.com/cesargomez89/navidrums/internal/repository"
 	"github.com/cesargomez89/navidrums/internal/services"
@@ -23,10 +24,22 @@ import (
 func main() {
 	cfg := config.Load()
 
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
+
+	// Initialize Logger
+	appLogger := logger.New(logger.Config{
+		Level:  cfg.LogLevel,
+		Format: cfg.LogFormat,
+	})
+
 	// Initialize DB
 	db, err := repository.NewSQLiteDB(cfg.DBPath)
 	if err != nil {
-		log.Fatalf("Failed to init DB: %v", err)
+		appLogger.Error("Failed to init DB", "error", err)
+		os.Exit(1)
 	}
 	defer db.Close()
 
@@ -40,7 +53,7 @@ func main() {
 	}
 
 	// Initialize Worker
-	w := worker.NewWorker(db, provider, cfg)
+	w := worker.NewWorker(db, provider, cfg, appLogger)
 	w.Start()
 	defer w.Stop()
 
