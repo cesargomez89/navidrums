@@ -345,6 +345,22 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     .detail img { width: 120px; height: 120px; }
     .detail h2 { font-size: 1.5rem; }
     .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .card {
+        padding: 8px;
+    }
+    .card-title { 
+        font-size: 0.8rem;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        white-space: normal;
+    }
+    .card-sub { 
+        font-size: 0.75rem;
+    }
     .search form { flex-direction: column; }
     .search input, .search select, .search button { width: 100%; }
     .provider-card { flex-direction: column; align-items: flex-start; }
