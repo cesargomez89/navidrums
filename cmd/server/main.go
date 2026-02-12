@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/repository"
 	"github.com/cesargomez89/navidrums/internal/services"
 	"github.com/cesargomez89/navidrums/internal/worker"
+	"github.com/cesargomez89/navidrums/web"
 )
 
 func main() {
@@ -65,10 +67,30 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	// Serve Static Files
-	// Assuming web/static exists
-	fileServer := http.FileServer(http.Dir("./web/static"))
-	r.Handle("/static/*", http.StripPrefix("/static", fileServer))
+	// Serve Static Files from embedded filesystem
+	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := "static" + r.URL.Path[len("/static"):]
+		data, err := web.Files.ReadFile(path)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		contentType := "application/octet-stream"
+		switch {
+		case strings.HasSuffix(path, ".css"):
+			contentType = "text/css"
+		case strings.HasSuffix(path, ".js"):
+			contentType = "application/javascript"
+		case strings.HasSuffix(path, ".png"):
+			contentType = "image/png"
+		case strings.HasSuffix(path, ".jpg"), strings.HasSuffix(path, ".jpeg"):
+			contentType = "image/jpeg"
+		case strings.HasSuffix(path, ".svg"):
+			contentType = "image/svg+xml"
+		}
+		w.Header().Set("Content-Type", contentType)
+		w.Write(data)
+	}))
 
 	// Routes
 	h := handlers.NewHandler(jobService, providerManager, settingsRepo)
