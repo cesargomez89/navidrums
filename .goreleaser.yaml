@@ -1,0 +1,33 @@
+project_name: navidrums
+
+archives:
+  - format: binary
+    builds:
+      - navidrums
+    files:
+      - none::*
+
+checksum:
+  algorithm: sha256
+
+release:
+  github:
+    owner: cesargomez89
+    name: navidrums
+  draft: false
+  prerelease: auto
+
+builds:
+  - id: navidrums
+    main: ./cmd/server
+    binary: navidrums
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+
