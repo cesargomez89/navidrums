@@ -59,3 +59,14 @@ func (s *JobService) ListActiveJobs() ([]*models.Job, error) {
 func (s *JobService) CancelJob(id string) error {
 	return s.Repo.UpdateJobStatus(id, models.JobStatusCancelled, 0)
 }
+
+func (s *JobService) RetryJob(id string) error {
+	job, err := s.Repo.GetJob(id)
+	if err != nil {
+		return fmt.Errorf("failed to get job: %w", err)
+	}
+	if job == nil {
+		return fmt.Errorf("job not found")
+	}
+	return s.Repo.UpdateJobStatus(id, models.JobStatusQueued, 0)
+}

@@ -1,23 +1,23 @@
 {{define "content"}}
 <div class="detail">
-    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/600?text=No+Cover{{end}}"
-        alt="{{.Title}}">
+    <img src="{{if .Album.AlbumArtURL}}{{.Album.AlbumArtURL}}{{else}}https://via.placeholder.com/600?text=No+Cover{{end}}"
+        alt="{{.Album.Title}}">
     <div class="detail-info">
-        <h2>{{.Title}}</h2>
+        <h2>{{.Album.Title}}</h2>
         <div class="detail-meta">
-            <span>{{.Artist}}</span>
-            {{if .Year}}<span>{{.Year}}</span>{{end}}
-            {{if .TotalTracks}}<span>[ {{.TotalTracks}} tracks ]</span>{{end}}
+            <span>{{.Album.Artist}}</span>
+            {{if .Album.Year}}<span>{{.Album.Year}}</span>{{end}}
+            {{if .Album.TotalTracks}}<span>[ {{.Album.TotalTracks}} tracks ]</span>{{end}}
         </div>
-        <button class="btn btn-primary" hx-post="/htmx/download/album/{{.ID}}" hx-swap="none" style="margin-top: 16px;">Download Full Album</button>
-        <button class="btn btn-outline" hx-get="/htmx/album/{{.ID}}/similar" hx-target="#similar-albums-container" hx-swap="innerHTML" style="margin-top: 8px;">Similar Albums</button>
+        <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)" style="margin-top: 16px;">Download Full Album</button>
+        <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar" hx-target="#similar-albums-container" hx-swap="innerHTML" style="margin-top: 8px;">Similar Albums</button>
     </div>
 </div>
 
 <div id="similar-albums-container" style="margin-bottom: 24px;"></div>
 
 <div class="track-list">
-    {{range .Tracks}}
+    {{range .Album.Tracks}}
     {{template "track_card.html" .}}
     {{end}}
 </div>

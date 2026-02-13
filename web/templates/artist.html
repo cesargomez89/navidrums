@@ -1,27 +1,27 @@
 {{define "content"}}
 <div class="detail">
-    <img src="{{if .PictureURL}}{{.PictureURL}}{{else}}https://via.placeholder.com/600?text=Artist{{end}}"
-        alt="{{.Name}}">
+    <img src="{{if .Artist.PictureURL}}{{.Artist.PictureURL}}{{else}}https://via.placeholder.com/600?text=Artist{{end}}"
+        alt="{{.Artist.Name}}">
     <div class="detail-info">
-        <h2>{{.Name}}</h2>
+        <h2>{{.Artist.Name}}</h2>
         <div class="detail-meta">
-            <span>{{len .Albums}} albums</span>
-            <span>{{len .TopTracks}} top tracks</span>
+            <span>{{len .Artist.Albums}} albums</span>
+            <span>{{len .Artist.TopTracks}} top tracks</span>
         </div>
-        <button class="btn btn-primary" hx-post="/htmx/download/artist/{{.ID}}" hx-swap="none" style="margin-top: 16px;">Download Top Tracks</button>
+        <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)" style="margin-top: 16px;">Download Top Tracks</button>
     </div>
 </div>
 
 <h2>Top Tracks</h2>
 <div class="track-list">
-    {{range .TopTracks}}
+    {{range .Artist.TopTracks}}
     {{template "track_card.html" .}}
     {{end}}
 </div>
 
 <h2>Albums</h2>
 <div class="grid">
-    {{range .Albums}}
+    {{range .Artist.Albums}}
     {{template "album_card.html" .}}
     {{end}}
 </div>

@@ -150,3 +150,36 @@ func (db *DB) ClearFinishedJobs() error {
 	_, err := db.Exec(query)
 	return err
 }
+
+type JobStats struct {
+	Total     int
+	Completed int
+	Failed    int
+	Cancelled int
+}
+
+func (db *DB) GetJobStats() (*JobStats, error) {
+	stats := &JobStats{}
+
+	err := db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status IN ('completed', 'failed', 'cancelled')`).Scan(&stats.Total)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status = 'completed'`).Scan(&stats.Completed)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status = 'failed'`).Scan(&stats.Failed)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status = 'cancelled'`).Scan(&stats.Cancelled)
+	if err != nil {
+		return nil, err
+	}
+
+	return stats, nil
+}

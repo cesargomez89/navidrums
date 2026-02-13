@@ -1,4 +1,12 @@
 {{define "content"}}
+{{if .Stats}}
+<div style="display: flex; gap: 16px; margin-bottom: 16px; padding: 12px; background: var(--bg-dim); border-radius: 8px;">
+    <div><strong>Total:</strong> {{.Stats.Total}}</div>
+    <div><span class="job-status status-completed">Completed: {{.Stats.Completed}}</span></div>
+    <div><span class="job-status status-failed">Failed: {{.Stats.Failed}}</span></div>
+    <div><span class="job-status status-cancelled">Cancelled: {{.Stats.Cancelled}}</span></div>
+</div>
+{{end}}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
     <h1 style="margin: 0;">Download History</h1>
     {{if .Jobs}}
@@ -24,6 +32,13 @@
         <div>
             <span class="job-status status-{{.Status}}">{{.Status}}</span>
             {{if .Error}}<div style="color: #ef4444; font-size: 0.75rem;">{{.Error}}</div>{{end}}
+            {{if or (eq .Status "failed") (eq .Status "cancelled")}}
+            <button hx-post="/htmx/retry/{{.ID}}" 
+                    hx-target="closest .track" 
+                    hx-swap="outerHTML"
+                    hx-on::after-request="if(event.detail.successful) window.location.href='/queue'"
+                    class="btn btn-outline btn-sm" style="margin-top: 8px;">Retry</button>
+            {{end}}
             <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">{{.UpdatedAt.Format "Jan 02, 15:04"}}</div>
         </div>
     </div>

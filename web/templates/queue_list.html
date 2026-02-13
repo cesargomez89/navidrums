@@ -12,6 +12,9 @@
         {{if or (eq .Status "queued") (eq .Status "resolving_tracks") (eq .Status "downloading")}}
         <button hx-post="/htmx/cancel/{{.ID}}" hx-target="#queue-list" hx-swap="innerHTML" class="btn btn-outline btn-sm" style="margin-top: 8px;">Cancel</button>
         {{end}}
+        {{if or (eq .Status "failed") (eq .Status "cancelled")}}
+        <button hx-post="/htmx/retry/{{.ID}}" hx-target="#queue-list" hx-swap="innerHTML" class="btn btn-outline btn-sm" style="margin-top: 8px;">Retry</button>
+        {{end}}
     </div>
 </div>
 {{end}}

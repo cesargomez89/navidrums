@@ -1,18 +1,18 @@
 {{define "content"}}
 <div class="detail">
-    <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}" alt="{{.Title}}">
+    <img src="{{if .Playlist.ImageURL}}{{.Playlist.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}" alt="{{.Playlist.Title}}">
     <div class="detail-info">
-        <h2>{{.Title}}</h2>
+        <h2>{{.Playlist.Title}}</h2>
         <div class="detail-meta">
-            {{if .Description}}<span>{{.Description}}</span>{{end}}
-            <span>[ {{len .Tracks}} tracks ]</span>
+            {{if .Playlist.Description}}<span>{{.Playlist.Description}}</span>{{end}}
+            <span>[ {{len .Playlist.Tracks}} tracks ]</span>
         </div>
-        <button class="btn btn-primary" hx-post="/htmx/download/playlist/{{.ID}}" hx-swap="none" style="margin-top: 16px;">Download Full Playlist</button>
+        <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)" style="margin-top: 16px;">Download Full Playlist</button>
     </div>
 </div>
 
 <div class="track-list">
-    {{range .Tracks}}
+    {{range .Playlist.Tracks}}
     {{template "track_card.html" .}}
     {{end}}
 </div>

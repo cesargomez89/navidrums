@@ -4,5 +4,5 @@
         <div class="track-title">{{.Title}}</div>
         <div class="track-artist">{{.Artist}}</div>
     </div>
-    <button class="btn btn-primary btn-sm" hx-post="/htmx/download/track/{{.ID}}" hx-swap="none" onclick="handleDownload(this)">Download</button>
+    <button class="btn btn-primary btn-sm" onclick="queueDownload('track', '{{.ID}}', this)">Download</button>
 </div>

@@ -78,7 +78,6 @@ func (w *Worker) Start() {
 		w.Logger.Error("Failed to reset stuck jobs", "error", err)
 	}
 
-	// Start polling loop
 	w.wg.Add(1)
 	go w.processJobs()
 }
@@ -228,6 +227,12 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		artist, err := w.Provider.GetArtist(ctx, job.SourceID)
 		if err == nil {
 			tracks = artist.TopTracks
+			// Generate playlist file for top tracks
+			if len(tracks) > 0 {
+				if err := w.playlistGenerator.GenerateFromTracks(artist.Name, tracks); err != nil {
+					logger.Error("Failed to generate playlist file", "error", err)
+				}
+			}
 		}
 	}
 

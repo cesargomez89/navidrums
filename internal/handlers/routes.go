@@ -116,9 +116,13 @@ func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	stats, _ := h.JobService.Repo.GetJobStats()
+
 	h.RenderPage(w, "history.html", map[string]interface{}{
 		"ActivePage": "history",
 		"Jobs":       jobs,
+		"Stats":      stats,
 	})
 }
 
@@ -131,6 +135,18 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := h.JobService.CancelJob(id); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// Return updated queue
+	jobs, _ := h.JobService.ListActiveJobs()
+	h.RenderFragment(w, "queue_list.html", jobs)
+}
+
+func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.JobService.RetryJob(id); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
