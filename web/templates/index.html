@@ -11,7 +11,7 @@
             <option value="artist">Artist</option>
             <option value="playlist">Playlist</option>
         </select>
-        <button hx-get="/htmx/search" hx-target="#results" hx-include="[name='q'], [name='type']">Search</button>
+        <button class="btn-lg" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q'], [name='type']">Search</button>
     </form>
 </div>
 <div id="results"></div>

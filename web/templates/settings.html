@@ -13,7 +13,7 @@
     <form class="provider-form" onsubmit="addProvider(event)">
         <input type="text" id="provider-name" placeholder="Name" required>
         <input type="url" id="provider-url" placeholder="URL (https://api.example.com)" required>
-        <button type="submit" class="btn-primary">Add</button>
+        <button type="submit" class="btn-lg btn-primary">+</button>
     </form>
 </div>
 
@@ -47,9 +47,9 @@ function loadProviders() {
                     </div>
                     <div class="provider-actions">
                         ${p.url === data.active 
-                            ? '<span class="badge-success">Active</span>' 
-                            : `<button class="btn-sm" onclick="setProvider('${p.url}')">Select</button>`}
-                        ${p.isDefault ? '' : `<button class="btn-sm btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
+                            ? '<button class="btn btn-success" disabled>Active</button>' 
+                            : `<button onclick="setProvider('${p.url}')">Select</button>`}
+                        ${p.isDefault ? '' : `<button class="btn btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
                     </div>
                 `;
                 container.appendChild(div);

@@ -11,10 +11,13 @@
 
 <body>
     <nav>
-        <a href="/">Search</a>
-        <a href="/queue">Queue</a>
-        <a href="/history">History</a>
-        <a href="/settings">Settings</a>
+        <a class="nav-logo" href="/">🎵 Navidrums</a>
+        <div class="nav-links">
+            <a href="/" class="active">Search</a>
+            <a href="/queue">Queue</a>
+            <a href="/history">History</a>
+            <a href="/settings">Settings</a>
+        </div>
     </nav>
     <main>
         {{block "content" .}}{{end}}
