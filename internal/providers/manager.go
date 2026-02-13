@@ -73,6 +73,10 @@ func (m *ProviderManager) GetStream(ctx context.Context, trackID string, quality
 	return m.GetProvider().GetStream(ctx, trackID, quality)
 }
 
+func (m *ProviderManager) GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error) {
+	return m.GetProvider().GetSimilarAlbums(ctx, id)
+}
+
 type CustomProvider struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`

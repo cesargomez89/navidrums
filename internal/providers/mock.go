@@ -73,3 +73,16 @@ func (p *MockProvider) GetStream(ctx context.Context, trackID string, quality st
 	// Return a dummy stream
 	return io.NopCloser(strings.NewReader("dummy audio content")), "audio/flac", nil
 }
+
+func (p *MockProvider) GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error) {
+	return []models.Album{
+		{ID: "101", Title: "Similar Mock Album 1", Artist: "Mock Artist"},
+		{ID: "102", Title: "Similar Mock Album 2", Artist: "Mock Artist"},
+		{ID: "103", Title: "Similar Mock Album 3", Artist: "Mock Artist"},
+		{ID: "104", Title: "Similar Mock Album 4", Artist: "Mock Artist"},
+		{ID: "105", Title: "Similar Mock Album 5", Artist: "Mock Artist"},
+		{ID: "106", Title: "Similar Mock Album 6", Artist: "Mock Artist"},
+		{ID: "107", Title: "Similar Mock Album 7", Artist: "Mock Artist"},
+		{ID: "108", Title: "Similar Mock Album 8", Artist: "Mock Artist"},
+	}, nil
+}

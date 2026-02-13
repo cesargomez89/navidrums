@@ -14,4 +14,5 @@ type Provider interface {
 	GetPlaylist(ctx context.Context, id string) (*models.Playlist, error)
 	GetTrack(ctx context.Context, id string) (*models.Track, error)
 	GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) // Returns stream, mimeType, error
+	GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error)
 }

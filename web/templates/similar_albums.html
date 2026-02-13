@@ -1,0 +1,20 @@
+{{define "similar_albums.html"}}
+<div class="similar-albums">
+    <h3>Similar Albums</h3>
+    {{if .}}
+    <div class="grid">
+        {{range .}}
+        <div class="card">
+            <a href="/album/{{.ID}}">
+                <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/300?text=No+Cover{{end}}" alt="{{.Title}}" loading="lazy">
+            </a>
+            <div class="card-title"><a href="/album/{{.ID}}">{{.Title}}</a></div>
+            <div class="card-sub">{{.Artist}}</div>
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <p>No similar albums found.</p>
+    {{end}}
+</div>
+{{end}}

@@ -476,6 +476,42 @@ func (p *HifiProvider) handleSegmentedDash(ctx context.Context, manifest string)
 	}, "audio/mp4", nil
 }
 
+func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error) {
+	u := fmt.Sprintf("%s/album/similar/?id=%s&limit=8", p.BaseURL, id)
+
+	var resp struct {
+		Albums []struct {
+			ID      json.Number `json:"id"`
+			Title   string      `json:"title"`
+			Artists []struct {
+				Name string `json:"name"`
+			} `json:"artists"`
+			Cover string `json:"cover"`
+		} `json:"albums"`
+	}
+
+	if err := p.get(ctx, u, &resp); err != nil {
+		return nil, err
+	}
+
+	var albums []models.Album
+	for _, item := range resp.Albums {
+		artistName := ""
+		if len(item.Artists) > 0 {
+			artistName = item.Artists[0].Name
+		}
+
+		albums = append(albums, models.Album{
+			ID:          formatID(item.ID),
+			Title:       item.Title,
+			Artist:      artistName,
+			AlbumArtURL: p.ensureAbsoluteURL(item.Cover, "640x640"),
+		})
+	}
+
+	return albums, nil
+}
+
 func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) error {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

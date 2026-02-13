@@ -213,3 +213,14 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 
 	w.Write([]byte(`{"success":true}`))
 }
+
+func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	albums, err := h.Provider.GetSimilarAlbums(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.RenderFragment(w, "similar_albums.html", albums)
+}

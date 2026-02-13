@@ -10,8 +10,11 @@
             {{if .TotalTracks}}<span>[ {{.TotalTracks}} tracks ]</span>{{end}}
         </div>
         <button class="btn btn-primary" hx-post="/htmx/download/album/{{.ID}}" hx-swap="none" style="margin-top: 16px;">Download Full Album</button>
+        <button class="btn btn-outline" hx-get="/htmx/album/{{.ID}}/similar" hx-target="#similar-albums-container" hx-swap="innerHTML" style="margin-top: 8px;">Similar Albums</button>
     </div>
 </div>
+
+<div id="similar-albums-container" style="margin-bottom: 24px;"></div>
 
 <div class="track-list">
     {{range .Tracks}}
