@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/subtle"
 	"log"
 	"net/http"
 	"os"
@@ -67,6 +68,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	// Basic Auth Middleware
+	if cfg.Password != "" {
+		r.Use(basicAuthMiddleware(cfg.Username, cfg.Password))
+	}
+
 	// Serve Static Files from embedded filesystem
 	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := "static" + r.URL.Path[len("/static"):]
@@ -123,4 +129,18 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+}
+
+func basicAuthMiddleware(username, password string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, pass, ok := r.BasicAuth()
+			if !ok || subtle.ConstantTimeCompare([]byte(user), []byte(username)) != 1 || subtle.ConstantTimeCompare([]byte(pass), []byte(password)) != 1 {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Navidrums"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }

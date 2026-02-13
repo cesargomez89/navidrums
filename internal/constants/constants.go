@@ -14,6 +14,7 @@ const (
 	DefaultHTTPTimeout  = 5 * time.Minute
 	DefaultRetryCount   = 3
 	DefaultRetryBase    = 1 * time.Second
+	DefaultUsername     = "navidrums"
 )
 
 // Quality levels

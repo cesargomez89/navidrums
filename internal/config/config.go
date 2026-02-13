@@ -20,6 +20,8 @@ type Config struct {
 	Quality      string
 	LogLevel     string
 	LogFormat    string
+	Username     string
+	Password     string
 }
 
 // Load loads configuration from environment variables with defaults
@@ -35,6 +37,8 @@ func Load() *Config {
 		Quality:      getEnv("QUALITY", constants.DefaultQuality),
 		LogLevel:     getEnv("LOG_LEVEL", "info"),
 		LogFormat:    getEnv("LOG_FORMAT", "text"),
+		Username:     getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
+		Password:     getEnv("NAVIDRUMS_PASSWORD", ""),
 	}
 }
 
@@ -102,6 +106,16 @@ func (c *Config) Validate() error {
 	}
 	if !validLogFormats[c.LogFormat] {
 		errors = append(errors, fmt.Sprintf("LOG_FORMAT must be one of: text, json, got: %s", c.LogFormat))
+	}
+
+	// Validate Username
+	if c.Username == "" {
+		errors = append(errors, "USERNAME cannot be empty")
+	}
+
+	// Validate Password
+	if c.Password == "" {
+		errors = append(errors, "PASSWORD cannot be empty")
 	}
 
 	if len(errors) > 0 {

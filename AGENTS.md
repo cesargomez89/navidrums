@@ -193,6 +193,8 @@ Override via `PORT` environment variable.
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | Hifi API base URL |
 | `QUALITY` | `LOSSLESS` | Default download quality |
 | `USE_MOCK` | `false` | Use mock provider for testing |
+| `NAVIDRUMS_USERNAME` | `navidrums` | Basic auth username |
+| `NAVIDRUMS_PASSWORD` | (required) | Basic auth password |
 
 ### Architecture Notes
 - Uses **HTMX** for dynamic content updates without full page reloads
