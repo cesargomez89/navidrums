@@ -1,9 +1,20 @@
 {{define "content"}}
-<h1>Download History</h1>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h1 style="margin: 0;">Download History</h1>
+    {{if .Jobs}}
+    <button class="btn btn-danger btn-sm"
+            hx-post="/htmx/history/clear"
+            hx-confirm="Are you sure you want to clear all download history? This cannot be undone."
+            hx-target="main"
+            hx-swap="innerHTML">
+        Clear All History
+    </button>
+    {{end}}
+</div>
 
-{{if .}}
+{{if .Jobs}}
 <div class="track-list">
-    {{range .}}
+    {{range .Jobs}}
     <div class="track">
         *
         <div>

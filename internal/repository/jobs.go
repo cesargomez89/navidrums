@@ -144,3 +144,9 @@ func (db *DB) ResetStuckJobs() error {
 	_, err := db.Exec(query, models.JobStatusQueued, time.Now())
 	return err
 }
+
+func (db *DB) ClearFinishedJobs() error {
+	query := `DELETE FROM jobs WHERE status IN ('completed', 'failed', 'cancelled')`
+	_, err := db.Exec(query)
+	return err
+}

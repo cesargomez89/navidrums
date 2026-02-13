@@ -12,7 +12,9 @@ import (
 
 func (h *Handler) SearchPage(w http.ResponseWriter, r *http.Request) {
 	// Root page
-	h.RenderPage(w, "index.html", nil)
+	h.RenderPage(w, "index.html", map[string]interface{}{
+		"ActivePage": "search",
+	})
 }
 
 func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +48,11 @@ func (h *Handler) ArtistPage(w http.ResponseWriter, r *http.Request) {
 	// Also get Top Tracks if possible?
 	// or separate call.
 
-	h.RenderPage(w, "artist.html", artist)
+	data := map[string]interface{}{
+		"ActivePage": "search",
+		"Artist":     artist,
+	}
+	h.RenderPage(w, "artist.html", data)
 }
 
 func (h *Handler) AlbumPage(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +62,11 @@ func (h *Handler) AlbumPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	h.RenderPage(w, "album.html", album)
+	data := map[string]interface{}{
+		"ActivePage": "search",
+		"Album":      album,
+	}
+	h.RenderPage(w, "album.html", data)
 }
 
 func (h *Handler) PlaylistPage(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +76,11 @@ func (h *Handler) PlaylistPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	h.RenderPage(w, "playlist.html", pl)
+	data := map[string]interface{}{
+		"ActivePage": "search",
+		"Playlist":   pl,
+	}
+	h.RenderPage(w, "playlist.html", data)
 }
 
 func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +99,10 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
 	jobs, _ := h.JobService.Repo.ListActiveJobs() // Use db directly for simplicity
-	h.RenderPage(w, "queue.html", jobs)
+	h.RenderPage(w, "queue.html", map[string]interface{}{
+		"ActivePage": "queue",
+		"Jobs":       jobs,
+	})
 }
 
 func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
@@ -99,11 +116,16 @@ func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	h.RenderPage(w, "history.html", jobs)
+	h.RenderPage(w, "history.html", map[string]interface{}{
+		"ActivePage": "history",
+		"Jobs":       jobs,
+	})
 }
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
-	h.RenderPage(w, "settings.html", nil)
+	h.RenderPage(w, "settings.html", map[string]interface{}{
+		"ActivePage": "settings",
+	})
 }
 
 func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
@@ -223,4 +245,13 @@ func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.RenderFragment(w, "similar_albums.html", albums)
+}
+
+func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.JobService.Repo.ClearFinishedJobs(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.RenderFragment(w, "history.html", nil)
 }
