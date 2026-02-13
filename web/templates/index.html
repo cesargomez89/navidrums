@@ -4,7 +4,7 @@
     <form onsubmit="return false;">
         <input type="text" name="q" placeholder="Search..." 
             hx-get="/htmx/search" hx-target="#results" hx-include="[name='type']"
-            hx-trigger="keyup[keyCode===13]">
+            hx-trigger="keyup[keyCode===13]" type="search" autocomplete="on">
         <select name="type" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q']">
             <option value="album">Album</option>
             <option value="track">Track</option>
