@@ -119,3 +119,46 @@ Requires `token.json` populated with Tidal credentials. Uses `auth.tidal.com` fo
 ## Design Notes
 - Uses `COUNTRY_CODE` (default `US`) for all requests.
 - Artist view uses a capped concurrency (6) for track aggregation when `skip_tracks=false`.
+
+## JSON Examples
+See the `api-examples/hifi-api/` directory for example responses from all endpoints:
+
+### Search Endpoints
+| Endpoint | Example File |
+|----------|--------------|
+| `GET /search/?s={query}` | `search-tracks.json` |
+| `GET /search/?a={query}` | `search-artists.json` |
+| `GET /search/?al={query}` | `search-albums.json` |
+| `GET /search/` (no params) | `search-error.json` |
+
+### Track Endpoints
+| Endpoint | Example File |
+|----------|--------------|
+| `GET /info/?id={id}` | `track-info.json` |
+| `GET /track/?id={id}&quality={quality}` | `track-manifest.json` |
+| `GET /recommendations/?id={id}` | `track-recommendations.json` |
+| `GET /lyrics/?id={id}` | `track-lyrics.json` |
+
+### Artist Endpoints
+| Endpoint | Example File |
+|----------|--------------|
+| `GET /artist/?id={id}` | `artist-info.json` |
+| `GET /artist/?f={id}` | `artist-albums-tracks.json` |
+| `GET /artist/similar/?id={id}` | `artist-similar.json` |
+
+### Album Endpoints
+| Endpoint | Example File |
+|----------|--------------|
+| `GET /album/?id={id}` | `album-info.json` |
+| `GET /album/similar/?id={id}` | `album-similar.json` |
+
+### Playlist & Mix Endpoints
+| Endpoint | Example File |
+|----------|--------------|
+| `GET /playlist/?id={id}` | `playlist-info.json` |
+| `GET /mix/?id={id}` | `mix-info.json` |
+
+### Images
+| Endpoint | Example File |
+|----------|--------------|
+| `GET /cover/?id={id}` | `cover-urls.json` |

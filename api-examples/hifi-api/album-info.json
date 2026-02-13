@@ -1,0 +1,1134 @@
+{
+    "version": "2.4",
+    "data": {
+        "id": 1404355,
+        "title": "Demon Days",
+        "duration": 3102,
+        "streamReady": true,
+        "payToStream": false,
+        "adSupportedStreamReady": true,
+        "djReady": true,
+        "stemReady": false,
+        "streamStartDate": "2014-04-11T00:00:00.000+0000",
+        "allowStreaming": true,
+        "premiumStreamingOnly": false,
+        "numberOfTracks": 15,
+        "numberOfVideos": 0,
+        "numberOfVolumes": 1,
+        "releaseDate": "2005-05-24",
+        "copyright": "\u00a9 2005 Parlophone Records Ltd. This label copy information is the subject of copyright protection. All rights reserved. (C) 2005 Parlophone Records Ltd",
+        "type": "ALBUM",
+        "version": null,
+        "url": "http://www.tidal.com/album/1404355",
+        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+        "vibrantColor": "#239cdc",
+        "videoCover": null,
+        "explicit": false,
+        "upc": "0724387383852",
+        "popularity": 80,
+        "audioQuality": "LOSSLESS",
+        "audioModes": [
+            "STEREO"
+        ],
+        "mediaMetadata": {
+            "tags": [
+                "LOSSLESS"
+            ]
+        },
+        "upload": false,
+        "artist": {
+            "id": 8853,
+            "name": "Gorillaz",
+            "handle": null,
+            "type": "MAIN",
+            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+        },
+        "artists": [
+            {
+                "id": 8853,
+                "name": "Gorillaz",
+                "handle": null,
+                "type": "MAIN",
+                "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+            }
+        ],
+        "items": [
+            {
+                "item": {
+                    "id": 1404356,
+                    "title": "Intro",
+                    "duration": 67,
+                    "replayGain": -8.32,
+                    "peak": 0.700317,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 1,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 63,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 135,
+                    "key": "F",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404356",
+                    "isrc": "GBAYE0500168",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001f45e9fd20c670cc3a6fc3767ff5"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404357,
+                    "title": "Last Living Souls",
+                    "duration": 195,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 2,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 68,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 137,
+                    "key": "A",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404357",
+                    "isrc": "GBAYE0500169",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0016d600b312157a2b0aa34c21f842"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404358,
+                    "title": "Kids with Guns",
+                    "duration": 226,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 3,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 73,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 106,
+                    "key": "E",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404358",
+                    "isrc": "GBAYE0500170",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 10925,
+                            "name": "Neneh Cherry",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "bddf2342-d560-4295-9a6e-a0334e2e6585"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001c7a3cfcb86da38d1d1955b7f968"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404359,
+                    "title": "O Green World",
+                    "duration": 275,
+                    "replayGain": -8.32,
+                    "peak": 0.997375,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 4,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 69,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 123,
+                    "key": "D",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404359",
+                    "isrc": "GBAYE0500171",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001636091be6af7fc6ce91cc629024"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404360,
+                    "title": "Dirty Harry (feat. Bootie Brown)",
+                    "duration": 230,
+                    "replayGain": -8.32,
+                    "peak": 0.997375,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 5,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 77,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 96,
+                    "key": "BB",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404360",
+                    "isrc": "GBAYE0402431",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 4432833,
+                            "name": "Bootie Brown",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "fa767d92-89d1-4682-bdd8-2e666fadad6a"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001c3873109a3251277e4597223a08"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404361,
+                    "title": "Feel Good Inc.",
+                    "duration": 223,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 6,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 90,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 138,
+                    "key": "G",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404361",
+                    "isrc": "GBAYE0500172",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 11405,
+                            "name": "De La Soul",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "6596ca2d-14ee-48aa-86f6-40384a32097d"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "00104ad81bff7104ac9ba07eb8be9f"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404362,
+                    "title": "El Ma\u00f1ana",
+                    "duration": 236,
+                    "replayGain": -8.32,
+                    "peak": 0.997253,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 7,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 71,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 132,
+                    "key": "A",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404362",
+                    "isrc": "GBAYE0500173",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0010b3c4d868d74e9472dcda1a0da7"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404363,
+                    "title": "Every Planet We Reach Is Dead",
+                    "duration": 295,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 8,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 68,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 88,
+                    "key": "E",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404363",
+                    "isrc": "GBAYE0500174",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0018c6f36614264ed7d32ca222f68d"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404364,
+                    "title": "November Has Come",
+                    "duration": 165,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 9,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 74,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 84,
+                    "key": "A",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404364",
+                    "isrc": "GBAYE0500175",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 3503597,
+                            "name": "MF DOOM",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "998a3ecf-ba85-4c2e-b172-5ae6700e09ef"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001ecabc41760c251b16f31c7ba332"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404365,
+                    "title": "All Alone",
+                    "duration": 213,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 10,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 67,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 148,
+                    "key": "G",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404365",
+                    "isrc": "GBAYE0500176",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 3669345,
+                            "name": "Martina Topley-Bird",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "97ff694a-1f21-456b-b062-5458d970648a"
+                        },
+                        {
+                            "id": 3575227,
+                            "name": "Roots Manuva",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "4edc51d0-a8d4-4e4b-984b-0ea10eac7ce1"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001fc7a9fbc330d2ccae41232decd7"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404366,
+                    "title": "White Light",
+                    "duration": 133,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 11,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 66,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 154,
+                    "key": "E",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404366",
+                    "isrc": "GBAYE0500177",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0012dbb7381f5feb2ac5d8a7afdb48"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404367,
+                    "title": "DARE (feat. Shaun Ryder & Roses Gabor)",
+                    "duration": 245,
+                    "replayGain": -8.32,
+                    "peak": 0.997314,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 12,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 82,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 120,
+                    "key": "G",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404367",
+                    "isrc": "GBAYE0500178",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 4574916,
+                            "name": "Shaun Ryder",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "0a112f4e-0703-49b4-9853-f5434434e011"
+                        },
+                        {
+                            "id": 3669936,
+                            "name": "Roses Gabor",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "a95d8184-3cf6-452d-8d77-ddad6d9f31b9"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "00112a88508acfee6bdc1f9efb3823"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404368,
+                    "title": "Fire Coming out of the Monkey's Head",
+                    "duration": 199,
+                    "replayGain": -8.32,
+                    "peak": 0.997314,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 13,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 67,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 100,
+                    "key": null,
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404368",
+                    "isrc": "GBAYE0500179",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001450956c4bff5aac3cff644f80c8"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404369,
+                    "title": "Don't Get Lost in Heaven",
+                    "duration": 132,
+                    "replayGain": -8.32,
+                    "peak": 0.99707,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 14,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 65,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 125,
+                    "key": "D",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404369",
+                    "isrc": "GBAYE0500180",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "00173ed51593c68ce544419dfe5f5e"
+                    }
+                },
+                "type": "track"
+            },
+            {
+                "item": {
+                    "id": 1404370,
+                    "title": "Demon Days",
+                    "duration": 268,
+                    "replayGain": -8.32,
+                    "peak": 0.997345,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 15,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 66,
+                    "copyright": "\u2117 2005 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 125,
+                    "key": "D",
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/1404370",
+                    "isrc": "GBAYE0500181",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        }
+                    ],
+                    "album": {
+                        "id": 1404355,
+                        "title": "Demon Days",
+                        "cover": "c1096d7a-e3f3-4d0d-a90f-0426f985f462",
+                        "vibrantColor": "#239cdc",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001c7246a450bb6dc66c72fba8a3c0"
+                    }
+                },
+                "type": "track"
+            }
+        ]
+    }
+}

@@ -1,0 +1,419 @@
+{
+    "version": "2.4",
+    "artists": [
+        {
+            "name": "Arctic Monkeys",
+            "popularity": 0.8714047589923167,
+            "externalLinks": [
+                {
+                    "href": "https://instagram.com/arcticmonkeys",
+                    "meta": {
+                        "type": "INSTAGRAM"
+                    }
+                },
+                {
+                    "href": "https://arcticmonkeys.com",
+                    "meta": {
+                        "type": "OFFICIAL_HOMEPAGE"
+                    }
+                },
+                {
+                    "href": "https://twitter.com/ArcticMonkeys",
+                    "meta": {
+                        "type": "TWITTER"
+                    }
+                },
+                {
+                    "href": "https://tidal.com/browse/artist/3520710",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3520710,
+            "picture": "c63cfc4e-e779-4c21-afd1-381cde8f43c2",
+            "url": "http://www.tidal.com/artist/3520710",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Muse",
+            "popularity": 0.8431242950613788,
+            "externalLinks": [
+                {
+                    "href": "https://www.muse.mu/",
+                    "meta": {
+                        "type": "OFFICIAL_HOMEPAGE"
+                    }
+                },
+                {
+                    "href": "https://tiktok.com/@muse",
+                    "meta": {
+                        "type": "TIKTOK"
+                    }
+                },
+                {
+                    "href": "https://tidal.com/browse/artist/16335",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 16335,
+            "picture": "ed593de9-adc7-44c5-a613-9208d385d0f5",
+            "url": "http://www.tidal.com/artist/16335",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Blur",
+            "popularity": 0.8381205797195435,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/10052",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 10052,
+            "picture": "1cd72bb9-0e4d-4902-975e-5c1672188603",
+            "url": "http://www.tidal.com/artist/10052",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "MGMT",
+            "popularity": 0.8320903962750933,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/3504370",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3504370,
+            "picture": "3cab46b4-9eef-44a8-b8e0-a2036c8f9a34",
+            "url": "http://www.tidal.com/artist/3504370",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Danger Mouse",
+            "popularity": 0.7658310230797992,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/4910005",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 4910005,
+            "picture": "a06cace8-e33a-4eb8-98cd-331e6b8daf98",
+            "url": "http://www.tidal.com/artist/4910005",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Radiohead",
+            "popularity": 0.9204140305519104,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/64518",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 64518,
+            "picture": "0968a9dd-9536-4bc2-84a2-ab65c8926bdc",
+            "url": "http://www.tidal.com/artist/64518",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "De La Soul",
+            "popularity": 0.8134510141762371,
+            "externalLinks": [
+                {
+                    "href": "https://facebook.com/wearedelasoul/",
+                    "meta": {
+                        "type": "FACEBOOK"
+                    }
+                },
+                {
+                    "href": "https://instagram.com/wearedelasoul/",
+                    "meta": {
+                        "type": "INSTAGRAM"
+                    }
+                },
+                {
+                    "href": "https://store.wearedelasoul.com/collections/music",
+                    "meta": {
+                        "type": "OFFICIAL_HOMEPAGE"
+                    }
+                },
+                {
+                    "href": "https://tiktok.com/@wearedelasoul",
+                    "meta": {
+                        "type": "TIKTOK"
+                    }
+                },
+                {
+                    "href": "https://tidal.com/browse/artist/11405",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 11405,
+            "picture": "6596ca2d-14ee-48aa-86f6-40384a32097d",
+            "url": "http://www.tidal.com/artist/11405",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Metronomy",
+            "popularity": 0.7697625160217285,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/3539944",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3539944,
+            "picture": "9e34daf5-9725-4690-80d6-4a80f4612a1e",
+            "url": "http://www.tidal.com/artist/3539944",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Glass Animals",
+            "popularity": 0.808926546247438,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/4611746",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 4611746,
+            "picture": "a1182f38-d209-4109-a656-f2d1d408275b",
+            "url": "http://www.tidal.com/artist/4611746",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Thom Yorke",
+            "popularity": 0.7666531801223755,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/3544256",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3544256,
+            "picture": "72b09015-4d22-498b-80b8-ede0d0930338",
+            "url": "http://www.tidal.com/artist/3544256",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "The Strokes",
+            "popularity": 0.8261607958051318,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/29037",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 29037,
+            "picture": "a4f4d92c-a78d-4a97-9b41-f16f3454dd2e",
+            "url": "http://www.tidal.com/artist/29037",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Miho Hatori",
+            "popularity": 0.5769298076629639,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/17850",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 17850,
+            "picture": "817516de-b56c-4a01-bb00-1acd39b7f59c",
+            "url": "http://www.tidal.com/artist/17850",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Tina Weymouth",
+            "popularity": 0.5181596875190735,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/6018369",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 6018369,
+            "picture": "338a6ac1-228d-4c3b-aa63-c0c97cae02ee",
+            "url": "http://www.tidal.com/artist/6018369",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "King Gizzard & The Lizard Wizard",
+            "popularity": 0.7873189680554668,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/5336235",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 5336235,
+            "picture": "66836ec7-9dc8-4a3a-b655-0eb363fac949",
+            "url": "http://www.tidal.com/artist/5336235",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "alt-J",
+            "popularity": 0.8024215698242188,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/4491197",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 4491197,
+            "picture": "5ca0a722-259d-4786-9025-877418726691",
+            "url": "http://www.tidal.com/artist/4491197",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Mini Mansions",
+            "popularity": 0.5497968196868896,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/3793489",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3793489,
+            "picture": "b2bccfeb-d93e-42e4-8eaf-6688a89741dd",
+            "url": "http://www.tidal.com/artist/3793489",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "The Good, The Bad and The Queen",
+            "popularity": 0.6016199588775635,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/9897",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 9897,
+            "picture": "8e2a27e7-81c0-4535-b2e8-e1d06d0281dd",
+            "url": "http://www.tidal.com/artist/9897",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Franz Ferdinand",
+            "popularity": 0.822743833065033,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/27439",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 27439,
+            "picture": "d36d89fb-48c7-4096-b50e-71e9d509a88e",
+            "url": "http://www.tidal.com/artist/27439",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "Tame Impala",
+            "popularity": 0.8562546125971858,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/3736815",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3736815,
+            "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9",
+            "url": "http://www.tidal.com/artist/3736815",
+            "relationType": "SIMILAR_ARTIST"
+        },
+        {
+            "name": "The Avalanches",
+            "popularity": 0.7492712140083313,
+            "externalLinks": [
+                {
+                    "href": "https://tidal.com/browse/artist/3566138",
+                    "meta": {
+                        "type": "TIDAL_SHARING"
+                    }
+                }
+            ],
+            "spotlighted": false,
+            "contributionsEnabled": false,
+            "id": 3566138,
+            "picture": "4b43212a-8ab8-48f4-ad56-3d630a96cfd9",
+            "url": "http://www.tidal.com/artist/3566138",
+            "relationType": "SIMILAR_ARTIST"
+        }
+    ]
+}

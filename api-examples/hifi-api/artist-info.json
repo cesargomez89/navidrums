@@ -1,0 +1,56 @@
+{
+    "version": "2.4",
+    "artist": {
+        "id": 8853,
+        "name": "Gorillaz",
+        "artistTypes": [
+            "ARTIST",
+            "CONTRIBUTOR"
+        ],
+        "url": "http://www.tidal.com/artist/8853",
+        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765",
+        "selectedAlbumCoverFallback": null,
+        "popularity": 80,
+        "artistRoles": [
+            {
+                "categoryId": -1,
+                "category": "Artist"
+            },
+            {
+                "categoryId": 1,
+                "category": "Producer"
+            },
+            {
+                "categoryId": 3,
+                "category": "Engineer"
+            },
+            {
+                "categoryId": 11,
+                "category": "Performer"
+            },
+            {
+                "categoryId": 2,
+                "category": "Songwriter"
+            },
+            {
+                "categoryId": 10,
+                "category": "Production team"
+            },
+            {
+                "categoryId": 99,
+                "category": "Misc"
+            }
+        ],
+        "mixes": {
+            "ARTIST_MIX": "00090e1ab6eb577126121c7675c8bd"
+        },
+        "handle": null,
+        "userId": null,
+        "spotlighted": false
+    },
+    "cover": {
+        "id": 8853,
+        "name": "Gorillaz",
+        "750": "https://resources.tidal.com/images/81e5ce93/c1dd/4ad3/b501/538047fa9765/750x750.jpg"
+    }
+}

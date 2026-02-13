@@ -1,0 +1,1461 @@
+{
+    "version": "2.4",
+    "data": {
+        "limit": 20,
+        "offset": 0,
+        "totalNumberOfItems": 26,
+        "items": [
+            {
+                "track": {
+                    "id": 68637707,
+                    "title": "19-2000",
+                    "duration": 208,
+                    "replayGain": -8.1,
+                    "peak": 0.766612,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2017-08-02T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 11,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 67,
+                    "copyright": "\u2117 2014 Parlophone Records Limited, a Warner Music Group company.",
+                    "bpm": 90,
+                    "key": "G",
+                    "keyScale": "MINOR",
+                    "url": "http://www.tidal.com/track/68637707",
+                    "isrc": "GBAYE1400474",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS",
+                            "HIRES_LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 17850,
+                            "name": "Miho Hatori",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "817516de-b56c-4a01-bb00-1acd39b7f59c"
+                        },
+                        {
+                            "id": 6018369,
+                            "name": "Tina Weymouth",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "338a6ac1-228d-4c3b-aa63-c0c97cae02ee"
+                        }
+                    ],
+                    "album": {
+                        "id": 68637696,
+                        "title": "Gorillaz",
+                        "cover": "083134fd-2269-429d-98ae-269403883385",
+                        "vibrantColor": "#d98079",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "00114ea1e5237f4587ecef18dece19"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 43419761,
+                    "title": "The Look",
+                    "duration": 278,
+                    "replayGain": -10.17,
+                    "peak": 1.0,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2011-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 4,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 76,
+                    "copyright": "Because Music",
+                    "bpm": 85,
+                    "key": null,
+                    "keyScale": null,
+                    "url": "http://www.tidal.com/track/43419761",
+                    "isrc": "GBMVH1100040",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO",
+                        "DOLBY_ATMOS"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS",
+                            "DOLBY_ATMOS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3539944,
+                        "name": "Metronomy",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "612d71ca-c788-4af9-9fa7-3f803035c352"
+                    },
+                    "artists": [
+                        {
+                            "id": 3539944,
+                            "name": "Metronomy",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "612d71ca-c788-4af9-9fa7-3f803035c352"
+                        }
+                    ],
+                    "album": {
+                        "id": 43419757,
+                        "title": "The English Riviera",
+                        "cover": "22fbc982-1815-42ff-95de-16910f8177e2",
+                        "vibrantColor": "#f5edd8",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001a2d462f27166487e34ea44212ed"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 34443711,
+                    "title": "Clint Eastwood",
+                    "duration": 341,
+                    "replayGain": -11.4,
+                    "peak": 0.890381,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 5,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 82,
+                    "copyright": "\u2117 2001 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 166,
+                    "key": "Eb",
+                    "keyScale": "MINOR",
+                    "url": "http://www.tidal.com/track/34443711",
+                    "isrc": "GBAYE0001408",
+                    "editable": false,
+                    "explicit": true,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 15299,
+                            "name": "Del Tha Funkee Homosapien",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "12a2319e-a4d2-4c43-b141-0b3f454b0626"
+                        }
+                    ],
+                    "album": {
+                        "id": 34443706,
+                        "title": "Gorillaz",
+                        "cover": "38dfd5d5-bad6-41f1-b8e4-389d9b1152f9",
+                        "vibrantColor": "#e0a7a2",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001597d5d0e9ee501b620f653760f8"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 47696795,
+                    "title": "The Less I Know The Better",
+                    "duration": 216,
+                    "replayGain": -9.94,
+                    "peak": 0.98172,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2015-07-17T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 7,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 87,
+                    "copyright": "\u2117 2015 Modular Recordings",
+                    "bpm": 117,
+                    "key": "E",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/47696795",
+                    "isrc": "AUUM71500303",
+                    "editable": false,
+                    "explicit": true,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3736815,
+                        "name": "Tame Impala",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9"
+                    },
+                    "artists": [
+                        {
+                            "id": 3736815,
+                            "name": "Tame Impala",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9"
+                        }
+                    ],
+                    "album": {
+                        "id": 47696788,
+                        "title": "Currents",
+                        "cover": "76fba1fe-8178-485d-8490-b0112729fac2",
+                        "vibrantColor": "#e46e9f",
+                        "videoCover": "5ea14b35-eff1-449a-9721-dc5c99f98e57"
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0016f3569689cdb05bf44644101e3a"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 3489554,
+                    "title": "Plastic Beach (feat. Mick Jones and Paul Simonon)",
+                    "duration": 227,
+                    "replayGain": -10.88,
+                    "peak": 0.999969,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2010-03-08T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 13,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 70,
+                    "copyright": "\u2117 2010 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 92,
+                    "key": "E",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/3489554",
+                    "isrc": "GBAYE1000012",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 4334891,
+                            "name": "Mick Jones",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "919ba91a-2d07-4ef5-9df8-64959c6f6c74"
+                        },
+                        {
+                            "id": 8097048,
+                            "name": "Paul Simonon",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "d6a28eff-ea37-4432-89b9-43ac113954b7"
+                        }
+                    ],
+                    "album": {
+                        "id": 3489541,
+                        "title": "Plastic Beach",
+                        "cover": "38b14a02-2d6f-4515-bb81-8aeb6f300b37",
+                        "vibrantColor": "#f2d39d",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001792e7ffba20c80877ab8d6d72b8"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 5866728,
+                    "title": "Stuck on the puzzle",
+                    "duration": 211,
+                    "replayGain": -7.81,
+                    "peak": 0.980682,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2011-03-14T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 5,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 69,
+                    "copyright": "Domino Recording Co Ltd",
+                    "bpm": 155,
+                    "key": "E",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/5866728",
+                    "isrc": "GBCEL1100045",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 22483726,
+                        "name": "Alex Turner",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    "artists": [
+                        {
+                            "id": 22483726,
+                            "name": "Alex Turner",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": null
+                        }
+                    ],
+                    "album": {
+                        "id": 5866723,
+                        "title": "Submarine - Original Songs From The Film By Alex Turner",
+                        "cover": "7491ed33-45b7-484d-a402-452227fe4aee",
+                        "vibrantColor": "#0c9fd7",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001a08d13f636b4ee207e3e0713f83"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 43419760,
+                    "title": "Everything Goes My Way",
+                    "duration": 210,
+                    "replayGain": -10.17,
+                    "peak": 1.0,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2011-04-11T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 3,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 64,
+                    "copyright": "Because Music",
+                    "bpm": 130,
+                    "key": "Bb",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/43419760",
+                    "isrc": "GBMVH1100030",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "DOLBY_ATMOS",
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS",
+                            "DOLBY_ATMOS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3539944,
+                        "name": "Metronomy",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "612d71ca-c788-4af9-9fa7-3f803035c352"
+                    },
+                    "artists": [
+                        {
+                            "id": 3539944,
+                            "name": "Metronomy",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "612d71ca-c788-4af9-9fa7-3f803035c352"
+                        }
+                    ],
+                    "album": {
+                        "id": 43419757,
+                        "title": "The English Riviera",
+                        "cover": "22fbc982-1815-42ff-95de-16910f8177e2",
+                        "vibrantColor": "#f5edd8",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0013930ed5546b9b98a70a53b90805"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 16009962,
+                    "title": "Good Song",
+                    "duration": 188,
+                    "replayGain": -10.49,
+                    "peak": 0.980682,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2012-07-30T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 4,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 58,
+                    "copyright": "\u2117 2003 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 166,
+                    "key": "F",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/16009962",
+                    "isrc": "GBAYE0202066",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 10052,
+                        "name": "Blur",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1cd72bb9-0e4d-4902-975e-5c1672188603"
+                    },
+                    "artists": [
+                        {
+                            "id": 10052,
+                            "name": "Blur",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "1cd72bb9-0e4d-4902-975e-5c1672188603"
+                        }
+                    ],
+                    "album": {
+                        "id": 16009958,
+                        "title": "Think Tank (Special Edition)",
+                        "cover": "96aa56bf-9a67-4803-973a-65aaab759a1e",
+                        "vibrantColor": "#d68c8d",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "00116704d701d2c0172af3175c2942"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 81532720,
+                    "title": "Let\u2019s Go",
+                    "duration": 211,
+                    "replayGain": -12.33,
+                    "peak": 0.97232,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2017-11-24T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 2,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 66,
+                    "copyright": "2012 Beam",
+                    "bpm": 90,
+                    "key": "G",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/81532720",
+                    "isrc": "FR3LA1100050",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3918337,
+                        "name": "Stuck in the Sound",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    "artists": [
+                        {
+                            "id": 3918337,
+                            "name": "Stuck in the Sound",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": null
+                        }
+                    ],
+                    "album": {
+                        "id": 81532718,
+                        "title": "Pursuit",
+                        "cover": "d95332f6-fe4c-4dbc-a0a9-3b35b8b6bd45",
+                        "vibrantColor": "#c561ef",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001139a9f6cbd0fa312f6bf92322f0"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 47696792,
+                    "title": "Yes I'm Changing",
+                    "duration": 271,
+                    "replayGain": -9.94,
+                    "peak": 0.98172,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2015-07-17T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 4,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 76,
+                    "copyright": "\u2117 2015 Modular Recordings",
+                    "bpm": 90,
+                    "key": "F",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/47696792",
+                    "isrc": "AUUM71500295",
+                    "editable": false,
+                    "explicit": true,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3736815,
+                        "name": "Tame Impala",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9"
+                    },
+                    "artists": [
+                        {
+                            "id": 3736815,
+                            "name": "Tame Impala",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9"
+                        }
+                    ],
+                    "album": {
+                        "id": 47696788,
+                        "title": "Currents",
+                        "cover": "76fba1fe-8178-485d-8490-b0112729fac2",
+                        "vibrantColor": "#e46e9f",
+                        "videoCover": "5ea14b35-eff1-449a-9721-dc5c99f98e57"
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0016e8f7d0eaf280f62493c84691c2"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 34837957,
+                    "title": "Come a Little Closer",
+                    "duration": 229,
+                    "replayGain": -13.22,
+                    "peak": 0.997406,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2013-10-08T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 2,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 82,
+                    "copyright": "(P) 2013 RCA Records, a division of Sony Music Entertainment",
+                    "bpm": 148,
+                    "key": "FSharp",
+                    "keyScale": "MINOR",
+                    "url": "http://www.tidal.com/track/34837957",
+                    "isrc": "USRC11301144",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3523389,
+                        "name": "Cage The Elephant",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "a20cba0c-abfe-4f21-9b48-d8288bd80509"
+                    },
+                    "artists": [
+                        {
+                            "id": 3523389,
+                            "name": "Cage The Elephant",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "a20cba0c-abfe-4f21-9b48-d8288bd80509"
+                        }
+                    ],
+                    "album": {
+                        "id": 34837955,
+                        "title": "Melophobia",
+                        "cover": "91974b5f-a728-42cd-8dd5-51bc9abfe5b0",
+                        "vibrantColor": "#da7367",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001785390c1ae8683b4b627ff13fe3"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 3489548,
+                    "title": "Empire Ants (feat. Little Dragon)",
+                    "duration": 284,
+                    "replayGain": -10.88,
+                    "peak": 0.977264,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2010-03-08T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 7,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 76,
+                    "copyright": "\u2117 2010 Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 99,
+                    "key": "C",
+                    "keyScale": "MINOR",
+                    "url": "http://www.tidal.com/track/3489548",
+                    "isrc": "GBAYE1000007",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 8853,
+                        "name": "Gorillaz",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                    },
+                    "artists": [
+                        {
+                            "id": 8853,
+                            "name": "Gorillaz",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+                        },
+                        {
+                            "id": 3519571,
+                            "name": "Little Dragon",
+                            "handle": null,
+                            "type": "FEATURED",
+                            "picture": "8258df60-c193-4869-b909-bf0a75d72b33"
+                        }
+                    ],
+                    "album": {
+                        "id": 3489541,
+                        "title": "Plastic Beach",
+                        "cover": "38b14a02-2d6f-4515-bb81-8aeb6f300b37",
+                        "vibrantColor": "#f2d39d",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001d2e8b7314785966e504b522f45b"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 5866729,
+                    "title": "Piledriver waltz",
+                    "duration": 204,
+                    "replayGain": -7.81,
+                    "peak": 0.927001,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2011-03-14T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 6,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 61,
+                    "copyright": "Domino Recording Co Ltd",
+                    "bpm": 106,
+                    "key": "CSharp",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/5866729",
+                    "isrc": "GBCEL1100046",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 22483726,
+                        "name": "Alex Turner",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    "artists": [
+                        {
+                            "id": 22483726,
+                            "name": "Alex Turner",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": null
+                        }
+                    ],
+                    "album": {
+                        "id": 5866723,
+                        "title": "Submarine - Original Songs From The Film By Alex Turner",
+                        "cover": "7491ed33-45b7-484d-a402-452227fe4aee",
+                        "vibrantColor": "#0c9fd7",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "00181d70bd3331b959268d87cf07f3"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 390710716,
+                    "title": "What You Know",
+                    "duration": 191,
+                    "replayGain": -11.05,
+                    "peak": 0.999969,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2010-04-27T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 8,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 73,
+                    "copyright": "\u00a9 2010 Glassnote Entertainment Group LLC under license from Two Door Cinema Club",
+                    "bpm": 139,
+                    "key": "FSharp",
+                    "keyScale": "MINOR",
+                    "url": "http://www.tidal.com/track/390710716",
+                    "isrc": "FRU700900116",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3642290,
+                        "name": "Two Door Cinema Club",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "d676a30e-9fc5-4c5d-84da-340c0bac648e"
+                    },
+                    "artists": [
+                        {
+                            "id": 3642290,
+                            "name": "Two Door Cinema Club",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "d676a30e-9fc5-4c5d-84da-340c0bac648e"
+                        }
+                    ],
+                    "album": {
+                        "id": 390710708,
+                        "title": "Tourist History",
+                        "cover": "4ce4041f-ee50-490d-9b66-7689ac3f404d",
+                        "vibrantColor": "#354175",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0019cbc2d0eba597d95fd0d4627e33"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 44819052,
+                    "title": "Ghost Ship",
+                    "duration": 299,
+                    "replayGain": -10.46,
+                    "peak": 0.988617,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2015-04-28T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 9,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 66,
+                    "copyright": "\u2117 2015 The copyright in this sound recording is owned by Blur (2015), under exclusive licence to Parlophone Records Ltd, a Warner Music Group Company",
+                    "bpm": 140,
+                    "key": "D",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/44819052",
+                    "isrc": "GBAYE1500264",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 10052,
+                        "name": "Blur",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1cd72bb9-0e4d-4902-975e-5c1672188603"
+                    },
+                    "artists": [
+                        {
+                            "id": 10052,
+                            "name": "Blur",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "1cd72bb9-0e4d-4902-975e-5c1672188603"
+                        }
+                    ],
+                    "album": {
+                        "id": 44819016,
+                        "title": "The Magic Whip",
+                        "cover": "16e5f298-4278-4843-b29c-7330d634e4c4",
+                        "vibrantColor": "#e6d099",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001ecd0f032f5e7f19d610b6614540"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 43420016,
+                    "title": "Reservoir",
+                    "duration": 195,
+                    "replayGain": -8.27,
+                    "peak": 0.901571,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-03-10T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 9,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 58,
+                    "copyright": "Because Music",
+                    "bpm": 148,
+                    "key": "C",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/43420016",
+                    "isrc": "GBMVH1300300",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "DOLBY_ATMOS",
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS",
+                            "HIRES_LOSSLESS",
+                            "DOLBY_ATMOS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3539944,
+                        "name": "Metronomy",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "9e34daf5-9725-4690-80d6-4a80f4612a1e"
+                    },
+                    "artists": [
+                        {
+                            "id": 3539944,
+                            "name": "Metronomy",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "9e34daf5-9725-4690-80d6-4a80f4612a1e"
+                        }
+                    ],
+                    "album": {
+                        "id": 43420007,
+                        "title": "Love Letters",
+                        "cover": "96145a3b-f16a-4ba4-8e39-38da20e3c425",
+                        "vibrantColor": "#ef82a3",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001dfa14161421670d641dbbbf827e"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 136685779,
+                    "title": "The Adults Are Talking",
+                    "duration": 309,
+                    "replayGain": -11.47,
+                    "peak": 1.0,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2020-04-10T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 1,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 81,
+                    "copyright": "(P) 2020 RCA Records, a division of Sony Music Entertainment",
+                    "bpm": 165,
+                    "key": "F",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/136685779",
+                    "isrc": "USRC11902726",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS",
+                            "HIRES_LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 29037,
+                        "name": "The Strokes",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "a4f4d92c-a78d-4a97-9b41-f16f3454dd2e"
+                    },
+                    "artists": [
+                        {
+                            "id": 29037,
+                            "name": "The Strokes",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "a4f4d92c-a78d-4a97-9b41-f16f3454dd2e"
+                        }
+                    ],
+                    "album": {
+                        "id": 136685774,
+                        "title": "The New Abnormal",
+                        "cover": "14ab6f64-22c8-420e-9ed5-577f119574d7",
+                        "vibrantColor": "#ceaf5b",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0017e791f1206db199e8a8eda16eeb"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 384684138,
+                    "title": "Kangaroo Court",
+                    "duration": 223,
+                    "replayGain": -10.7,
+                    "peak": 1.0,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2014-05-07T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 3,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 61,
+                    "copyright": "2014 Lazy Hooks, LLC",
+                    "bpm": 100,
+                    "key": "Ab",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/384684138",
+                    "isrc": "USCA21300187",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 4677757,
+                        "name": "Capital Cities",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "52785172-9e97-45a2-b0c5-1d6cfedf9d57"
+                    },
+                    "artists": [
+                        {
+                            "id": 4677757,
+                            "name": "Capital Cities",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "52785172-9e97-45a2-b0c5-1d6cfedf9d57"
+                        }
+                    ],
+                    "album": {
+                        "id": 384684135,
+                        "title": "In A Tidal Wave of Mystery (Deluxe Edition)",
+                        "cover": "49efd14a-6132-4602-88f3-81fddf97a10f",
+                        "vibrantColor": "#e9c950",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0014c1306eb26cbbb12065fc616635"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 28098322,
+                    "title": "Feels Like We Only Go Backwards",
+                    "duration": 193,
+                    "replayGain": -12.45,
+                    "peak": 0.965424,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2013-06-20T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 7,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 81,
+                    "copyright": "\u2117 2012 Modular Recordings",
+                    "bpm": 150,
+                    "key": "F",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/28098322",
+                    "isrc": "AUUM71200493",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3736815,
+                        "name": "Tame Impala",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9"
+                    },
+                    "artists": [
+                        {
+                            "id": 3736815,
+                            "name": "Tame Impala",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "d431b889-6873-4d9f-bc05-54d6c3339fa9"
+                        }
+                    ],
+                    "album": {
+                        "id": 28098315,
+                        "title": "Lonerism",
+                        "cover": "a883c43a-f8ae-4dfc-a8ef-4d3fe68c18ae",
+                        "vibrantColor": "#e9d7ae",
+                        "videoCover": "93daae4e-ceb8-4316-816b-b90dd4b4ea6a"
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "001999bc29bacf75dc2e9281e69851"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            },
+            {
+                "track": {
+                    "id": 34837965,
+                    "title": "Cigarette Daydreams",
+                    "duration": 209,
+                    "replayGain": -13.22,
+                    "peak": 0.997375,
+                    "allowStreaming": true,
+                    "streamReady": true,
+                    "payToStream": false,
+                    "adSupportedStreamReady": true,
+                    "djReady": true,
+                    "stemReady": false,
+                    "streamStartDate": "2013-10-08T00:00:00.000+0000",
+                    "premiumStreamingOnly": false,
+                    "trackNumber": 10,
+                    "volumeNumber": 1,
+                    "version": null,
+                    "popularity": 84,
+                    "copyright": "(P) 2013 RCA Records, a division of Sony Music Entertainment",
+                    "bpm": 114,
+                    "key": "D",
+                    "keyScale": "MAJOR",
+                    "url": "http://www.tidal.com/track/34837965",
+                    "isrc": "USRC11301169",
+                    "editable": false,
+                    "explicit": false,
+                    "audioQuality": "LOSSLESS",
+                    "audioModes": [
+                        "STEREO"
+                    ],
+                    "mediaMetadata": {
+                        "tags": [
+                            "LOSSLESS"
+                        ]
+                    },
+                    "upload": false,
+                    "accessType": "PUBLIC",
+                    "spotlighted": false,
+                    "artist": {
+                        "id": 3523389,
+                        "name": "Cage The Elephant",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "a20cba0c-abfe-4f21-9b48-d8288bd80509"
+                    },
+                    "artists": [
+                        {
+                            "id": 3523389,
+                            "name": "Cage The Elephant",
+                            "handle": null,
+                            "type": "MAIN",
+                            "picture": "a20cba0c-abfe-4f21-9b48-d8288bd80509"
+                        }
+                    ],
+                    "album": {
+                        "id": 34837955,
+                        "title": "Melophobia",
+                        "cover": "91974b5f-a728-42cd-8dd5-51bc9abfe5b0",
+                        "vibrantColor": "#da7367",
+                        "videoCover": null
+                    },
+                    "mixes": {
+                        "TRACK_MIX": "0010a543903563fca56811b70c4aed"
+                    }
+                },
+                "sources": [
+                    "SUGGESTED_TRACKS"
+                ]
+            }
+        ]
+    }
+}

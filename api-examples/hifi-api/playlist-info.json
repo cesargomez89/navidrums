@@ -1,0 +1,3955 @@
+{
+    "version": "2.4",
+    "playlist": {
+        "uuid": "36ea71a8-445e-41a4-82ab-6628c581535d",
+        "title": "Pop Hits",
+        "numberOfTracks": 50,
+        "numberOfVideos": 0,
+        "creator": {
+            "id": 0
+        },
+        "description": "The pop songs everyone knows and loves. Current chart toppers and undeniable favorites in one place. (Cover: Harry Styles// Photo: Columbia Records/press) ",
+        "duration": 10183,
+        "lastUpdated": "2026-02-13T05:40:09.041+0000",
+        "created": "2018-06-07T18:16:02.528+0000",
+        "type": "EDITORIAL",
+        "publicPlaylist": true,
+        "url": "http://www.tidal.com/playlist/36ea71a8-445e-41a4-82ab-6628c581535d",
+        "image": "36d0fb9e-ace1-4187-a1e7-2906f9b276dc",
+        "popularity": 0,
+        "squareImage": "5e57fa3d-a0d9-4141-92b4-416b6be6c921",
+        "customImageUrl": null,
+        "promotedArtists": [
+            {
+                "id": 8669861,
+                "name": "Harry Styles",
+                "handle": null,
+                "type": "MAIN",
+                "picture": null
+            },
+            {
+                "id": 3658521,
+                "name": "Bruno Mars",
+                "handle": null,
+                "type": "MAIN",
+                "picture": null
+            },
+            {
+                "id": 3557299,
+                "name": "Taylor Swift",
+                "handle": null,
+                "type": "MAIN",
+                "picture": null
+            },
+            {
+                "id": 28398607,
+                "name": "sombr",
+                "handle": null,
+                "type": "MAIN",
+                "picture": null
+            }
+        ],
+        "lastItemAddedAt": "2026-02-13T05:39:52.851+0000"
+    },
+    "items": [
+        {
+            "item": {
+                "id": 492086765,
+                "title": "Aperture",
+                "duration": 312,
+                "replayGain": -7.41,
+                "peak": 0.968315,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2026-01-22T19:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 67,
+                "copyright": "(P) 2026 Erskine Records Limited, under exclusive license to Columbia Records, a Division of Sony Music Entertainment",
+                "bpm": 128,
+                "key": "D",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/492086765",
+                "isrc": "USSM12600096",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8669861,
+                    "name": "Harry Styles",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "95f9e1de-052b-4d43-a2c0-b34e1cd9beba"
+                },
+                "artists": [
+                    {
+                        "id": 8669861,
+                        "name": "Harry Styles",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "95f9e1de-052b-4d43-a2c0-b34e1cd9beba"
+                    }
+                ],
+                "album": {
+                    "id": 492086762,
+                    "title": "Aperture",
+                    "cover": "849f4e8c-6e03-4ef7-81d7-e9bfb27024db",
+                    "vibrantColor": "#255787",
+                    "videoCover": null,
+                    "releaseDate": "2026-01-22"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001ce0480110a31fcd543bca7a9137"
+                },
+                "dateAdded": "2026-01-25T22:03:34.321+0000",
+                "index": 100000,
+                "itemUuid": "cc4e3bc6-7aec-45e1-9f4b-a108c374ada1"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 488282494,
+                "title": "I Just Might",
+                "duration": 213,
+                "replayGain": -7.71,
+                "peak": 0.989557,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2026-01-09T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 73,
+                "copyright": "\u2117 2026 Atlantic Records",
+                "bpm": 103,
+                "key": "F",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/488282494",
+                "isrc": "USAT22509144",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3658521,
+                    "name": "Bruno Mars",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "12139dfb-f192-4481-9794-c9fb7d1e2476"
+                },
+                "artists": [
+                    {
+                        "id": 3658521,
+                        "name": "Bruno Mars",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "12139dfb-f192-4481-9794-c9fb7d1e2476"
+                    }
+                ],
+                "album": {
+                    "id": 488282493,
+                    "title": "I Just Might",
+                    "cover": "1a947837-0f5d-4f0a-9349-6177f51bfe88",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2026-01-09"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001ccf6a861c61b336ff72a313f374"
+                },
+                "dateAdded": "2026-01-20T20:24:58.888+0000",
+                "index": 200000,
+                "itemUuid": "0455d3c2-cb2f-4ccc-a6b6-8a104a862604"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 463900374,
+                "title": "The Fate of Ophelia",
+                "duration": 226,
+                "replayGain": -9.75,
+                "peak": 0.998861,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-03T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 76,
+                "copyright": "\u2117 2025 Taylor Swift",
+                "bpm": 124,
+                "key": "F",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/463900374",
+                "isrc": "USUG12506436",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3557299,
+                    "name": "Taylor Swift",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "ffa46767-8d63-42bd-9dc7-827881ef460c"
+                },
+                "artists": [
+                    {
+                        "id": 3557299,
+                        "name": "Taylor Swift",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "ffa46767-8d63-42bd-9dc7-827881ef460c"
+                    }
+                ],
+                "album": {
+                    "id": 463900363,
+                    "title": "The Life of a Showgirl",
+                    "cover": "9a2c79fe-a70b-4f2f-bb7a-2d75fa332a7c",
+                    "vibrantColor": "#ceb478",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-03"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001f7623b61d92edbb547503a56297"
+                },
+                "dateAdded": "2025-10-14T17:06:42.766+0000",
+                "index": 300000,
+                "itemUuid": "97221461-4f2d-4f81-91fd-0b75dd33d0f7"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 449420542,
+                "title": "12 to 12",
+                "duration": 243,
+                "replayGain": -11.22,
+                "peak": 0.995574,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-07-24T18:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 71,
+                "copyright": "\u2117 2025 SMB Music LLC under exclusive license to Warner Records Inc.",
+                "bpm": 124,
+                "key": "A",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/449420542",
+                "isrc": "USWB12502453",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 28398607,
+                    "name": "sombr",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "543ac0c0-1063-489f-bbbd-44bf1f58869d"
+                },
+                "artists": [
+                    {
+                        "id": 28398607,
+                        "name": "sombr",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "543ac0c0-1063-489f-bbbd-44bf1f58869d"
+                    }
+                ],
+                "album": {
+                    "id": 449420541,
+                    "title": "12 to 12",
+                    "cover": "17432a5a-1abc-471c-b2e2-f358e3ac406e",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2025-07-24"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00179c9a8cbf8bfce4e50cdcc6c199"
+                },
+                "dateAdded": "2026-02-13T05:37:54.093+0000",
+                "index": 350000,
+                "itemUuid": "3dfd0c0e-3b33-4077-a205-e819ea524b7e"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 453498256,
+                "title": "Man I Need",
+                "duration": 184,
+                "replayGain": -9.69,
+                "peak": 0.979162,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-08-15T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 81,
+                "copyright": "\u2117 2025 Universal Music Operations Limited",
+                "bpm": 119,
+                "key": "FSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/453498256",
+                "isrc": "GBUM72503089",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 17009569,
+                    "name": "Olivia Dean",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "ff36351e-b6de-4cec-b130-222001c518ff"
+                },
+                "artists": [
+                    {
+                        "id": 17009569,
+                        "name": "Olivia Dean",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "ff36351e-b6de-4cec-b130-222001c518ff"
+                    }
+                ],
+                "album": {
+                    "id": 453498255,
+                    "title": "Man I Need",
+                    "cover": "22238f7d-d089-46ab-9f1d-5dba20d2fb27",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2025-08-15"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001d8e2dbc124354e83f7fa914c4f4"
+                },
+                "dateAdded": "2025-09-25T23:10:09.880+0000",
+                "index": 400000,
+                "itemUuid": "4baa73b8-6793-48b6-8446-f27eb47e7849"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 447382079,
+                "title": "YUKON",
+                "duration": 164,
+                "replayGain": -10.24,
+                "peak": 0.9977,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-07-11T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 3,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 77,
+                "copyright": "\u2117 2025 ILH Production Co. LLC, under exclusive license to Def Jam Recordings, a division of UMG Recordings, Inc",
+                "bpm": 96,
+                "key": "C",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/447382079",
+                "isrc": "USUG12506174",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3639248,
+                    "name": "Justin Bieber",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "32097e23-45f4-4020-896d-ab6194448529"
+                },
+                "artists": [
+                    {
+                        "id": 3639248,
+                        "name": "Justin Bieber",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "32097e23-45f4-4020-896d-ab6194448529"
+                    }
+                ],
+                "album": {
+                    "id": 447382076,
+                    "title": "SWAG",
+                    "cover": "2fab4341-c85d-45f8-b669-a8e24b76bc75",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2025-07-11"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001b1ed13b676329a6ef15cc171142"
+                },
+                "dateAdded": "2025-07-31T22:25:56.061+0000",
+                "index": 450000,
+                "itemUuid": "4b3eda8a-a799-435a-84da-73bd881096b4"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 441289340,
+                "title": "Folded",
+                "duration": 238,
+                "replayGain": -8.18,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-11T12:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 83,
+                "copyright": "\u2117 2025 Atlantic Records Group LLC",
+                "bpm": 136,
+                "key": "FSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/441289340",
+                "isrc": "USAT22504344",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 5652094,
+                    "name": "Kehlani",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "527fc4c1-c572-49cc-8032-0a65f5dc5fdd"
+                },
+                "artists": [
+                    {
+                        "id": 5652094,
+                        "name": "Kehlani",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "527fc4c1-c572-49cc-8032-0a65f5dc5fdd"
+                    }
+                ],
+                "album": {
+                    "id": 441289336,
+                    "title": "Folded",
+                    "cover": "24f82984-c83a-44ec-907d-fe97f410a6e2",
+                    "vibrantColor": "#d7bc8c",
+                    "videoCover": null,
+                    "releaseDate": "2025-01-01"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001de8892884b541d17041bf050589"
+                },
+                "dateAdded": "2026-01-20T21:23:05.874+0000",
+                "index": 475000,
+                "itemUuid": "b56285d9-22fa-4186-a6bc-7b24c78587e1"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 493508878,
+                "title": "The Great Divide",
+                "duration": 318,
+                "replayGain": -10.52,
+                "peak": 0.988503,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2026-01-30T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 61,
+                "copyright": "\u2117 2026 Mercury Records, a Division of UMG Recordings, Inc.",
+                "bpm": 80,
+                "key": "B",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/493508878",
+                "isrc": "USUM72600177",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8451939,
+                    "name": "Noah Kahan",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "6ebc79ce-56c9-4e35-8782-722e368faf90"
+                },
+                "artists": [
+                    {
+                        "id": 8451939,
+                        "name": "Noah Kahan",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "6ebc79ce-56c9-4e35-8782-722e368faf90"
+                    }
+                ],
+                "album": {
+                    "id": 493508877,
+                    "title": "The Great Divide",
+                    "cover": "ec7726f1-d03c-41b1-a443-3b0fcbaeff11",
+                    "vibrantColor": null,
+                    "videoCover": null,
+                    "releaseDate": "2026-01-30"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0019b00e2d60190b8a5d5731a423ea"
+                },
+                "dateAdded": "2026-02-13T05:20:10.160+0000",
+                "index": 500000,
+                "itemUuid": "75e4b96c-5c60-4aa8-9047-d7c9627f36b6"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 409386876,
+                "title": "DtMF",
+                "duration": 237,
+                "replayGain": -12.66,
+                "peak": 0.99885,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-01-05T11:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 16,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 83,
+                "copyright": "(P) 2024 Rimas Entertainment LLC.",
+                "bpm": 112,
+                "key": "Ab",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/409386876",
+                "isrc": "QMFMF2447070",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8027279,
+                    "name": "Bad Bunny",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "860038f2-c3e1-4df6-a62e-ead97285672e"
+                },
+                "artists": [
+                    {
+                        "id": 8027279,
+                        "name": "Bad Bunny",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "860038f2-c3e1-4df6-a62e-ead97285672e"
+                    }
+                ],
+                "album": {
+                    "id": 409386860,
+                    "title": "DeB\u00cd TiRAR M\u00e1S FOToS",
+                    "cover": "ec036d64-8ee6-4715-9e9e-f1e6fbdd856f",
+                    "vibrantColor": "#80943b",
+                    "videoCover": null,
+                    "releaseDate": "2025-01-05"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001073bb39580cd382c2d8a720bcb8"
+                },
+                "dateAdded": "2026-02-13T05:24:33.528+0000",
+                "index": 600000,
+                "itemUuid": "7d88ce68-8380-4f82-af7c-f309736f6501"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 441821360,
+                "title": "Golden",
+                "duration": 195,
+                "replayGain": -11.01,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-20T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 4,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 84,
+                "copyright": "\u2117 2025 Netflix Music LLC, under exclusive license to Visva Records / Republic Records, a division of UMG Recordings, Inc.",
+                "bpm": 123,
+                "key": "G",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/441821360",
+                "isrc": "QZ8BZ2513510",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 62075550,
+                    "name": "HUNTR/X",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "1fb53258-6ef7-4bc6-9973-14395cf7c9ad"
+                },
+                "artists": [
+                    {
+                        "id": 62075550,
+                        "name": "HUNTR/X",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1fb53258-6ef7-4bc6-9973-14395cf7c9ad"
+                    },
+                    {
+                        "id": 63053036,
+                        "name": "EJAE",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    {
+                        "id": 18472776,
+                        "name": "AUDREY NUNA",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "b4721fd7-56c8-4a2e-98a6-697747497208"
+                    },
+                    {
+                        "id": 16015899,
+                        "name": "REI AMI",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "917f98a9-4701-4e43-88a6-cd6eef801743"
+                    },
+                    {
+                        "id": 62075546,
+                        "name": "KPop Demon Hunters Cast",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    }
+                ],
+                "album": {
+                    "id": 441821356,
+                    "title": "KPop Demon Hunters (Soundtrack from the Netflix Film)",
+                    "cover": "e9e6bf7e-9d45-45e4-b0e8-c5fad3af1b46",
+                    "vibrantColor": "#86dff4",
+                    "videoCover": null,
+                    "releaseDate": "2025-06-20"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001fca903b79288671efcad0c4c1a0"
+                },
+                "dateAdded": "2025-07-31T22:27:18.580+0000",
+                "index": 700000,
+                "itemUuid": "1f5432c0-92c8-4fa9-9dc5-b4a595188dc1"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 440421394,
+                "title": "Midnight Sun",
+                "duration": 190,
+                "replayGain": -9.48,
+                "peak": 0.998839,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-13T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 69,
+                "copyright": "(P) 2025 Sommer House, under exclusive license to Epic Records, a division of Sony Music Entertainment.",
+                "bpm": 151,
+                "key": "A",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/440421394",
+                "isrc": "USSM12502221",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 4815108,
+                    "name": "Zara Larsson",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "41f007dd-d440-4d16-8327-856663b3f59f"
+                },
+                "artists": [
+                    {
+                        "id": 4815108,
+                        "name": "Zara Larsson",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "41f007dd-d440-4d16-8327-856663b3f59f"
+                    }
+                ],
+                "album": {
+                    "id": 440421393,
+                    "title": "Midnight Sun",
+                    "cover": "54fe3376-ebe7-4a8e-90c2-e3de17e29c15",
+                    "vibrantColor": "#ead71c",
+                    "videoCover": null,
+                    "releaseDate": "2025-06-13"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001034b6ffddb959976cd5d2c0c3da"
+                },
+                "dateAdded": "2025-10-30T19:29:52.352+0000",
+                "index": 800000,
+                "itemUuid": "261f862f-1673-425a-974e-eadbe777b1cb"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 459513096,
+                "title": "WHERE IS MY HUSBAND!",
+                "duration": 197,
+                "replayGain": -7.96,
+                "peak": 0.926265,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-09-18T19:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 77,
+                "copyright": "(P) 2025 RAYE under exclusive license to Human Re Sources",
+                "bpm": 116,
+                "key": "Eb",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/459513096",
+                "isrc": "QMFME2535037",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 4721588,
+                    "name": "raye",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": null
+                },
+                "artists": [
+                    {
+                        "id": 4721588,
+                        "name": "raye",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    }
+                ],
+                "album": {
+                    "id": 459513095,
+                    "title": "WHERE IS MY HUSBAND!",
+                    "cover": "d5190a06-330a-41ca-a90d-d030e5e51ce7",
+                    "vibrantColor": "#ef8783",
+                    "videoCover": null,
+                    "releaseDate": "2025-09-19"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001218e44a684142accc1aa3a03bcc"
+                },
+                "dateAdded": "2025-11-07T03:32:26.496+0000",
+                "index": 900000,
+                "itemUuid": "42071faa-538c-404e-9dc8-d6747c419fa3"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 484213596,
+                "title": "What You Saying",
+                "duration": 132,
+                "replayGain": -6.87,
+                "peak": 0.997553,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-12-22T21:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 73,
+                "copyright": "Cor(e) / Roc Nation Distribution",
+                "bpm": 133,
+                "key": "A",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/484213596",
+                "isrc": "NL8RL2584094",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "DOLBY_ATMOS",
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS",
+                        "DOLBY_ATMOS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 6265028,
+                    "name": "Lil Uzi Vert",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "97484b95-b484-41a8-a0ee-359a8ef1a631"
+                },
+                "artists": [
+                    {
+                        "id": 6265028,
+                        "name": "Lil Uzi Vert",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "97484b95-b484-41a8-a0ee-359a8ef1a631"
+                    }
+                ],
+                "album": {
+                    "id": 484213595,
+                    "title": "What You Saying",
+                    "cover": "944fd2d4-77bd-4985-ae65-7e1b6654a222",
+                    "vibrantColor": "#e7c4c9",
+                    "videoCover": null,
+                    "releaseDate": "2025-12-22"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0018f65a85a1e4ddc3c87b3bd50f3d"
+                },
+                "dateAdded": "2026-02-13T05:21:34.847+0000",
+                "index": 1000000,
+                "itemUuid": "89ecee4b-8339-4165-8170-4be76cd35899"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 468416670,
+                "title": "CHANEL",
+                "duration": 188,
+                "replayGain": -9.38,
+                "peak": 0.999208,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-24T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 70,
+                "copyright": "(P) 2025 FAX Records, under exclusive license to Epic Records, a division of Sony Music Entertainment",
+                "bpm": 115,
+                "key": "B",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/468416670",
+                "isrc": "USSM12503648",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3606450,
+                    "name": "Tyla",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "09676a58-584c-457d-a9ea-530ced0a6e98"
+                },
+                "artists": [
+                    {
+                        "id": 3606450,
+                        "name": "Tyla",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "09676a58-584c-457d-a9ea-530ced0a6e98"
+                    }
+                ],
+                "album": {
+                    "id": 468416669,
+                    "title": "CHANEL",
+                    "cover": "decd3ac2-1459-4e5f-a4f7-88e77571e026",
+                    "vibrantColor": null,
+                    "videoCover": null,
+                    "releaseDate": "2025-10-23"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0018061e231e72c43a80921bd7ae25"
+                },
+                "dateAdded": "2026-01-20T20:45:43.390+0000",
+                "index": 1100000,
+                "itemUuid": "3701ad33-0e6f-466e-a685-762584bd8436"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 494028431,
+                "title": "POP DAT THANG",
+                "duration": 138,
+                "replayGain": -7.94,
+                "peak": 0.988365,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2026-01-30T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 2,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 68,
+                "copyright": "\u2117 2026 Interscope Records",
+                "bpm": null,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/494028431",
+                "isrc": "USUM72512875",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8274007,
+                    "name": "DaBaby",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "872c46a5-5cca-4cbf-8117-17fa545167cc"
+                },
+                "artists": [
+                    {
+                        "id": 8274007,
+                        "name": "DaBaby",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "872c46a5-5cca-4cbf-8117-17fa545167cc"
+                    }
+                ],
+                "album": {
+                    "id": 494028427,
+                    "title": "BE MORE GRATEFUL",
+                    "cover": "f064d714-f8e1-4e64-8ced-cf7b3a9f56f6",
+                    "vibrantColor": "#3b96c4",
+                    "videoCover": null,
+                    "releaseDate": "2026-01-30"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001d07aa54aaa81652a801584396ba"
+                },
+                "dateAdded": "2026-02-13T05:26:13.776+0000",
+                "index": 1200000,
+                "itemUuid": "7473ff4d-72bd-4b95-8a6b-12bada79766f"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 379635514,
+                "title": "Love Me Not",
+                "duration": 213,
+                "replayGain": -10.64,
+                "peak": 0.988553,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-05-03T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 7,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 77,
+                "copyright": "\u2117 2024 Atlantic Recording Corporation",
+                "bpm": 114,
+                "key": "F",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/379635514",
+                "isrc": "USAT22401137",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 7262284,
+                    "name": "Ravyn Lenae",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "02ced84e-a79b-40d7-9890-01283fc077a3"
+                },
+                "artists": [
+                    {
+                        "id": 7262284,
+                        "name": "Ravyn Lenae",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "02ced84e-a79b-40d7-9890-01283fc077a3"
+                    }
+                ],
+                "album": {
+                    "id": 379635507,
+                    "title": "Bird's Eye",
+                    "cover": "8cab2226-0839-4597-99ae-d5ac7c67d59f",
+                    "vibrantColor": "#b95646",
+                    "videoCover": null,
+                    "releaseDate": "2024-08-09"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001316d36702542100ede680b1e4a6"
+                },
+                "dateAdded": "2025-07-31T22:27:42.293+0000",
+                "index": 1300000,
+                "itemUuid": "7cf089b7-f658-4785-87c3-63ce0d3a32e2"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 468724403,
+                "title": "Raindance",
+                "duration": 220,
+                "replayGain": -8.02,
+                "peak": 0.966095,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-23T19:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 5,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 66,
+                "copyright": "\u2117 2025 Dave / Neighbourhood Recordings",
+                "bpm": 140,
+                "key": "FSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/468724403",
+                "isrc": "GBUM72506029",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8221498,
+                    "name": "Dave",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "25cb9c42-f223-4487-88ad-0dee692c9838"
+                },
+                "artists": [
+                    {
+                        "id": 8221498,
+                        "name": "Dave",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "25cb9c42-f223-4487-88ad-0dee692c9838"
+                    },
+                    {
+                        "id": 9357897,
+                        "name": "Tems",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "3ce6c22f-f77b-4944-9f29-639a58d6ec5d"
+                    }
+                ],
+                "album": {
+                    "id": 468724398,
+                    "title": "The Boy Who Played the Harp",
+                    "cover": "55a1bb5c-1260-4509-add6-2665fc664985",
+                    "vibrantColor": "#f5e57c",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-24"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001cf67080308c21cb4d36b2f95ecc"
+                },
+                "dateAdded": "2026-01-20T21:22:21.374+0000",
+                "index": 1400000,
+                "itemUuid": "28603a0f-b5b7-4a80-9de7-8886786e25f3"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 416365030,
+                "title": "Sally, When The Wine Runs Out",
+                "duration": 219,
+                "replayGain": -9.9,
+                "peak": 0.98706,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-02-14T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 15,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 69,
+                "copyright": "\u2117 2025 Interscope Records",
+                "bpm": 120,
+                "key": "CSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/416365030",
+                "isrc": "USUM72500706",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3591586,
+                    "name": "ROLE MODEL",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "2e7e1fa5-abbe-4688-8d2e-344878946141"
+                },
+                "artists": [
+                    {
+                        "id": 3591586,
+                        "name": "ROLE MODEL",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "2e7e1fa5-abbe-4688-8d2e-344878946141"
+                    }
+                ],
+                "album": {
+                    "id": 416365015,
+                    "title": "Kansas Anymore (The Longest Goodbye)",
+                    "cover": "ab2b97aa-354b-44e2-afd4-5be6a15824fd",
+                    "vibrantColor": "#bd9d42",
+                    "videoCover": null,
+                    "releaseDate": "2024-07-19"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001d4b5806eb1a67d0f5a654febb7c"
+                },
+                "dateAdded": "2025-11-07T03:26:42.317+0000",
+                "index": 1500000,
+                "itemUuid": "78d3bb43-da72-4012-a66c-b7485be0c756"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 439819932,
+                "title": "Manchild",
+                "duration": 214,
+                "replayGain": -10.31,
+                "peak": 0.964914,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-05T20:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 77,
+                "copyright": "\u2117 2025 Island Records, a division of UMG Recordings, Inc.",
+                "bpm": 123,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/439819932",
+                "isrc": "USUM72504354",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 4751756,
+                    "name": "Sabrina Carpenter",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "854a8a1a-43f1-44b2-8e59-474e83abd578"
+                },
+                "artists": [
+                    {
+                        "id": 4751756,
+                        "name": "Sabrina Carpenter",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "854a8a1a-43f1-44b2-8e59-474e83abd578"
+                    }
+                ],
+                "album": {
+                    "id": 439819931,
+                    "title": "Manchild",
+                    "cover": "49b9d38d-c6ac-4f21-a75a-48a3aeb58136",
+                    "vibrantColor": "#cf9823",
+                    "videoCover": null,
+                    "releaseDate": "2025-01-01"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001ad924813e34dcb45c4fabed87d8"
+                },
+                "dateAdded": "2025-07-31T22:27:54.632+0000",
+                "index": 1600000,
+                "itemUuid": "b998774a-fe86-47fd-a606-8b693e4188c5"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 495482260,
+                "title": "Die For Me",
+                "duration": 180,
+                "replayGain": -9.42,
+                "peak": 0.988553,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2026-02-06T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 64,
+                "copyright": "\u2117 2026 Drop Zed Music, LLC, under exclusive license to Mercury Records, a division of UMG Recordings, Inc.",
+                "bpm": 166,
+                "key": "C",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/495482260",
+                "isrc": "USUG12600847",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 6639721,
+                    "name": "ZAYN",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "606ef96b-419a-4411-9f4d-42837dd9b67a"
+                },
+                "artists": [
+                    {
+                        "id": 6639721,
+                        "name": "ZAYN",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "606ef96b-419a-4411-9f4d-42837dd9b67a"
+                    }
+                ],
+                "album": {
+                    "id": 495482256,
+                    "title": "Die For Me",
+                    "cover": "22a104d1-bcd2-44aa-aa35-d54c2553722d",
+                    "vibrantColor": null,
+                    "videoCover": null,
+                    "releaseDate": "2026-02-06"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0013553254dd2de2d56ac6d387ae92"
+                },
+                "dateAdded": "2026-02-13T05:39:52.851+0000",
+                "index": 1650000,
+                "itemUuid": "7923976c-1ca0-431f-9989-037e825e998f"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 406956243,
+                "title": "back to friends",
+                "duration": 199,
+                "replayGain": -11.6,
+                "peak": 0.977237,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-12-27T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 78,
+                "copyright": "\u2117 2024 SMB Music LLC under exclusive license to Warner Records Inc.",
+                "bpm": 93,
+                "key": "FSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/406956243",
+                "isrc": "USWB12405502",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 28398607,
+                    "name": "sombr",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "543ac0c0-1063-489f-bbbd-44bf1f58869d"
+                },
+                "artists": [
+                    {
+                        "id": 28398607,
+                        "name": "sombr",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "543ac0c0-1063-489f-bbbd-44bf1f58869d"
+                    }
+                ],
+                "album": {
+                    "id": 406956242,
+                    "title": "back to friends",
+                    "cover": "4da5000a-62a9-43e0-8af2-c6490f5f8493",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2024-12-27"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0016ad61bd18bc773debe42c0986cb"
+                },
+                "dateAdded": "2025-11-07T03:29:43.124+0000",
+                "index": 1700000,
+                "itemUuid": "48d79bdf-55cb-47e3-9b02-ce59f73d9b89"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 414860935,
+                "title": "Ordinary",
+                "duration": 187,
+                "replayGain": -11.36,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-02-07T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 82,
+                "copyright": "\u2117 2025 Atlantic Recording Corporation",
+                "bpm": 112,
+                "key": "D",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/414860935",
+                "isrc": "USAT22500463",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8965597,
+                    "name": "Alex Warren",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "0b4d550e-e989-42e3-aafa-b93bb1949d93"
+                },
+                "artists": [
+                    {
+                        "id": 8965597,
+                        "name": "Alex Warren",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "0b4d550e-e989-42e3-aafa-b93bb1949d93"
+                    }
+                ],
+                "album": {
+                    "id": 414860934,
+                    "title": "Ordinary",
+                    "cover": "7ef9f60e-7745-4432-b803-cf7c38d5872c",
+                    "vibrantColor": "#fbdebd",
+                    "videoCover": null,
+                    "releaseDate": "2025-01-01"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00177893341b2a138c1bb2fbcb4a62"
+                },
+                "dateAdded": "2025-03-25T16:56:05.959+0000",
+                "index": 1800000,
+                "itemUuid": "c3a945be-d6d3-485b-bf26-146985363312"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 464578549,
+                "title": "Die On This Hill",
+                "duration": 217,
+                "replayGain": -10.28,
+                "peak": 0.976105,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-10T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 42,
+                "copyright": "\u2117 2025 Sienna Spiro, under exclusive license to UMG Recordings, Inc.",
+                "bpm": 82,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/464578549",
+                "isrc": "USUG12508560",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 47700691,
+                    "name": "SIENNA SPIRO",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "c7fd053a-b39d-4e13-b5da-7be0cf284b78"
+                },
+                "artists": [
+                    {
+                        "id": 47700691,
+                        "name": "SIENNA SPIRO",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "c7fd053a-b39d-4e13-b5da-7be0cf284b78"
+                    }
+                ],
+                "album": {
+                    "id": 464578548,
+                    "title": "Die On This Hill",
+                    "cover": "f8354b11-426b-430d-8a72-611241f4d09d",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-10"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00112d4222b2a16081387630c1cd3d"
+                },
+                "dateAdded": "2026-01-20T20:44:25.323+0000",
+                "index": 1850000,
+                "itemUuid": "a679544c-c75a-4420-9040-fd8fa25c783c"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 428913354,
+                "title": "Amen",
+                "duration": 197,
+                "replayGain": -11.29,
+                "peak": 0.9977,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-04-25T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 13,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 68,
+                "copyright": "2025 American Dogwood / EMPIRE",
+                "bpm": 85,
+                "key": "G",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/428913354",
+                "isrc": "USUYG1717095",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 5944768,
+                    "name": "Shaboozey",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "1b7cf9c3-015e-47e6-abf8-f02312c38176"
+                },
+                "artists": [
+                    {
+                        "id": 5944768,
+                        "name": "Shaboozey",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1b7cf9c3-015e-47e6-abf8-f02312c38176"
+                    },
+                    {
+                        "id": 4190297,
+                        "name": "Jelly Roll",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "a1b84d19-1ec1-4049-ba80-6aeeeea97e7a"
+                    }
+                ],
+                "album": {
+                    "id": 428913341,
+                    "title": "Where I've Been, Isn't Where I'm Going: The Complete Edition",
+                    "cover": "ba2a9660-d30e-4505-b5a5-d8cba0f96621",
+                    "vibrantColor": "#7d4036",
+                    "videoCover": null,
+                    "releaseDate": "2024-05-31"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0016b0a84c91fb1bb3120fd8659ae6"
+                },
+                "dateAdded": "2026-02-13T05:24:05.880+0000",
+                "index": 1900000,
+                "itemUuid": "a6e71ef4-c3be-48fc-b0bf-8d08e1cd06f5"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 470797191,
+                "title": "Mature",
+                "duration": 217,
+                "replayGain": -9.06,
+                "peak": 0.977237,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-11-06T20:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 59,
+                "copyright": "\u2117 2025 Sugarmouse, Inc. under exclusive license to Atlantic Recording Corporation",
+                "bpm": 124,
+                "key": "FSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/470797191",
+                "isrc": "USAT22506963",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8958,
+                    "name": "Hilary Duff",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "c6b56f29-51ae-4f60-a3b9-a3bea1b1b451"
+                },
+                "artists": [
+                    {
+                        "id": 8958,
+                        "name": "Hilary Duff",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "c6b56f29-51ae-4f60-a3b9-a3bea1b1b451"
+                    }
+                ],
+                "album": {
+                    "id": 470797190,
+                    "title": "Mature",
+                    "cover": "8423c8de-f8c4-4fca-924c-b4fb745319f3",
+                    "vibrantColor": "#e695d4",
+                    "videoCover": null,
+                    "releaseDate": "2025-11-06"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00176293d37fc51eabad5f086cd22d"
+                },
+                "dateAdded": "2025-12-01T20:26:54.092+0000",
+                "index": 2000000,
+                "itemUuid": "7b09872f-45e3-42cd-943a-30b0b248e7bb"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 450174488,
+                "title": "I Think I Like You Better When You\u2019re Gone",
+                "duration": 143,
+                "replayGain": -11.0,
+                "peak": 0.977237,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-08-01T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 10,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 64,
+                "copyright": "\u2117 2025 Interscope Records",
+                "bpm": 90,
+                "key": "FSharp",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/450174488",
+                "isrc": "USUM72504849",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 32385126,
+                    "name": "Rene\u00e9 Rapp",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "ecc863b3-d79c-4ffb-95af-9c565912ffea"
+                },
+                "artists": [
+                    {
+                        "id": 32385126,
+                        "name": "Rene\u00e9 Rapp",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "ecc863b3-d79c-4ffb-95af-9c565912ffea"
+                    }
+                ],
+                "album": {
+                    "id": 450174478,
+                    "title": "BITE ME",
+                    "cover": "5166cd72-8829-4050-91d0-5451fae22bf5",
+                    "vibrantColor": "#e1b6ae",
+                    "videoCover": null,
+                    "releaseDate": "2025-08-01"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00124e861eaabc8ea917355967afd3"
+                },
+                "dateAdded": "2026-01-20T20:37:24.218+0000",
+                "index": 2100000,
+                "itemUuid": "9bc71ed0-f733-4779-af7f-87e83d81c56f"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 379072981,
+                "title": "MUTT",
+                "duration": 193,
+                "replayGain": -7.09,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-08-09T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 86,
+                "copyright": "\u2117 2024 UMG Recordings, Inc. & EZMNY Records, LLC",
+                "bpm": 178,
+                "key": "FSharp",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/379072981",
+                "isrc": "USUM72409025",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 10251336,
+                    "name": "Leon Thomas",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "1b6db501-e445-4974-b40d-9cab7774ac6b"
+                },
+                "artists": [
+                    {
+                        "id": 10251336,
+                        "name": "Leon Thomas",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1b6db501-e445-4974-b40d-9cab7774ac6b"
+                    }
+                ],
+                "album": {
+                    "id": 379072980,
+                    "title": "MUTT",
+                    "cover": "a154528d-53be-4f08-a607-9bc2ee064c93",
+                    "vibrantColor": "#ceb463",
+                    "videoCover": null,
+                    "releaseDate": "2024-08-09"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0012eab346575b1b32ea2384cbd463"
+                },
+                "dateAdded": "2026-01-20T20:39:20.550+0000",
+                "index": 2200000,
+                "itemUuid": "3c1761d1-42f4-4c5f-ba1b-87d9cd196487"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 494389868,
+                "title": "Secondhand (feat. Rema)",
+                "duration": 227,
+                "replayGain": -10.75,
+                "peak": 0.999277,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2026-01-30T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 4,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 66,
+                "copyright": "Cactus Jack / Donnway & Co / Atlantic Records, \u2117 2026 Donnway & Co LLC, under exclusive license to Atlantic Recording Corporationording Group LLC",
+                "bpm": null,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/494389868",
+                "isrc": "USAT22600120",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 9279273,
+                    "name": "Don Toliver",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "787cf118-7b7f-4d86-96c7-5c42ef9133c8"
+                },
+                "artists": [
+                    {
+                        "id": 9279273,
+                        "name": "Don Toliver",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "787cf118-7b7f-4d86-96c7-5c42ef9133c8"
+                    },
+                    {
+                        "id": 5224372,
+                        "name": "Rema",
+                        "handle": null,
+                        "type": "FEATURED",
+                        "picture": "825beb66-c9a1-4b11-b087-ee823fb94485"
+                    }
+                ],
+                "album": {
+                    "id": 494389864,
+                    "title": "OCTANE",
+                    "cover": "25397f23-a99a-422d-8e44-793cf8d03afe",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2026-01-30"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0018caaaea37b91f924dc0d5affe28"
+                },
+                "dateAdded": "2026-02-13T05:23:22.691+0000",
+                "index": 2300000,
+                "itemUuid": "ace8cdee-665d-4020-9d1b-7c2b33ee8a06"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 463900376,
+                "title": "Opalite",
+                "duration": 235,
+                "replayGain": -9.75,
+                "peak": 0.998734,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-03T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 3,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 74,
+                "copyright": "\u2117 2025 Taylor Swift",
+                "bpm": 125,
+                "key": "G",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/463900376",
+                "isrc": "USUG12506438",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3557299,
+                    "name": "Taylor Swift",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "ffa46767-8d63-42bd-9dc7-827881ef460c"
+                },
+                "artists": [
+                    {
+                        "id": 3557299,
+                        "name": "Taylor Swift",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "ffa46767-8d63-42bd-9dc7-827881ef460c"
+                    }
+                ],
+                "album": {
+                    "id": 463900363,
+                    "title": "The Life of a Showgirl",
+                    "cover": "9a2c79fe-a70b-4f2f-bb7a-2d75fa332a7c",
+                    "vibrantColor": "#ceb478",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-03"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0013d2e55aa5937a15c2a03b01c8df"
+                },
+                "dateAdded": "2025-12-01T20:26:12.260+0000",
+                "index": 2400000,
+                "itemUuid": "b6381261-5f2d-4edb-b9b0-ce567889a9cb"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 438544319,
+                "title": "Fame is a Gun",
+                "duration": 183,
+                "replayGain": -7.4,
+                "peak": 0.999928,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-05-30T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 71,
+                "copyright": "(P) 2025 Columbia Records, a Division of Sony Music Entertainment, under exclusive license from As Long As I'm Dancing LLC.",
+                "bpm": 138,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/438544319",
+                "isrc": "USSM12501572",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 19667603,
+                    "name": "Addison Rae",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "8e0e6b86-afa8-4b65-bf07-ac69fb6fe1a5"
+                },
+                "artists": [
+                    {
+                        "id": 19667603,
+                        "name": "Addison Rae",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "8e0e6b86-afa8-4b65-bf07-ac69fb6fe1a5"
+                    }
+                ],
+                "album": {
+                    "id": 438544318,
+                    "title": "Fame is a Gun",
+                    "cover": "4e0604d4-ced9-4cf5-a5c9-bdab88f7a42a",
+                    "vibrantColor": "#fbbe93",
+                    "videoCover": null,
+                    "releaseDate": "2025-05-30"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0018682dce73327c0a7fa9e1f25965"
+                },
+                "dateAdded": "2026-01-20T20:48:15.250+0000",
+                "index": 2450000,
+                "itemUuid": "16661fab-426c-41be-90dd-0d7b9143dc5d"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 462552592,
+                "title": "TIT FOR TAT",
+                "duration": 177,
+                "replayGain": -8.35,
+                "peak": 0.977092,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-09-26T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 70,
+                "copyright": "(P) 2025 RCA Records, a division of Sony Music Entertainment",
+                "bpm": 84,
+                "key": "B",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/462552592",
+                "isrc": "USRC12502004",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 9380062,
+                    "name": "Tate McRae",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "22469f82-4f7e-4401-b76f-a37973c01b93"
+                },
+                "artists": [
+                    {
+                        "id": 9380062,
+                        "name": "Tate McRae",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "22469f82-4f7e-4401-b76f-a37973c01b93"
+                    }
+                ],
+                "album": {
+                    "id": 462552591,
+                    "title": "TIT FOR TAT",
+                    "cover": "52e6a96e-a206-4ca2-9911-5e0075be06f3",
+                    "vibrantColor": "#5ca6eb",
+                    "videoCover": null,
+                    "releaseDate": "2025-09-26"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001068db606470a210320e26d48155"
+                },
+                "dateAdded": "2025-10-01T02:40:21.847+0000",
+                "index": 2500000,
+                "itemUuid": "0e086899-e7d0-48c4-99fe-e6d99e094775"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 463946614,
+                "title": "Gone Gone Gone",
+                "duration": 198,
+                "replayGain": -10.37,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-10T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 62,
+                "copyright": "Under exclusive licence to What A Music Limited, \u2117 2025 What A DJ Limited",
+                "bpm": 131,
+                "key": "B",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/463946614",
+                "isrc": "UKWLG2500132",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 27343,
+                    "name": "David Guetta",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "72300bca-3b4a-411b-bc35-ab0c4f7c35d1"
+                },
+                "artists": [
+                    {
+                        "id": 27343,
+                        "name": "David Guetta",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "72300bca-3b4a-411b-bc35-ab0c4f7c35d1"
+                    },
+                    {
+                        "id": 15694955,
+                        "name": "Teddy Swims",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "e0d353a0-bccf-42d1-b092-ed3bf393270d"
+                    },
+                    {
+                        "id": 10954264,
+                        "name": "Tones and I",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1c8ed9ed-7094-46bb-9868-b1a0472d4381"
+                    }
+                ],
+                "album": {
+                    "id": 463946613,
+                    "title": "Gone Gone Gone",
+                    "cover": "dc2d9df0-e0b7-4268-b60f-256f35b643af",
+                    "vibrantColor": "#f95d5d",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-10"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0018e43d2b94474e3270422fede700"
+                },
+                "dateAdded": "2026-01-20T20:46:19.290+0000",
+                "index": 2600000,
+                "itemUuid": "e166d1cd-d47d-4962-a3b7-3bf32143056a"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 458148471,
+                "title": "The Dead Dance",
+                "duration": 229,
+                "replayGain": -12.03,
+                "peak": 0.999936,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-09-03T12:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 9,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 61,
+                "copyright": "\u2117 2025 Interscope Records",
+                "bpm": 123,
+                "key": "A",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/458148471",
+                "isrc": "USUM72407034",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3534754,
+                    "name": "Lady Gaga",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "1594f44b-f4ed-4bec-80aa-276e0e759063"
+                },
+                "artists": [
+                    {
+                        "id": 3534754,
+                        "name": "Lady Gaga",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1594f44b-f4ed-4bec-80aa-276e0e759063"
+                    }
+                ],
+                "album": {
+                    "id": 458148462,
+                    "title": "MAYHEM",
+                    "cover": "63602fc0-dffb-4aee-9a7f-3d9f18c1c42d",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2025-03-07"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00106529155e0876dd13c8700e4da5"
+                },
+                "dateAdded": "2025-09-25T23:10:09.880+0000",
+                "index": 2700000,
+                "itemUuid": "b6a3ce78-beb0-4291-84c2-7ee20655632f"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 432856296,
+                "title": "Illegal",
+                "duration": 150,
+                "replayGain": -10.96,
+                "peak": 0.988554,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-05-09T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 75,
+                "copyright": "Under Exclusive License to Parlophone Records Limited, \u2117 2025 Pink Pantheress",
+                "bpm": 141,
+                "key": "F",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/432856296",
+                "isrc": "GBAYE2500293",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 23409727,
+                    "name": "PinkPantheress",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "224393ce-7f5a-4848-8800-fead1ffa37dc"
+                },
+                "artists": [
+                    {
+                        "id": 23409727,
+                        "name": "PinkPantheress",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "224393ce-7f5a-4848-8800-fead1ffa37dc"
+                    }
+                ],
+                "album": {
+                    "id": 432856294,
+                    "title": "Fancy That",
+                    "cover": "4e510012-6515-425b-9972-9a39019bdcd7",
+                    "vibrantColor": "#cdbf7b",
+                    "videoCover": null,
+                    "releaseDate": "2025-05-09"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001ef2bf5b17884ea28641df555b85"
+                },
+                "dateAdded": "2025-07-31T22:26:36.533+0000",
+                "index": 2800000,
+                "itemUuid": "06734f7d-7786-4204-851a-b7971d85fc6f"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 440260754,
+                "title": "No Broke Boys",
+                "duration": 164,
+                "replayGain": -7.3,
+                "peak": 0.969268,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-06T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 79,
+                "copyright": "\u2117 2025 Good Good Records/ Tinashe Music Inc. under exclusive license to Nice Life Recording Company/Atlantic Recording Corporation",
+                "bpm": 130,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/440260754",
+                "isrc": "USAT22504362",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 15720724,
+                    "name": "Disco Lines",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "ce22d06c-ec66-464b-b1cc-cd0d0ea9aecd"
+                },
+                "artists": [
+                    {
+                        "id": 15720724,
+                        "name": "Disco Lines",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "ce22d06c-ec66-464b-b1cc-cd0d0ea9aecd"
+                    },
+                    {
+                        "id": 5222063,
+                        "name": "Tinashe",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "4264c038-a990-4490-af92-0823b6d08d9d"
+                    }
+                ],
+                "album": {
+                    "id": 440260753,
+                    "title": "No Broke Boys",
+                    "cover": "c9b43245-11af-4949-ad75-7f21de3a5877",
+                    "vibrantColor": "#9cbdee",
+                    "videoCover": null,
+                    "releaseDate": "2025-06-06"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001639785faed487e9bf4b19920a08"
+                },
+                "dateAdded": "2025-07-31T22:34:46.647+0000",
+                "index": 2900000,
+                "itemUuid": "762150a5-d100-4f43-b5e8-0141dc6ddd31"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 423887746,
+                "title": "Love Me To Heaven",
+                "duration": 207,
+                "replayGain": -11.1,
+                "peak": 0.992357,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-03-21T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 66,
+                "copyright": "\u2117 2025 Jonas Brothers Recording, Limited Liability Company, under exclusive license to Republic Records, a division of UMG Recordings, Inc.",
+                "bpm": 149,
+                "key": "Bb",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/423887746",
+                "isrc": "USUG12502065",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 10103,
+                    "name": "Jonas Brothers",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "4d103ad1-9d83-46c1-b08d-ea92b69ea449"
+                },
+                "artists": [
+                    {
+                        "id": 10103,
+                        "name": "Jonas Brothers",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "4d103ad1-9d83-46c1-b08d-ea92b69ea449"
+                    }
+                ],
+                "album": {
+                    "id": 423887745,
+                    "title": "Love Me To Heaven",
+                    "cover": "96516422-8130-4710-b929-3426ab99e1eb",
+                    "vibrantColor": "#a44f3f",
+                    "videoCover": null,
+                    "releaseDate": "2025-03-21"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001fa130c4c6af6a66f2f155115a92"
+                },
+                "dateAdded": "2025-07-31T22:34:12.477+0000",
+                "index": 3000000,
+                "itemUuid": "5c1e1eab-47fa-45e5-83ec-a8977ea5f904"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 456892729,
+                "title": "When Did You Get Hot?",
+                "duration": 145,
+                "replayGain": -11.32,
+                "peak": 0.965801,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-08-29T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 8,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 74,
+                "copyright": "\u2117 2025 Island Records, a division of UMG Recordings, Inc.",
+                "bpm": 89,
+                "key": "C",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/456892729",
+                "isrc": "USUM72504446",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 4751756,
+                    "name": "Sabrina Carpenter",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "854a8a1a-43f1-44b2-8e59-474e83abd578"
+                },
+                "artists": [
+                    {
+                        "id": 4751756,
+                        "name": "Sabrina Carpenter",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "854a8a1a-43f1-44b2-8e59-474e83abd578"
+                    }
+                ],
+                "album": {
+                    "id": 456892721,
+                    "title": "Man\u2019s Best Friend",
+                    "cover": "970c2cc1-733c-4a00-a52f-a5669cd7ee83",
+                    "vibrantColor": "#dc9390",
+                    "videoCover": null,
+                    "releaseDate": "2025-08-29"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001bd487936c86ef6546d9bb32eb88"
+                },
+                "dateAdded": "2026-01-20T20:47:19.192+0000",
+                "index": 3050000,
+                "itemUuid": "1e1a736e-ef74-4357-8353-0cb5feb87dce"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 441821359,
+                "title": "Soda Pop",
+                "duration": 151,
+                "replayGain": -11.01,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-20T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 3,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 78,
+                "copyright": "\u2117 2025 Netflix Music LLC, under exclusive license to Visva Records / Republic Records, a division of UMG Recordings, Inc.",
+                "bpm": 126,
+                "key": "E",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/441821359",
+                "isrc": "QZ8BZ2513509",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 62075544,
+                    "name": "Saja Boys",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "3f0f6bee-109e-4a65-9f4d-14c278de9236"
+                },
+                "artists": [
+                    {
+                        "id": 62075544,
+                        "name": "Saja Boys",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "3f0f6bee-109e-4a65-9f4d-14c278de9236"
+                    },
+                    {
+                        "id": 4933184,
+                        "name": "Andrew Choi",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    {
+                        "id": 16416719,
+                        "name": "Neckwav",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    {
+                        "id": 7683397,
+                        "name": "Danny Chung",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    {
+                        "id": 16759837,
+                        "name": "Kevin Woo",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "11165510-3874-4b90-b093-f6b93a6783e2"
+                    },
+                    {
+                        "id": 62075545,
+                        "name": "samUIL Lee",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    },
+                    {
+                        "id": 62075546,
+                        "name": "KPop Demon Hunters Cast",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": null
+                    }
+                ],
+                "album": {
+                    "id": 441821356,
+                    "title": "KPop Demon Hunters (Soundtrack from the Netflix Film)",
+                    "cover": "e9e6bf7e-9d45-45e4-b0e8-c5fad3af1b46",
+                    "vibrantColor": "#86dff4",
+                    "videoCover": null,
+                    "releaseDate": "2025-06-20"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00173b9836595d414c9d99c147d6bc"
+                },
+                "dateAdded": "2025-09-25T23:10:09.880+0000",
+                "index": 3100000,
+                "itemUuid": "caeafe80-8015-4fca-891f-501690e70f56"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 141361308,
+                "title": "party 4 u",
+                "duration": 297,
+                "replayGain": -13.37,
+                "peak": 0.989578,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2020-05-15T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 9,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 79,
+                "copyright": "An Asylum Records UK Release, \u2117 2020 Warner Records UK Limited.",
+                "bpm": 79,
+                "key": "CSharp",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/141361308",
+                "isrc": "GBAHS2000219",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 4542094,
+                    "name": "Charli xcx",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "d1ffc798-ede1-4e3c-8da8-497c2c836b87"
+                },
+                "artists": [
+                    {
+                        "id": 4542094,
+                        "name": "Charli xcx",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "d1ffc798-ede1-4e3c-8da8-497c2c836b87"
+                    }
+                ],
+                "album": {
+                    "id": 141361297,
+                    "title": "how i'm feeling now",
+                    "cover": "2d0457e3-a4dc-4d06-809d-9cd4d7ccda04",
+                    "vibrantColor": null,
+                    "videoCover": null,
+                    "releaseDate": "2020-05-15"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00105ad4aeeec10f8c6fc4350d9995"
+                },
+                "dateAdded": "2025-07-31T22:37:41.362+0000",
+                "index": 3200000,
+                "itemUuid": "3864154f-3968-4f02-bda0-eca88c1e9e9f"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 465153325,
+                "title": "Stateside + Zara Larsson",
+                "duration": 185,
+                "replayGain": -10.96,
+                "peak": 0.993591,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-10T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 10,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 68,
+                "copyright": "Under Exclusive License to Parlophone Records Limited, \u2117 2025 Pink Pantheress",
+                "bpm": 123,
+                "key": "Bb",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/465153325",
+                "isrc": "GBAYE2501415",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 23409727,
+                    "name": "PinkPantheress",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "224393ce-7f5a-4848-8800-fead1ffa37dc"
+                },
+                "artists": [
+                    {
+                        "id": 23409727,
+                        "name": "PinkPantheress",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "224393ce-7f5a-4848-8800-fead1ffa37dc"
+                    },
+                    {
+                        "id": 4815108,
+                        "name": "Zara Larsson",
+                        "handle": null,
+                        "type": "FEATURED",
+                        "picture": "41f007dd-d440-4d16-8327-856663b3f59f"
+                    }
+                ],
+                "album": {
+                    "id": 465153308,
+                    "title": "Fancy Some More?",
+                    "cover": "6ec9d810-0789-4f9b-b08f-d9410f0cb164",
+                    "vibrantColor": "#d2919e",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-10"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001023e7606ff171f64a0056b62d78"
+                },
+                "dateAdded": "2026-01-20T20:37:09.464+0000",
+                "index": 3400000,
+                "itemUuid": "44672e5b-691c-46f3-92b7-8961ca5425c7"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 395198320,
+                "title": "Nice To Meet You",
+                "duration": 176,
+                "replayGain": -10.12,
+                "peak": 0.988439,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-11-08T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 71,
+                "copyright": "(P) 2024 Sony Music Entertainment UK Limited under exclusive licence from It's Okay To Feel Limited",
+                "bpm": 115,
+                "key": "C",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/395198320",
+                "isrc": "GBARL2401376",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8857512,
+                    "name": "Myles Smith",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "4fd0393e-5e3f-4b27-ae0c-1104fde8e105"
+                },
+                "artists": [
+                    {
+                        "id": 8857512,
+                        "name": "Myles Smith",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "4fd0393e-5e3f-4b27-ae0c-1104fde8e105"
+                    }
+                ],
+                "album": {
+                    "id": 395198319,
+                    "title": "A Minute...",
+                    "cover": "ad66ed26-9c8d-48f7-896c-2f89da5b634a",
+                    "vibrantColor": "#8cd8e7",
+                    "videoCover": null,
+                    "releaseDate": "2024-11-08"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00135b3390e6711f89f4fce8920291"
+                },
+                "dateAdded": "2025-11-07T03:31:37.982+0000",
+                "index": 3500000,
+                "itemUuid": "71724356-7b8b-4ed2-a7b3-a80d1e095eb4"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 435917898,
+                "title": "What I Want",
+                "duration": 185,
+                "replayGain": -11.57,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-05-16T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 4,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 74,
+                "copyright": "\u2117 2025 Big Loud Records, under exclusive license to Mercury Records, a division of UMG Records, Inc.",
+                "bpm": 116,
+                "key": "A",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/435917898",
+                "isrc": "USUG12501601",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 6326493,
+                    "name": "Morgan Wallen",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "e3cdd69b-2ef4-43db-b5a9-54575bf8137e"
+                },
+                "artists": [
+                    {
+                        "id": 6326493,
+                        "name": "Morgan Wallen",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "e3cdd69b-2ef4-43db-b5a9-54575bf8137e"
+                    },
+                    {
+                        "id": 9380062,
+                        "name": "Tate McRae",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "22469f82-4f7e-4401-b76f-a37973c01b93"
+                    }
+                ],
+                "album": {
+                    "id": 435917894,
+                    "title": "I\u2019m The Problem",
+                    "cover": "216202c3-d04c-4f36-8ff3-e252c4017a3d",
+                    "vibrantColor": "#efdbb3",
+                    "videoCover": null,
+                    "releaseDate": "2025-05-16"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00119bccddf74e66e94a9918cda469"
+                },
+                "dateAdded": "2025-09-25T23:10:09.880+0000",
+                "index": 3600000,
+                "itemUuid": "eb598e37-5e98-4919-9a40-78d712018d9e"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 426155419,
+                "title": "twilight zone",
+                "duration": 198,
+                "replayGain": -8.98,
+                "peak": 0.990552,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-03-28T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 15,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 70,
+                "copyright": "\u2117 2025 Republic Records, a division of UMG Recordings, Inc.",
+                "bpm": 115,
+                "key": "F",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/426155419",
+                "isrc": "USUM72501915",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 4332277,
+                    "name": "Ariana Grande",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "1c496bca-2823-4ef3-8ec7-f927d0e3edf7"
+                },
+                "artists": [
+                    {
+                        "id": 4332277,
+                        "name": "Ariana Grande",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "1c496bca-2823-4ef3-8ec7-f927d0e3edf7"
+                    }
+                ],
+                "album": {
+                    "id": 426155384,
+                    "title": "eternal sunshine deluxe: brighter days ahead",
+                    "cover": "91139dd4-516a-4aa5-bd9c-0562b0b74252",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2024-03-08"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00149031e0a487f1c164fa81deb6a6"
+                },
+                "dateAdded": "2025-07-31T22:31:34.257+0000",
+                "index": 3700000,
+                "itemUuid": "881d0b99-838d-453c-89fb-fd9785da385e"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 363236466,
+                "title": "BIRDS OF A FEATHER",
+                "duration": 210,
+                "replayGain": -7.93,
+                "peak": 0.958352,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-05-17T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 4,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 88,
+                "copyright": "\u2117 2024 Darkroom/Interscope Records",
+                "bpm": 105,
+                "key": "D",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/363236466",
+                "isrc": "USUM72401994",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 7514330,
+                    "name": "Billie Eilish",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "b2a74265-ad7f-4e14-b170-cc31e0ed8a4e"
+                },
+                "artists": [
+                    {
+                        "id": 7514330,
+                        "name": "Billie Eilish",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "b2a74265-ad7f-4e14-b170-cc31e0ed8a4e"
+                    }
+                ],
+                "album": {
+                    "id": 363236461,
+                    "title": "HIT ME HARD AND SOFT",
+                    "cover": "6107a068-f4fe-4db5-b741-948d5e3ecedb",
+                    "vibrantColor": "#258bda",
+                    "videoCover": null,
+                    "releaseDate": "2024-05-17"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0010b96ce415736ecb000f6ac11bbf"
+                },
+                "dateAdded": "2026-01-21T16:01:15.251+0000",
+                "index": 3750000,
+                "itemUuid": "8fdd0f4f-7a76-494f-b43b-80e0d18576ee"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 365065473,
+                "title": "Sienna",
+                "duration": 225,
+                "replayGain": -9.86,
+                "peak": 0.988553,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-05-31T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 14,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 76,
+                "copyright": "\u2117 2023 Atlantic Recording Corporation  and Nice Life Recording Company",
+                "bpm": null,
+                "key": null,
+                "keyScale": null,
+                "description": null,
+                "url": "http://www.tidal.com/track/365065473",
+                "isrc": "USAT22400849",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8821167,
+                    "name": "The Mar\u00edas",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "520f8a4c-95bd-479e-a70a-917256eb8518"
+                },
+                "artists": [
+                    {
+                        "id": 8821167,
+                        "name": "The Mar\u00edas",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "520f8a4c-95bd-479e-a70a-917256eb8518"
+                    }
+                ],
+                "album": {
+                    "id": 365065428,
+                    "title": "Submarine",
+                    "cover": "1bb1e984-13de-49b6-8d6c-cb87c57f4fbf",
+                    "vibrantColor": "#2e558e",
+                    "videoCover": null,
+                    "releaseDate": "2024-05-24"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0010c5d11f18ffbd9fddbed4eaf956"
+                },
+                "dateAdded": "2026-02-13T05:28:19.781+0000",
+                "index": 3800000,
+                "itemUuid": "7d3dc0f6-b00b-473a-b8c2-c84b95782796"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 463900387,
+                "title": "The Life of a Showgirl",
+                "duration": 242,
+                "replayGain": -9.75,
+                "peak": 0.98854,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-10-03T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 12,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 68,
+                "copyright": "\u2117 2025 Taylor Swift",
+                "bpm": 156,
+                "key": "C",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/463900387",
+                "isrc": "USUG12506447",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3557299,
+                    "name": "Taylor Swift",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "ffa46767-8d63-42bd-9dc7-827881ef460c"
+                },
+                "artists": [
+                    {
+                        "id": 3557299,
+                        "name": "Taylor Swift",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "ffa46767-8d63-42bd-9dc7-827881ef460c"
+                    },
+                    {
+                        "id": 4751756,
+                        "name": "Sabrina Carpenter",
+                        "handle": null,
+                        "type": "FEATURED",
+                        "picture": "854a8a1a-43f1-44b2-8e59-474e83abd578"
+                    }
+                ],
+                "album": {
+                    "id": 463900363,
+                    "title": "The Life of a Showgirl",
+                    "cover": "9a2c79fe-a70b-4f2f-bb7a-2d75fa332a7c",
+                    "vibrantColor": "#ceb478",
+                    "videoCover": null,
+                    "releaseDate": "2025-10-03"
+                },
+                "mixes": {
+                    "TRACK_MIX": "00148a29e96245515832b246606144"
+                },
+                "dateAdded": "2025-10-14T17:06:55.480+0000",
+                "index": 3850000,
+                "itemUuid": "f15a8a1b-4544-4d73-b2a6-933ff669e8e5"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 424539723,
+                "title": "Bluest Flame",
+                "duration": 163,
+                "replayGain": -11.05,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-03-21T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 8,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 68,
+                "copyright": "\u2117 2025 SMG Music LLC & Friends Keep Secrets, under exclusive license to Interscope Records",
+                "bpm": 136,
+                "key": "Bb",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/424539723",
+                "isrc": "USUG12408963",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 3638248,
+                    "name": "Selena Gomez",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "adaad98e-0083-49dd-b400-a30ca256dc7c"
+                },
+                "artists": [
+                    {
+                        "id": 3638248,
+                        "name": "Selena Gomez",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "adaad98e-0083-49dd-b400-a30ca256dc7c"
+                    },
+                    {
+                        "id": 10075738,
+                        "name": "benny blanco",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "18ff15d3-cd00-4c82-9cbf-fc5cf6944f2f"
+                    }
+                ],
+                "album": {
+                    "id": 424539712,
+                    "title": "I Said I Love You First",
+                    "cover": "fabb30f0-f522-4c4a-a9c4-94d134e81c78",
+                    "vibrantColor": "#eb890b",
+                    "videoCover": null,
+                    "releaseDate": "2025-03-21"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001f4e995637e020b51a43387b497a"
+                },
+                "dateAdded": "2025-03-26T14:16:03.344+0000",
+                "index": 3875000,
+                "itemUuid": "40395dd0-631d-4217-b548-1b61896e8ea7"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 436463987,
+                "title": "Bloodline",
+                "duration": 182,
+                "replayGain": -10.95,
+                "peak": 0.977237,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-05-22T18:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 68,
+                "copyright": "\u2117 2025 Atlantic Recording Corporation",
+                "bpm": 128,
+                "key": "E",
+                "keyScale": "MINOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/436463987",
+                "isrc": "USAT22503114",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 8965597,
+                    "name": "Alex Warren",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "0b4d550e-e989-42e3-aafa-b93bb1949d93"
+                },
+                "artists": [
+                    {
+                        "id": 8965597,
+                        "name": "Alex Warren",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "0b4d550e-e989-42e3-aafa-b93bb1949d93"
+                    },
+                    {
+                        "id": 4190297,
+                        "name": "Jelly Roll",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "6f644549-ab89-40fb-a3a4-8f973c0fc0d5"
+                    }
+                ],
+                "album": {
+                    "id": 436463984,
+                    "title": "Bloodline",
+                    "cover": "d948da22-6a7d-4747-90cd-3ca924c0237f",
+                    "vibrantColor": "#FFFFFF",
+                    "videoCover": null,
+                    "releaseDate": "2025-01-01"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001dc56122a5bdf730c2ee12f76c2f"
+                },
+                "dateAdded": "2026-02-13T05:27:33.729+0000",
+                "index": 3900000,
+                "itemUuid": "b7e243d5-32c7-4c1f-87ec-43b7c1a1079c"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 369342744,
+                "title": "Messy",
+                "duration": 284,
+                "replayGain": -11.79,
+                "peak": 0.988553,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2024-06-21T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 5,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 79,
+                "copyright": "\u2117 2024 Day One Music Limited, under exclusive licence to Universal Music Operations Limited",
+                "bpm": 111,
+                "key": "A",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/369342744",
+                "isrc": "GBUM72401610",
+                "editable": false,
+                "explicit": true,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 7381692,
+                    "name": "Lola Young",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "a180a842-ee01-43d5-b9ce-ddcb317f4674"
+                },
+                "artists": [
+                    {
+                        "id": 7381692,
+                        "name": "Lola Young",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "a180a842-ee01-43d5-b9ce-ddcb317f4674"
+                    }
+                ],
+                "album": {
+                    "id": 369342737,
+                    "title": "This Wasn't Meant For You Anyway",
+                    "cover": "cd30cd94-9f40-4d56-bfc7-b53c205371d5",
+                    "vibrantColor": "#d18e8b",
+                    "videoCover": null,
+                    "releaseDate": "2024-06-21"
+                },
+                "mixes": {
+                    "TRACK_MIX": "001fe5865d4371c94bdb5c81b14926"
+                },
+                "dateAdded": "2025-03-04T16:25:28.259+0000",
+                "index": 4050000,
+                "itemUuid": "c23972b9-5aee-4b90-b2ad-ea917094b42e"
+            },
+            "type": "track",
+            "cut": null
+        },
+        {
+            "item": {
+                "id": 441832978,
+                "title": "Gabriela",
+                "duration": 197,
+                "replayGain": -9.29,
+                "peak": 1.0,
+                "allowStreaming": true,
+                "streamReady": true,
+                "payToStream": false,
+                "adSupportedStreamReady": true,
+                "djReady": true,
+                "stemReady": false,
+                "streamStartDate": "2025-06-20T00:00:00.000+0000",
+                "premiumStreamingOnly": false,
+                "trackNumber": 1,
+                "volumeNumber": 1,
+                "version": null,
+                "popularity": 74,
+                "copyright": "\u2117 2025 HYBE UMG LLC",
+                "bpm": 146,
+                "key": "D",
+                "keyScale": "MAJOR",
+                "description": null,
+                "url": "http://www.tidal.com/track/441832978",
+                "isrc": "USUM72503465",
+                "editable": false,
+                "explicit": false,
+                "audioQuality": "LOSSLESS",
+                "audioModes": [
+                    "STEREO"
+                ],
+                "mediaMetadata": {
+                    "tags": [
+                        "LOSSLESS",
+                        "HIRES_LOSSLESS"
+                    ]
+                },
+                "upload": false,
+                "accessType": "PUBLIC",
+                "spotlighted": false,
+                "artist": {
+                    "id": 48604055,
+                    "name": "KATSEYE",
+                    "handle": null,
+                    "type": "MAIN",
+                    "picture": "464ba9e5-c457-4fda-8320-e800f5ada9bc"
+                },
+                "artists": [
+                    {
+                        "id": 48604055,
+                        "name": "KATSEYE",
+                        "handle": null,
+                        "type": "MAIN",
+                        "picture": "464ba9e5-c457-4fda-8320-e800f5ada9bc"
+                    }
+                ],
+                "album": {
+                    "id": 441832977,
+                    "title": "Gabriela",
+                    "cover": "ca3ecd33-bcbb-4d9f-97b4-a74e8e0fcfac",
+                    "vibrantColor": "#e08a8b",
+                    "videoCover": null,
+                    "releaseDate": "2025-06-20"
+                },
+                "mixes": {
+                    "TRACK_MIX": "0016e90d34703c1dc6854842be0c18"
+                },
+                "dateAdded": "2026-01-21T15:57:38.991+0000",
+                "index": 4300000,
+                "itemUuid": "1e84ab97-4a88-4d99-a651-ec83fce85948"
+            },
+            "type": "track",
+            "cut": null
+        }
+    ]
+}
