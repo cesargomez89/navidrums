@@ -77,6 +77,10 @@ func (m *ProviderManager) GetSimilarAlbums(ctx context.Context, id string) ([]mo
 	return m.GetProvider().GetSimilarAlbums(ctx, id)
 }
 
+func (m *ProviderManager) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
+	return m.GetProvider().GetLyrics(ctx, trackID)
+}
+
 type CustomProvider struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`

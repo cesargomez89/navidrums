@@ -119,6 +119,10 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 			Copyright       string      `json:"copyright"`
 			NumberOfTracks  int         `json:"numberOfTracks"`
 			NumberOfVolumes int         `json:"numberOfVolumes"`
+			Type            string      `json:"type"`
+			UPC             string      `json:"upc"`
+			URL             string      `json:"url"`
+			Explicit        bool        `json:"explicit"`
 			Artist          struct {
 				Name string `json:"name"`
 			} `json:"artist"`
@@ -132,6 +136,14 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 					ID           json.Number `json:"id"`
 					ISRC         string      `json:"isrc"`
 					Explicit     bool        `json:"explicit"`
+					BPM          int         `json:"bpm"`
+					Key          string      `json:"key"`
+					KeyScale     string      `json:"keyScale"`
+					ReplayGain   float64     `json:"replayGain"`
+					Peak         float64     `json:"peak"`
+					Version      *string     `json:"version"`
+					URL          string      `json:"url"`
+					AudioQuality string      `json:"audioQuality"`
 					Artists      []struct {
 						Name string `json:"name"`
 					} `json:"artists"`
@@ -160,10 +172,15 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 		Title:       resp.Data.Title,
 		Artist:      resp.Data.Artist.Name,
 		Year:        year,
+		ReleaseDate: resp.Data.ReleaseDate,
 		Copyright:   resp.Data.Copyright,
 		TotalTracks: resp.Data.NumberOfTracks,
 		TotalDiscs:  resp.Data.NumberOfVolumes,
 		AlbumArtURL: albumArtURL,
+		UPC:         resp.Data.UPC,
+		AlbumType:   resp.Data.Type,
+		URL:         resp.Data.URL,
+		Explicit:    resp.Data.Explicit,
 	}
 
 	for _, wrapped := range resp.Data.Items {
@@ -173,7 +190,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 			tArtist = item.Artists[0].Name
 		}
 
-		album.Tracks = append(album.Tracks, models.Track{
+		track := models.Track{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
 			Artist:         tArtist,
@@ -185,11 +202,23 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 			TotalDiscs:     album.TotalDiscs,
 			Duration:       item.Duration,
 			Year:           album.Year,
+			ReleaseDate:    album.ReleaseDate,
 			Copyright:      album.Copyright,
 			ISRC:           item.ISRC,
 			AlbumArtURL:    album.AlbumArtURL,
 			ExplicitLyrics: item.Explicit,
-		})
+			BPM:            item.BPM,
+			Key:            item.Key,
+			KeyScale:       item.KeyScale,
+			ReplayGain:     item.ReplayGain,
+			Peak:           item.Peak,
+			URL:            item.URL,
+			AudioQuality:   item.AudioQuality,
+		}
+		if item.Version != nil {
+			track.Version = *item.Version
+		}
+		album.Tracks = append(album.Tracks, track)
 	}
 	return album, nil
 }
@@ -272,12 +301,24 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, 
 			ISRC         string      `json:"isrc"`
 			Explicit     bool        `json:"explicit"`
 			Copyright    string      `json:"copyright"`
+			BPM          int         `json:"bpm"`
+			Key          string      `json:"key"`
+			KeyScale     string      `json:"keyScale"`
+			ReplayGain   float64     `json:"replayGain"`
+			Peak         float64     `json:"peak"`
+			Version      *string     `json:"version"`
+			URL          string      `json:"url"`
+			AudioQuality string      `json:"audioQuality"`
+			AudioModes   []string    `json:"audioModes"`
 			Album        struct {
-				Title           string    `json:"title"`
-				ReleaseDate     string    `json:"releaseDate"`
-				NumberOfTracks  int       `json:"numberOfTracks"`
-				NumberOfVolumes int       `json:"numberOfVolumes"`
-				Cover           FlexCover `json:"cover"`
+				ID              json.Number `json:"id"`
+				Title           string      `json:"title"`
+				ReleaseDate     string      `json:"releaseDate"`
+				NumberOfTracks  int         `json:"numberOfTracks"`
+				NumberOfVolumes int         `json:"numberOfVolumes"`
+				Cover           FlexCover   `json:"cover"`
+				UPC             string      `json:"upc"`
+				Label           string      `json:"label"`
 			} `json:"album"`
 			Artist struct {
 				Name string `json:"name"`
@@ -306,7 +347,13 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, 
 	// Get album artist (use first artist or main artist)
 	albumArtist := resp.Data.Artist.Name
 
-	return &models.Track{
+	// Build audio modes string
+	audioModes := ""
+	if len(resp.Data.AudioModes) > 0 {
+		audioModes = resp.Data.AudioModes[0]
+	}
+
+	track := &models.Track{
 		ID:             formatID(resp.Data.ID),
 		Title:          resp.Data.Title,
 		Artist:         resp.Data.Artist.Name,
@@ -318,11 +365,26 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, 
 		TotalDiscs:     resp.Data.Album.NumberOfVolumes,
 		Duration:       resp.Data.Duration,
 		Year:           year,
+		ReleaseDate:    resp.Data.Album.ReleaseDate,
 		ISRC:           resp.Data.ISRC,
 		Copyright:      resp.Data.Copyright,
 		AlbumArtURL:    albumArtURL,
 		ExplicitLyrics: resp.Data.Explicit,
-	}, nil
+		BPM:            resp.Data.BPM,
+		Key:            resp.Data.Key,
+		KeyScale:       resp.Data.KeyScale,
+		ReplayGain:     resp.Data.ReplayGain,
+		Peak:           resp.Data.Peak,
+		URL:            resp.Data.URL,
+		AudioQuality:   resp.Data.AudioQuality,
+		AudioModes:     audioModes,
+		Label:          resp.Data.Album.Label,
+	}
+	if resp.Data.Version != nil {
+		track.Version = *resp.Data.Version
+	}
+
+	return track, nil
 }
 
 func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
@@ -510,6 +572,21 @@ func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]model
 	}
 
 	return albums, nil
+}
+
+func (p *HifiProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
+	u := fmt.Sprintf("%s/lyrics/?id=%s", p.BaseURL, trackID)
+	var resp struct {
+		Lyrics struct {
+			Lyrics    string `json:"lyrics"`
+			Subtitles string `json:"subtitles"`
+			Provider  string `json:"lyricsProvider"`
+		} `json:"lyrics"`
+	}
+	if err := p.get(ctx, u, &resp); err != nil {
+		return "", "", err
+	}
+	return resp.Lyrics.Lyrics, resp.Lyrics.Subtitles, nil
 }
 
 func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) error {

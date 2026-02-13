@@ -99,6 +99,43 @@ func tagFLAC(filePath string, track *models.Track, albumArtData []byte) error {
 	if track.Composer != "" {
 		_ = cmtmeta.Add("COMPOSER", track.Composer)
 	}
+	// Additional metadata fields
+	if track.BPM > 0 {
+		_ = cmtmeta.Add("BPM", fmt.Sprintf("%d", track.BPM))
+	}
+	if track.Key != "" {
+		_ = cmtmeta.Add("KEY", track.Key)
+	}
+	if track.KeyScale != "" {
+		_ = cmtmeta.Add("KEY_SCALE", track.KeyScale)
+	}
+	if track.ReplayGain != 0 {
+		_ = cmtmeta.Add("REPLAYGAIN_TRACK_GAIN", fmt.Sprintf("%.2f dB", track.ReplayGain))
+	}
+	if track.Peak != 0 {
+		_ = cmtmeta.Add("REPLAYGAIN_TRACK_PEAK", fmt.Sprintf("%.6f", track.Peak))
+	}
+	if track.Version != "" {
+		_ = cmtmeta.Add("VERSION", track.Version)
+	}
+	if track.Description != "" {
+		_ = cmtmeta.Add("DESCRIPTION", track.Description)
+	}
+	if track.URL != "" {
+		_ = cmtmeta.Add("URL", track.URL)
+	}
+	if track.AudioQuality != "" {
+		_ = cmtmeta.Add("AUDIO_QUALITY", track.AudioQuality)
+	}
+	if track.AudioModes != "" {
+		_ = cmtmeta.Add("AUDIO_MODE", track.AudioModes)
+	}
+	if track.Lyrics != "" {
+		_ = cmtmeta.Add("UNSYNCEDLYRICS", track.Lyrics)
+	}
+	if track.ReleaseDate != "" {
+		_ = cmtmeta.Add("RELEASEDATE", track.ReleaseDate)
+	}
 
 	// Replace or add vorbis comment
 	res := cmtmeta.Marshal()
@@ -189,6 +226,42 @@ func tagMP3(filePath string, track *models.Track, albumArtData []byte) error {
 	}
 	if track.Copyright != "" {
 		tag.AddTextFrame(tag.CommonID("Copyright message"), tag.DefaultEncoding(), track.Copyright)
+	}
+
+	// Additional metadata fields
+	if track.BPM > 0 {
+		tag.AddTextFrame(tag.CommonID("BPM"), tag.DefaultEncoding(), fmt.Sprintf("%d", track.BPM))
+	}
+	if track.Key != "" {
+		tag.AddTextFrame(tag.CommonID("Key"), tag.DefaultEncoding(), track.Key)
+	}
+	if track.KeyScale != "" {
+		tag.AddTextFrame("TKEYSCALE", tag.DefaultEncoding(), track.KeyScale)
+	}
+	if track.ReplayGain != 0 {
+		tag.AddTextFrame("TXXX", tag.DefaultEncoding(), fmt.Sprintf("REPLAYGAIN_TRACK_GAIN=%.2f dB", track.ReplayGain))
+		tag.AddTextFrame("TXXX", tag.DefaultEncoding(), fmt.Sprintf("REPLAYGAIN_TRACK_PEAK=%.6f", track.Peak))
+	}
+	if track.Version != "" {
+		tag.AddTextFrame(tag.CommonID("Version"), tag.DefaultEncoding(), track.Version)
+	}
+	if track.Description != "" {
+		tag.AddTextFrame(tag.CommonID("Comments"), tag.DefaultEncoding(), track.Description)
+	}
+	if track.URL != "" {
+		tag.AddTextFrame(tag.CommonID("WWWAudioSource"), tag.DefaultEncoding(), track.URL)
+	}
+	if track.AudioQuality != "" {
+		tag.AddTextFrame("TXXX", tag.DefaultEncoding(), fmt.Sprintf("AUDIO_QUALITY=%s", track.AudioQuality))
+	}
+	if track.AudioModes != "" {
+		tag.AddTextFrame("TXXX", tag.DefaultEncoding(), fmt.Sprintf("AUDIO_MODE=%s", track.AudioModes))
+	}
+	if track.Lyrics != "" {
+		tag.AddTextFrame(tag.CommonID("Lyrics"), tag.DefaultEncoding(), track.Lyrics)
+	}
+	if track.ReleaseDate != "" {
+		tag.AddTextFrame(tag.CommonID("Release time"), tag.DefaultEncoding(), track.ReleaseDate)
 	}
 
 	// Add album art

@@ -86,3 +86,7 @@ func (p *MockProvider) GetSimilarAlbums(ctx context.Context, id string) ([]model
 		{ID: "108", Title: "Similar Mock Album 8", Artist: "Mock Artist"},
 	}, nil
 }
+
+func (p *MockProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
+	return "Mock lyrics for testing", "[00:00.00] Mock lyrics for testing", nil
+}

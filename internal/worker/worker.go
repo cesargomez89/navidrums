@@ -362,6 +362,17 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		}
 	}
 
+	// Fetch lyrics if not already present
+	if track.Lyrics == "" {
+		lyrics, _, err := w.Provider.GetLyrics(ctx, track.ID)
+		if err != nil {
+			logger.Debug("Failed to fetch lyrics", "error", err)
+		} else {
+			track.Lyrics = lyrics
+			logger.Debug("Fetched lyrics successfully")
+		}
+	}
+
 	// Tag the file with metadata
 	if err := tagging.TagFile(finalPath, &track, albumArtData); err != nil {
 		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)

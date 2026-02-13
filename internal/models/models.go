@@ -62,7 +62,20 @@ type Track struct {
 	Copyright      string `json:"copyright,omitempty"`
 	Composer       string `json:"composer,omitempty"`
 	AlbumArtURL    string `json:"album_art_url,omitempty"`
-	ExplicitLyrics bool    `json:"explicit_lyrics,omitempty"`
+	ExplicitLyrics bool   `json:"explicit_lyrics,omitempty"`
+	// Additional metadata fields
+	BPM          int     `json:"bpm,omitempty"`
+	Key          string  `json:"key,omitempty"`
+	KeyScale     string  `json:"key_scale,omitempty"`
+	ReplayGain   float64 `json:"replay_gain,omitempty"`
+	Peak         float64 `json:"peak,omitempty"`
+	Version      string  `json:"version,omitempty"`
+	Description  string  `json:"description,omitempty"`
+	URL          string  `json:"url,omitempty"`
+	AudioQuality string  `json:"audio_quality,omitempty"`
+	AudioModes   string  `json:"audio_modes,omitempty"`
+	Lyrics       string  `json:"lyrics,omitempty"`
+	ReleaseDate  string  `json:"release_date,omitempty"` // Full date YYYY-MM-DD
 }
 
 type Album struct {
@@ -70,6 +83,7 @@ type Album struct {
 	Title       string  `json:"title"`
 	Artist      string  `json:"artist"`
 	Year        int     `json:"year,omitempty"`
+	ReleaseDate string  `json:"release_date,omitempty"` // Full date YYYY-MM-DD
 	Genre       string  `json:"genre,omitempty"`
 	Label       string  `json:"label,omitempty"`
 	Copyright   string  `json:"copyright,omitempty"`
@@ -77,6 +91,11 @@ type Album struct {
 	TotalDiscs  int     `json:"total_discs,omitempty"`
 	AlbumArtURL string  `json:"album_art_url,omitempty"`
 	Tracks      []Track `json:"tracks"`
+	// Additional metadata fields
+	UPC       string `json:"upc,omitempty"`
+	AlbumType string `json:"album_type,omitempty"` // ALBUM, EP, SINGLE
+	URL       string `json:"url,omitempty"`
+	Explicit  bool   `json:"explicit,omitempty"`
 }
 
 type Artist struct {
