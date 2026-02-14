@@ -99,6 +99,14 @@ func (r *multiSegmentReader) Read(p []byte) (n int, err error) {
 		if r.currIdx >= len(r.urls) {
 			return 0, io.EOF
 		}
+
+		// Check context before fetching segment
+		select {
+		case <-r.ctx.Done():
+			return 0, r.ctx.Err()
+		default:
+		}
+
 		// Fetch next segment
 		req, err := http.NewRequestWithContext(r.ctx, "GET", r.urls[r.currIdx], nil)
 		if err != nil {
@@ -120,7 +128,13 @@ func (r *multiSegmentReader) Read(p []byte) (n int, err error) {
 	if err == io.EOF {
 		r.currBody.Close()
 		r.currBody = nil
-		return r.Read(p) // recursive call to next segment
+		// Check context before recursive call
+		select {
+		case <-r.ctx.Done():
+			return 0, r.ctx.Err()
+		default:
+			return r.Read(p) // recursive call to next segment
+		}
 	}
 	return n, err
 }
