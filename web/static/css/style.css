@@ -481,16 +481,19 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     font-style: italic;
 }
 
-/* Queue/History */
-.job {
+/* History */
+.history-stats {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
     padding: 12px;
-    background: var(--card);
     border-radius: 8px;
-    margin-bottom: 8px;
-    transition: transform 0.2s ease;
+    flex-wrap: wrap;
+}
+.history-stats > div {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 .job:hover {
     transform: translateX(4px);
@@ -506,6 +509,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 }
 .status-completed { background: #10b981; }
 .status-failed { background: #ef4444; }
+.status-cancelled { background: #f59e0b; color: #000; }
 
 /* Animations */
 @keyframes pulse {
@@ -668,5 +672,14 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     .provider-actions .badge-success { 
         flex: 1;
         text-align: center;
+    }
+    .history-stats {
+        gap: 12px;
+        padding: 12px 0px;
+    }
+    .history-stats > div {
+        flex: 1;
+        min-width: 45%;
+        justify-content: center;
     }
 }

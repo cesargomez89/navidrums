@@ -1,6 +1,6 @@
 {{define "content"}}
 {{if .Stats}}
-<div style="display: flex; gap: 16px; margin-bottom: 16px; padding: 12px; background: var(--bg-dim); border-radius: 8px;">
+<div class="history-stats">
     <div><strong>Total:</strong> {{.Stats.Total}}</div>
     <div><span class="job-status status-completed">Completed: {{.Stats.Completed}}</span></div>
     <div><span class="job-status status-failed">Failed: {{.Stats.Failed}}</span></div>
