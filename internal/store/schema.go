@@ -21,7 +21,6 @@ WHERE status IN ('queued', 'resolving_tracks', 'downloading');
 CREATE TABLE IF NOT EXISTS downloads (
 	provider_id TEXT PRIMARY KEY,
 	file_path TEXT NOT NULL,
-	file_extension TEXT DEFAULT '.flac',
 	completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -35,5 +34,11 @@ CREATE TABLE IF NOT EXISTS settings (
 	key TEXT PRIMARY KEY,
 	value TEXT NOT NULL,
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+	version INTEGER PRIMARY KEY,
+	description TEXT NOT NULL,
+	applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 `
