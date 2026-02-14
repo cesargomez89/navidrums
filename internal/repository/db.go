@@ -21,7 +21,7 @@ func NewSQLiteDB(dsn string) (*DB, error) {
 	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
 		return nil, fmt.Errorf("failed to set WAL mode: %w", err)
 	}
-	if _, err := db.Exec("PRAGMA busy_timeout=5000"); err != nil {
+	if _, err := db.Exec("PRAGMA busy_timeout=30000"); err != nil {
 		return nil, fmt.Errorf("failed to set busy timeout: %w", err)
 	}
 

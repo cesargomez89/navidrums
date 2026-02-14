@@ -368,12 +368,17 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	}
 
 	// Fetch lyrics if not already present
-	if track.Lyrics == "" {
-		lyrics, _, err := w.Provider.GetLyrics(ctx, track.ID)
+	if track.Lyrics == "" || track.Subtitles == "" {
+		lyrics, subtitles, err := w.Provider.GetLyrics(ctx, track.ID)
 		if err != nil {
 			logger.Debug("Failed to fetch lyrics", "error", err)
 		} else {
-			track.Lyrics = lyrics
+			if track.Lyrics == "" && lyrics != "" {
+				track.Lyrics = lyrics
+			}
+			if track.Subtitles == "" && subtitles != "" {
+				track.Subtitles = subtitles
+			}
 			logger.Debug("Fetched lyrics successfully")
 		}
 	}

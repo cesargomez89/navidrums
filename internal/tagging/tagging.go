@@ -133,6 +133,9 @@ func tagFLAC(filePath string, track *models.Track, albumArtData []byte) error {
 	if track.Lyrics != "" {
 		_ = cmtmeta.Add("UNSYNCEDLYRICS", track.Lyrics)
 	}
+	if track.Subtitles != "" {
+		_ = cmtmeta.Add("LYRICS", formatToLRC(track.Subtitles))
+	}
 	if track.ReleaseDate != "" {
 		_ = cmtmeta.Add("RELEASEDATE", track.ReleaseDate)
 	}
@@ -260,6 +263,17 @@ func tagMP3(filePath string, track *models.Track, albumArtData []byte) error {
 	if track.Lyrics != "" {
 		tag.AddTextFrame(tag.CommonID("Lyrics"), tag.DefaultEncoding(), track.Lyrics)
 	}
+
+	// Add synchronized lyrics via USLT frame with LRC-formatted text as fallback
+	if track.Subtitles != "" {
+		tag.AddUnsynchronisedLyricsFrame(id3v2.UnsynchronisedLyricsFrame{
+			Encoding:          id3v2.EncodingUTF8,
+			Language:          "eng",
+			ContentDescriptor: "LRC",
+			Lyrics:            formatToLRC(track.Subtitles),
+		})
+	}
+
 	if track.ReleaseDate != "" {
 		tag.AddTextFrame(tag.CommonID("Release time"), tag.DefaultEncoding(), track.ReleaseDate)
 	}
@@ -277,6 +291,29 @@ func tagMP3(filePath string, track *models.Track, albumArtData []byte) error {
 	}
 
 	return tag.Save()
+}
+
+// formatToLRC converts subtitles format to LRC format
+// Input: "[00:39.98] Lyrics text"
+// Output: "[00:39.98]Lyrics text"
+func formatToLRC(subtitles string) string {
+	var result strings.Builder
+	lines := strings.Split(subtitles, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		// Remove the closing bracket from timestamp for LRC format
+		if len(line) > 10 && line[0] == '[' {
+			result.WriteString(line[:9])
+			result.WriteString(line[10:])
+		} else {
+			result.WriteString(line)
+		}
+		result.WriteString("\n")
+	}
+	return result.String()
 }
 
 // tagMP4 writes metadata to an MP4/M4A file

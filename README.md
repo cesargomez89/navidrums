@@ -1,7 +1,7 @@
 # Navidrums
 
 A lightweight self-hosted web application for browsing and downloading music to your Navidrome library.
-Optimized for Raspberry Pi 4B.
+Optimized for low-end hardware.
 
 ## Features
 

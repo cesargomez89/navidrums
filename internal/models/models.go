@@ -75,6 +75,7 @@ type Track struct {
 	AudioQuality string  `json:"audio_quality,omitempty"`
 	AudioModes   string  `json:"audio_modes,omitempty"`
 	Lyrics       string  `json:"lyrics,omitempty"`
+	Subtitles    string  `json:"subtitles,omitempty"`
 	ReleaseDate  string  `json:"release_date,omitempty"` // Full date YYYY-MM-DD
 }
 
