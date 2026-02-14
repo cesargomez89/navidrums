@@ -124,7 +124,8 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 			URL             string      `json:"url"`
 			Explicit        bool        `json:"explicit"`
 			Artist          struct {
-				Name string `json:"name"`
+				ID   json.Number `json:"id"`
+				Name string      `json:"name"`
 			} `json:"artist"`
 			Cover FlexCover `json:"cover"`
 			Items []struct {
@@ -145,7 +146,8 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 					URL          string      `json:"url"`
 					AudioQuality string      `json:"audioQuality"`
 					Artists      []struct {
-						Name string `json:"name"`
+						ID   json.Number `json:"id"`
+						Name string      `json:"name"`
 					} `json:"artists"`
 				} `json:"item"`
 			} `json:"items"`
@@ -170,6 +172,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 	album := &domain.Album{
 		ID:          formatID(resp.Data.ID),
 		Title:       resp.Data.Title,
+		ArtistID:    formatID(resp.Data.Artist.ID),
 		Artist:      resp.Data.Artist.Name,
 		Year:        year,
 		ReleaseDate: resp.Data.ReleaseDate,
@@ -186,14 +189,18 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 	for _, wrapped := range resp.Data.Items {
 		item := wrapped.Item
 		tArtist := album.Artist
+		tArtistID := album.ArtistID
 		if len(item.Artists) > 0 {
 			tArtist = item.Artists[0].Name
+			tArtistID = formatID(item.Artists[0].ID)
 		}
 
 		track := domain.Track{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
+			ArtistID:       tArtistID,
 			Artist:         tArtist,
+			AlbumID:        album.ID,
 			AlbumArtist:    album.Artist,
 			Album:          album.Title,
 			TrackNumber:    item.TrackNumber,
@@ -241,11 +248,13 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 				ISRC        string      `json:"isrc"`
 				Explicit    bool        `json:"explicit"`
 				Album       struct {
-					Title string    `json:"title"`
-					Cover FlexCover `json:"cover"`
+					ID    json.Number `json:"id"`
+					Title string      `json:"title"`
+					Cover FlexCover   `json:"cover"`
 				} `json:"album"`
 				Artists []struct {
-					Name string `json:"name"`
+					ID   json.Number `json:"id"`
+					Name string      `json:"name"`
 				} `json:"artists"`
 			} `json:"item"`
 		} `json:"items"`
@@ -264,8 +273,10 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 	for _, wrapped := range resp.Items {
 		item := wrapped.Item
 		artist := "Unknown"
+		artistID := ""
 		if len(item.Artists) > 0 {
 			artist = item.Artists[0].Name
+			artistID = formatID(item.Artists[0].ID)
 		}
 
 		albumArtURL := ""
@@ -276,7 +287,9 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 		pl.Tracks = append(pl.Tracks, domain.Track{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
+			ArtistID:       artistID,
 			Artist:         artist,
+			AlbumID:        formatID(item.Album.ID),
 			Album:          item.Album.Title,
 			TrackNumber:    item.TrackNumber,
 			Duration:       item.Duration,
@@ -321,10 +334,12 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, 
 				Label           string      `json:"label"`
 			} `json:"album"`
 			Artist struct {
-				Name string `json:"name"`
+				ID   json.Number `json:"id"`
+				Name string      `json:"name"`
 			} `json:"artist"`
 			Artists []struct {
-				Name string `json:"name"`
+				ID   json.Number `json:"id"`
+				Name string      `json:"name"`
 			} `json:"artists"`
 		} `json:"data"`
 	}
@@ -356,7 +371,9 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, 
 	track := &domain.Track{
 		ID:             formatID(resp.Data.ID),
 		Title:          resp.Data.Title,
+		ArtistID:       formatID(resp.Data.Artist.ID),
 		Artist:         resp.Data.Artist.Name,
+		AlbumID:        formatID(resp.Data.Album.ID),
 		AlbumArtist:    albumArtist,
 		Album:          resp.Data.Album.Title,
 		TrackNumber:    resp.Data.TrackNumber,

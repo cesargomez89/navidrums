@@ -121,11 +121,13 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain
 				Duration    int         `json:"duration"`
 				TrackNumber int         `json:"trackNumber"`
 				Album       struct {
-					Title string `json:"title"`
-					Cover string `json:"cover"`
+					ID    json.Number `json:"id"`
+					Title string      `json:"title"`
+					Cover string      `json:"cover"`
 				} `json:"album"`
 				Artists []struct {
-					Name string `json:"name"`
+					ID   json.Number `json:"id"`
+					Name string      `json:"name"`
 				} `json:"artists"`
 			} `json:"items"`
 		} `json:"data"`
@@ -137,13 +139,17 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain
 	var tracks []domain.Track
 	for _, item := range resp.Data.Items {
 		artist := "Unknown"
+		artistID := ""
 		if len(item.Artists) > 0 {
 			artist = item.Artists[0].Name
+			artistID = formatID(item.Artists[0].ID)
 		}
 		tracks = append(tracks, domain.Track{
 			ID:          formatID(item.ID),
 			Title:       item.Title,
+			ArtistID:    artistID,
 			Artist:      artist,
+			AlbumID:     formatID(item.Album.ID),
 			Album:       item.Album.Title,
 			TrackNumber: item.TrackNumber,
 			Duration:    item.Duration,

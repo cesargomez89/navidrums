@@ -18,7 +18,7 @@ func (p *MockProvider) Search(ctx context.Context, query string, searchType stri
 	res := &domain.SearchResult{
 		Artists: []domain.Artist{{ID: "1", Name: "Mock Artist"}},
 		Albums:  []domain.Album{{ID: "1", Title: "Mock Album", Artist: "Mock Artist"}},
-		Tracks:  []domain.Track{{ID: "1", Title: "Mock Track", Artist: "Mock Artist", Album: "Mock Album", TrackNumber: 1, Duration: 180}},
+		Tracks:  []domain.Track{{ID: "1", Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1, Duration: 180}},
 	}
 
 	if searchType == "" {
@@ -45,12 +45,13 @@ func (p *MockProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 
 func (p *MockProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, error) {
 	return &domain.Album{
-		ID:     id,
-		Title:  "Mock Album",
-		Artist: "Mock Artist",
+		ID:       id,
+		Title:    "Mock Album",
+		Artist:   "Mock Artist",
+		ArtistID: "1",
 		Tracks: []domain.Track{
-			{ID: "1", Title: "Track 1", Artist: "Mock Artist", TrackNumber: 1, Duration: 180},
-			{ID: "2", Title: "Track 2", Artist: "Mock Artist", TrackNumber: 2, Duration: 200},
+			{ID: "1", Title: "Track 1", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1, Duration: 180},
+			{ID: "2", Title: "Track 2", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 2, Duration: 200},
 		},
 	}, nil
 }
@@ -60,13 +61,13 @@ func (p *MockProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 		ID:    id,
 		Title: "Mock Playlist",
 		Tracks: []domain.Track{
-			{ID: "3", Title: "Track 3", Artist: "Unknown", TrackNumber: 1},
+			{ID: "3", Title: "Track 3", ArtistID: "2", Artist: "Unknown", AlbumID: "2", Album: "Unknown Album", TrackNumber: 1},
 		},
 	}, nil
 }
 
 func (p *MockProvider) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
-	return &domain.Track{ID: id, Title: "Mock Track", Artist: "Mock Artist", Album: "Mock Album", TrackNumber: 1}, nil
+	return &domain.Track{ID: id, Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1}, nil
 }
 
 func (p *MockProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {

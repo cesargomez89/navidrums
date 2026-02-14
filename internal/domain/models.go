@@ -48,9 +48,11 @@ type Download struct {
 type Track struct {
 	ID             string `json:"id"`
 	Title          string `json:"title"`
+	ArtistID       string `json:"artist_id,omitempty"`
 	Artist         string `json:"artist"`
-	AlbumArtist    string `json:"album_artist,omitempty"`
+	AlbumID        string `json:"album_id,omitempty"`
 	Album          string `json:"album"`
+	AlbumArtist    string `json:"album_artist,omitempty"`
 	TrackNumber    int    `json:"track_number"`
 	DiscNumber     int    `json:"disc_number,omitempty"`
 	TotalTracks    int    `json:"total_tracks,omitempty"`
@@ -83,6 +85,7 @@ type Track struct {
 type Album struct {
 	ID          string  `json:"id"`
 	Title       string  `json:"title"`
+	ArtistID    string  `json:"artist_id,omitempty"`
 	Artist      string  `json:"artist"`
 	Year        int     `json:"year,omitempty"`
 	ReleaseDate string  `json:"release_date,omitempty"` // Full date YYYY-MM-DD

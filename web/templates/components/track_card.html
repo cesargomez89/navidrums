@@ -2,7 +2,8 @@
     <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}" alt="{{.Title}}">
     <div class="track-info">
         <div class="track-title">{{.Title}}</div>
-        <div class="track-artist">{{.Artist}}</div>
+        <div class="track-artist"><a href="/artist/{{.ArtistID}}">{{.Artist}}</a></div>
+        <div class="track-album"><a href="/album/{{.AlbumID}}">{{.Album}}</a></div>
     </div>
     <button class="btn btn-primary btn-sm" onclick="queueDownload('track', '{{.ID}}', this)">Download</button>
 </div>
