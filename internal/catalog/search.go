@@ -1,4 +1,4 @@
-package providers
+package catalog
 
 import (
 	"context"
@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
-// Search performs a search query across different entity types
-func (p *HifiProvider) Search(ctx context.Context, query string, searchType string) (*models.SearchResult, error) {
-	res := &models.SearchResult{}
+func (p *HifiProvider) Search(ctx context.Context, query string, searchType string) (*domain.SearchResult, error) {
+	res := &domain.SearchResult{}
 
 	if searchType == "" {
 		searchType = "album"
@@ -39,7 +38,6 @@ func (p *HifiProvider) Search(ctx context.Context, query string, searchType stri
 			res.Playlists = playlists
 		}
 	default:
-		// Default to album if type is unknown
 		albums, err := p.searchAlbums(ctx, query)
 		if err == nil {
 			res.Albums = albums
@@ -49,7 +47,7 @@ func (p *HifiProvider) Search(ctx context.Context, query string, searchType stri
 	return res, nil
 }
 
-func (p *HifiProvider) searchArtists(ctx context.Context, query string) ([]models.Artist, error) {
+func (p *HifiProvider) searchArtists(ctx context.Context, query string) ([]domain.Artist, error) {
 	u := fmt.Sprintf("%s/search/?a=%s", p.BaseURL, url.QueryEscape(query))
 	var resp struct {
 		Data struct {
@@ -66,9 +64,9 @@ func (p *HifiProvider) searchArtists(ctx context.Context, query string) ([]model
 		return nil, err
 	}
 
-	var artists []models.Artist
+	var artists []domain.Artist
 	for _, item := range resp.Data.Artists.Items {
-		artists = append(artists, models.Artist{
+		artists = append(artists, domain.Artist{
 			ID:         formatID(item.ID),
 			Name:       item.Name,
 			PictureURL: p.ensureAbsoluteURL(item.Picture, "320x320"),
@@ -77,7 +75,7 @@ func (p *HifiProvider) searchArtists(ctx context.Context, query string) ([]model
 	return artists, nil
 }
 
-func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]models.Album, error) {
+func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]domain.Album, error) {
 	u := fmt.Sprintf("%s/search/?al=%s", p.BaseURL, url.QueryEscape(query))
 	var resp struct {
 		Data struct {
@@ -97,13 +95,13 @@ func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]models
 		return nil, err
 	}
 
-	var albums []models.Album
+	var albums []domain.Album
 	for _, item := range resp.Data.Albums.Items {
 		artist := "Unknown"
 		if len(item.Artists) > 0 {
 			artist = item.Artists[0].Name
 		}
-		albums = append(albums, models.Album{
+		albums = append(albums, domain.Album{
 			ID:          formatID(item.ID),
 			Title:       item.Title,
 			Artist:      artist,
@@ -113,7 +111,7 @@ func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]models
 	return albums, nil
 }
 
-func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]models.Track, error) {
+func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain.Track, error) {
 	u := fmt.Sprintf("%s/search/?s=%s", p.BaseURL, url.QueryEscape(query))
 	var resp struct {
 		Data struct {
@@ -136,13 +134,13 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]models
 		return nil, err
 	}
 
-	var tracks []models.Track
+	var tracks []domain.Track
 	for _, item := range resp.Data.Items {
 		artist := "Unknown"
 		if len(item.Artists) > 0 {
 			artist = item.Artists[0].Name
 		}
-		tracks = append(tracks, models.Track{
+		tracks = append(tracks, domain.Track{
 			ID:          formatID(item.ID),
 			Title:       item.Title,
 			Artist:      artist,
@@ -155,7 +153,7 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]models
 	return tracks, nil
 }
 
-func (p *HifiProvider) searchPlaylists(ctx context.Context, query string) ([]models.Playlist, error) {
+func (p *HifiProvider) searchPlaylists(ctx context.Context, query string) ([]domain.Playlist, error) {
 	u := fmt.Sprintf("%s/search/?p=%s", p.BaseURL, url.QueryEscape(query))
 	var resp struct {
 		Data struct {
@@ -172,9 +170,9 @@ func (p *HifiProvider) searchPlaylists(ctx context.Context, query string) ([]mod
 		return nil, err
 	}
 
-	var playlists []models.Playlist
+	var playlists []domain.Playlist
 	for _, item := range resp.Data.Playlists.Items {
-		playlists = append(playlists, models.Playlist{
+		playlists = append(playlists, domain.Playlist{
 			ID:       item.Uuid,
 			Title:    item.Title,
 			ImageURL: p.ensureAbsoluteURL(item.SquareImage, "640x640"),

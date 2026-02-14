@@ -1,5 +1,4 @@
-// Package services provides business logic services for the application
-package services
+package app
 
 import (
 	"context"
@@ -9,36 +8,30 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/config"
 	"github.com/cesargomez89/navidrums/internal/constants"
-	"github.com/cesargomez89/navidrums/internal/filesystem"
-	"github.com/cesargomez89/navidrums/internal/models"
-	"github.com/cesargomez89/navidrums/internal/providers"
-	"github.com/cesargomez89/navidrums/internal/repository"
+	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/storage"
 )
 
-// Downloader handles track downloading with retry logic
 type Downloader interface {
-	Download(ctx context.Context, track models.Track, destDir string) (string, error)
+	Download(ctx context.Context, track domain.Track, destDir string) (string, error)
 }
 
 type downloader struct {
-	provider providers.Provider
+	provider catalog.Provider
 	config   *config.Config
-	repo     *repository.DB
 }
 
-// NewDownloader creates a new Downloader service
-func NewDownloader(provider providers.Provider, cfg *config.Config, repo *repository.DB) Downloader {
+func NewDownloader(provider catalog.Provider, cfg *config.Config) Downloader {
 	return &downloader{
 		provider: provider,
 		config:   cfg,
-		repo:     repo,
 	}
 }
 
-// Download downloads a track with retry logic
-func (d *downloader) Download(ctx context.Context, track models.Track, destDir string) (string, error) {
+func (d *downloader) Download(ctx context.Context, track domain.Track, destDir string) (string, error) {
 	var finalPath string
 	var finalExt string
 
@@ -55,7 +48,6 @@ func (d *downloader) Download(ctx context.Context, track models.Track, destDir s
 			continue
 		}
 
-		// Determine file extension from MIME type
 		ext := constants.ExtFLAC
 		switch mimeType {
 		case constants.MimeTypeMP4:
@@ -65,7 +57,7 @@ func (d *downloader) Download(ctx context.Context, track models.Track, destDir s
 		}
 		finalExt = ext
 
-		trackFile := fmt.Sprintf("%02d - %s%s", track.TrackNumber, filesystem.Sanitize(track.Title), finalExt)
+		trackFile := fmt.Sprintf("%02d - %s%s", track.TrackNumber, storage.Sanitize(track.Title), finalExt)
 		finalPath = filepath.Join(destDir, trackFile)
 
 		f, err := os.Create(finalPath)
@@ -82,7 +74,6 @@ func (d *downloader) Download(ctx context.Context, track models.Track, destDir s
 			return finalPath, nil
 		}
 
-		// Clean up partial file on error
 		os.Remove(finalPath)
 		finalPath = ""
 

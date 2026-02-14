@@ -1,4 +1,4 @@
-package providers
+package catalog
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
 type ProviderManager struct {
@@ -49,23 +49,23 @@ func (m *ProviderManager) GetBaseURL() string {
 	return m.baseURL
 }
 
-func (m *ProviderManager) Search(ctx context.Context, query string, searchType string) (*models.SearchResult, error) {
+func (m *ProviderManager) Search(ctx context.Context, query string, searchType string) (*domain.SearchResult, error) {
 	return m.GetProvider().Search(ctx, query, searchType)
 }
 
-func (m *ProviderManager) GetArtist(ctx context.Context, id string) (*models.Artist, error) {
+func (m *ProviderManager) GetArtist(ctx context.Context, id string) (*domain.Artist, error) {
 	return m.GetProvider().GetArtist(ctx, id)
 }
 
-func (m *ProviderManager) GetAlbum(ctx context.Context, id string) (*models.Album, error) {
+func (m *ProviderManager) GetAlbum(ctx context.Context, id string) (*domain.Album, error) {
 	return m.GetProvider().GetAlbum(ctx, id)
 }
 
-func (m *ProviderManager) GetPlaylist(ctx context.Context, id string) (*models.Playlist, error) {
+func (m *ProviderManager) GetPlaylist(ctx context.Context, id string) (*domain.Playlist, error) {
 	return m.GetProvider().GetPlaylist(ctx, id)
 }
 
-func (m *ProviderManager) GetTrack(ctx context.Context, id string) (*models.Track, error) {
+func (m *ProviderManager) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
 	return m.GetProvider().GetTrack(ctx, id)
 }
 
@@ -73,7 +73,7 @@ func (m *ProviderManager) GetStream(ctx context.Context, trackID string, quality
 	return m.GetProvider().GetStream(ctx, trackID, quality)
 }
 
-func (m *ProviderManager) GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error) {
+func (m *ProviderManager) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {
 	return m.GetProvider().GetSimilarAlbums(ctx, id)
 }
 

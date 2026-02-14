@@ -1,4 +1,4 @@
-package providers
+package catalog
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
 type HifiProvider struct {
@@ -43,7 +43,7 @@ func (p *HifiProvider) ensureAbsoluteURL(urlOrID string, size ...string) string 
 	return fmt.Sprintf("https://resources.tidal.com/images/%s/%s.jpg", path, imgSize)
 }
 
-func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist, error) {
+func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist, error) {
 	u := fmt.Sprintf("%s/artist/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Artist struct {
@@ -56,7 +56,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 		return nil, err
 	}
 
-	artist := &models.Artist{
+	artist := &domain.Artist{
 		ID:         formatID(resp.Artist.ID),
 		Name:       resp.Artist.Name,
 		PictureURL: p.ensureAbsoluteURL(resp.Artist.Picture, "320x320"),
@@ -86,7 +86,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 
 	if err := p.get(ctx, aggUrl, &aggResp); err == nil {
 		for _, item := range aggResp.Albums.Items {
-			artist.Albums = append(artist.Albums, models.Album{
+			artist.Albums = append(artist.Albums, domain.Album{
 				ID:          formatID(item.ID),
 				Title:       item.Title,
 				Artist:      artist.Name,
@@ -94,7 +94,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 			})
 		}
 		for _, item := range aggResp.Tracks {
-			artist.TopTracks = append(artist.TopTracks, models.Track{
+			artist.TopTracks = append(artist.TopTracks, domain.Track{
 				ID:          formatID(item.ID),
 				Title:       item.Title,
 				Artist:      artist.Name,
@@ -109,7 +109,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*models.Artist
 	return artist, nil
 }
 
-func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, error) {
+func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, error) {
 	u := fmt.Sprintf("%s/album/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Data struct {
@@ -167,7 +167,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 		albumArtURL = p.ensureAbsoluteURL(resp.Data.Cover[0], "640x640")
 	}
 
-	album := &models.Album{
+	album := &domain.Album{
 		ID:          formatID(resp.Data.ID),
 		Title:       resp.Data.Title,
 		Artist:      resp.Data.Artist.Name,
@@ -190,7 +190,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 			tArtist = item.Artists[0].Name
 		}
 
-		track := models.Track{
+		track := domain.Track{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
 			Artist:         tArtist,
@@ -223,7 +223,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*models.Album, 
 	return album, nil
 }
 
-func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Playlist, error) {
+func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Playlist, error) {
 	u := fmt.Sprintf("%s/playlist/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Playlist struct {
@@ -254,7 +254,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 		return nil, err
 	}
 
-	pl := &models.Playlist{
+	pl := &domain.Playlist{
 		ID:          resp.Playlist.Uuid,
 		Title:       resp.Playlist.Title,
 		Description: resp.Playlist.Description,
@@ -273,7 +273,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 			albumArtURL = p.ensureAbsoluteURL(item.Album.Cover[0], "640x640")
 		}
 
-		pl.Tracks = append(pl.Tracks, models.Track{
+		pl.Tracks = append(pl.Tracks, domain.Track{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
 			Artist:         artist,
@@ -289,7 +289,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*models.Play
 	return pl, nil
 }
 
-func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, error) {
+func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
 	u := fmt.Sprintf("%s/info/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Data struct {
@@ -353,7 +353,7 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*models.Track, 
 		audioModes = resp.Data.AudioModes[0]
 	}
 
-	track := &models.Track{
+	track := &domain.Track{
 		ID:             formatID(resp.Data.ID),
 		Title:          resp.Data.Title,
 		Artist:         resp.Data.Artist.Name,
@@ -518,7 +518,7 @@ func (p *HifiProvider) handleSegmentedDash(ctx context.Context, manifest string)
 	}, "audio/mp4", nil
 }
 
-func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error) {
+func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {
 	u := fmt.Sprintf("%s/album/similar/?id=%s&limit=8", p.BaseURL, id)
 
 	var resp struct {
@@ -536,14 +536,14 @@ func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]model
 		return nil, err
 	}
 
-	var albums []models.Album
+	var albums []domain.Album
 	for _, item := range resp.Albums {
 		artistName := ""
 		if len(item.Artists) > 0 {
 			artistName = item.Artists[0].Name
 		}
 
-		albums = append(albums, models.Album{
+		albums = append(albums, domain.Album{
 			ID:          formatID(item.ID),
 			Title:       item.Title,
 			Artist:      artistName,

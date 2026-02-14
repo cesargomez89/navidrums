@@ -11,14 +11,13 @@ import (
 	"time"
 
 	"github.com/bogem/id3v2/v2"
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/go-flac/flacpicture"
 	"github.com/go-flac/flacvorbis"
 	"github.com/go-flac/go-flac"
 )
 
-// TagFile writes metadata tags to an audio file based on its extension
-func TagFile(filePath string, track *models.Track, albumArtData []byte) error {
+func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
 	ext := strings.ToLower(filepath.Ext(filePath))
 
 	switch ext {
@@ -34,7 +33,7 @@ func TagFile(filePath string, track *models.Track, albumArtData []byte) error {
 }
 
 // tagFLAC writes metadata to a FLAC file
-func tagFLAC(filePath string, track *models.Track, albumArtData []byte) error {
+func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	f, err := flac.ParseFile(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to parse FLAC file: %w", err)
@@ -173,7 +172,7 @@ func tagFLAC(filePath string, track *models.Track, albumArtData []byte) error {
 }
 
 // tagMP3 writes ID3v2 tags to an MP3 file
-func tagMP3(filePath string, track *models.Track, albumArtData []byte) error {
+func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 	tag, err := id3v2.Open(filePath, id3v2.Options{Parse: true})
 	if err != nil {
 		return fmt.Errorf("failed to open MP3 file: %w", err)
@@ -317,7 +316,7 @@ func formatToLRC(subtitles string) string {
 
 // tagMP4 writes metadata to an MP4/M4A file
 // Note: This is a basic implementation. For full MP4 support, consider using a dedicated library
-func tagMP4(filePath string, track *models.Track, albumArtData []byte) error {
+func tagMP4(filePath string, track *domain.Track, albumArtData []byte) error {
 	// MP4 tagging is more complex and requires atom manipulation
 	// For now, we'll skip MP4 tagging or use a simpler approach
 	// You could use github.com/abema/go-mp4 or similar libraries

@@ -1,11 +1,11 @@
-package repository
+package store
 
 import (
 	"os"
 	"testing"
 	"time"
 
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
 func TestDB_Jobs(t *testing.T) {
@@ -21,10 +21,10 @@ func TestDB_Jobs(t *testing.T) {
 	}()
 
 	// Test CreateJob
-	job := &models.Job{
+	job := &domain.Job{
 		ID:        "123",
-		Type:      models.JobTypeTrack,
-		Status:    models.JobStatusQueued,
+		Type:      domain.JobTypeTrack,
+		Status:    domain.JobStatusQueued,
 		SourceID:  "track_123",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -45,19 +45,19 @@ func TestDB_Jobs(t *testing.T) {
 	if fetched.ID != job.ID {
 		t.Errorf("Expected ID %s, got %s", job.ID, fetched.ID)
 	}
-	if fetched.Status != models.JobStatusQueued {
-		t.Errorf("Expected status %s, got %s", models.JobStatusQueued, fetched.Status)
+	if fetched.Status != domain.JobStatusQueued {
+		t.Errorf("Expected status %s, got %s", domain.JobStatusQueued, fetched.Status)
 	}
 
 	// Test UpdateJobStatus
-	err = db.UpdateJobStatus("123", models.JobStatusDownloading, 50.0)
+	err = db.UpdateJobStatus("123", domain.JobStatusDownloading, 50.0)
 	if err != nil {
 		t.Errorf("UpdateJobStatus failed: %v", err)
 	}
 
 	fetched, _ = db.GetJob("123")
-	if fetched.Status != models.JobStatusDownloading {
-		t.Errorf("Expected status %s, got %s", models.JobStatusDownloading, fetched.Status)
+	if fetched.Status != domain.JobStatusDownloading {
+		t.Errorf("Expected status %s, got %s", domain.JobStatusDownloading, fetched.Status)
 	}
 	if fetched.Progress != 50.0 {
 		t.Errorf("Expected progress 50.0, got %f", fetched.Progress)

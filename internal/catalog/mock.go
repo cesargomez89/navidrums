@@ -1,11 +1,11 @@
-package providers
+package catalog
 
 import (
 	"context"
 	"io"
 	"strings"
 
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
 type MockProvider struct{}
@@ -14,18 +14,18 @@ func NewMockProvider() *MockProvider {
 	return &MockProvider{}
 }
 
-func (p *MockProvider) Search(ctx context.Context, query string, searchType string) (*models.SearchResult, error) {
-	res := &models.SearchResult{
-		Artists: []models.Artist{{ID: "1", Name: "Mock Artist"}},
-		Albums:  []models.Album{{ID: "1", Title: "Mock Album", Artist: "Mock Artist"}},
-		Tracks:  []models.Track{{ID: "1", Title: "Mock Track", Artist: "Mock Artist", Album: "Mock Album", TrackNumber: 1, Duration: 180}},
+func (p *MockProvider) Search(ctx context.Context, query string, searchType string) (*domain.SearchResult, error) {
+	res := &domain.SearchResult{
+		Artists: []domain.Artist{{ID: "1", Name: "Mock Artist"}},
+		Albums:  []domain.Album{{ID: "1", Title: "Mock Album", Artist: "Mock Artist"}},
+		Tracks:  []domain.Track{{ID: "1", Title: "Mock Track", Artist: "Mock Artist", Album: "Mock Album", TrackNumber: 1, Duration: 180}},
 	}
 
 	if searchType == "" {
 		searchType = "album"
 	}
 
-	resFiltered := &models.SearchResult{}
+	resFiltered := &domain.SearchResult{}
 	switch searchType {
 	case "artist":
 		resFiltered.Artists = res.Artists
@@ -39,43 +39,42 @@ func (p *MockProvider) Search(ctx context.Context, query string, searchType stri
 	return resFiltered, nil
 }
 
-func (p *MockProvider) GetArtist(ctx context.Context, id string) (*models.Artist, error) {
-	return &models.Artist{ID: id, Name: "Mock Artist"}, nil
+func (p *MockProvider) GetArtist(ctx context.Context, id string) (*domain.Artist, error) {
+	return &domain.Artist{ID: id, Name: "Mock Artist"}, nil
 }
 
-func (p *MockProvider) GetAlbum(ctx context.Context, id string) (*models.Album, error) {
-	return &models.Album{
+func (p *MockProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, error) {
+	return &domain.Album{
 		ID:     id,
 		Title:  "Mock Album",
 		Artist: "Mock Artist",
-		Tracks: []models.Track{
+		Tracks: []domain.Track{
 			{ID: "1", Title: "Track 1", Artist: "Mock Artist", TrackNumber: 1, Duration: 180},
 			{ID: "2", Title: "Track 2", Artist: "Mock Artist", TrackNumber: 2, Duration: 200},
 		},
 	}, nil
 }
 
-func (p *MockProvider) GetPlaylist(ctx context.Context, id string) (*models.Playlist, error) {
-	return &models.Playlist{
+func (p *MockProvider) GetPlaylist(ctx context.Context, id string) (*domain.Playlist, error) {
+	return &domain.Playlist{
 		ID:    id,
 		Title: "Mock Playlist",
-		Tracks: []models.Track{
+		Tracks: []domain.Track{
 			{ID: "3", Title: "Track 3", Artist: "Unknown", TrackNumber: 1},
 		},
 	}, nil
 }
 
-func (p *MockProvider) GetTrack(ctx context.Context, id string) (*models.Track, error) {
-	return &models.Track{ID: id, Title: "Mock Track", Artist: "Mock Artist", Album: "Mock Album", TrackNumber: 1}, nil
+func (p *MockProvider) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
+	return &domain.Track{ID: id, Title: "Mock Track", Artist: "Mock Artist", Album: "Mock Album", TrackNumber: 1}, nil
 }
 
 func (p *MockProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
-	// Return a dummy stream
 	return io.NopCloser(strings.NewReader("dummy audio content")), "audio/flac", nil
 }
 
-func (p *MockProvider) GetSimilarAlbums(ctx context.Context, id string) ([]models.Album, error) {
-	return []models.Album{
+func (p *MockProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {
+	return []domain.Album{
 		{ID: "101", Title: "Similar Mock Album 1", Artist: "Mock Artist"},
 		{ID: "102", Title: "Similar Mock Album 2", Artist: "Mock Artist"},
 		{ID: "103", Title: "Similar Mock Album 3", Artist: "Mock Artist"},

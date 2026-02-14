@@ -1,4 +1,4 @@
-package repository
+package store
 
 const Schema = `
 CREATE TABLE IF NOT EXISTS jobs (

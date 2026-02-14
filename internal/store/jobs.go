@@ -1,13 +1,13 @@
-package repository
+package store
 
 import (
 	"database/sql"
 	"time"
 
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
-func (db *DB) CreateJob(job *models.Job) error {
+func (db *DB) CreateJob(job *domain.Job) error {
 	query := `INSERT INTO jobs (id, type, status, title, artist, progress, source_id, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
@@ -15,11 +15,11 @@ func (db *DB) CreateJob(job *models.Job) error {
 	return err
 }
 
-func (db *DB) GetJob(id string) (*models.Job, error) {
+func (db *DB) GetJob(id string) (*domain.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs WHERE id = ?`
 	row := db.QueryRow(query, id)
 
-	job := &models.Job{}
+	job := &domain.Job{}
 	var errMsg sql.NullString
 	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
 	if err != nil {
@@ -31,7 +31,7 @@ func (db *DB) GetJob(id string) (*models.Job, error) {
 	return job, nil
 }
 
-func (db *DB) UpdateJobStatus(id string, status models.JobStatus, progress float64) error {
+func (db *DB) UpdateJobStatus(id string, status domain.JobStatus, progress float64) error {
 	query := `UPDATE jobs SET status = ?, progress = ?, updated_at = ? WHERE id = ?`
 	_, err := db.Exec(query, status, progress, time.Now(), id)
 	return err
@@ -39,7 +39,7 @@ func (db *DB) UpdateJobStatus(id string, status models.JobStatus, progress float
 
 func (db *DB) UpdateJobError(id string, errorMsg string) error {
 	query := `UPDATE jobs SET status = ?, error = ?, updated_at = ? WHERE id = ?`
-	_, err := db.Exec(query, models.JobStatusFailed, errorMsg, time.Now(), id)
+	_, err := db.Exec(query, domain.JobStatusFailed, errorMsg, time.Now(), id)
 	return err
 }
 
@@ -49,7 +49,7 @@ func (db *DB) UpdateJobMetadata(id string, title string, artist string) error {
 	return err
 }
 
-func (db *DB) ListJobs(limit int) ([]*models.Job, error) {
+func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
 	rows, err := db.Query(query, limit)
 	if err != nil {
@@ -57,9 +57,9 @@ func (db *DB) ListJobs(limit int) ([]*models.Job, error) {
 	}
 	defer rows.Close()
 
-	var jobs []*models.Job
+	var jobs []*domain.Job
 	for rows.Next() {
-		job := &models.Job{}
+		job := &domain.Job{}
 		var errMsg sql.NullString
 		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
 		if err != nil {
@@ -73,7 +73,7 @@ func (db *DB) ListJobs(limit int) ([]*models.Job, error) {
 	return jobs, nil
 }
 
-func (db *DB) ListActiveJobs() ([]*models.Job, error) {
+func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'resolving_tracks', 'downloading') ORDER BY created_at ASC`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -81,9 +81,9 @@ func (db *DB) ListActiveJobs() ([]*models.Job, error) {
 	}
 	defer rows.Close()
 
-	var jobs []*models.Job
+	var jobs []*domain.Job
 	for rows.Next() {
-		job := &models.Job{}
+		job := &domain.Job{}
 		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
 		if err != nil {
 			return nil, err
@@ -93,7 +93,7 @@ func (db *DB) ListActiveJobs() ([]*models.Job, error) {
 	return jobs, nil
 }
 
-func (db *DB) ListFinishedJobs(limit int) ([]*models.Job, error) {
+func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN ('completed', 'failed', 'cancelled') ORDER BY updated_at DESC LIMIT ?`
 	rows, err := db.Query(query, limit)
 	if err != nil {
@@ -101,9 +101,9 @@ func (db *DB) ListFinishedJobs(limit int) ([]*models.Job, error) {
 	}
 	defer rows.Close()
 
-	var jobs []*models.Job
+	var jobs []*domain.Job
 	for rows.Next() {
-		job := &models.Job{}
+		job := &domain.Job{}
 		var errMsg sql.NullString
 		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
 		if err != nil {
@@ -117,14 +117,14 @@ func (db *DB) ListFinishedJobs(limit int) ([]*models.Job, error) {
 	return jobs, nil
 }
 
-func (db *DB) GetActiveJobBySourceID(sourceID string, jobType models.JobType) (*models.Job, error) {
+func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*domain.Job, error) {
 	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at 
 		FROM jobs 
 		WHERE source_id = ? AND type = ? AND status IN ('queued', 'resolving_tracks', 'downloading')
 		LIMIT 1`
 	row := db.QueryRow(query, sourceID, jobType)
 
-	job := &models.Job{}
+	job := &domain.Job{}
 	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -141,7 +141,7 @@ func (db *DB) IsTrackActive(trackID string) (bool, error) {
 
 func (db *DB) ResetStuckJobs() error {
 	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status IN ('resolving_tracks', 'downloading')`
-	_, err := db.Exec(query, models.JobStatusQueued, time.Now())
+	_, err := db.Exec(query, domain.JobStatusQueued, time.Now())
 	return err
 }
 

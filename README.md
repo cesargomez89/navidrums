@@ -70,6 +70,8 @@ Environment variables:
 | `USE_MOCK` | `false` | Set to `true` to use Mock provider |
 | `LOG_LEVEL` | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
 | `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
+| `NAVIDRUMS_USERNAME` | `navidrums` | Username for the Navidrome web interface |
+| `NAVIDRUMS_PASSWORD` |  | Password for the Navidrome web interface |
 
 ## Usage
 
@@ -101,6 +103,8 @@ Environment variables:
    Environment="DOWNLOADS_DIR=/home/YOUR_USERNAME/Music"
    Environment="PROVIDER_URL=http://127.0.0.1:8000"
    Environment="QUALITY=LOSSLESS"
+   Environment="NAVIDRUMS_USERNAME=navidrums"
+   Environment="NAVIDRUMS_PASSWORD=password"
    ExecStart=/usr/local/bin/navidrums
    Restart=always
    RestartSec=10

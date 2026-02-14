@@ -1,28 +1,28 @@
-package handlers
+package httpapp
 
 import (
 	"html/template"
 	"net/http"
 	"path/filepath"
 
+	"github.com/cesargomez89/navidrums/internal/app"
+	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/logger"
-	"github.com/cesargomez89/navidrums/internal/providers"
-	"github.com/cesargomez89/navidrums/internal/repository"
-	"github.com/cesargomez89/navidrums/internal/services"
+	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/web"
 	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
-	JobService      *services.JobService
-	Provider        providers.Provider
-	ProviderManager *providers.ProviderManager
-	SettingsRepo    *repository.SettingsRepo
+	JobService      *app.JobService
+	Provider        catalog.Provider
+	ProviderManager *catalog.ProviderManager
+	SettingsRepo    *store.SettingsRepo
 	Templates       *template.Template
 	Logger          *logger.Logger
 }
 
-func NewHandler(js *services.JobService, pm *providers.ProviderManager, sr *repository.SettingsRepo) *Handler {
+func NewHandler(js *app.JobService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
 	h := &Handler{
 		JobService:      js,
 		ProviderManager: pm,

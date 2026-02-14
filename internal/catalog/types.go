@@ -1,4 +1,4 @@
-package providers
+package catalog
 
 import (
 	"context"

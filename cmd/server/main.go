@@ -14,13 +14,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"github.com/cesargomez89/navidrums/internal/app"
+	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/config"
-	"github.com/cesargomez89/navidrums/internal/handlers"
+	"github.com/cesargomez89/navidrums/internal/downloader"
+	httpapp "github.com/cesargomez89/navidrums/internal/http"
 	"github.com/cesargomez89/navidrums/internal/logger"
-	"github.com/cesargomez89/navidrums/internal/providers"
-	"github.com/cesargomez89/navidrums/internal/repository"
-	"github.com/cesargomez89/navidrums/internal/services"
-	"github.com/cesargomez89/navidrums/internal/worker"
+	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/web"
 )
 
@@ -39,7 +39,7 @@ func main() {
 	})
 
 	// Initialize DB
-	db, err := repository.NewSQLiteDB(cfg.DBPath)
+	db, err := store.NewSQLiteDB(cfg.DBPath)
 	if err != nil {
 		appLogger.Error("Failed to init DB", "error", err)
 		os.Exit(1)
@@ -47,21 +47,21 @@ func main() {
 	defer db.Close()
 
 	// Initialize Provider Manager
-	providerManager := providers.NewProviderManager(cfg.ProviderURL)
+	providerManager := catalog.NewProviderManager(cfg.ProviderURL)
 
 	// Load saved provider from settings if exists
-	settingsRepo := repository.NewSettingsRepo(db)
-	if savedProvider, err := settingsRepo.Get(repository.SettingActiveProvider); err == nil && savedProvider != "" {
+	settingsRepo := store.NewSettingsRepo(db)
+	if savedProvider, err := settingsRepo.Get(store.SettingActiveProvider); err == nil && savedProvider != "" {
 		providerManager.SetProvider(savedProvider)
 	}
 
 	// Initialize Worker
-	w := worker.NewWorker(db, providerManager, cfg, appLogger)
+	w := downloader.NewWorker(db, providerManager, cfg, appLogger)
 	w.Start()
 	defer w.Stop()
 
 	// Initialize Services
-	jobService := services.NewJobService(db)
+	jobService := app.NewJobService(db)
 
 	// Initialize Router
 	r := chi.NewRouter()
@@ -99,7 +99,7 @@ func main() {
 	}))
 
 	// Routes
-	h := handlers.NewHandler(jobService, providerManager, settingsRepo)
+	h := httpapp.NewHandler(jobService, providerManager, settingsRepo)
 	h.RegisterRoutes(r)
 
 	// Start Server

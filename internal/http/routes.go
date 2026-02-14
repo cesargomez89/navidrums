@@ -1,12 +1,12 @@
-package handlers
+package httpapp
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/cesargomez89/navidrums/internal/models"
-	"github.com/cesargomez89/navidrums/internal/providers"
-	"github.com/cesargomez89/navidrums/internal/repository"
+	"github.com/cesargomez89/navidrums/internal/catalog"
+	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -87,7 +87,7 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 	jobType := chi.URLParam(r, "type")
 	id := chi.URLParam(r, "id")
 
-	_, err := h.JobService.EnqueueJob(id, models.JobType(jobType))
+	_, err := h.JobService.EnqueueJob(id, domain.JobType(jobType))
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -175,9 +175,9 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 			Name string `json:"name"`
 			URL  string `json:"url"`
 		} `json:"predefined"`
-		Custom  []providers.CustomProvider `json:"custom"`
-		Active  string                     `json:"active"`
-		Default string                     `json:"default"`
+		Custom  []catalog.CustomProvider `json:"custom"`
+		Active  string                   `json:"active"`
+		Default string                   `json:"default"`
 	}
 
 	data := ProviderData{
@@ -185,9 +185,9 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 		Default: h.ProviderManager.GetDefaultURL(),
 	}
 
-	customProvidersJSON, err := h.SettingsRepo.Get(repository.SettingCustomProviders)
+	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
 	if err == nil && customProvidersJSON != "" {
-		var customProviders []providers.CustomProvider
+		var customProviders []catalog.CustomProvider
 		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err == nil {
 			data.Custom = customProviders
 		}
@@ -195,7 +195,7 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 
 	customJSON, _ := json.Marshal(data.Custom)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"predefined":` + providers.GetPredefinedProvidersJSON() + `,"custom":` + string(customJSON) + `,"active":"` + data.Active + `","default":"` + data.Default + `"}`))
+	w.Write([]byte(`{"predefined":` + catalog.GetPredefinedProvidersJSON() + `,"custom":` + string(customJSON) + `,"active":"` + data.Active + `","default":"` + data.Default + `"}`))
 }
 
 func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
@@ -206,7 +206,7 @@ func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.ProviderManager.SetProvider(url)
-	h.SettingsRepo.Set(repository.SettingActiveProvider, url)
+	h.SettingsRepo.Set(store.SettingActiveProvider, url)
 
 	w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
 }
@@ -219,16 +219,16 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	customProvidersJSON, _ := h.SettingsRepo.Get(repository.SettingCustomProviders)
-	var customProviders []providers.CustomProvider
+	customProvidersJSON, _ := h.SettingsRepo.Get(store.SettingCustomProviders)
+	var customProviders []catalog.CustomProvider
 	if customProvidersJSON != "" {
 		json.Unmarshal([]byte(customProvidersJSON), &customProviders)
 	}
 
-	customProviders = append(customProviders, providers.CustomProvider{Name: name, URL: url})
+	customProviders = append(customProviders, catalog.CustomProvider{Name: name, URL: url})
 
 	newJSON, _ := json.Marshal(customProviders)
-	h.SettingsRepo.Set(repository.SettingCustomProviders, string(newJSON))
+	h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON))
 
 	w.Write([]byte(`{"success":true}`))
 }
@@ -240,19 +240,19 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	customProvidersJSON, err := h.SettingsRepo.Get(repository.SettingCustomProviders)
+	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
 	if err != nil || customProvidersJSON == "" {
-		w.Write([]byte(`{"success":false,"error":"no custom providers"}`))
+		w.Write([]byte(`{"success":false,"error":"no custom catalog"}`))
 		return
 	}
 
-	var customProviders []providers.CustomProvider
+	var customProviders []catalog.CustomProvider
 	if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
 		w.Write([]byte(`{"success":false,"error":"invalid data"}`))
 		return
 	}
 
-	var newProviders []providers.CustomProvider
+	var newProviders []catalog.CustomProvider
 	for _, p := range customProviders {
 		if p.URL != url {
 			newProviders = append(newProviders, p)
@@ -260,7 +260,7 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 	}
 
 	newJSON, _ := json.Marshal(newProviders)
-	h.SettingsRepo.Set(repository.SettingCustomProviders, string(newJSON))
+	h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON))
 
 	w.Write([]byte(`{"success":true}`))
 }

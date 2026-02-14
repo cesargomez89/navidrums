@@ -1,23 +1,23 @@
-package services
+package app
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/cesargomez89/navidrums/internal/models"
-	"github.com/cesargomez89/navidrums/internal/repository"
+	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/google/uuid"
 )
 
 type JobService struct {
-	Repo *repository.DB
+	Repo *store.DB
 }
 
-func NewJobService(repo *repository.DB) *JobService {
+func NewJobService(repo *store.DB) *JobService {
 	return &JobService{Repo: repo}
 }
 
-func (s *JobService) EnqueueJob(sourceID string, jobType models.JobType) (*models.Job, error) {
+func (s *JobService) EnqueueJob(sourceID string, jobType domain.JobType) (*domain.Job, error) {
 	// Check if already exists and is active to avoid duplicates
 	existing, err := s.Repo.GetActiveJobBySourceID(sourceID, jobType)
 	if err != nil {
@@ -28,10 +28,10 @@ func (s *JobService) EnqueueJob(sourceID string, jobType models.JobType) (*model
 	}
 
 	id := uuid.New().String()
-	job := &models.Job{
+	job := &domain.Job{
 		ID:        id,
 		Type:      jobType,
-		Status:    models.JobStatusQueued,
+		Status:    domain.JobStatusQueued,
 		SourceID:  sourceID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -44,20 +44,20 @@ func (s *JobService) EnqueueJob(sourceID string, jobType models.JobType) (*model
 	return job, nil
 }
 
-func (s *JobService) ListJobs() ([]*models.Job, error) {
+func (s *JobService) ListJobs() ([]*domain.Job, error) {
 	return s.Repo.ListJobs(50)
 }
 
-func (s *JobService) GetJob(id string) (*models.Job, error) {
+func (s *JobService) GetJob(id string) (*domain.Job, error) {
 	return s.Repo.GetJob(id)
 }
 
-func (s *JobService) ListActiveJobs() ([]*models.Job, error) {
+func (s *JobService) ListActiveJobs() ([]*domain.Job, error) {
 	return s.Repo.ListActiveJobs()
 }
 
 func (s *JobService) CancelJob(id string) error {
-	return s.Repo.UpdateJobStatus(id, models.JobStatusCancelled, 0)
+	return s.Repo.UpdateJobStatus(id, domain.JobStatusCancelled, 0)
 }
 
 func (s *JobService) RetryJob(id string) error {
@@ -68,5 +68,5 @@ func (s *JobService) RetryJob(id string) error {
 	if job == nil {
 		return fmt.Errorf("job not found")
 	}
-	return s.Repo.UpdateJobStatus(id, models.JobStatusQueued, 0)
+	return s.Repo.UpdateJobStatus(id, domain.JobStatusQueued, 0)
 }

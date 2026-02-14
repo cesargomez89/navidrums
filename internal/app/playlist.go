@@ -1,4 +1,4 @@
-package services
+package app
 
 import (
 	"fmt"
@@ -6,29 +6,26 @@ import (
 	"path/filepath"
 
 	"github.com/cesargomez89/navidrums/internal/config"
-	"github.com/cesargomez89/navidrums/internal/filesystem"
-	"github.com/cesargomez89/navidrums/internal/models"
+	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/storage"
 )
 
-// PlaylistGenerator handles M3U playlist file generation
 type PlaylistGenerator interface {
-	Generate(pl *models.Playlist) error
-	GenerateFromTracks(artistName string, tracks []models.Track) error
+	Generate(pl *domain.Playlist) error
+	GenerateFromTracks(artistName string, tracks []domain.Track) error
 }
 
 type playlistGenerator struct {
 	config *config.Config
 }
 
-// NewPlaylistGenerator creates a new PlaylistGenerator service
 func NewPlaylistGenerator(cfg *config.Config) PlaylistGenerator {
 	return &playlistGenerator{
 		config: cfg,
 	}
 }
 
-// Generate creates an M3U playlist file
-func (pg *playlistGenerator) Generate(pl *models.Playlist) error {
+func (pg *playlistGenerator) Generate(pl *domain.Playlist) error {
 	if len(pl.Tracks) == 0 {
 		return nil
 	}
@@ -38,7 +35,7 @@ func (pg *playlistGenerator) Generate(pl *models.Playlist) error {
 		return fmt.Errorf("failed to create playlists directory: %w", err)
 	}
 
-	filename := filesystem.Sanitize(pl.Title) + ".m3u"
+	filename := storage.Sanitize(pl.Title) + ".m3u"
 	playlistPath := filepath.Join(playlistsDir, filename)
 
 	f, err := os.Create(playlistPath)
@@ -52,9 +49,8 @@ func (pg *playlistGenerator) Generate(pl *models.Playlist) error {
 	}
 
 	for _, t := range pl.Tracks {
-		folderName := fmt.Sprintf("%s - %s", filesystem.Sanitize(t.Artist), filesystem.Sanitize(t.Album))
-		trackFile := fmt.Sprintf("%02d - %s.flac", t.TrackNumber, filesystem.Sanitize(t.Title))
-		// Path relative to 'playlists' folder: ../Artist - Album/01 - Title.flac
+		folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
+		trackFile := fmt.Sprintf("%02d - %s.flac", t.TrackNumber, storage.Sanitize(t.Title))
 		relPath := filepath.Join("..", folderName, trackFile)
 
 		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)
@@ -66,7 +62,7 @@ func (pg *playlistGenerator) Generate(pl *models.Playlist) error {
 	return nil
 }
 
-func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []models.Track) error {
+func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.Track) error {
 	if len(tracks) == 0 {
 		return nil
 	}
@@ -76,7 +72,7 @@ func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []mode
 		return fmt.Errorf("failed to create playlists directory: %w", err)
 	}
 
-	filename := fmt.Sprintf("%s - Top Tracks.m3u", filesystem.Sanitize(artistName))
+	filename := fmt.Sprintf("%s - Top Tracks.m3u", storage.Sanitize(artistName))
 	playlistPath := filepath.Join(playlistsDir, filename)
 
 	f, err := os.Create(playlistPath)
@@ -90,8 +86,8 @@ func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []mode
 	}
 
 	for _, t := range tracks {
-		folderName := fmt.Sprintf("%s - %s", filesystem.Sanitize(t.Artist), filesystem.Sanitize(t.Album))
-		trackFile := fmt.Sprintf("%02d - %s.flac", t.TrackNumber, filesystem.Sanitize(t.Title))
+		folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
+		trackFile := fmt.Sprintf("%02d - %s.flac", t.TrackNumber, storage.Sanitize(t.Title))
 		relPath := filepath.Join("..", folderName, trackFile)
 
 		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)

@@ -1,4 +1,4 @@
-package worker
+package downloader
 
 import (
 	"context"
@@ -9,43 +9,40 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cesargomez89/navidrums/internal/app"
+	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/config"
 	"github.com/cesargomez89/navidrums/internal/constants"
-	"github.com/cesargomez89/navidrums/internal/filesystem"
+	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/logger"
-	"github.com/cesargomez89/navidrums/internal/models"
-	"github.com/cesargomez89/navidrums/internal/providers"
-	"github.com/cesargomez89/navidrums/internal/repository"
-	"github.com/cesargomez89/navidrums/internal/services"
+	"github.com/cesargomez89/navidrums/internal/storage"
+	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/internal/tagging"
 	"github.com/google/uuid"
 )
 
-// Errors
 var (
 	ErrJobCancelled   = errors.New("job was cancelled")
 	ErrDownloadFailed = errors.New("download failed after retries")
 	ErrNoTracksFound  = errors.New("no tracks found")
 )
 
-// Worker handles background job processing
 type Worker struct {
-	Repo              *repository.DB
-	Provider          providers.Provider
-	ProviderManager   *providers.ProviderManager
+	Repo              *store.DB
+	Provider          catalog.Provider
+	ProviderManager   *catalog.ProviderManager
 	Config            *config.Config
 	MaxConcurrent     int
 	Logger            *logger.Logger
-	downloader        services.Downloader
-	playlistGenerator services.PlaylistGenerator
-	albumArtService   services.AlbumArtService
+	downloader        app.Downloader
+	playlistGenerator app.PlaylistGenerator
+	albumArtService   app.AlbumArtService
 	wg                sync.WaitGroup
 	ctx               context.Context
 	cancel            context.CancelFunc
 }
 
-// NewWorker creates a new Worker with all dependencies
-func NewWorker(repo *repository.DB, pm *providers.ProviderManager, cfg *config.Config, log *logger.Logger) *Worker {
+func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, log *logger.Logger) *Worker {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if log == nil {
@@ -63,10 +60,10 @@ func NewWorker(repo *repository.DB, pm *providers.ProviderManager, cfg *config.C
 		cancel:          cancel,
 	}
 
-	// Initialize services
-	worker.downloader = services.NewDownloader(pm, cfg, repo)
-	worker.playlistGenerator = services.NewPlaylistGenerator(cfg)
-	worker.albumArtService = services.NewAlbumArtService(cfg)
+	// Initialize app
+	worker.downloader = app.NewDownloader(pm, cfg)
+	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
+	worker.albumArtService = app.NewAlbumArtService(cfg)
 
 	return worker
 }
@@ -112,12 +109,12 @@ func (w *Worker) processJobs() {
 			}
 
 			activeCount := 0
-			queuedJobs := []*models.Job{}
+			queuedJobs := []*domain.Job{}
 
 			for _, j := range jobs {
-				if j.Status == models.JobStatusDownloading || j.Status == models.JobStatusResolve {
+				if j.Status == domain.JobStatusDownloading || j.Status == domain.JobStatusResolve {
 					activeCount++
-				} else if j.Status == models.JobStatusQueued {
+				} else if j.Status == domain.JobStatusQueued {
 					queuedJobs = append(queuedJobs, j)
 				}
 			}
@@ -133,13 +130,13 @@ func (w *Worker) processJobs() {
 
 				// Double check if it was cancelled while in memory
 				current, _ := w.Repo.GetJob(job.ID)
-				if current != nil && current.Status == models.JobStatusCancelled {
+				if current != nil && current.Status == domain.JobStatusCancelled {
 					continue
 				}
 
 				sem <- struct{}{}
 				w.wg.Add(1)
-				go func(j *models.Job) {
+				go func(j *domain.Job) {
 					defer w.wg.Done()
 					defer func() { <-sem }()
 					w.runJob(w.ctx, j)
@@ -149,7 +146,7 @@ func (w *Worker) processJobs() {
 	}
 }
 
-func (w *Worker) runJob(ctx context.Context, job *models.Job) {
+func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	defer func() {
 		if r := recover(); r != nil {
 			w.Logger.Error("Panic in job",
@@ -168,7 +165,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	logger.Info("Running job")
 
 	// 1. Resolution phase
-	if err := w.Repo.UpdateJobStatus(job.ID, models.JobStatusResolve, 0); err != nil {
+	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusResolve, 0); err != nil {
 		logger.Error("Failed to update status", "error", err)
 		return
 	}
@@ -179,22 +176,22 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		return
 	}
 
-	var tracks []models.Track
+	var tracks []domain.Track
 	var albumArtURL string
 	var playlistImageURL string
 	var err error
 
 	// Fetch details based on type
 	switch job.Type {
-	case models.JobTypeTrack:
-		var track *models.Track
+	case domain.JobTypeTrack:
+		var track *domain.Track
 		track, err = w.Provider.GetTrack(ctx, job.SourceID)
 		if err == nil {
-			tracks = []models.Track{*track}
+			tracks = []domain.Track{*track}
 			albumArtURL = track.AlbumArtURL
 		}
-	case models.JobTypeAlbum:
-		var album *models.Album
+	case domain.JobTypeAlbum:
+		var album *domain.Album
 		album, err = w.Provider.GetAlbum(ctx, job.SourceID)
 		if err == nil {
 			tracks = album.Tracks
@@ -206,8 +203,8 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 				}
 			}
 		}
-	case models.JobTypePlaylist:
-		var pl *models.Playlist
+	case domain.JobTypePlaylist:
+		var pl *domain.Playlist
 		pl, err = w.Provider.GetPlaylist(ctx, job.SourceID)
 		if err == nil {
 			tracks = pl.Tracks
@@ -223,8 +220,8 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 				logger.Error("Failed to generate playlist file", "error", err)
 			}
 		}
-	case models.JobTypeArtist:
-		var artist *models.Artist
+	case domain.JobTypeArtist:
+		var artist *domain.Artist
 		artist, err = w.Provider.GetArtist(ctx, job.SourceID)
 		if err == nil {
 			tracks = artist.TopTracks
@@ -250,7 +247,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	}
 
 	// 2. Handle Container Types (Album, Playlist, Artist)
-	if job.Type != models.JobTypeTrack {
+	if job.Type != domain.JobTypeTrack {
 		if w.isCancelled(job.ID) {
 			logger.Info("Job cancelled before decomposition")
 			return
@@ -273,10 +270,10 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 			}
 
 			// Enqueue new track job
-			newJob := &models.Job{
+			newJob := &domain.Job{
 				ID:        uuid.New().String(),
-				Type:      models.JobTypeTrack,
-				Status:    models.JobStatusQueued,
+				Type:      domain.JobTypeTrack,
+				Status:    domain.JobStatusQueued,
 				SourceID:  t.ID,
 				Title:     t.Title,
 				Artist:    t.Artist,
@@ -288,19 +285,19 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 			}
 		}
 
-		w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100)
+		w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 
 		// Update job metadata with container info before completing
 		switch job.Type {
-		case models.JobTypeAlbum:
+		case domain.JobTypeAlbum:
 			if len(tracks) > 0 {
 				w.Repo.UpdateJobMetadata(job.ID, tracks[0].Album, tracks[0].AlbumArtist)
 			}
-		case models.JobTypePlaylist:
+		case domain.JobTypePlaylist:
 			if pl, err := w.Provider.GetPlaylist(ctx, job.SourceID); err == nil && pl != nil {
 				w.Repo.UpdateJobMetadata(job.ID, pl.Title, "")
 			}
-		case models.JobTypeArtist:
+		case domain.JobTypeArtist:
 			if artist, err := w.Provider.GetArtist(ctx, job.SourceID); err == nil && artist != nil {
 				w.Repo.UpdateJobMetadata(job.ID, artist.Name, "")
 			}
@@ -316,7 +313,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	if dl != nil {
 		logger.Info("Track already downloaded", "file_path", dl.FilePath)
 		w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist)
-		w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100)
+		w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 		return
 	}
 
@@ -330,7 +327,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	if artistForFolder == "" {
 		artistForFolder = track.Artist
 	}
-	folderName := fmt.Sprintf("%s - %s", filesystem.Sanitize(artistForFolder), filesystem.Sanitize(track.Album))
+	folderName := fmt.Sprintf("%s - %s", storage.Sanitize(artistForFolder), storage.Sanitize(track.Album))
 	finalDir := filepath.Join(w.Config.DownloadsDir, folderName)
 
 	if err := os.MkdirAll(finalDir, 0755); err != nil {
@@ -344,7 +341,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		return
 	}
 
-	w.Repo.UpdateJobStatus(job.ID, models.JobStatusDownloading, 0)
+	w.Repo.UpdateJobStatus(job.ID, domain.JobStatusDownloading, 0)
 
 	// Download using service
 	finalPath, err := w.downloader.Download(ctx, track, finalDir)
@@ -402,7 +399,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 	}
 
 	// Record download in DB
-	err = w.Repo.CreateDownload(&models.Download{
+	err = w.Repo.CreateDownload(&domain.Download{
 		ProviderID:  track.ID,
 		FilePath:    finalPath,
 		CompletedAt: time.Now(),
@@ -411,7 +408,7 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 		logger.Error("Failed to record download in DB", "error", err)
 	}
 
-	if err := w.Repo.UpdateJobStatus(job.ID, models.JobStatusCompleted, 100); err != nil {
+	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
 		logger.Error("Failed to update final status", "error", err)
 	}
 
@@ -423,5 +420,5 @@ func (w *Worker) isCancelled(id string) bool {
 	if err != nil {
 		return false
 	}
-	return job.Status == models.JobStatusCancelled
+	return job.Status == domain.JobStatusCancelled
 }
