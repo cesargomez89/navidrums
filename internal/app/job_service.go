@@ -70,3 +70,15 @@ func (s *JobService) RetryJob(id string) error {
 	}
 	return s.Repo.UpdateJobStatus(id, domain.JobStatusQueued, 0)
 }
+
+func (s *JobService) ListFinishedJobs(limit int) ([]*domain.Job, error) {
+	return s.Repo.ListFinishedJobs(limit)
+}
+
+func (s *JobService) GetJobStats() (*store.JobStats, error) {
+	return s.Repo.GetJobStats()
+}
+
+func (s *JobService) ClearFinishedJobs() error {
+	return s.Repo.ClearFinishedJobs()
+}

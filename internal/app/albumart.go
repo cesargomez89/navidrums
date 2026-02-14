@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/cesargomez89/navidrums/internal/config"
@@ -40,7 +39,7 @@ func (s *albumArtService) DownloadAndSaveAlbumArt(album *domain.Album, imageURL 
 	folderName := fmt.Sprintf("%s - %s", storage.Sanitize(album.Artist), storage.Sanitize(album.Title))
 	albumDir := filepath.Join(s.config.DownloadsDir, folderName)
 
-	if err := os.MkdirAll(albumDir, 0755); err != nil {
+	if err := storage.EnsureDir(albumDir); err != nil {
 		return fmt.Errorf("failed to create album directory: %w", err)
 	}
 
@@ -64,7 +63,7 @@ func (s *albumArtService) DownloadAndSavePlaylistImage(pl *domain.Playlist, imag
 
 	playlistsDir := filepath.Join(s.config.DownloadsDir, "playlists")
 
-	if err := os.MkdirAll(playlistsDir, 0755); err != nil {
+	if err := storage.EnsureDir(playlistsDir); err != nil {
 		return fmt.Errorf("failed to create playlists directory: %w", err)
 	}
 

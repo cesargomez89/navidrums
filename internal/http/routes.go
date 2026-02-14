@@ -98,7 +98,7 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.Repo.ListActiveJobs()
+	jobs, err := h.JobService.ListActiveJobs()
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
@@ -109,7 +109,7 @@ func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.Repo.ListActiveJobs()
+	jobs, err := h.JobService.ListActiveJobs()
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
@@ -117,13 +117,13 @@ func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.Repo.ListFinishedJobs(20)
+	jobs, err := h.JobService.ListFinishedJobs(20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	stats, err := h.JobService.Repo.GetJobStats()
+	stats, err := h.JobService.GetJobStats()
 	if err != nil {
 		h.Logger.Error("Failed to get job stats", "error", err)
 	}
@@ -277,7 +277,7 @@ func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
-	if err := h.JobService.Repo.ClearFinishedJobs(); err != nil {
+	if err := h.JobService.ClearFinishedJobs(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

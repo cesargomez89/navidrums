@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/cesargomez89/navidrums/internal/config"
@@ -31,14 +30,14 @@ func (pg *playlistGenerator) Generate(pl *domain.Playlist) error {
 	}
 
 	playlistsDir := filepath.Join(pg.config.DownloadsDir, "playlists")
-	if err := os.MkdirAll(playlistsDir, 0755); err != nil {
+	if err := storage.EnsureDir(playlistsDir); err != nil {
 		return fmt.Errorf("failed to create playlists directory: %w", err)
 	}
 
 	filename := storage.Sanitize(pl.Title) + ".m3u"
 	playlistPath := filepath.Join(playlistsDir, filename)
 
-	f, err := os.Create(playlistPath)
+	f, err := storage.CreateFile(playlistPath)
 	if err != nil {
 		return fmt.Errorf("failed to create playlist file: %w", err)
 	}
@@ -68,14 +67,14 @@ func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []doma
 	}
 
 	playlistsDir := filepath.Join(pg.config.DownloadsDir, "playlists")
-	if err := os.MkdirAll(playlistsDir, 0755); err != nil {
+	if err := storage.EnsureDir(playlistsDir); err != nil {
 		return fmt.Errorf("failed to create playlists directory: %w", err)
 	}
 
 	filename := fmt.Sprintf("%s - Top Tracks.m3u", storage.Sanitize(artistName))
 	playlistPath := filepath.Join(playlistsDir, filename)
 
-	f, err := os.Create(playlistPath)
+	f, err := storage.CreateFile(playlistPath)
 	if err != nil {
 		return fmt.Errorf("failed to create playlist file: %w", err)
 	}

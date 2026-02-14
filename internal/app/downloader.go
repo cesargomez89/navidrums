@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -60,7 +59,7 @@ func (d *downloader) Download(ctx context.Context, track domain.Track, destDir s
 		trackFile := fmt.Sprintf("%02d - %s%s", track.TrackNumber, storage.Sanitize(track.Title), finalExt)
 		finalPath = filepath.Join(destDir, trackFile)
 
-		f, err := os.Create(finalPath)
+		f, err := storage.CreateFile(finalPath)
 		if err != nil {
 			stream.Close()
 			continue
@@ -74,7 +73,7 @@ func (d *downloader) Download(ctx context.Context, track domain.Track, destDir s
 			return finalPath, nil
 		}
 
-		os.Remove(finalPath)
+		storage.RemoveFile(finalPath)
 		finalPath = ""
 
 		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)

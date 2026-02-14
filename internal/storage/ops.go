@@ -34,3 +34,15 @@ func MoveFile(src, dst string) error {
 	// For now return error
 	return fmt.Errorf("failed to move %s to %s", src, dst)
 }
+
+func CreateFile(path string) (*os.File, error) {
+	return os.Create(path)
+}
+
+func WriteFile(path string, data []byte) error {
+	return os.WriteFile(path, data, 0644)
+}
+
+func RemoveFile(path string) error {
+	return os.Remove(path)
+}

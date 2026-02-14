@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/bogem/id3v2/v2"
 	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/go-flac/flacpicture"
 	"github.com/go-flac/flacvorbis"
 	"github.com/go-flac/go-flac"
@@ -366,12 +366,12 @@ func SaveImageToFile(imageData []byte, filePath string) error {
 
 	// Create directory if it doesn't exist
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := storage.EnsureDir(dir); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	// Write image to file
-	if err := os.WriteFile(filePath, imageData, 0644); err != nil {
+	if err := storage.WriteFile(filePath, imageData); err != nil {
 		return fmt.Errorf("failed to write image file: %w", err)
 	}
 

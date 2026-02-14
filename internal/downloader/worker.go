@@ -285,21 +285,29 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 			}
 		}
 
-		w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+		if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
+			logger.Error("Failed to update job status to completed", "error", err)
+		}
 
 		// Update job metadata with container info before completing
 		switch job.Type {
 		case domain.JobTypeAlbum:
 			if len(tracks) > 0 {
-				w.Repo.UpdateJobMetadata(job.ID, tracks[0].Album, tracks[0].AlbumArtist)
+				if err := w.Repo.UpdateJobMetadata(job.ID, tracks[0].Album, tracks[0].AlbumArtist); err != nil {
+					logger.Error("Failed to update job metadata", "error", err)
+				}
 			}
 		case domain.JobTypePlaylist:
 			if pl, err := w.Provider.GetPlaylist(ctx, job.SourceID); err == nil && pl != nil {
-				w.Repo.UpdateJobMetadata(job.ID, pl.Title, "")
+				if err := w.Repo.UpdateJobMetadata(job.ID, pl.Title, ""); err != nil {
+					logger.Error("Failed to update job metadata", "error", err)
+				}
 			}
 		case domain.JobTypeArtist:
 			if artist, err := w.Provider.GetArtist(ctx, job.SourceID); err == nil && artist != nil {
-				w.Repo.UpdateJobMetadata(job.ID, artist.Name, "")
+				if err := w.Repo.UpdateJobMetadata(job.ID, artist.Name, ""); err != nil {
+					logger.Error("Failed to update job metadata", "error", err)
+				}
 			}
 		}
 		return
@@ -312,8 +320,12 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	dl, _ := w.Repo.GetDownload(track.ID)
 	if dl != nil {
 		logger.Info("Track already downloaded", "file_path", dl.FilePath)
-		w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist)
-		w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+		if err := w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist); err != nil {
+			logger.Error("Failed to update job metadata", "error", err)
+		}
+		if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
+			logger.Error("Failed to update job status", "error", err)
+		}
 		return
 	}
 
@@ -330,7 +342,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	folderName := fmt.Sprintf("%s - %s", storage.Sanitize(artistForFolder), storage.Sanitize(track.Album))
 	finalDir := filepath.Join(w.Config.DownloadsDir, folderName)
 
-	if err := os.MkdirAll(finalDir, 0755); err != nil {
+	if err := storage.EnsureDir(finalDir); err != nil {
 		logger.Error("Failed to create directory", "error", err)
 		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", err))
 		return
@@ -390,7 +402,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	if len(albumArtData) > 0 {
 		artPath := filepath.Join(finalDir, "cover.jpg")
 		if _, err := os.Stat(artPath); os.IsNotExist(err) {
-			if err := os.WriteFile(artPath, albumArtData, 0644); err != nil {
+			if err := storage.WriteFile(artPath, albumArtData); err != nil {
 				logger.Error("Failed to save album art", "path", artPath, "error", err)
 			} else {
 				logger.Info("Saved album art", "path", artPath)
