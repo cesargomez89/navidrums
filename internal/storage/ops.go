@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/cesargomez89/navidrums/internal/constants"
 )
 
 func Sanitize(s string) string {
@@ -22,7 +24,7 @@ func Sanitize(s string) string {
 }
 
 func EnsureDir(path string) error {
-	return os.MkdirAll(path, 0755)
+	return os.MkdirAll(path, constants.DirPermissions)
 }
 
 func MoveFile(src, dst string) error {
@@ -40,7 +42,7 @@ func CreateFile(path string) (*os.File, error) {
 }
 
 func WriteFile(path string, data []byte) error {
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, constants.FilePermissions)
 }
 
 func RemoveFile(path string) error {

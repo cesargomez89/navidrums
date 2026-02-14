@@ -116,7 +116,7 @@ func (r *multiSegmentReader) Read(p []byte) (n int, err error) {
 		if err != nil {
 			return 0, err
 		}
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			resp.Body.Close()
 			return 0, fmt.Errorf("segment fetch failed (%d): %s", r.currIdx, resp.Status)
 		}

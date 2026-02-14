@@ -427,7 +427,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		if err != nil {
 			return nil, "", err
 		}
-		if sResp.StatusCode != 200 {
+		if sResp.StatusCode != http.StatusOK {
 			sResp.Body.Close()
 			return nil, "", fmt.Errorf("stream fetch failed: %s", sResp.Status)
 		}
@@ -459,7 +459,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		if err != nil {
 			return nil, "", err
 		}
-		if sResp.StatusCode != 200 {
+		if sResp.StatusCode != http.StatusOK {
 			sResp.Body.Close()
 			return nil, "", fmt.Errorf("stream fetch failed: %s", sResp.Status)
 		}
@@ -581,7 +581,7 @@ func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("API request failed: %s", resp.Status)
 	}
 

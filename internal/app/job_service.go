@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/google/uuid"
@@ -45,7 +46,7 @@ func (s *JobService) EnqueueJob(sourceID string, jobType domain.JobType) (*domai
 }
 
 func (s *JobService) ListJobs() ([]*domain.Job, error) {
-	return s.Repo.ListJobs(50)
+	return s.Repo.ListJobs(constants.MaxSearchResults)
 }
 
 func (s *JobService) GetJob(id string) (*domain.Job, error) {

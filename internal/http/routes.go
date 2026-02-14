@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/go-chi/chi/v5"
@@ -89,7 +90,7 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 
 	_, err := h.JobService.EnqueueJob(id, domain.JobType(jobType))
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -117,7 +118,7 @@ func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.ListFinishedJobs(20)
+	jobs, err := h.JobService.ListFinishedJobs(constants.MaxHistoryItems)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -144,7 +145,7 @@ func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := h.JobService.CancelJob(id); err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -158,7 +159,7 @@ func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := h.JobService.RetryJob(id); err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -195,20 +196,25 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	customJSON, err := json.Marshal(data.Custom)
-	if err != nil {
-		h.Logger.Error("Failed to marshal custom providers", "error", err)
+	response := map[string]interface{}{
+		"predefined": json.RawMessage(catalog.GetPredefinedProvidersJSON()),
+		"custom":     data.Custom,
+		"active":     data.Active,
+		"default":    data.Default,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		h.Logger.Error("Failed to encode providers response", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"predefined":` + catalog.GetPredefinedProvidersJSON() + `,"custom":` + string(customJSON) + `,"active":"` + data.Active + `","default":"` + data.Default + `"}`))
 }
 
 func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
 	if url == "" {
-		http.Error(w, "url is required", 400)
+		http.Error(w, "url is required", http.StatusBadRequest)
 		return
 	}
 
@@ -226,7 +232,7 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 	name := r.URL.Query().Get("name")
 	url := r.URL.Query().Get("url")
 	if name == "" || url == "" {
-		http.Error(w, "name and url are required", 400)
+		http.Error(w, "name and url are required", http.StatusBadRequest)
 		return
 	}
 
@@ -261,7 +267,7 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
 	if url == "" {
-		http.Error(w, "url is required", 400)
+		http.Error(w, "url is required", http.StatusBadRequest)
 		return
 	}
 

@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/bogem/id3v2/v2"
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/go-flac/flacpicture"
@@ -303,9 +303,13 @@ func formatToLRC(subtitles string) string {
 		if line == "" {
 			continue
 		}
-		if len(line) > 10 && line[0] == '[' {
-			result.WriteString(line[:10])
-			result.WriteString(line[11:])
+		// Check for timestamp pattern [MM:SS.mm] or [MM:SS.mmm]
+		// The timestamp is 10 chars: [00:39.98] or [00:39.983]
+		if len(line) >= 10 && line[0] == '[' && line[9] == ']' {
+			result.WriteString(line[:10]) // Timestamp part
+			if len(line) > 10 {
+				result.WriteString(line[10:]) // Everything after timestamp
+			}
 		} else {
 			result.WriteString(line)
 		}
@@ -330,7 +334,7 @@ func DownloadImage(url string) ([]byte, error) {
 	}
 
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: constants.DefaultHTTPTimeout,
 	}
 
 	req, err := http.NewRequest("GET", url, nil)

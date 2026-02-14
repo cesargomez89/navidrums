@@ -122,6 +122,12 @@ const (
 	TokenFileName = "token.json"
 )
 
+// File Permissions
+const (
+	DirPermissions  = 0755
+	FilePermissions = 0644
+)
+
 // HTTP Status Codes
 const (
 	StatusOK                 = 200
