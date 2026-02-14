@@ -9,9 +9,11 @@ import (
 	"github.com/cesargomez89/navidrums/internal/storage"
 )
 
+type ExtensionLookupFunc func(trackID string) string
+
 type PlaylistGenerator interface {
-	Generate(pl *domain.Playlist) error
-	GenerateFromTracks(artistName string, tracks []domain.Track) error
+	Generate(pl *domain.Playlist, lookup ExtensionLookupFunc) error
+	GenerateFromTracks(artistName string, tracks []domain.Track, lookup ExtensionLookupFunc) error
 }
 
 type playlistGenerator struct {
@@ -24,7 +26,7 @@ func NewPlaylistGenerator(cfg *config.Config) PlaylistGenerator {
 	}
 }
 
-func (pg *playlistGenerator) Generate(pl *domain.Playlist) error {
+func (pg *playlistGenerator) Generate(pl *domain.Playlist, lookup ExtensionLookupFunc) error {
 	if len(pl.Tracks) == 0 {
 		return nil
 	}
@@ -49,7 +51,11 @@ func (pg *playlistGenerator) Generate(pl *domain.Playlist) error {
 
 	for _, t := range pl.Tracks {
 		folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
-		trackFile := fmt.Sprintf("%02d - %s.flac", t.TrackNumber, storage.Sanitize(t.Title))
+		ext := lookup(t.ID)
+		if ext == "" {
+			ext = ".flac" // Default fallback
+		}
+		trackFile := fmt.Sprintf("%02d - %s%s", t.TrackNumber, storage.Sanitize(t.Title), ext)
 		relPath := filepath.Join("..", folderName, trackFile)
 
 		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)
@@ -61,7 +67,7 @@ func (pg *playlistGenerator) Generate(pl *domain.Playlist) error {
 	return nil
 }
 
-func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.Track) error {
+func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.Track, lookup ExtensionLookupFunc) error {
 	if len(tracks) == 0 {
 		return nil
 	}
@@ -86,7 +92,11 @@ func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []doma
 
 	for _, t := range tracks {
 		folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
-		trackFile := fmt.Sprintf("%02d - %s.flac", t.TrackNumber, storage.Sanitize(t.Title))
+		ext := lookup(t.ID)
+		if ext == "" {
+			ext = ".flac" // Default fallback
+		}
+		trackFile := fmt.Sprintf("%02d - %s%s", t.TrackNumber, storage.Sanitize(t.Title), ext)
 		relPath := filepath.Join("..", folderName, trackFile)
 
 		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)

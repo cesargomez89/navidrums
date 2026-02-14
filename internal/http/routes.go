@@ -188,12 +188,19 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
 	if err == nil && customProvidersJSON != "" {
 		var customProviders []catalog.CustomProvider
-		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err == nil {
+		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
+			h.Logger.Error("Failed to unmarshal custom providers", "error", err)
+		} else {
 			data.Custom = customProviders
 		}
 	}
 
-	customJSON, _ := json.Marshal(data.Custom)
+	customJSON, err := json.Marshal(data.Custom)
+	if err != nil {
+		h.Logger.Error("Failed to marshal custom providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(`{"predefined":` + catalog.GetPredefinedProvidersJSON() + `,"custom":` + string(customJSON) + `,"active":"` + data.Active + `","default":"` + data.Default + `"}`))
 }
@@ -206,7 +213,11 @@ func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.ProviderManager.SetProvider(url)
-	h.SettingsRepo.Set(store.SettingActiveProvider, url)
+	if err := h.SettingsRepo.Set(store.SettingActiveProvider, url); err != nil {
+		h.Logger.Error("Failed to save active provider", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
 }
@@ -219,16 +230,30 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	customProvidersJSON, _ := h.SettingsRepo.Get(store.SettingCustomProviders)
+	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
+	if err != nil {
+		h.Logger.Error("Failed to get custom providers", "error", err)
+	}
 	var customProviders []catalog.CustomProvider
 	if customProvidersJSON != "" {
-		json.Unmarshal([]byte(customProvidersJSON), &customProviders)
+		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
+			h.Logger.Error("Failed to unmarshal custom providers", "error", err)
+		}
 	}
 
 	customProviders = append(customProviders, catalog.CustomProvider{Name: name, URL: url})
 
-	newJSON, _ := json.Marshal(customProviders)
-	h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON))
+	newJSON, err := json.Marshal(customProviders)
+	if err != nil {
+		h.Logger.Error("Failed to marshal custom providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if err := h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON)); err != nil {
+		h.Logger.Error("Failed to save custom providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	w.Write([]byte(`{"success":true}`))
 }
@@ -259,8 +284,17 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	newJSON, _ := json.Marshal(newProviders)
-	h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON))
+	newJSON, err := json.Marshal(newProviders)
+	if err != nil {
+		h.Logger.Error("Failed to marshal custom providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if err := h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON)); err != nil {
+		h.Logger.Error("Failed to save custom providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	w.Write([]byte(`{"success":true}`))
 }

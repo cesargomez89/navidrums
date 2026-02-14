@@ -14,9 +14,14 @@ CREATE TABLE IF NOT EXISTS jobs (
 	error TEXT
 );
 
+-- Prevent duplicate active jobs for same source
+CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_active_source ON jobs(source_id, type) 
+WHERE status IN ('queued', 'resolving_tracks', 'downloading');
+
 CREATE TABLE IF NOT EXISTS downloads (
 	provider_id TEXT PRIMARY KEY,
 	file_path TEXT NOT NULL,
+	file_extension TEXT DEFAULT '.flac',
 	completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

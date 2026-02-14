@@ -8,7 +8,7 @@ import (
 )
 
 func (db *DB) CreateJob(job *domain.Job) error {
-	query := `INSERT INTO jobs (id, type, status, title, artist, progress, source_id, created_at, updated_at)
+	query := `INSERT OR IGNORE INTO jobs (id, type, status, title, artist, progress, source_id, created_at, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err := db.Exec(query, job.ID, job.Type, job.Status, job.Title, job.Artist, job.Progress, job.SourceID, job.CreatedAt, job.UpdatedAt)
@@ -161,24 +161,33 @@ type JobStats struct {
 func (db *DB) GetJobStats() (*JobStats, error) {
 	stats := &JobStats{}
 
-	err := db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status IN ('completed', 'failed', 'cancelled')`).Scan(&stats.Total)
+	query := `SELECT 
+		COUNT(*) as total,
+		SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
+		SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+		SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+	FROM jobs 
+	WHERE status IN ('completed', 'failed', 'cancelled')`
+
+	var total sql.NullInt64
+	var completed, failed, cancelled sql.NullInt64
+
+	err := db.QueryRow(query).Scan(&total, &completed, &failed, &cancelled)
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status = 'completed'`).Scan(&stats.Completed)
-	if err != nil {
-		return nil, err
+	if total.Valid {
+		stats.Total = int(total.Int64)
 	}
-
-	err = db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status = 'failed'`).Scan(&stats.Failed)
-	if err != nil {
-		return nil, err
+	if completed.Valid {
+		stats.Completed = int(completed.Int64)
 	}
-
-	err = db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE status = 'cancelled'`).Scan(&stats.Cancelled)
-	if err != nil {
-		return nil, err
+	if failed.Valid {
+		stats.Failed = int(failed.Int64)
+	}
+	if cancelled.Valid {
+		stats.Cancelled = int(cancelled.Int64)
 	}
 
 	return stats, nil

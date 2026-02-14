@@ -38,9 +38,10 @@ type Job struct {
 }
 
 type Download struct {
-	ProviderID  string    `json:"provider_id"`
-	FilePath    string    `json:"file_path"` // Absolute path
-	CompletedAt time.Time `json:"completed_at"`
+	ProviderID    string    `json:"provider_id"`
+	FilePath      string    `json:"file_path"`      // Absolute path
+	FileExtension string    `json:"file_extension"` // e.g., ".flac", ".mp3", ".m4a"
+	CompletedAt   time.Time `json:"completed_at"`
 }
 
 // Normalized structures for provider response

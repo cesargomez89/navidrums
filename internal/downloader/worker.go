@@ -216,7 +216,14 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 				}
 			}
 			// Generate playlist file using service
-			if err := w.playlistGenerator.Generate(pl); err != nil {
+			extLookup := func(trackID string) string {
+				dl, _ := w.Repo.GetDownload(trackID)
+				if dl != nil && dl.FileExtension != "" {
+					return dl.FileExtension
+				}
+				return ".flac"
+			}
+			if err := w.playlistGenerator.Generate(pl, extLookup); err != nil {
 				logger.Error("Failed to generate playlist file", "error", err)
 			}
 		}
@@ -227,7 +234,14 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 			tracks = artist.TopTracks
 			// Generate playlist file for top tracks
 			if len(tracks) > 0 {
-				if err := w.playlistGenerator.GenerateFromTracks(artist.Name, tracks); err != nil {
+				extLookup := func(trackID string) string {
+					dl, _ := w.Repo.GetDownload(trackID)
+					if dl != nil && dl.FileExtension != "" {
+						return dl.FileExtension
+					}
+					return ".flac"
+				}
+				if err := w.playlistGenerator.GenerateFromTracks(artist.Name, tracks, extLookup); err != nil {
 					logger.Error("Failed to generate playlist file", "error", err)
 				}
 			}
@@ -411,10 +425,15 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	}
 
 	// Record download in DB
+	ext := filepath.Ext(finalPath)
+	if ext == "" {
+		ext = ".flac" // Default extension
+	}
 	err = w.Repo.CreateDownload(&domain.Download{
-		ProviderID:  track.ID,
-		FilePath:    finalPath,
-		CompletedAt: time.Now(),
+		ProviderID:    track.ID,
+		FilePath:      finalPath,
+		FileExtension: ext,
+		CompletedAt:   time.Now(),
 	})
 	if err != nil {
 		logger.Error("Failed to record download in DB", "error", err)
