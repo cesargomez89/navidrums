@@ -304,10 +304,9 @@ func formatToLRC(subtitles string) string {
 		if line == "" {
 			continue
 		}
-		// Remove the closing bracket from timestamp for LRC format
 		if len(line) > 10 && line[0] == '[' {
-			result.WriteString(line[:9])
-			result.WriteString(line[10:])
+			result.WriteString(line[:10])
+			result.WriteString(line[11:])
 		} else {
 			result.WriteString(line)
 		}

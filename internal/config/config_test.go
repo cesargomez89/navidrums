@@ -82,6 +82,8 @@ func TestValidate(t *testing.T) {
 				Quality:      "LOSSLESS",
 				LogLevel:     "info",
 				LogFormat:    "text",
+				Username:     "navidrums",
+				Password:     "testpass",
 			},
 			wantErr: false,
 		},

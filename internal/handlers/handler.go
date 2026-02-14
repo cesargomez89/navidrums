@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/providers"
 	"github.com/cesargomez89/navidrums/internal/repository"
 	"github.com/cesargomez89/navidrums/internal/services"
@@ -18,6 +19,7 @@ type Handler struct {
 	ProviderManager *providers.ProviderManager
 	SettingsRepo    *repository.SettingsRepo
 	Templates       *template.Template
+	Logger          *logger.Logger
 }
 
 func NewHandler(js *services.JobService, pm *providers.ProviderManager, sr *repository.SettingsRepo) *Handler {
@@ -26,6 +28,7 @@ func NewHandler(js *services.JobService, pm *providers.ProviderManager, sr *repo
 		ProviderManager: pm,
 		Provider:        pm,
 		SettingsRepo:    sr,
+		Logger:          logger.Default(),
 	}
 	h.ParseTemplates()
 	return h

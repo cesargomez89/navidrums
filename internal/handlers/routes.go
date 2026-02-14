@@ -98,7 +98,10 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
-	jobs, _ := h.JobService.Repo.ListActiveJobs() // Use db directly for simplicity
+	jobs, err := h.JobService.Repo.ListActiveJobs()
+	if err != nil {
+		h.Logger.Error("Failed to list active jobs", "error", err)
+	}
 	h.RenderPage(w, "queue.html", map[string]interface{}{
 		"ActivePage": "queue",
 		"Jobs":       jobs,
@@ -106,7 +109,10 @@ func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
-	jobs, _ := h.JobService.Repo.ListActiveJobs()
+	jobs, err := h.JobService.Repo.ListActiveJobs()
+	if err != nil {
+		h.Logger.Error("Failed to list active jobs", "error", err)
+	}
 	h.RenderQueueList(w, jobs)
 }
 
@@ -117,7 +123,10 @@ func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats, _ := h.JobService.Repo.GetJobStats()
+	stats, err := h.JobService.Repo.GetJobStats()
+	if err != nil {
+		h.Logger.Error("Failed to get job stats", "error", err)
+	}
 
 	h.RenderPage(w, "history.html", map[string]interface{}{
 		"ActivePage": "history",
@@ -139,8 +148,10 @@ func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return updated queue
-	jobs, _ := h.JobService.ListActiveJobs()
+	jobs, err := h.JobService.ListActiveJobs()
+	if err != nil {
+		h.Logger.Error("Failed to list active jobs", "error", err)
+	}
 	h.RenderFragment(w, "queue_list.html", jobs)
 }
 
@@ -151,8 +162,10 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return updated queue
-	jobs, _ := h.JobService.ListActiveJobs()
+	jobs, err := h.JobService.ListActiveJobs()
+	if err != nil {
+		h.Logger.Error("Failed to list active jobs", "error", err)
+	}
 	h.RenderFragment(w, "queue_list.html", jobs)
 }
 

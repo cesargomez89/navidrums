@@ -224,7 +224,8 @@ func (w *Worker) runJob(ctx context.Context, job *models.Job) {
 			}
 		}
 	case models.JobTypeArtist:
-		artist, err := w.Provider.GetArtist(ctx, job.SourceID)
+		var artist *models.Artist
+		artist, err = w.Provider.GetArtist(ctx, job.SourceID)
 		if err == nil {
 			tracks = artist.TopTracks
 			// Generate playlist file for top tracks

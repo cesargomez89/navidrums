@@ -108,15 +108,12 @@ func (c *Config) Validate() error {
 		errors = append(errors, fmt.Sprintf("LOG_FORMAT must be one of: text, json, got: %s", c.LogFormat))
 	}
 
-	// Validate Username
-	if c.Username == "" {
-		errors = append(errors, "USERNAME cannot be empty")
+	// Validate Username (optional - only required if password is set)
+	if c.Password != "" && c.Username == "" {
+		errors = append(errors, "USERNAME cannot be empty when PASSWORD is set")
 	}
 
-	// Validate Password
-	if c.Password == "" {
-		errors = append(errors, "PASSWORD cannot be empty")
-	}
+	// Password is optional - empty password disables basic auth
 
 	if len(errors) > 0 {
 		return fmt.Errorf("configuration validation failed:\n  - %s", strings.Join(errors, "\n  - "))

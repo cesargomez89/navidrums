@@ -451,7 +451,6 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		}
 
 		if streamUrl == "" {
-			fmt.Printf("[DEBUG] FAILED DASH MANIFEST: %s\n", s)
 			return nil, "", fmt.Errorf("no BaseURL found in DASH manifest")
 		}
 
@@ -471,8 +470,6 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 }
 
 func (p *HifiProvider) handleSegmentedDash(ctx context.Context, manifest string) (io.ReadCloser, string, error) {
-	// Simple regex/string scanning for SegmentTemplate attributes
-	// <SegmentTemplate timescale="48000" initialization=".../0.mp4?..." media=".../$Number$.mp4?..." startNumber="1">
 	initRe := regexp.MustCompile(`initialization="([^"]+)"`)
 	mediaRe := regexp.MustCompile(`media="([^"]+)"`)
 	startNumRe := regexp.MustCompile(`startNumber="(\d+)"`)
@@ -492,24 +489,7 @@ func (p *HifiProvider) handleSegmentedDash(ctx context.Context, manifest string)
 		fmt.Sscanf(startNumMatch[1], "%d", &startNum)
 	}
 
-	// Parse SegmentTimeline to get total count
-	// <S d="188416" r="38"/> -> 1 + 38 = 39 segments
-	// <S d="118208"/> -> 1 segment
 	count := 0
-	sRe := regexp.MustCompile(`<S\s+[^>]*?r="(\d+)"[^>]*/>`)
-	matches := sRe.FindAllStringSubmatch(manifest, -1)
-	for _, m := range matches {
-		r := 0
-		fmt.Sscanf(m[1], "%d", &r)
-		count += 1 + r
-	}
-	// Also count segments without 'r'
-	sSimpleRe := regexp.MustCompile(`<S\s+[^>]*?d="\d+"(?:\s+[^>]*?)?(?:\s+r="\d+")?[^>]*?/>`)
-	_ = sSimpleRe.FindAllString(manifest, -1)
-	// Actually, the logic above covers 'r' ones. Let's just count total <S> tags minus the ones with 'r'
-	// No, easier: iterate through all <S> tags and parse 'r' if present.
-
-	count = 0
 	fullSRe := regexp.MustCompile(`<S\s+([^>]*?)/>`)
 	sMatches := fullSRe.FindAllStringSubmatch(manifest, -1)
 	for _, sm := range sMatches {
@@ -610,8 +590,5 @@ func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) 
 	decoder := json.NewDecoder(resp.Body)
 	decoder.UseNumber()
 	err = decoder.Decode(target)
-	if err != nil {
-		fmt.Printf("[DEBUG] Failed to decode response from %s: %v\n", url, err)
-	}
 	return err
 }

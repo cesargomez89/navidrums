@@ -43,6 +43,12 @@ func (d *downloader) Download(ctx context.Context, track models.Track, destDir s
 	var finalExt string
 
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
+		select {
+		case <-ctx.Done():
+			return "", ctx.Err()
+		default:
+		}
+
 		stream, mimeType, err := d.provider.GetStream(ctx, track.ID, d.config.Quality)
 		if err != nil {
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
