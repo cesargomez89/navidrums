@@ -1,144 +1,142 @@
 ## What this project is
 
-Navidrums is a download orchestrator and metadata browser.
-
-It is NOT a streaming server.
-The UI never downloads music directly.
-
-All downloads happen asynchronously via jobs and workers.
+Navidrums is a download orchestrator and metadata browser. It is NOT a streaming server - all downloads happen asynchronously via background jobs and workers.
 
 ---
 
-## Mental Model
+## Build/Test/Lint Commands
 
-User action
-→ HTTP handler
-→ service layer
-→ repository state
-→ worker execution
-→ provider fetch
-→ filesystem write
-→ tagging
+```bash
+# Build
+go build -o navidrums ./cmd/server
 
-Responsibilities:
+# Run
+go run ./cmd/server
 
-Handlers: HTTP coordination only
-Services: workflow orchestration
-Repository: persistent state
-Workers: long running execution
-Providers: remote catalog access
-Filesystem: local storage operations
-Tagging: metadata writing
+# Test
+go test ./...
+go test -race ./...
 
-Handlers must never talk to providers directly.
+# Lint
+golangci-lint run
+
+# Format
+go fmt ./...
+```
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 8080 | HTTP server port |
+| `DB_PATH` | navidrums.db | SQLite database path |
+| `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
+| `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL |
+| `QUALITY` | LOSSLESS | Audio quality |
+| `LOG_LEVEL` | info | Logging level |
+| `LOG_FORMAT` | text | Log format (text, json) |
+| `NAVIDRUMS_USERNAME` | navidrums | Basic auth username |
+| `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
 
 ---
 
-## Architecture Constraints
+## Code Style
 
-Allowed dependencies:
+**Imports order**: stdlib → third-party → internal (separate groups with blank lines)
 
+**Naming**:
+- PascalCase for types, interfaces, exported functions
+- camelCase for variables, unexported functions
+- `Err` prefix for exported errors (e.g., `ErrJobCancelled`)
+
+**Error handling**:
+- Services: `fmt.Errorf("failed to X: %w", err)`
+- Handlers: `http.Error()` with appropriate status codes
+- Workers: `defer` with `recover()` to catch panics
+
+**Formatting**: `go fmt`, tabs, aim for 100 chars, hard limit 120
+
+---
+
+## Architecture Rules
+
+**Flow**: http request → app workflow → store state
+worker observes state → downloader executes → storage writes → app finalizes
+
+**Allowed**:
+```
 handlers → services
-services → repository
-services → providers
-services → filesystem
-worker → services
+services → repository, providers, storage
+worker → services, providers, storage, tagging
+```
 
-Forbidden dependencies:
-
+**Forbidden**:
+```
 repository → services
 providers → repository
-handlers → repository directly
-handlers → providers
-ui → providers
+handlers → repository, providers, storage
+downloading inside handlers
+spawning goroutines in handlers
+```
 
-Filesystem writes only inside filesystem package.
+**Filesystem writes ONLY in `internal/storage` package**
 
 ---
 
 ## Job Lifecycle (Invariant)
 
-Jobs can only transition:
+```
+queued → resolving_tracks → downloading → completed | failed | cancelled
+```
 
-pending → processing → completed
-pending → processing → failed
-pending → processing → cancelled
+**Container jobs** (album/playlist/artist): resolve tracks → create child track jobs → complete
+
+**Track jobs**: resolve metadata → check if downloaded → download stream → tag → save art → record
 
 Rules:
-
-- A cancelled job must stop ongoing work
-- A job cannot return to pending
-- A job cannot skip processing
-- Workers must persist state transitions
+- Cancelled jobs must stop work
+- Jobs cannot return to queued
+- Workers persist all state transitions
 
 ---
 
 ## Data Invariants
 
-- A track file must exist before tagging
-- Providers are stateless
-- Provider responses are never stored raw in DB
-- Artist downloads aggregate album tracks
-- Partial downloads must still finalize job state
-- Deleting a job does not delete files automatically
-
----
-
-## Forbidden Changes
-
-Do NOT:
-
-- download files inside handlers
-- spawn goroutines inside handlers
-- access DB outside repository
-- block HTTP requests waiting for downloads
-- call providers from UI layer
-- write files outside filesystem package
-- mutate job state outside services
+- Track file must exist before tagging
+- Providers are stateless, responses not stored raw
+- Downloads decompose into track jobs
+- Duplicate downloads prevented via download tracking
+- Deleting job does not delete files
 
 ---
 
 ## Implementing Features
 
-When implementing anything related to downloads:
+Order matters:
+1. Add/modify service (`internal/app`)
+2. Update repository if needed (`internal/store`)
+3. Extend worker (`internal/downloader`)
+4. Update handler LAST (`internal/http`)
 
-1. Add or modify service method
-2. Update repository state if needed
-3. Extend worker behavior
-4. Update handler last
-
-Never start implementation from handlers.
-
----
-
-## Error Handling Rules
-
-- Services return domain errors
-- Handlers map errors to HTTP responses
-- Workers must never panic
-- All external calls must be retry-safe
+Never start from handlers.
 
 ---
 
-## Concurrency Rules
+## Critical Don'ts
 
-- Workers own execution
-- Services own orchestration
-- Context cancellation must stop downloads
-- No shared mutable state across goroutines
-- Repository operations must be safe for concurrent workers
+- no downloads in http
+- no goroutines in http
+- no DB access outside store
+- no blocking requests
+- no provider calls from UI
+- no file writes outside storage
+- no job mutation outside app
 
 ---
 
-## Verification Procedure
+## Project Notes
 
-After modifying download logic:
-
-1. Queue album download
-2. Confirm job stored in DB
-3. Worker picks job
-4. Files appear in download directory
-5. Tags written
-6. Job finishes with correct state
-
-If any step fails, the implementation is incorrect.
+- The application requires a writable downloads directory
+- Workers start automatically with the server
+- SQLite database is created automatically on first run
+- Stuck jobs (resolving_tracks, downloading) are reset on startup
