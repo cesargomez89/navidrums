@@ -46,26 +46,31 @@ type Download struct {
 
 // Normalized structures for provider response
 type Track struct {
-	ID             string `json:"id"`
-	Title          string `json:"title"`
-	ArtistID       string `json:"artist_id,omitempty"`
-	Artist         string `json:"artist"`
-	AlbumID        string `json:"album_id,omitempty"`
-	Album          string `json:"album"`
-	AlbumArtist    string `json:"album_artist,omitempty"`
-	TrackNumber    int    `json:"track_number"`
-	DiscNumber     int    `json:"disc_number,omitempty"`
-	TotalTracks    int    `json:"total_tracks,omitempty"`
-	TotalDiscs     int    `json:"total_discs,omitempty"`
-	Duration       int    `json:"duration"` // seconds
-	Year           int    `json:"year,omitempty"`
-	Genre          string `json:"genre,omitempty"`
-	Label          string `json:"label,omitempty"`
-	ISRC           string `json:"isrc,omitempty"`
-	Copyright      string `json:"copyright,omitempty"`
-	Composer       string `json:"composer,omitempty"`
-	AlbumArtURL    string `json:"album_art_url,omitempty"`
-	ExplicitLyrics bool   `json:"explicit_lyrics,omitempty"`
+	ID             string   `json:"id"`
+	Title          string   `json:"title"`
+	ArtistID       string   `json:"artist_id,omitempty"`
+	Artist         string   `json:"artist"`
+	Artists        []string `json:"artists,omitempty"`
+	ArtistIDs      []string `json:"artist_ids,omitempty"`
+	AlbumID        string   `json:"album_id,omitempty"`
+	Album          string   `json:"album"`
+	AlbumArtist    string   `json:"album_artist,omitempty"`
+	AlbumArtists   []string `json:"album_artists,omitempty"`
+	AlbumArtistIDs []string `json:"album_artist_ids,omitempty"`
+	Compilation    bool     `json:"compilation,omitempty"`
+	TrackNumber    int      `json:"track_number"`
+	DiscNumber     int      `json:"disc_number,omitempty"`
+	TotalTracks    int      `json:"total_tracks,omitempty"`
+	TotalDiscs     int      `json:"total_discs,omitempty"`
+	Duration       int      `json:"duration"` // seconds
+	Year           int      `json:"year,omitempty"`
+	Genre          string   `json:"genre,omitempty"`
+	Label          string   `json:"label,omitempty"`
+	ISRC           string   `json:"isrc,omitempty"`
+	Copyright      string   `json:"copyright,omitempty"`
+	Composer       string   `json:"composer,omitempty"`
+	AlbumArtURL    string   `json:"album_art_url,omitempty"`
+	ExplicitLyrics bool     `json:"explicit_lyrics,omitempty"`
 	// Additional metadata fields
 	BPM          int     `json:"bpm,omitempty"`
 	Key          string  `json:"key,omitempty"`
@@ -83,19 +88,21 @@ type Track struct {
 }
 
 type Album struct {
-	ID          string  `json:"id"`
-	Title       string  `json:"title"`
-	ArtistID    string  `json:"artist_id,omitempty"`
-	Artist      string  `json:"artist"`
-	Year        int     `json:"year,omitempty"`
-	ReleaseDate string  `json:"release_date,omitempty"` // Full date YYYY-MM-DD
-	Genre       string  `json:"genre,omitempty"`
-	Label       string  `json:"label,omitempty"`
-	Copyright   string  `json:"copyright,omitempty"`
-	TotalTracks int     `json:"total_tracks,omitempty"`
-	TotalDiscs  int     `json:"total_discs,omitempty"`
-	AlbumArtURL string  `json:"album_art_url,omitempty"`
-	Tracks      []Track `json:"tracks"`
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	ArtistID    string   `json:"artist_id,omitempty"`
+	Artist      string   `json:"artist"`
+	Artists     []string `json:"artists,omitempty"`
+	ArtistIDs   []string `json:"artist_ids,omitempty"`
+	Year        int      `json:"year,omitempty"`
+	ReleaseDate string   `json:"release_date,omitempty"` // Full date YYYY-MM-DD
+	Genre       string   `json:"genre,omitempty"`
+	Label       string   `json:"label,omitempty"`
+	Copyright   string   `json:"copyright,omitempty"`
+	TotalTracks int      `json:"total_tracks,omitempty"`
+	TotalDiscs  int      `json:"total_discs,omitempty"`
+	AlbumArtURL string   `json:"album_art_url,omitempty"`
+	Tracks      []Track  `json:"tracks"`
 	// Additional metadata fields
 	UPC       string `json:"upc,omitempty"`
 	AlbumType string `json:"album_type,omitempty"` // ALBUM, EP, SINGLE

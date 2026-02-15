@@ -174,6 +174,8 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 		Title:       resp.Data.Title,
 		ArtistID:    formatID(resp.Data.Artist.ID),
 		Artist:      resp.Data.Artist.Name,
+		Artists:     []string{resp.Data.Artist.Name},
+		ArtistIDs:   []string{formatID(resp.Data.Artist.ID)},
 		Year:        year,
 		ReleaseDate: resp.Data.ReleaseDate,
 		Copyright:   resp.Data.Copyright,
@@ -190,9 +192,16 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 		item := wrapped.Item
 		tArtist := album.Artist
 		tArtistID := album.ArtistID
-		if len(item.Artists) > 0 {
-			tArtist = item.Artists[0].Name
-			tArtistID = formatID(item.Artists[0].ID)
+
+		var artists []string
+		var artistIDs []string
+		for _, a := range item.Artists {
+			artists = append(artists, a.Name)
+			artistIDs = append(artistIDs, formatID(a.ID))
+		}
+		if len(artists) > 0 {
+			tArtist = artists[0]
+			tArtistID = artistIDs[0]
 		}
 
 		track := domain.Track{
@@ -200,8 +209,12 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 			Title:          item.Title,
 			ArtistID:       tArtistID,
 			Artist:         tArtist,
+			Artists:        artists,
+			ArtistIDs:      artistIDs,
 			AlbumID:        album.ID,
 			AlbumArtist:    album.Artist,
+			AlbumArtists:   album.Artists,
+			AlbumArtistIDs: album.ArtistIDs,
 			Album:          album.Title,
 			TrackNumber:    item.TrackNumber,
 			DiscNumber:     item.VolumeNumber,
@@ -272,11 +285,16 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 
 	for _, wrapped := range resp.Items {
 		item := wrapped.Item
-		artist := "Unknown"
-		artistID := ""
-		if len(item.Artists) > 0 {
-			artist = item.Artists[0].Name
-			artistID = formatID(item.Artists[0].ID)
+
+		var artists []string
+		var artistIDs []string
+		for _, a := range item.Artists {
+			artists = append(artists, a.Name)
+			artistIDs = append(artistIDs, formatID(a.ID))
+		}
+		if len(artists) == 0 {
+			artists = []string{"Unknown"}
+			artistIDs = []string{""}
 		}
 
 		albumArtURL := ""
@@ -287,8 +305,10 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 		pl.Tracks = append(pl.Tracks, domain.Track{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
-			ArtistID:       artistID,
-			Artist:         artist,
+			ArtistID:       artistIDs[0],
+			Artist:         artists[0],
+			Artists:        artists,
+			ArtistIDs:      artistIDs,
 			AlbumID:        formatID(item.Album.ID),
 			Album:          item.Album.Title,
 			TrackNumber:    item.TrackNumber,
@@ -368,13 +388,28 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, 
 		audioModes = resp.Data.AudioModes[0]
 	}
 
+	var artists []string
+	var artistIDs []string
+	for _, a := range resp.Data.Artists {
+		artists = append(artists, a.Name)
+		artistIDs = append(artistIDs, formatID(a.ID))
+	}
+	if len(artists) == 0 {
+		artists = []string{resp.Data.Artist.Name}
+		artistIDs = []string{formatID(resp.Data.Artist.ID)}
+	}
+
 	track := &domain.Track{
 		ID:             formatID(resp.Data.ID),
 		Title:          resp.Data.Title,
-		ArtistID:       formatID(resp.Data.Artist.ID),
-		Artist:         resp.Data.Artist.Name,
+		ArtistID:       artistIDs[0],
+		Artist:         artists[0],
+		Artists:        artists,
+		ArtistIDs:      artistIDs,
 		AlbumID:        formatID(resp.Data.Album.ID),
 		AlbumArtist:    albumArtist,
+		AlbumArtists:   []string{albumArtist},
+		AlbumArtistIDs: []string{formatID(resp.Data.Artist.ID)},
 		Album:          resp.Data.Album.Title,
 		TrackNumber:    resp.Data.TrackNumber,
 		DiscNumber:     resp.Data.VolumeNumber,

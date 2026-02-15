@@ -202,6 +202,8 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 					logger.Error("Failed to save album art", "error", err)
 				}
 			}
+			// Normalize artists and detect compilations
+			normalizeTracks(tracks)
 		}
 	case domain.JobTypePlaylist:
 		var pl *domain.Playlist
@@ -452,4 +454,54 @@ func (w *Worker) isCancelled(id string) bool {
 		return false
 	}
 	return job.Status == domain.JobStatusCancelled
+}
+
+func normalizeTracks(tracks []domain.Track) {
+	if len(tracks) == 0 {
+		return
+	}
+
+	isCompilation := detectCompilation(tracks)
+	if isCompilation {
+		for i := range tracks {
+			tracks[i].AlbumArtist = "Various Artists"
+			tracks[i].AlbumArtists = []string{"Various Artists"}
+			tracks[i].Compilation = true
+		}
+		return
+	}
+
+	for i := range tracks {
+		if len(tracks[i].Artists) > 1 && tracks[i].Artist != tracks[i].Artists[0] {
+			var normalized []string
+			normalized = append(normalized, tracks[i].Artist)
+			for _, a := range tracks[i].Artists {
+				if a != tracks[i].Artist {
+					normalized = append(normalized, a)
+				}
+			}
+			tracks[i].Artists = normalized
+		}
+
+		if len(tracks[i].AlbumArtists) > 1 && tracks[i].AlbumArtist != tracks[i].AlbumArtists[0] {
+			var normalized []string
+			normalized = append(normalized, tracks[i].AlbumArtist)
+			for _, a := range tracks[i].AlbumArtists {
+				if a != tracks[i].AlbumArtist {
+					normalized = append(normalized, a)
+				}
+			}
+			tracks[i].AlbumArtists = normalized
+		}
+	}
+}
+
+func detectCompilation(tracks []domain.Track) bool {
+	artistSet := make(map[string]bool)
+	for _, t := range tracks {
+		for _, aa := range t.AlbumArtists {
+			artistSet[aa] = true
+		}
+	}
+	return len(artistSet) > 1
 }

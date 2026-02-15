@@ -138,17 +138,23 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain
 
 	var tracks []domain.Track
 	for _, item := range resp.Data.Items {
-		artist := "Unknown"
-		artistID := ""
-		if len(item.Artists) > 0 {
-			artist = item.Artists[0].Name
-			artistID = formatID(item.Artists[0].ID)
+		var artists []string
+		var artistIDs []string
+		for _, a := range item.Artists {
+			artists = append(artists, a.Name)
+			artistIDs = append(artistIDs, formatID(a.ID))
+		}
+		if len(artists) == 0 {
+			artists = []string{"Unknown"}
+			artistIDs = []string{""}
 		}
 		tracks = append(tracks, domain.Track{
 			ID:          formatID(item.ID),
 			Title:       item.Title,
-			ArtistID:    artistID,
-			Artist:      artist,
+			ArtistID:    artistIDs[0],
+			Artist:      artists[0],
+			Artists:     artists,
+			ArtistIDs:   artistIDs,
 			AlbumID:     formatID(item.Album.ID),
 			Album:       item.Album.Title,
 			TrackNumber: item.TrackNumber,

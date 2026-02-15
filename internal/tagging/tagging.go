@@ -59,10 +59,34 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	if track.Title != "" {
 		_ = cmtmeta.Add(flacvorbis.FIELD_TITLE, track.Title)
 	}
-	if track.Artist != "" {
+
+	if len(track.Artists) > 0 {
+		var newComments []string
+		for _, c := range cmtmeta.Comments {
+			if !strings.HasPrefix(strings.ToUpper(c), "ARTIST=") {
+				newComments = append(newComments, c)
+			}
+		}
+		cmtmeta.Comments = newComments
+		for _, artist := range track.Artists {
+			_ = cmtmeta.Add(flacvorbis.FIELD_ARTIST, artist)
+		}
+	} else if track.Artist != "" {
 		_ = cmtmeta.Add(flacvorbis.FIELD_ARTIST, track.Artist)
 	}
-	if track.AlbumArtist != "" {
+
+	if len(track.AlbumArtists) > 0 {
+		var newComments []string
+		for _, c := range cmtmeta.Comments {
+			if !strings.HasPrefix(strings.ToUpper(c), "ALBUMARTIST=") {
+				newComments = append(newComments, c)
+			}
+		}
+		cmtmeta.Comments = newComments
+		for _, albumArtist := range track.AlbumArtists {
+			_ = cmtmeta.Add("ALBUMARTIST", albumArtist)
+		}
+	} else if track.AlbumArtist != "" {
 		_ = cmtmeta.Add("ALBUMARTIST", track.AlbumArtist)
 	}
 	if track.Album != "" {
@@ -139,6 +163,17 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 		_ = cmtmeta.Add("RELEASEDATE", track.ReleaseDate)
 	}
 
+	if track.Compilation {
+		_ = cmtmeta.Add("COMPILATION", "1")
+	}
+
+	for _, id := range track.ArtistIDs {
+		_ = cmtmeta.Add("MUSICBRAINZ_ARTISTID", id)
+	}
+	for _, id := range track.AlbumArtistIDs {
+		_ = cmtmeta.Add("MUSICBRAINZ_ALBUMARTISTID", id)
+	}
+
 	// Replace or add vorbis comment
 	res := cmtmeta.Marshal()
 	found := false
@@ -186,7 +221,10 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 	if track.Title != "" {
 		tag.SetTitle(track.Title)
 	}
-	if track.Artist != "" {
+	if len(track.Artists) > 0 {
+		artistValue := strings.Join(track.Artists, "\x00")
+		tag.AddTextFrame("TPE1", tag.DefaultEncoding(), artistValue)
+	} else if track.Artist != "" {
 		tag.SetArtist(track.Artist)
 	}
 	if track.Album != "" {
@@ -200,7 +238,10 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 	}
 
 	// Add frames for additional metadata
-	if track.AlbumArtist != "" {
+	if len(track.AlbumArtists) > 0 {
+		albumArtistValue := strings.Join(track.AlbumArtists, "\x00")
+		tag.AddTextFrame("TPE2", tag.DefaultEncoding(), albumArtistValue)
+	} else if track.AlbumArtist != "" {
 		tag.AddTextFrame(tag.CommonID("Band/Orchestra/Accompaniment"), tag.DefaultEncoding(), track.AlbumArtist)
 	}
 	if track.TrackNumber > 0 {
@@ -275,6 +316,17 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 
 	if track.ReleaseDate != "" {
 		tag.AddTextFrame(tag.CommonID("Release time"), tag.DefaultEncoding(), track.ReleaseDate)
+	}
+
+	if track.Compilation {
+		tag.AddTextFrame("TCON", tag.DefaultEncoding(), "Compilation")
+	}
+
+	for _, id := range track.ArtistIDs {
+		tag.AddTextFrame("TMCL", tag.DefaultEncoding(), "ARTISTID="+id)
+	}
+	for _, id := range track.AlbumArtistIDs {
+		tag.AddTextFrame("TIPL", tag.DefaultEncoding(), "ALBUMARTISTID="+id)
 	}
 
 	// Add album art
