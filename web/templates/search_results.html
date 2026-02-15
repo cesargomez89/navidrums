@@ -1,3 +1,4 @@
+{{define "search_results"}}
 {{if .Artists}}
 <h2>Artists</h2>
 <div class="grid">
@@ -36,4 +37,5 @@
 
 {{if not (or .Artists .Albums .Playlists .Tracks)}}
 <div class="empty">No results found.</div>
+{{end}}
 {{end}}

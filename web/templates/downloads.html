@@ -1,0 +1,30 @@
+{{define "content"}}
+<h1>Downloads</h1>
+
+<div style="margin-bottom: 20px;">
+    <input type="text" 
+           id="downloads-search" 
+           name="q" 
+           placeholder="Search by track, album, artist..." 
+           hx-get="/htmx/downloads"
+           hx-trigger="input changed delay:300ms"
+           hx-target="#downloads-list"
+           style="width: 100%; max-width: 400px; padding: 8px; font-size: 14px;">
+</div>
+
+<div id="downloads-list" hx-get="/htmx/downloads" hx-trigger="load">
+    <div class="loading">Loading downloads...</div>
+</div>
+
+<script>
+function deleteDownload(id) {
+    if (!confirm('Are you sure you want to delete this download?')) {
+        return;
+    }
+    htmx.ajax('DELETE', '/htmx/download/' + id, {
+        target: '#downloads-list',
+        swap: 'innerHTML'
+    });
+}
+</script>
+{{end}}

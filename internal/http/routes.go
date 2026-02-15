@@ -324,3 +324,41 @@ func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 
 	h.QueueHistoryHTMX(w, r)
 }
+
+func (h *Handler) DownloadsPage(w http.ResponseWriter, r *http.Request) {
+	h.RenderPage(w, "downloads.html", map[string]interface{}{
+		"ActivePage": "downloads",
+	})
+}
+
+func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	var downloads []*domain.Download
+	var err error
+
+	if query != "" {
+		downloads, err = h.DownloadsService.SearchDownloads(query)
+	} else {
+		downloads, err = h.DownloadsService.ListDownloads()
+	}
+	if err != nil {
+		h.Logger.Error("Failed to list downloads", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
+		"Downloads": downloads,
+	})
+}
+
+func (h *Handler) DeleteDownloadHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.DownloadsService.DeleteDownload(id); err != nil {
+		h.Logger.Error("Failed to delete download", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.DownloadsHTMX(w, r)
+}

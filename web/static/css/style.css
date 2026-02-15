@@ -614,6 +614,40 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 /* Empty state */
 .empty { text-align: center; padding: 48px; color: var(--text-dim); }
 
+/* Downloads */
+.downloads-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.download {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+.download:hover {
+    transform: translateX(4px);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.download-info { flex: 1; }
+
+.download-title { font-weight: 600; }
+
+.download-meta { font-size: 0.85rem; color: var(--text-dim); }
+
+.download-date { font-size: 0.8rem; color: var(--text-dim); }
+
+.loading { text-align: center; padding: 48px; color: var(--text-dim); }
+
 /* Similar Albums Animation */
 .similar-albums {
     animation: fadeIn 0.4s ease-out;

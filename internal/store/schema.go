@@ -20,7 +20,11 @@ WHERE status IN ('queued', 'resolving_tracks', 'downloading');
 
 CREATE TABLE IF NOT EXISTS downloads (
 	provider_id TEXT PRIMARY KEY,
+	title TEXT,
+	artist TEXT,
+	album TEXT,
 	file_path TEXT NOT NULL,
+	file_extension TEXT DEFAULT '.flac',
 	completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

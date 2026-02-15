@@ -433,6 +433,9 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	}
 	err = w.Repo.CreateDownload(&domain.Download{
 		ProviderID:    track.ID,
+		Title:         track.Title,
+		Artist:        track.Artist,
+		Album:         track.Album,
 		FilePath:      finalPath,
 		FileExtension: ext,
 		CompletedAt:   time.Now(),

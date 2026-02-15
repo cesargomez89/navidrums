@@ -1,0 +1,20 @@
+{{define "downloads_list"}}
+{{if .Downloads}}
+<div class="downloads-list">
+    {{range .Downloads}}
+    <div class="download" id="download-{{.ProviderID}}">
+        <div class="download-info">
+            <div class="download-title">{{.Title}}</div>
+            <div class="download-meta">{{.Artist}} - {{.Album}}</div>
+        </div>
+        <div style="text-align: right;">
+            <span class="download-date">{{.CompletedAt.Format "Jan 02, 2006"}}</span>
+            <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm" style="margin-top: 8px; margin-left: 12px;">Delete</button>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{else}}
+<div class="empty">No downloads yet.</div>
+{{end}}
+{{end}}

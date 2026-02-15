@@ -39,6 +39,9 @@ type Job struct {
 
 type Download struct {
 	ProviderID    string    `json:"provider_id"`
+	Title         string    `json:"title"`
+	Artist        string    `json:"artist"`
+	Album         string    `json:"album"`
 	FilePath      string    `json:"file_path"`      // Absolute path
 	FileExtension string    `json:"file_extension"` // e.g., ".flac", ".mp3", ".m4a"
 	CompletedAt   time.Time `json:"completed_at"`

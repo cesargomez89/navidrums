@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -19,7 +20,35 @@ var migrations = []migration{
 		description: "add_file_extension_to_downloads",
 		up: func(db *sql.DB) error {
 			_, err := db.Exec("ALTER TABLE downloads ADD COLUMN file_extension TEXT DEFAULT '.flac'")
-			return err
+			if err != nil {
+				if strings.Contains(err.Error(), "duplicate column name") {
+					return nil
+				}
+				return err
+			}
+			return nil
+		},
+	},
+	{
+		version:     2,
+		description: "add_title_artist_album_to_downloads",
+		up: func(db *sql.DB) error {
+			if _, err := db.Exec("ALTER TABLE downloads ADD COLUMN title TEXT"); err != nil {
+				if !strings.Contains(err.Error(), "duplicate column name") {
+					return err
+				}
+			}
+			if _, err := db.Exec("ALTER TABLE downloads ADD COLUMN artist TEXT"); err != nil {
+				if !strings.Contains(err.Error(), "duplicate column name") {
+					return err
+				}
+			}
+			if _, err := db.Exec("ALTER TABLE downloads ADD COLUMN album TEXT"); err != nil {
+				if !strings.Contains(err.Error(), "duplicate column name") {
+					return err
+				}
+			}
+			return nil
 		},
 	},
 }

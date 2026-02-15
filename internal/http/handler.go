@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -14,21 +15,23 @@ import (
 )
 
 type Handler struct {
-	JobService      *app.JobService
-	Provider        catalog.Provider
-	ProviderManager *catalog.ProviderManager
-	SettingsRepo    *store.SettingsRepo
-	Templates       *template.Template
-	Logger          *logger.Logger
+	JobService       *app.JobService
+	DownloadsService *app.DownloadsService
+	Provider         catalog.Provider
+	ProviderManager  *catalog.ProviderManager
+	SettingsRepo     *store.SettingsRepo
+	Templates        *template.Template
+	Logger           *logger.Logger
 }
 
-func NewHandler(js *app.JobService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
+func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
 	h := &Handler{
-		JobService:      js,
-		ProviderManager: pm,
-		Provider:        pm,
-		SettingsRepo:    sr,
-		Logger:          logger.Default(),
+		JobService:       js,
+		DownloadsService: ds,
+		ProviderManager:  pm,
+		Provider:         pm,
+		SettingsRepo:     sr,
+		Logger:           logger.Default(),
 	}
 	h.ParseTemplates()
 	return h
@@ -55,6 +58,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/history/clear", h.ClearHistoryHTMX)
 	r.Get("/settings", h.SettingsPage)
 
+	r.Get("/downloads", h.DownloadsPage)
+	r.Get("/htmx/downloads", h.DownloadsHTMX)
+	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
+
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)
 	r.Post("/htmx/provider/add", h.AddCustomProviderHTMX)
@@ -80,7 +87,6 @@ func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interf
 }
 
 func (h *Handler) RenderFragment(w http.ResponseWriter, fragTmpl string, data interface{}) {
-	// Use ParseFS to properly handle template names
 	patterns := []string{"templates/components/*.html", "templates/" + fragTmpl}
 
 	tmpl, err := template.ParseFS(web.Files, patterns...)
@@ -89,8 +95,8 @@ func (h *Handler) RenderFragment(w http.ResponseWriter, fragTmpl string, data in
 		return
 	}
 
-	// Execute the specific fragment template
-	if err := tmpl.ExecuteTemplate(w, filepath.Base(fragTmpl), data); err != nil {
+	name := strings.TrimSuffix(filepath.Base(fragTmpl), ".html")
+	if err := tmpl.ExecuteTemplate(w, name, data); err != nil {
 		http.Error(w, err.Error(), 500)
 	}
 }

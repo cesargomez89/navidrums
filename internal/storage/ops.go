@@ -48,3 +48,21 @@ func WriteFile(path string, data []byte) error {
 func RemoveFile(path string) error {
 	return os.Remove(path)
 }
+
+func DeleteFolderIfEmpty(dirPath string) error {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if len(entries) == 0 {
+		return os.Remove(dirPath)
+	}
+	return nil
+}
+
+func IsNotExist(err error) bool {
+	return os.IsNotExist(err)
+}
