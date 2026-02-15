@@ -495,8 +495,77 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     align-items: center;
     gap: 4px;
 }
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 12px 20px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn:hover {
+    color: var(--text);
+    transform: none;
+    box-shadow: none;
+}
+
+.tab-btn.active {
+    color: var(--text);
+    background: transparent;
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), #ec4899);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.tab-btn.active::after {
+    transform: scaleX(1);
+}
 .job:hover {
     transform: translateX(4px);
+}
+.job-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.job {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+.job:hover {
+    transform: translateX(4px);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 .job-info { flex: 1; }
 .job-title { font-weight: 600; }

@@ -48,10 +48,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Post("/htmx/download/{type}/{id}", h.DownloadHTMX)
 	r.Get("/queue", h.QueuePage)
-	r.Get("/htmx/queue", h.QueueHTMX)
+	r.Get("/htmx/queue/active", h.QueueActiveHTMX)
+	r.Get("/htmx/queue/history", h.QueueHistoryHTMX)
 	r.Post("/htmx/cancel/{id}", h.CancelJobHTMX)
 	r.Post("/htmx/retry/{id}", h.RetryJobHTMX)
-	r.Get("/history", h.HistoryPage)
 	r.Post("/htmx/history/clear", h.ClearHistoryHTMX)
 	r.Get("/settings", h.SettingsPage)
 
@@ -66,7 +66,6 @@ func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interf
 	tmpl, err := template.ParseFS(web.Files,
 		"templates/base.html",
 		"templates/"+pageTmpl,
-		"templates/queue_list.html",
 		"templates/search_results.html",
 		"templates/components/*.html",
 	)
@@ -92,17 +91,6 @@ func (h *Handler) RenderFragment(w http.ResponseWriter, fragTmpl string, data in
 
 	// Execute the specific fragment template
 	if err := tmpl.ExecuteTemplate(w, filepath.Base(fragTmpl), data); err != nil {
-		http.Error(w, err.Error(), 500)
-	}
-}
-
-func (h *Handler) RenderQueueList(w http.ResponseWriter, data interface{}) {
-	tmpl, err := template.ParseFS(web.Files, "templates/queue_list.html")
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	if err := tmpl.ExecuteTemplate(w, "queue_list", data); err != nil {
 		http.Error(w, err.Error(), 500)
 	}
 }

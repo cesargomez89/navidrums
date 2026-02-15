@@ -98,29 +98,32 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<div class='alert alert-success'>Download started!</div>"))
 }
 
-func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.ListActiveJobs()
-	if err != nil {
-		h.Logger.Error("Failed to list active jobs", "error", err)
-	}
-	h.RenderPage(w, "queue.html", map[string]interface{}{
-		"ActivePage": "queue",
-		"Jobs":       jobs,
+func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
+	h.RenderPage(w, "settings.html", map[string]interface{}{
+		"ActivePage": "settings",
 	})
 }
 
-func (h *Handler) QueueHTMX(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
+	h.RenderPage(w, "queue.html", map[string]interface{}{
+		"ActivePage": "queue",
+	})
+}
+
+func (h *Handler) QueueActiveHTMX(w http.ResponseWriter, r *http.Request) {
 	jobs, err := h.JobService.ListActiveJobs()
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
-	h.RenderQueueList(w, jobs)
+	h.RenderFragment(w, "components/active_tab.html", map[string]interface{}{
+		"ActiveJobs": jobs,
+	})
 }
 
-func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) QueueHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 	jobs, err := h.JobService.ListFinishedJobs(constants.MaxHistoryItems)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		h.Logger.Error("Failed to list finished jobs", "error", err)
 		return
 	}
 
@@ -129,16 +132,9 @@ func (h *Handler) HistoryPage(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to get job stats", "error", err)
 	}
 
-	h.RenderPage(w, "history.html", map[string]interface{}{
-		"ActivePage": "history",
-		"Jobs":       jobs,
-		"Stats":      stats,
-	})
-}
-
-func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
-	h.RenderPage(w, "settings.html", map[string]interface{}{
-		"ActivePage": "settings",
+	h.RenderFragment(w, "components/history_tab.html", map[string]interface{}{
+		"HistoryJobs": jobs,
+		"Stats":       stats,
 	})
 }
 
@@ -153,7 +149,9 @@ func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
-	h.RenderFragment(w, "queue_list.html", jobs)
+	h.RenderFragment(w, "components/active_tab.html", map[string]interface{}{
+		"ActiveJobs": jobs,
+	})
 }
 
 func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
@@ -167,7 +165,9 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
-	h.RenderFragment(w, "queue_list.html", jobs)
+	h.RenderFragment(w, "components/active_tab.html", map[string]interface{}{
+		"ActiveJobs": jobs,
+	})
 }
 
 func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
@@ -322,5 +322,5 @@ func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.RenderFragment(w, "history.html", nil)
+	h.QueueHistoryHTMX(w, r)
 }

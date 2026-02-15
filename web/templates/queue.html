@@ -1,6 +1,39 @@
 {{define "content"}}
-<h1>Download Queue</h1>
-<div id="queue-list" hx-get="/htmx/queue" hx-trigger="every 2s">
-    {{template "queue_list.html" .}}
+<h1>Queue</h1>
+
+<div class="tabs">
+    <button class="tab-btn active" data-tab="active" hx-get="/htmx/queue/active" hx-target="#tab-content" hx-swap="innerHTML">Active</button>
+    <button class="tab-btn" data-tab="history" hx-get="/htmx/queue/history" hx-target="#tab-content" hx-swap="innerHTML">History</button>
 </div>
+
+<div id="tab-content" hx-get="/htmx/queue/active" hx-trigger="load">
+</div>
+
+<script>
+document.addEventListener('htmx:afterSwap', function(event) {
+    if (event.detail.target.id === 'tab-content') {
+        const tabContent = event.detail.target;
+        const activeTab = document.querySelector('.tab-btn.active');
+        if (activeTab) {
+            const tabName = activeTab.dataset.tab;
+            if (tabName === 'active') {
+                const interval = setInterval(() => {
+                    if (!document.querySelector('.tab-btn.active') || document.querySelector('.tab-btn.active').dataset.tab !== 'active') {
+                        clearInterval(interval);
+                        return;
+                    }
+                    htmx.ajax('GET', '/htmx/queue/active', {target: '#tab-content', swap: 'innerHTML'});
+                }, 2000);
+            }
+        }
+    }
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+</script>
 {{end}}
