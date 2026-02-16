@@ -7,21 +7,23 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/cesargomez89/navidrums/internal/constants"
 )
 
 // Config holds all application configuration
 type Config struct {
-	Port         string
-	DBPath       string
-	DownloadsDir string
-	ProviderURL  string
-	Quality      string
-	LogLevel     string
-	LogFormat    string
-	Username     string
-	Password     string
+	Port           string
+	DBPath         string
+	DownloadsDir   string
+	ProviderURL    string
+	Quality        string
+	LogLevel       string
+	LogFormat      string
+	Username       string
+	Password       string
+	SubdirTemplate string
 }
 
 // Load loads configuration from environment variables with defaults
@@ -30,15 +32,16 @@ func Load() *Config {
 	defaultDownload := filepath.Join(home, "Downloads/navidrums")
 
 	return &Config{
-		Port:         getEnv("PORT", constants.DefaultPort),
-		DBPath:       getEnv("DB_PATH", constants.DefaultDBPath),
-		DownloadsDir: getEnv("DOWNLOADS_DIR", defaultDownload),
-		ProviderURL:  getEnv("PROVIDER_URL", constants.DefaultProviderURL),
-		Quality:      getEnv("QUALITY", constants.DefaultQuality),
-		LogLevel:     getEnv("LOG_LEVEL", "info"),
-		LogFormat:    getEnv("LOG_FORMAT", "text"),
-		Username:     getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
-		Password:     getEnv("NAVIDRUMS_PASSWORD", ""),
+		Port:           getEnv("PORT", constants.DefaultPort),
+		DBPath:         getEnv("DB_PATH", constants.DefaultDBPath),
+		DownloadsDir:   getEnv("DOWNLOADS_DIR", defaultDownload),
+		ProviderURL:    getEnv("PROVIDER_URL", constants.DefaultProviderURL),
+		Quality:        getEnv("QUALITY", constants.DefaultQuality),
+		LogLevel:       getEnv("LOG_LEVEL", "info"),
+		LogFormat:      getEnv("LOG_FORMAT", "text"),
+		Username:       getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
+		Password:       getEnv("NAVIDRUMS_PASSWORD", ""),
+		SubdirTemplate: getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
 	}
 }
 
@@ -114,6 +117,15 @@ func (c *Config) Validate() error {
 	}
 
 	// Password is optional - empty password disables basic auth
+
+	// Validate SubdirTemplate
+	if c.SubdirTemplate == "" {
+		errors = append(errors, "SUBDIR_TEMPLATE cannot be empty")
+	} else {
+		if _, err := template.New("subdir").Parse(c.SubdirTemplate); err != nil {
+			errors = append(errors, fmt.Sprintf("SUBDIR_TEMPLATE is invalid: %v", err))
+		}
+	}
 
 	if len(errors) > 0 {
 		return fmt.Errorf("configuration validation failed:\n  - %s", strings.Join(errors, "\n  - "))

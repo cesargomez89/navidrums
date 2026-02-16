@@ -31,12 +31,15 @@ go fmt ./...
 | `PORT` | 8080 | HTTP server port |
 | `DB_PATH` | navidrums.db | SQLite database path |
 | `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
+| `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
 | `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL |
 | `QUALITY` | LOSSLESS | Audio quality |
 | `LOG_LEVEL` | info | Logging level |
 | `LOG_FORMAT` | text | Log format (text, json) |
 | `NAVIDRUMS_USERNAME` | navidrums | Basic auth username |
 | `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
+
+**Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
 
 ---
 

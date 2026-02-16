@@ -234,13 +234,31 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	track.UpdatedAt = time.Now()
 	w.Repo.UpdateTrack(track)
 
-	// Prepare download path
+	// Prepare download path using template
 	artistForFolder := track.AlbumArtist
 	if artistForFolder == "" {
 		artistForFolder = track.Artist
 	}
-	folderName := fmt.Sprintf("%s - %s", storage.Sanitize(artistForFolder), storage.Sanitize(track.Album))
-	finalDir := filepath.Join(w.Config.DownloadsDir, folderName)
+
+	templateData := storage.BuildPathTemplateData(
+		artistForFolder,
+		track.Year,
+		track.Album,
+		track.DiscNumber,
+		track.TrackNumber,
+		track.Title,
+	)
+
+	fullPathNoExt, err := storage.BuildPath(w.Config.SubdirTemplate, templateData)
+	if err != nil {
+		logger.Error("Failed to build path from template", "error", err)
+		w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to build path: %v", err))
+		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to build path: %v", err))
+		return
+	}
+
+	fullPathNoExt = filepath.Join(w.Config.DownloadsDir, fullPathNoExt)
+	finalDir := filepath.Dir(fullPathNoExt)
 
 	if err := storage.EnsureDir(finalDir); err != nil {
 		logger.Error("Failed to create directory", "error", err)
@@ -250,7 +268,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 
 	// Download the track
-	finalPath, err := w.downloader.Download(ctx, track, finalDir)
+	finalPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		w.Repo.MarkTrackFailed(track.ID, err.Error())

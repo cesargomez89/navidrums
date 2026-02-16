@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -15,7 +14,7 @@ import (
 )
 
 type Downloader interface {
-	Download(ctx context.Context, track *domain.Track, destDir string) (string, error)
+	Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error)
 }
 
 type downloader struct {
@@ -30,7 +29,7 @@ func NewDownloader(provider catalog.Provider, cfg *config.Config) Downloader {
 	}
 }
 
-func (d *downloader) Download(ctx context.Context, track *domain.Track, destDir string) (string, error) {
+func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
 	var finalPath string
 	var finalExt string
 
@@ -56,8 +55,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destDir 
 		}
 		finalExt = ext
 
-		trackFile := fmt.Sprintf("%02d - %s%s", track.TrackNumber, storage.Sanitize(track.Title), finalExt)
-		finalPath = filepath.Join(destDir, trackFile)
+		finalPath = destPathNoExt + finalExt
 
 		f, err := storage.CreateFile(finalPath)
 		if err != nil {

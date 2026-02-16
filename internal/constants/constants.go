@@ -5,16 +5,17 @@ import "time"
 
 // Application defaults
 const (
-	DefaultPort         = "8080"
-	DefaultDBPath       = "navidrums.db"
-	DefaultQuality      = "LOSSLESS"
-	DefaultProviderURL  = "http://127.0.0.1:8000"
-	DefaultConcurrency  = 2
-	DefaultPollInterval = 2 * time.Second
-	DefaultHTTPTimeout  = 5 * time.Minute
-	DefaultRetryCount   = 3
-	DefaultRetryBase    = 1 * time.Second
-	DefaultUsername     = "navidrums"
+	DefaultPort           = "8080"
+	DefaultDBPath         = "navidrums.db"
+	DefaultQuality        = "LOSSLESS"
+	DefaultProviderURL    = "http://127.0.0.1:8000"
+	DefaultConcurrency    = 2
+	DefaultPollInterval   = 2 * time.Second
+	DefaultHTTPTimeout    = 5 * time.Minute
+	DefaultRetryCount     = 3
+	DefaultRetryBase      = 1 * time.Second
+	DefaultUsername       = "navidrums"
+	DefaultSubdirTemplate = "{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}"
 )
 
 // Quality levels

@@ -65,6 +65,7 @@ Environment variables:
 | `PORT` | `8080` | HTTP port |
 | `DB_PATH` | `navidrums.db` | SQLite database path |
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Output directory for music |
+| `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API |
 | `QUALITY` | `LOSSLESS` | Download quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `USE_MOCK` | `false` | Set to `true` to use Mock provider |
@@ -72,6 +73,23 @@ Environment variables:
 | `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
 | `NAVIDRUMS_USERNAME` | `navidrums` | Username for the Navidrome web interface |
 | `NAVIDRUMS_PASSWORD` |  | Password for the Navidrome web interface |
+
+**Template Variables:**
+
+The `SUBDIR_TEMPLATE` uses Go's `text/template` syntax. Available variables:
+- `{{.AlbumArtist}}` - Album artist (falls back to track artist if empty)
+- `{{.OriginalYear}}` - Release year (integer)
+- `{{.Album}}` - Album name
+- `{{.Disc}}` - Disc number, zero-padded (01, 02, etc.)
+- `{{.Track}}` - Track number, zero-padded (01, 02, etc.)
+- `{{.Title}}` - Track title
+
+The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
+
+**Example:** The default template produces paths like:
+```
+~/Downloads/navidrums/Pink Floyd/1973 - The Dark Side of the Moon/01-01 Speak to Me.flac
+```
 
 ## Usage
 

@@ -36,8 +36,43 @@ func (s *albumArtService) DownloadAndSaveAlbumArt(album *domain.Album, imageURL 
 		return fmt.Errorf("failed to download album art: %w", err)
 	}
 
-	folderName := fmt.Sprintf("%s - %s", storage.Sanitize(album.Artist), storage.Sanitize(album.Title))
-	albumDir := filepath.Join(s.config.DownloadsDir, folderName)
+	// Generate album directory using the same template as tracks
+	// Use first track's metadata if available, otherwise use album metadata with defaults
+	var artist string
+	if len(album.ArtistIDs) > 0 && album.ArtistIDs[0] != "" {
+		artist = album.Artist
+	} else {
+		artist = album.Artist
+	}
+
+	year := album.Year
+	if year == 0 && album.ReleaseDate != "" {
+		// Try to parse year from release date (YYYY-MM-DD format)
+		if len(album.ReleaseDate) >= 4 {
+			var parsedYear int
+			fmt.Sscanf(album.ReleaseDate[:4], "%d", &parsedYear)
+			year = parsedYear
+		}
+	}
+
+	// Build template data with sensible defaults for disc/track
+	templateData := storage.BuildPathTemplateData(
+		artist,
+		year,
+		album.Title,
+		1,       // Default to disc 1
+		1,       // Default to track 1 (for folder creation purposes)
+		"cover", // Placeholder title (won't be used since we just want the folder)
+	)
+
+	// Get the full path and extract just the directory portion
+	fullPathNoExt, err := storage.BuildPath(s.config.SubdirTemplate, templateData)
+	if err != nil {
+		return fmt.Errorf("failed to build album path from template: %w", err)
+	}
+
+	fullPathNoExt = filepath.Join(s.config.DownloadsDir, fullPathNoExt)
+	albumDir := filepath.Dir(fullPathNoExt)
 
 	if err := storage.EnsureDir(albumDir); err != nil {
 		return fmt.Errorf("failed to create album directory: %w", err)
