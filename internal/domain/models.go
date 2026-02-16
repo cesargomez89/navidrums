@@ -39,8 +39,10 @@ type Job struct {
 type TrackStatus string
 
 const (
-	TrackStatusPending     TrackStatus = "pending"
+	TrackStatusMissing     TrackStatus = "missing"
+	TrackStatusQueued      TrackStatus = "queued"
 	TrackStatusDownloading TrackStatus = "downloading"
+	TrackStatusProcessing  TrackStatus = "processing"
 	TrackStatusCompleted   TrackStatus = "completed"
 	TrackStatusFailed      TrackStatus = "failed"
 )
@@ -56,6 +58,7 @@ type Track struct {
 	Artist       string   `json:"artist"`
 	Artists      []string `json:"artists"`
 	Album        string   `json:"album"`
+	AlbumID      string   `json:"album_id,omitempty"`
 	AlbumArtist  string   `json:"album_artist"`
 	AlbumArtists []string `json:"album_artists"`
 	TrackNumber  int      `json:"track_number"`
@@ -100,9 +103,12 @@ type Track struct {
 	FileExtension string `json:"file_extension"`
 
 	// Timestamps
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	CompletedAt time.Time `json:"completed_at,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	CompletedAt    time.Time `json:"completed_at,omitempty"`
+	ETag           string    `json:"etag,omitempty"`
+	FileHash       string    `json:"file_hash,omitempty"`
+	LastVerifiedAt time.Time `json:"last_verified_at,omitempty"`
 }
 
 // CatalogTrack represents a track from the provider/catalog

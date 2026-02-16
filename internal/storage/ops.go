@@ -1,7 +1,10 @@
 package storage
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -11,8 +14,6 @@ import (
 func Sanitize(s string) string {
 	// Simple sanitize for FS
 	// Replace invalid chars with nothing or underscore?
-	// User spec: "Sanitize all filesystem characters: Remove: <>:"/\|?*. Trim trailing dots and spaces."
-
 	mapped := strings.Map(func(r rune) rune {
 		if strings.ContainsRune("<>:\"/\\|?*", r) {
 			return -1
@@ -65,4 +66,27 @@ func DeleteFolderIfEmpty(dirPath string) error {
 
 func IsNotExist(err error) bool {
 	return os.IsNotExist(err)
+}
+
+func HashFile(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func VerifyFile(path, expectedHash string) (bool, error) {
+	hash, err := HashFile(path)
+	if err != nil {
+		return false, err
+	}
+	return hash == expectedHash, nil
 }

@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS tracks (
 	artist TEXT,
 	artists TEXT,  -- JSON array
 	album TEXT,
+	album_id TEXT,
 	album_artist TEXT,
 	album_artists TEXT,  -- JSON array
 	track_number INTEGER,
@@ -58,18 +59,22 @@ CREATE TABLE IF NOT EXISTS tracks (
 	release_date TEXT,
 	
 	-- Processing
-	status TEXT NOT NULL,
+	-- Processing
+	status TEXT NOT NULL DEFAULT 'missing',
 	error TEXT,
 	parent_job_id TEXT,
 	
 	-- File
 	file_path TEXT,
 	file_extension TEXT,
-	
+	file_hash TEXT,
+	etag TEXT,
+
 	-- Timestamps
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	completed_at DATETIME,
+	last_verified_at DATETIME,
 	
 	FOREIGN KEY (parent_job_id) REFERENCES jobs(id)
 );

@@ -83,12 +83,26 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 
 	if err := p.get(ctx, aggUrl, &aggResp); err == nil {
 		for _, item := range aggResp.Albums.Items {
-			artist.Albums = append(artist.Albums, domain.Album{
+			album := domain.Album{
 				ID:          formatID(item.ID),
 				Title:       item.Title,
 				Artist:      artist.Name,
 				AlbumArtURL: p.ensureAbsoluteURL(item.Cover, "640x640"),
-			})
+			}
+
+			// Try to fetch album metadata for year
+			albumsUrl := fmt.Sprintf("%s/album/?id=%s", p.BaseURL, album.ID)
+			var albumData struct {
+				Data struct {
+					ReleaseDate string `json:"releaseDate"`
+				} `json:"data"`
+			}
+			if err := p.get(ctx, albumsUrl, &albumData); err == nil {
+				album.ReleaseDate = albumData.Data.ReleaseDate
+				album.Year = parseYear(album.ReleaseDate)
+			}
+
+			artist.Albums = append(artist.Albums, album)
 		}
 		for _, item := range aggResp.Tracks {
 			artist.TopTracks = append(artist.TopTracks, domain.CatalogTrack{
@@ -154,10 +168,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 		return nil, err
 	}
 
-	year := 0
-	if len(resp.Data.ReleaseDate) >= 4 {
-		fmt.Sscanf(resp.Data.ReleaseDate[:4], "%d", &year)
-	}
+	year := parseYear(resp.Data.ReleaseDate)
 
 	albumArtURL := ""
 	if len(resp.Data.Cover) > 0 {
@@ -321,24 +332,25 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 	u := fmt.Sprintf("%s/info/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Data struct {
-			ID           json.Number `json:"id"`
-			Title        string      `json:"title"`
-			Duration     int         `json:"duration"`
-			TrackNumber  int         `json:"trackNumber"`
-			VolumeNumber int         `json:"volumeNumber"`
-			ISRC         string      `json:"isrc"`
-			Explicit     bool        `json:"explicit"`
-			Copyright    string      `json:"copyright"`
-			BPM          int         `json:"bpm"`
-			Key          string      `json:"key"`
-			KeyScale     string      `json:"keyScale"`
-			ReplayGain   float64     `json:"replayGain"`
-			Peak         float64     `json:"peak"`
-			Version      *string     `json:"version"`
-			URL          string      `json:"url"`
-			AudioQuality string      `json:"audioQuality"`
-			AudioModes   []string    `json:"audioModes"`
-			Album        struct {
+			ID              json.Number `json:"id"`
+			Title           string      `json:"title"`
+			Duration        int         `json:"duration"`
+			TrackNumber     int         `json:"trackNumber"`
+			VolumeNumber    int         `json:"volumeNumber"`
+			ISRC            string      `json:"isrc"`
+			Explicit        bool        `json:"explicit"`
+			Copyright       string      `json:"copyright"`
+			BPM             int         `json:"bpm"`
+			Key             string      `json:"key"`
+			KeyScale        string      `json:"keyScale"`
+			ReplayGain      float64     `json:"replayGain"`
+			Peak            float64     `json:"peak"`
+			Version         *string     `json:"version"`
+			URL             string      `json:"url"`
+			StreamStartDate string      `json:"streamStartDate"`
+			AudioQuality    string      `json:"audioQuality"`
+			AudioModes      []string    `json:"audioModes"`
+			Album           struct {
 				ID              json.Number `json:"id"`
 				Title           string      `json:"title"`
 				ReleaseDate     string      `json:"releaseDate"`
@@ -362,9 +374,10 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 		return nil, err
 	}
 
-	year := 0
-	if len(resp.Data.Album.ReleaseDate) >= 4 {
-		fmt.Sscanf(resp.Data.Album.ReleaseDate[:4], "%d", &year)
+	year := parseYear(resp.Data.Album.ReleaseDate)
+	if year == 0 {
+		// Fallback to streamStartDate at track level
+		year = parseYear(resp.Data.StreamStartDate)
 	}
 
 	albumArtURL := ""
@@ -607,6 +620,17 @@ func (p *HifiProvider) GetLyrics(ctx context.Context, trackID string) (string, s
 		return "", "", err
 	}
 	return resp.Lyrics.Lyrics, resp.Lyrics.Subtitles, nil
+}
+
+func parseYear(date string) int {
+	if len(date) < 4 {
+		return 0
+	}
+	var year int
+	if _, err := fmt.Sscanf(date[:4], "%d", &year); err != nil {
+		return 0
+	}
+	return year
 }
 
 func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) error {

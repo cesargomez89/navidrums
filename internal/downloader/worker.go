@@ -74,8 +74,52 @@ func (w *Worker) Start() {
 		w.Logger.Error("Failed to reset stuck jobs", "error", err)
 	}
 
+	w.recoverInterruptedTracks()
+
 	w.wg.Add(1)
 	go w.processJobs()
+}
+
+func (w *Worker) recoverInterruptedTracks() {
+	tracks, err := w.Repo.FindInterruptedTracks()
+	if err != nil {
+		w.Logger.Error("Failed to find interrupted tracks", "error", err)
+		return
+	}
+
+	for _, t := range tracks {
+		w.Logger.Info("Recovering interrupted track", "track_id", t.ID)
+
+		// Attempt to clean up potential partial files
+		// We need to reconstruct the path since it might not be saved in DB yet
+		artistForFolder := t.AlbumArtist
+		if artistForFolder == "" {
+			artistForFolder = t.Artist
+		}
+
+		templateData := storage.BuildPathTemplateData(
+			artistForFolder,
+			t.Year,
+			t.Album,
+			t.DiscNumber,
+			t.TrackNumber,
+			t.Title,
+		)
+
+		fullPathNoExt, err := storage.BuildPath(w.Config.SubdirTemplate, templateData)
+		if err == nil {
+			fullPathNoExt = filepath.Join(w.Config.DownloadsDir, fullPathNoExt)
+			// Remove known extensions if they exist
+			// This is best-effort
+			for _, ext := range []string{".flac", ".mp3", ".m4a"} {
+				storage.RemoveFile(fullPathNoExt + ext)
+			}
+		}
+
+		if err := w.Repo.UpdateTrackStatus(t.ID, domain.TrackStatusQueued, ""); err != nil {
+			w.Logger.Error("Failed to reset track status", "track_id", t.ID, "error", err)
+		}
+	}
 }
 
 func (w *Worker) Stop() {
@@ -216,7 +260,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 
 		// Convert catalog track to domain track
 		track = w.catalogTrackToDomainTrack(catalogTrack)
-		track.Status = domain.TrackStatusPending
+		track.Status = domain.TrackStatusMissing
 		track.ParentJobID = job.ID
 		track.CreatedAt = time.Now()
 		track.UpdatedAt = time.Now()
@@ -233,12 +277,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
-	// Update track status to downloading
-	track.Status = domain.TrackStatusDownloading
-	track.UpdatedAt = time.Now()
-	w.Repo.UpdateTrack(track)
-
-	// Prepare download path using template
+	// Prepare download path using template (Early for idempotency check)
 	artistForFolder := track.AlbumArtist
 	if artistForFolder == "" {
 		artistForFolder = track.Artist
@@ -262,8 +301,63 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 
 	fullPathNoExt = filepath.Join(w.Config.DownloadsDir, fullPathNoExt)
-	finalDir := filepath.Dir(fullPathNoExt)
 
+	// Check for existing file (Idempotency)
+	// We guess extension - usually .flac for now, or check generic
+	ext := track.FileExtension
+	if ext == "" {
+		ext = ".flac" // Default guess
+	}
+	predictedPath := fullPathNoExt + ext
+
+	if track.Status == domain.TrackStatusCompleted {
+		exists := false
+		if _, err := os.Stat(predictedPath); err == nil {
+			exists = true
+		} else if track.FilePath != "" {
+			if _, err := os.Stat(track.FilePath); err == nil {
+				exists = true
+				predictedPath = track.FilePath
+			}
+		}
+
+		if exists {
+			// Verify hash if available
+			match := false
+			if track.FileHash != "" {
+				verified, _ := storage.VerifyFile(predictedPath, track.FileHash)
+				if verified {
+					match = true
+				}
+			} else {
+				// Trust existing if completed? Or re-hash?
+				// Be safe: re-hash and update
+				newHash, err := storage.HashFile(predictedPath)
+				if err == nil {
+					track.FileHash = newHash
+					w.Repo.UpdateTrack(track)
+					match = true
+				}
+			}
+
+			if match {
+				logger.Info("Track already exists and verified, skipping download", "path", predictedPath)
+				w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+				return
+			} else {
+				logger.Info("Track exists but hash mismatch, redownloading", "path", predictedPath)
+				storage.RemoveFile(predictedPath)
+			}
+		}
+	}
+
+	// Update track status to downloading
+	if err := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusDownloading, ""); err != nil {
+		logger.Error("Failed to update track status to downloading", "error", err)
+		return
+	}
+
+	finalDir := filepath.Dir(fullPathNoExt)
 	if err := storage.EnsureDir(finalDir); err != nil {
 		logger.Error("Failed to create directory", "error", err)
 		w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create directory: %v", err))
@@ -278,6 +372,11 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		w.Repo.MarkTrackFailed(track.ID, err.Error())
 		w.Repo.UpdateJobError(job.ID, err.Error())
 		return
+	}
+
+	// Set track.Status = processing
+	if err := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); err != nil {
+		logger.Error("Failed to update track status to processing", "error", err)
 	}
 
 	logger.Info("Download finished, starting tagging", "file_path", finalPath)
@@ -324,13 +423,32 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
+	// Hash file
+	fileHash, err := storage.HashFile(finalPath)
+	if err != nil {
+		logger.Error("Failed to hash file", "error", err)
+		// Proceed but log? Or fail?
+		// "store current hash"
+	}
+
 	// Mark track as completed
-	ext := filepath.Ext(finalPath)
+	ext = filepath.Ext(finalPath)
 	if ext == "" {
 		ext = ".flac"
 	}
 	track.FileExtension = ext
-	w.Repo.MarkTrackCompleted(track.ID, finalPath)
+
+	// w.Repo.MarkTrackCompleted(track.ID, finalPath, fileHash)
+	if err := w.Repo.MarkTrackCompleted(track.ID, finalPath, fileHash); err != nil {
+		logger.Error("Failed to mark track completed", "error", err)
+	}
+
+	// Recompute album state
+	if track.AlbumID != "" {
+		// Just call it, we don't do anything with result yet other than maybe log or if we had a table
+		// User requirement: "Create function: RecomputeAlbumState(albumID)"
+		w.Repo.RecomputeAlbumState(track.AlbumID)
+	}
 
 	// Mark job as completed
 	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
@@ -382,7 +500,7 @@ func (w *Worker) processAlbumJob(ctx context.Context, job *domain.Job) {
 
 		// Create track record
 		track := w.catalogTrackToDomainTrack(&catalogTrack)
-		track.Status = domain.TrackStatusPending
+		track.Status = domain.TrackStatusQueued
 		track.ParentJobID = job.ID
 		track.CreatedAt = time.Now()
 		track.UpdatedAt = time.Now()
@@ -458,7 +576,7 @@ func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
 
 		// Create track record
 		track := w.catalogTrackToDomainTrack(&catalogTrack)
-		track.Status = domain.TrackStatusPending
+		track.Status = domain.TrackStatusQueued
 		track.ParentJobID = job.ID
 		track.CreatedAt = time.Now()
 		track.UpdatedAt = time.Now()
@@ -531,7 +649,7 @@ func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
 
 		// Create track record
 		track := w.catalogTrackToDomainTrack(&catalogTrack)
-		track.Status = domain.TrackStatusPending
+		track.Status = domain.TrackStatusQueued
 		track.ParentJobID = job.ID
 		track.CreatedAt = time.Now()
 		track.UpdatedAt = time.Now()

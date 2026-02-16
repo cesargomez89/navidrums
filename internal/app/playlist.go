@@ -66,13 +66,33 @@ func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.Cata
 	}
 
 	for _, t := range tracks {
-		folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
-		ext := lookup(t.ID)
-		if ext == "" {
-			ext = ".flac" // Default fallback
+		// Try to find the stored track to get the most accurate template data
+		// If not found, build it from catalog track info
+		templateData := storage.BuildPathTemplateData(
+			t.AlbumArtist,
+			t.Year,
+			t.Album,
+			t.DiscNumber,
+			t.TrackNumber,
+			t.Title,
+		)
+		if templateData.AlbumArtist == "" {
+			templateData.AlbumArtist = storage.Sanitize(t.Artist)
 		}
-		trackFile := fmt.Sprintf("%02d - %s%s", t.TrackNumber, storage.Sanitize(t.Title), ext)
-		relPath := filepath.Join("..", folderName, trackFile)
+
+		relPath, err := storage.BuildPath(pg.config.SubdirTemplate, templateData)
+		if err != nil {
+			// Fallback to old behavior if template fails
+			folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
+			trackFile := fmt.Sprintf("%02d - %s%s", t.TrackNumber, storage.Sanitize(t.Title), ".flac")
+			relPath = filepath.Join("..", folderName, trackFile)
+		} else {
+			ext := lookup(t.ID)
+			if ext == "" {
+				ext = ".flac"
+			}
+			relPath = filepath.Join("..", relPath+ext)
+		}
 
 		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)
 		if _, err := f.WriteString(line); err != nil {

@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -15,23 +16,46 @@ type migration struct {
 
 // Migrations history is cleared for v2.0 refactor
 // New two-table architecture: jobs + tracks
-var migrations = []migration{}
+var migrations = []migration{
+	{
+		version:     1,
+		description: "Add track lifecycle fields",
+		up: func(db *sql.DB) error {
+			columns := []string{
+				"ALTER TABLE tracks ADD COLUMN file_hash TEXT",
+				"ALTER TABLE tracks ADD COLUMN etag TEXT",
+				"ALTER TABLE tracks ADD COLUMN last_verified_at DATETIME",
+				"ALTER TABLE tracks ADD COLUMN album_id TEXT",
+			}
+			for _, q := range columns {
+				if _, err := db.Exec(q); err != nil {
+					// Ignore duplicate column errors if migration ran partially
+					continue
+				}
+			}
+			return nil
+		},
+	},
+}
 
 type DB struct {
 	*sql.DB
 }
 
 func NewSQLiteDB(dsn string) (*DB, error) {
+	// Append pragmas to DSN to ensure they apply to all connections in the pool
+	// _pragma=busy_timeout(30000) avoids "database is locked" errors
+	// _pragma=journal_mode(WAL) enables Write-Ahead Logging for better concurrency
+	if !strings.Contains(dsn, "?") {
+		dsn += "?"
+	} else {
+		dsn += "&"
+	}
+	dsn += "_pragma=busy_timeout(30000)&_pragma=journal_mode(WAL)"
+
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open db: %w", err)
-	}
-
-	if _, err := db.Exec("PRAGMA journal_mode=WAL"); err != nil {
-		return nil, fmt.Errorf("failed to set WAL mode: %w", err)
-	}
-	if _, err := db.Exec("PRAGMA busy_timeout=30000"); err != nil {
-		return nil, fmt.Errorf("failed to set busy timeout: %w", err)
 	}
 
 	if err := db.Ping(); err != nil {
