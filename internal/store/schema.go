@@ -59,7 +59,6 @@ CREATE TABLE IF NOT EXISTS tracks (
 	release_date TEXT,
 	
 	-- Processing
-	-- Processing
 	status TEXT NOT NULL DEFAULT 'missing',
 	error TEXT,
 	parent_job_id TEXT,

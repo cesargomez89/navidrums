@@ -35,40 +35,7 @@ const (
 
 // Tidal CDN URLs
 const (
-	TidalImageBaseURL = "https://resources.tidal.com/images"
-	TidalImageExt     = ".jpg"
-)
-
-// API Endpoints (Hifi API)
-const (
-	EndpointSearch          = "/search/"
-	EndpointInfo            = "/info/"
-	EndpointTrack           = "/track/"
-	EndpointArtist          = "/artist/"
-	EndpointAlbum           = "/album/"
-	EndpointPlaylist        = "/playlist/"
-	EndpointRecommendations = "/recommendations/"
-	EndpointLyrics          = "/lyrics/"
-	EndpointArtistSimilar   = "/artist/similar/"
-	EndpointAlbumSimilar    = "/album/similar/"
-	EndpointMix             = "/mix/"
-	EndpointCover           = "/cover/"
-)
-
-// API Query Parameters
-const (
-	ParamQuery      = "s"
-	ParamArtist     = "a"
-	ParamAlbum      = "al"
-	ParamVideo      = "v"
-	ParamPlaylist   = "p"
-	ParamID         = "id"
-	ParamQuality    = "quality"
-	ParamFetch      = "f"
-	ParamSkipTracks = "skip_tracks"
-	ParamLimit      = "limit"
-	ParamOffset     = "offset"
-	ParamCursor     = "cursor"
+	TidalImageExt = ".jpg"
 )
 
 // MIME Types
@@ -79,24 +46,6 @@ const (
 	MimeTypeMP3     = "audio/mpeg"
 	MimeTypeMP4     = "audio/mp4"
 	MimeTypeJPEG    = "image/jpeg"
-)
-
-// Job Status Values
-const (
-	StatusQueued      = "queued"
-	StatusResolve     = "resolving_tracks"
-	StatusDownloading = "downloading"
-	StatusCompleted   = "completed"
-	StatusFailed      = "failed"
-	StatusCancelled   = "cancelled"
-)
-
-// Job Types
-const (
-	TypeTrack    = "track"
-	TypeAlbum    = "album"
-	TypePlaylist = "playlist"
-	TypeArtist   = "artist"
 )
 
 // Database
@@ -118,9 +67,7 @@ const (
 
 // File Names
 const (
-	CoverFileName = "cover.jpg"
-	PlaylistsDir  = "playlists"
-	TokenFileName = "token.json"
+	PlaylistsDir = "playlists"
 )
 
 // File Permissions

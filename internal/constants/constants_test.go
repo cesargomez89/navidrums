@@ -79,33 +79,6 @@ func TestConcurrency(t *testing.T) {
 	}
 }
 
-func TestEndpoints(t *testing.T) {
-	endpoints := []string{
-		EndpointSearch,
-		EndpointInfo,
-		EndpointTrack,
-		EndpointArtist,
-		EndpointAlbum,
-		EndpointPlaylist,
-		EndpointRecommendations,
-		EndpointLyrics,
-		EndpointArtistSimilar,
-		EndpointAlbumSimilar,
-		EndpointMix,
-		EndpointCover,
-	}
-
-	for _, e := range endpoints {
-		if e == "" {
-			t.Error("Endpoint constant should not be empty")
-		}
-		// Should start with /
-		if e[0] != '/' {
-			t.Errorf("Endpoint %s should start with /", e)
-		}
-	}
-}
-
 func TestMimeTypes(t *testing.T) {
 	types := []string{
 		MimeTypeBTS,
@@ -119,38 +92,6 @@ func TestMimeTypes(t *testing.T) {
 	for _, m := range types {
 		if m == "" {
 			t.Error("MIME type constant should not be empty")
-		}
-	}
-}
-
-func TestStatusValues(t *testing.T) {
-	statuses := []string{
-		StatusQueued,
-		StatusResolve,
-		StatusDownloading,
-		StatusCompleted,
-		StatusFailed,
-		StatusCancelled,
-	}
-
-	for _, s := range statuses {
-		if s == "" {
-			t.Error("Status constant should not be empty")
-		}
-	}
-}
-
-func TestJobTypes(t *testing.T) {
-	types := []string{
-		TypeTrack,
-		TypeAlbum,
-		TypePlaylist,
-		TypeArtist,
-	}
-
-	for _, jt := range types {
-		if jt == "" {
-			t.Error("Job type constant should not be empty")
 		}
 	}
 }
