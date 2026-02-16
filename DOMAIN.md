@@ -14,10 +14,14 @@ Local download domain entity representing a track stored in the database.
 
 Contains full metadata (same fields as CatalogTrack) plus:
 - `ProviderID` - Links to the provider's track ID
-- `Status` - pending | downloading | completed | failed
+- `AlbumID` - Links to the album
+- `Status` - missing | queued | downloading | processing | completed | failed
 - `ParentJobID` - Reference to the container job that created this track
 - `FilePath` - Local filesystem path after download
 - `FileExtension` - Audio file extension (.flac, .mp3, .m4a)
+- `FileHash` - SHA256 hash of downloaded file for verification
+- `ETag` - HTTP ETag from download source
+- `LastVerifiedAt` - Last verification timestamp
 - `Error` - Error message if download failed
 - Timestamps for creation, update, and completion
 
@@ -60,6 +64,11 @@ Status machine:
 queued → running → completed | failed | cancelled
 ```
 
+Track status machine:
+```
+missing → queued → downloading → processing → completed | failed
+```
+
 Structure:
 - Minimal fields: ID, Type, Status, SourceID, Progress, Error, timestamps
 - `SourceID` links to Track.ProviderID
@@ -86,6 +95,26 @@ Providers do not persist state. They return CatalogTrack types which are convert
 
 ---
 
+## Repository Store
+Database persistence methods (internal/store):
+
+Track operations:
+- `CreateTrack` - Create new track record
+- `GetTrackByID` / `GetTrackByProviderID` - Lookup tracks
+- `UpdateTrack` - Update full track metadata
+- `UpdateTrackStatus` - Update track status and file path
+- `MarkTrackCompleted` - Mark track completed with file path and hash
+- `MarkTrackFailed` - Mark track failed with error message
+- `ListTracks`, `ListTracksByStatus`, `ListTracksByParentJobID` - List queries
+- `IsTrackDownloaded`, `GetDownloadedTrack` - Download verification
+- `FindInterruptedTracks` - Find tracks stuck in downloading/processing
+- `RecomputeAlbumState` - Recompute album download state (missing/partial/completed)
+
+Job operations:
+- `CreateJob`, `GetJob`, `UpdateJobStatus`, `MarkJobFailed` - Job lifecycle
+
+---
+
 ## Worker
 Executes jobs asynchronously with concurrency control.
 
@@ -95,7 +124,10 @@ Workers:
 - Handle job lifecycle: running → download → tagging → completion
 - Decompose container jobs (album/playlist/artist) into track records + child jobs
 - Look up Track metadata for downloads (no duplicate provider calls)
-- Update Track status throughout lifecycle
+- Update Track status throughout lifecycle (missing → queued → downloading → processing → completed)
+- Recover interrupted tracks on startup (reset downloading/processing to queued)
+- Verify file hash for idempotent downloads (skip if file exists and hash matches)
+- Recompute album state after track completion
 - Recover from panics gracefully
 
 Workers never decide business rules. They only execute service instructions.

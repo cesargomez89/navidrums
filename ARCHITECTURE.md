@@ -72,12 +72,14 @@ web/                  # Embedded UI templates and assets
 - Downloader: Track download with retry logic
 - PlaylistGenerator: M3U playlist file creation
 - AlbumArtService: Cover art download
+- Storage utilities: File hashing, path building, sanitization
 
 ### Repository (internal/store)
 - Persistent state and queries
 - Job CRUD operations (minimal work queue state)
 - Track persistence (full metadata + download state)
 - Settings storage
+- Database migrations with WAL mode for concurrency
 
 ### Providers (internal/catalog)
 - External API adapters

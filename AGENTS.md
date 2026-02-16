@@ -124,12 +124,13 @@ Minimal state for work tracking:
 
 ### Track (Download Domain)
 Full metadata for downloaded/pending tracks:
-- Identity: `ID`, `ProviderID`
+- Identity: `ID`, `ProviderID`, `AlbumID`
 - Metadata: Title, Artist, Album, TrackNumber, ISRC, Lyrics, etc.
 - Extended: BPM, Key, ReplayGain, AudioQuality, etc.
 - Processing: `Status`, `Error`, `ParentJobID`
-- File: `FilePath`, `FileExtension`
-- Status: pending | downloading | completed | failed
+- File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
+- Verification: `LastVerifiedAt`
+- Status: missing | queued | downloading | processing | completed | failed
 
 ### CatalogTrack (Provider Data)
 Used by catalog providers for search results:
