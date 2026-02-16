@@ -28,8 +28,8 @@ func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.Provid
 	h := &Handler{
 		JobService:       js,
 		DownloadsService: ds,
+		Provider:         pm.GetProvider(),
 		ProviderManager:  pm,
-		Provider:         pm,
 		SettingsRepo:     sr,
 		Logger:           logger.Default(),
 	}

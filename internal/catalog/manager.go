@@ -1,12 +1,8 @@
 package catalog
 
 import (
-	"context"
 	"encoding/json"
-	"io"
 	"sync"
-
-	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
 type ProviderManager struct {
@@ -47,38 +43,6 @@ func (m *ProviderManager) GetBaseURL() string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.baseURL
-}
-
-func (m *ProviderManager) Search(ctx context.Context, query string, searchType string) (*domain.SearchResult, error) {
-	return m.GetProvider().Search(ctx, query, searchType)
-}
-
-func (m *ProviderManager) GetArtist(ctx context.Context, id string) (*domain.Artist, error) {
-	return m.GetProvider().GetArtist(ctx, id)
-}
-
-func (m *ProviderManager) GetAlbum(ctx context.Context, id string) (*domain.Album, error) {
-	return m.GetProvider().GetAlbum(ctx, id)
-}
-
-func (m *ProviderManager) GetPlaylist(ctx context.Context, id string) (*domain.Playlist, error) {
-	return m.GetProvider().GetPlaylist(ctx, id)
-}
-
-func (m *ProviderManager) GetTrack(ctx context.Context, id string) (*domain.CatalogTrack, error) {
-	return m.GetProvider().GetTrack(ctx, id)
-}
-
-func (m *ProviderManager) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
-	return m.GetProvider().GetStream(ctx, trackID, quality)
-}
-
-func (m *ProviderManager) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {
-	return m.GetProvider().GetSimilarAlbums(ctx, id)
-}
-
-func (m *ProviderManager) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
-	return m.GetProvider().GetLyrics(ctx, trackID)
 }
 
 type CustomProvider struct {

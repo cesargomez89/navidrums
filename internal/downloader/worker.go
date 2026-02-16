@@ -53,7 +53,7 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 	worker := &Worker{
 		Repo:            repo,
 		ProviderManager: pm,
-		Provider:        pm,
+		Provider:        pm.GetProvider(),
 		Config:          cfg,
 		MaxConcurrent:   constants.DefaultConcurrency,
 		Logger:          log.WithComponent("worker"),
@@ -61,7 +61,7 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 		cancel:          cancel,
 	}
 
-	worker.downloader = app.NewDownloader(pm, cfg)
+	worker.downloader = app.NewDownloader(pm.GetProvider(), cfg)
 	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
 
