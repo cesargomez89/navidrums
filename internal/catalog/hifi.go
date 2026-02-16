@@ -121,6 +121,8 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 			UPC             string      `json:"upc"`
 			URL             string      `json:"url"`
 			Explicit        bool        `json:"explicit"`
+			Genre           string      `json:"genre"`
+			Label           string      `json:"label"`
 			Artist          struct {
 				ID   json.Number `json:"id"`
 				Name string      `json:"name"`
@@ -179,6 +181,8 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 		AlbumType:   resp.Data.Type,
 		URL:         resp.Data.URL,
 		Explicit:    resp.Data.Explicit,
+		Genre:       resp.Data.Genre,
+		Label:       resp.Data.Label,
 	}
 
 	for _, wrapped := range resp.Data.Items {
@@ -227,6 +231,8 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 			Peak:           item.Peak,
 			URL:            item.URL,
 			AudioQuality:   item.AudioQuality,
+			Genre:          album.Genre,
+			Label:          album.Label,
 		}
 		if item.Version != nil {
 			track.Version = *item.Version
@@ -346,6 +352,7 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 				Cover           FlexCover   `json:"cover"`
 				UPC             string      `json:"upc"`
 				Label           string      `json:"label"`
+				Genre           string      `json:"genre"`
 			} `json:"album"`
 			Artist struct {
 				ID   json.Number `json:"id"`
@@ -422,6 +429,7 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 		AudioQuality:   resp.Data.AudioQuality,
 		AudioModes:     audioModes,
 		Label:          resp.Data.Album.Label,
+		Genre:          resp.Data.Album.Genre,
 	}
 	if resp.Data.Version != nil {
 		track.Version = *resp.Data.Version
