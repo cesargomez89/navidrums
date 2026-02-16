@@ -9,6 +9,8 @@ import (
 	"github.com/cesargomez89/navidrums/internal/store"
 )
 
+const defaultLimit = 30
+
 type DownloadsService struct {
 	Repo *store.DB
 }
@@ -18,11 +20,11 @@ func NewDownloadsService(repo *store.DB) *DownloadsService {
 }
 
 func (s *DownloadsService) ListDownloads() ([]*domain.Track, error) {
-	return s.Repo.ListCompletedTracks(30)
+	return s.Repo.ListCompletedTracks(defaultLimit)
 }
 
 func (s *DownloadsService) SearchDownloads(query string) ([]*domain.Track, error) {
-	return s.Repo.SearchTracks(query, 30)
+	return s.Repo.SearchTracks(query, defaultLimit)
 }
 
 func (s *DownloadsService) DeleteDownload(providerID string) error {

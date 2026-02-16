@@ -243,120 +243,11 @@ func (db *DB) GetDownloadedTrack(providerID string) (*domain.Track, error) {
 
 // scanTrack scans a single track from a row
 func scanTrack(row *sql.Row) (*domain.Track, error) {
-	track := &domain.Track{}
-	var artistsJSON, albumArtistsJSON string
-	var errMsg, filePath, fileExt, lyrics, subtitles, parentJobID sql.NullString
-	var trackNum, discNum, totalTracks, totalDiscs, year, duration, bpm sql.NullInt64
-	var replayGain, peak sql.NullFloat64
-	var explicit, compilation sql.NullBool
-	var completedAt sql.NullTime
-	var key, keyScale, version, description, url, audioQuality, audioModes, releaseDate sql.NullString
-
-	err := row.Scan(
-		&track.ID, &track.ProviderID, &track.Title, &track.Artist, &artistsJSON, &track.Album, &track.AlbumArtist, &albumArtistsJSON,
-		&trackNum, &discNum, &totalTracks, &totalDiscs,
-		&year, &track.Genre, &track.Label, &track.ISRC, &track.Copyright, &track.Composer,
-		&duration, &explicit, &compilation, &track.AlbumArtURL, &lyrics, &subtitles,
-		&bpm, &key, &keyScale, &replayGain, &peak, &version, &description, &url, &audioQuality, &audioModes, &releaseDate,
-		&track.Status, &errMsg, &parentJobID, &filePath, &fileExt,
-		&track.CreatedAt, &track.UpdatedAt, &completedAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, err
+	track, err := scanTrackFromScanner(row)
+	if err == sql.ErrNoRows {
+		return nil, nil
 	}
-
-	// Unmarshal JSON arrays
-	if artistsJSON != "" {
-		json.Unmarshal([]byte(artistsJSON), &track.Artists)
-	}
-	if albumArtistsJSON != "" {
-		json.Unmarshal([]byte(albumArtistsJSON), &track.AlbumArtists)
-	}
-
-	// Set nullable fields
-	if trackNum.Valid {
-		track.TrackNumber = int(trackNum.Int64)
-	}
-	if discNum.Valid {
-		track.DiscNumber = int(discNum.Int64)
-	}
-	if totalTracks.Valid {
-		track.TotalTracks = int(totalTracks.Int64)
-	}
-	if totalDiscs.Valid {
-		track.TotalDiscs = int(totalDiscs.Int64)
-	}
-	if year.Valid {
-		track.Year = int(year.Int64)
-	}
-	if duration.Valid {
-		track.Duration = int(duration.Int64)
-	}
-	if bpm.Valid {
-		track.BPM = int(bpm.Int64)
-	}
-	if replayGain.Valid {
-		track.ReplayGain = replayGain.Float64
-	}
-	if peak.Valid {
-		track.Peak = peak.Float64
-	}
-	if explicit.Valid {
-		track.Explicit = explicit.Bool
-	}
-	if compilation.Valid {
-		track.Compilation = compilation.Bool
-	}
-	if key.Valid {
-		track.Key = key.String
-	}
-	if keyScale.Valid {
-		track.KeyScale = keyScale.String
-	}
-	if version.Valid {
-		track.Version = version.String
-	}
-	if description.Valid {
-		track.Description = description.String
-	}
-	if url.Valid {
-		track.URL = url.String
-	}
-	if audioQuality.Valid {
-		track.AudioQuality = audioQuality.String
-	}
-	if audioModes.Valid {
-		track.AudioModes = audioModes.String
-	}
-	if releaseDate.Valid {
-		track.ReleaseDate = releaseDate.String
-	}
-	if errMsg.Valid {
-		track.Error = errMsg.String
-	}
-	if parentJobID.Valid {
-		track.ParentJobID = parentJobID.String
-	}
-	if filePath.Valid {
-		track.FilePath = filePath.String
-	}
-	if fileExt.Valid {
-		track.FileExtension = fileExt.String
-	}
-	if lyrics.Valid {
-		track.Lyrics = lyrics.String
-	}
-	if subtitles.Valid {
-		track.Subtitles = subtitles.String
-	}
-	if completedAt.Valid {
-		track.CompletedAt = completedAt.Time
-	}
-
-	return track, nil
+	return track, err
 }
 
 // rowsScanner wraps sql.Rows to implement trackScanner
@@ -408,10 +299,14 @@ func scanTrackFromScanner(scanner interface {
 
 	// Unmarshal JSON arrays
 	if artistsJSON != "" {
-		json.Unmarshal([]byte(artistsJSON), &track.Artists)
+		if err := json.Unmarshal([]byte(artistsJSON), &track.Artists); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal artists: %w", err)
+		}
 	}
 	if albumArtistsJSON != "" {
-		json.Unmarshal([]byte(albumArtistsJSON), &track.AlbumArtists)
+		if err := json.Unmarshal([]byte(albumArtistsJSON), &track.AlbumArtists); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal album artists: %w", err)
+		}
 	}
 
 	// Set nullable fields

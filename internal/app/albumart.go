@@ -38,12 +38,7 @@ func (s *albumArtService) DownloadAndSaveAlbumArt(album *domain.Album, imageURL 
 
 	// Generate album directory using the same template as tracks
 	// Use first track's metadata if available, otherwise use album metadata with defaults
-	var artist string
-	if len(album.ArtistIDs) > 0 && album.ArtistIDs[0] != "" {
-		artist = album.Artist
-	} else {
-		artist = album.Artist
-	}
+	artist := album.Artist
 
 	year := album.Year
 	if year == 0 && album.ReleaseDate != "" {

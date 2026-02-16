@@ -125,7 +125,11 @@ func (w *Worker) processJobs() {
 			for i := 0; i < toStart && i < len(queuedJobs); i++ {
 				job := queuedJobs[i]
 
-				current, _ := w.Repo.GetJob(job.ID)
+				current, err := w.Repo.GetJob(job.ID)
+				if err != nil {
+					w.Logger.Error("Failed to get job before starting", "job_id", job.ID, "error", err)
+					continue
+				}
 				if current != nil && current.Status == domain.JobStatusCancelled {
 					continue
 				}
@@ -480,15 +484,7 @@ func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Generate playlist file
-	extLookup := func(trackID string) string {
-		t, _ := w.Repo.GetTrackByProviderID(trackID)
-		if t != nil && t.FileExtension != "" {
-			return t.FileExtension
-		}
-		return ".flac"
-	}
-	if err := w.playlistGenerator.Generate(pl, extLookup); err != nil {
+	if err := w.playlistGenerator.Generate(pl, w.lookupTrackExtension); err != nil {
 		logger.Error("Failed to generate playlist file", "error", err)
 	}
 
@@ -561,20 +557,11 @@ func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Generate playlist file for top tracks
-	extLookup := func(trackID string) string {
-		t, _ := w.Repo.GetTrackByProviderID(trackID)
-		if t != nil && t.FileExtension != "" {
-			return t.FileExtension
-		}
-		return ".flac"
-	}
-	// Convert CatalogTrack slice to the type expected by playlist generator
 	catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
 	for i, t := range artist.TopTracks {
 		catalogTracks[i] = t
 	}
-	if err := w.playlistGenerator.GenerateFromTracks(artist.Name, catalogTracks, extLookup); err != nil {
+	if err := w.playlistGenerator.GenerateFromTracks(artist.Name, catalogTracks, w.lookupTrackExtension); err != nil {
 		logger.Error("Failed to generate playlist file", "error", err)
 	}
 
@@ -634,4 +621,12 @@ func (w *Worker) catalogTrackToDomainTrack(ct *domain.CatalogTrack) *domain.Trac
 		AudioQuality:   ct.AudioQuality,
 		AudioModes:     ct.AudioModes,
 	}
+}
+
+func (w *Worker) lookupTrackExtension(trackID string) string {
+	t, _ := w.Repo.GetTrackByProviderID(trackID)
+	if t != nil && t.FileExtension != "" {
+		return t.FileExtension
+	}
+	return ".flac"
 }

@@ -52,10 +52,17 @@ func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.Cata
 	if err != nil {
 		return fmt.Errorf("failed to create playlist file: %w", err)
 	}
-	defer f.Close()
+	writeErr := error(nil)
+	defer func() {
+		f.Close()
+		if writeErr != nil {
+			storage.RemoveFile(playlistPath)
+		}
+	}()
 
 	if _, err := f.WriteString("#EXTM3U\n"); err != nil {
-		return fmt.Errorf("failed to write playlist header: %w", err)
+		writeErr = fmt.Errorf("failed to write playlist header: %w", err)
+		return writeErr
 	}
 
 	for _, t := range tracks {
@@ -69,7 +76,8 @@ func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.Cata
 
 		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)
 		if _, err := f.WriteString(line); err != nil {
-			return fmt.Errorf("failed to write track to playlist: %w", err)
+			writeErr = fmt.Errorf("failed to write track to playlist: %w", err)
+			return writeErr
 		}
 	}
 
