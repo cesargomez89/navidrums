@@ -562,9 +562,10 @@ func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domai
 
 	var resp struct {
 		Albums []struct {
-			ID      json.Number `json:"id"`
-			Title   string      `json:"title"`
+			ID      int    `json:"id"`
+			Title   string `json:"title"`
 			Artists []struct {
+				ID   int    `json:"id"`
 				Name string `json:"name"`
 			} `json:"artists"`
 			Cover string `json:"cover"`
