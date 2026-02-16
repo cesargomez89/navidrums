@@ -89,19 +89,6 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 				Artist:      artist.Name,
 				AlbumArtURL: p.ensureAbsoluteURL(item.Cover, "640x640"),
 			}
-
-			// Try to fetch album metadata for year
-			albumsUrl := fmt.Sprintf("%s/album/?id=%s", p.BaseURL, album.ID)
-			var albumData struct {
-				Data struct {
-					ReleaseDate string `json:"releaseDate"`
-				} `json:"data"`
-			}
-			if err := p.get(ctx, albumsUrl, &albumData); err == nil {
-				album.ReleaseDate = albumData.Data.ReleaseDate
-				album.Year = parseYear(album.ReleaseDate)
-			}
-
 			artist.Albums = append(artist.Albums, album)
 		}
 		for _, item := range aggResp.Tracks {
