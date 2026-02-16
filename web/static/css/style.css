@@ -2,10 +2,14 @@
     --bg: #0d0d0d;
     --card: #1a1a1a;
     --input: #252525;
-    --border: #333;
+    --border: var(--border);
     --accent: #8b5cf6;
+    --accent-secondary: #ec4899;
     --text: #fff;
     --text-dim: #888;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -90,7 +94,7 @@ nav::before {
     background: linear-gradient(90deg, 
         transparent,
         var(--accent) 20%,
-        #ec4899 50%,
+        var(--accent-secondary) 50%,
         var(--accent) 80%,
         transparent
     );
@@ -100,7 +104,7 @@ nav::before {
 .nav-logo {
     font-weight: 700;
     font-size: 1.2rem;
-    background: linear-gradient(135deg, var(--accent), #ec4899);
+    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -132,7 +136,7 @@ nav a::after {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent), #ec4899);
+    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
     transition: width 0.3s ease;
 }
 
@@ -215,7 +219,7 @@ button:active {
 }
 
 .btn-danger {
-    background: #ef4444;
+    background: var(--danger);
     color: var(--text);
 }
 
@@ -224,7 +228,7 @@ button:active {
 }
 
 .btn-success {
-    background: #10b981;
+    background: var(--success);
     color: var(--text);
 }
 
@@ -269,7 +273,7 @@ button:active {
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: 6px;
-    background: linear-gradient(90deg, var(--input) 0%, #333 50%, var(--input) 100%);
+    background: linear-gradient(90deg, var(--input) 0%, var(--border) 50%, var(--input) 100%);
     background-size: 200px 100%;
 }
 .card-title {
@@ -288,14 +292,14 @@ button:active {
     height: 160px; 
     border-radius: 8px; 
     object-fit: cover;
-    background: linear-gradient(90deg, var(--input) 0%, #333 50%, var(--input) 100%);
+    background: linear-gradient(90deg, var(--input) 0%, var(--border) 50%, var(--input) 100%);
     background-size: 200px 100%;
 }
 .detail-info { display: flex; flex-direction: column; justify-content: flex-end; }
 .detail h2 { 
     font-size: 2rem; 
     margin: 0; 
-    background: linear-gradient(135deg, var(--accent), #ec4899);
+    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -363,7 +367,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     content: '';
     width: 4px;
     height: 20px;
-    background: linear-gradient(180deg, var(--accent), #ec4899);
+    background: linear-gradient(180deg, var(--accent), var(--accent-secondary));
     border-radius: 2px;
 }
 
@@ -376,7 +380,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .provider-badge {
     display: inline-block;
     padding: 8px 16px;
-    background: linear-gradient(135deg, var(--accent), #ec4899);
+    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
     border-radius: 8px;
     font-weight: 600;
     font-size: 0.9rem;
@@ -430,7 +434,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, var(--accent), #ec4899);
+    background: linear-gradient(180deg, var(--accent), var(--accent-secondary));
     border-radius: 10px 0 0 10px;
 }
 
@@ -462,7 +466,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 }
 
 .badge-success { 
-    background: #10b981; 
+    background: var(--success); 
     padding: 8px 16px; 
     border-radius: 6px; 
     font-size: 0.85rem;
@@ -536,7 +540,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent), #ec4899);
+    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
@@ -571,14 +575,14 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
 .job-title { font-weight: 600; }
 .job-meta { font-size: 0.85rem; color: var(--text-dim); }
 .job-status { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; }
-.status-queued { background: #333; }
+.status-queued { background: var(--border); }
 .status-processing { 
     background: var(--accent);
     animation: pulse 2s ease-in-out infinite;
 }
-.status-completed { background: #10b981; }
-.status-failed { background: #ef4444; }
-.status-cancelled { background: #f59e0b; color: #000; }
+.status-completed { background: var(--success); }
+.status-failed { background: var(--danger); }
+.status-cancelled { background: var(--warning); color: #000; }
 
 /* Animations */
 @keyframes pulse {
