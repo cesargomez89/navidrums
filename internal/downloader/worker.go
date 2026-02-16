@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sync"
@@ -483,48 +484,7 @@ func (w *Worker) processAlbumJob(ctx context.Context, job *domain.Job) {
 
 	// Create tracks and child jobs for each track
 	logger.Info("Creating track jobs", "track_count", len(album.Tracks))
-	createdCount := 0
-
-	for _, catalogTrack := range album.Tracks {
-		// Check if already downloaded
-		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
-			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
-			continue
-		}
-
-		// Check if already active
-		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
-			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
-			continue
-		}
-
-		// Create track record
-		track := w.catalogTrackToDomainTrack(&catalogTrack)
-		track.Status = domain.TrackStatusQueued
-		track.ParentJobID = job.ID
-		track.CreatedAt = time.Now()
-		track.UpdatedAt = time.Now()
-
-		if err := w.Repo.CreateTrack(track); err != nil {
-			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
-			continue
-		}
-
-		// Create child job for this track
-		childJob := &domain.Job{
-			ID:        uuid.New().String(),
-			Type:      domain.JobTypeTrack,
-			Status:    domain.JobStatusQueued,
-			SourceID:  catalogTrack.ID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		if err := w.Repo.CreateJob(childJob); err != nil {
-			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
-		} else {
-			createdCount++
-		}
-	}
+	createdCount := w.createTracksAndJobs(job.ID, album.Tracks, logger)
 
 	// Mark album job as completed
 	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
@@ -559,48 +519,7 @@ func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
 
 	// Create tracks and child jobs
 	logger.Info("Creating track jobs", "track_count", len(pl.Tracks))
-	createdCount := 0
-
-	for _, catalogTrack := range pl.Tracks {
-		// Check if already downloaded
-		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
-			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
-			continue
-		}
-
-		// Check if already active
-		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
-			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
-			continue
-		}
-
-		// Create track record
-		track := w.catalogTrackToDomainTrack(&catalogTrack)
-		track.Status = domain.TrackStatusQueued
-		track.ParentJobID = job.ID
-		track.CreatedAt = time.Now()
-		track.UpdatedAt = time.Now()
-
-		if err := w.Repo.CreateTrack(track); err != nil {
-			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
-			continue
-		}
-
-		// Create child job
-		childJob := &domain.Job{
-			ID:        uuid.New().String(),
-			Type:      domain.JobTypeTrack,
-			Status:    domain.JobStatusQueued,
-			SourceID:  catalogTrack.ID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		if err := w.Repo.CreateJob(childJob); err != nil {
-			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
-		} else {
-			createdCount++
-		}
-	}
+	createdCount := w.createTracksAndJobs(job.ID, pl.Tracks, logger)
 
 	if err := w.playlistGenerator.Generate(pl, w.lookupTrackExtension); err != nil {
 		logger.Error("Failed to generate playlist file", "error", err)
@@ -632,48 +551,7 @@ func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
 
 	// Create tracks and child jobs
 	logger.Info("Creating track jobs", "track_count", len(artist.TopTracks))
-	createdCount := 0
-
-	for _, catalogTrack := range artist.TopTracks {
-		// Check if already downloaded
-		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
-			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
-			continue
-		}
-
-		// Check if already active
-		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
-			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
-			continue
-		}
-
-		// Create track record
-		track := w.catalogTrackToDomainTrack(&catalogTrack)
-		track.Status = domain.TrackStatusQueued
-		track.ParentJobID = job.ID
-		track.CreatedAt = time.Now()
-		track.UpdatedAt = time.Now()
-
-		if err := w.Repo.CreateTrack(track); err != nil {
-			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
-			continue
-		}
-
-		// Create child job
-		childJob := &domain.Job{
-			ID:        uuid.New().String(),
-			Type:      domain.JobTypeTrack,
-			Status:    domain.JobStatusQueued,
-			SourceID:  catalogTrack.ID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		if err := w.Repo.CreateJob(childJob); err != nil {
-			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
-		} else {
-			createdCount++
-		}
-	}
+	createdCount := w.createTracksAndJobs(job.ID, artist.TopTracks, logger)
 
 	catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
 	for i, t := range artist.TopTracks {
@@ -747,4 +625,51 @@ func (w *Worker) lookupTrackExtension(trackID string) string {
 		return t.FileExtension
 	}
 	return ".flac"
+}
+
+func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.CatalogTrack, logger *slog.Logger) int {
+	createdCount := 0
+
+	for _, catalogTrack := range catalogTracks {
+		// Check if already downloaded
+		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
+			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Check if already active
+		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
+			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Create track record
+		track := w.catalogTrackToDomainTrack(&catalogTrack)
+		track.Status = domain.TrackStatusQueued
+		track.ParentJobID = parentJobID
+		track.CreatedAt = time.Now()
+		track.UpdatedAt = time.Now()
+
+		if err := w.Repo.CreateTrack(track); err != nil {
+			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
+			continue
+		}
+
+		// Create child job
+		childJob := &domain.Job{
+			ID:        uuid.New().String(),
+			Type:      domain.JobTypeTrack,
+			Status:    domain.JobStatusQueued,
+			SourceID:  catalogTrack.ID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err := w.Repo.CreateJob(childJob); err != nil {
+			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
+		} else {
+			createdCount++
+		}
+	}
+
+	return createdCount
 }
