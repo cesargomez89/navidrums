@@ -4,13 +4,13 @@
     {{range .ActiveJobs}}
     <div class="job">
         <div class="job-info">
-            <div class="job-title">{{.Title}}</div>
-            <div class="job-meta">{{.Artist}}</div>
+            <div class="job-title">{{.Type}} - {{.SourceID}}</div>
+            <div class="job-meta">Progress: {{printf "%.0f" .Progress}}%</div>
         </div>
         <div style="text-align: right;">
             <span class="job-status status-{{.Status}}">{{.Status}}</span>
             {{if .Error}}<div style="color: #ef4444; font-size: 0.75rem;">{{.Error}}</div>{{end}}
-            {{if or (eq .Status "queued") (eq .Status "resolving_tracks") (eq .Status "downloading")}}
+            {{if or (eq .Status "queued") (eq .Status "running")}}
             <button hx-post="/htmx/cancel/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML" class="btn btn-outline btn-sm" style="margin-top: 8px;">Cancel</button>
             {{end}}
         </div>

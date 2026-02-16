@@ -111,7 +111,7 @@ func (p *HifiProvider) searchAlbums(ctx context.Context, query string) ([]domain
 	return albums, nil
 }
 
-func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain.Track, error) {
+func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain.CatalogTrack, error) {
 	u := fmt.Sprintf("%s/search/?s=%s", p.BaseURL, url.QueryEscape(query))
 	var resp struct {
 		Data struct {
@@ -136,7 +136,7 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain
 		return nil, err
 	}
 
-	var tracks []domain.Track
+	var tracks []domain.CatalogTrack
 	for _, item := range resp.Data.Items {
 		var artists []string
 		var artistIDs []string
@@ -148,7 +148,7 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain
 			artists = []string{"Unknown"}
 			artistIDs = []string{""}
 		}
-		tracks = append(tracks, domain.Track{
+		tracks = append(tracks, domain.CatalogTrack{
 			ID:          formatID(item.ID),
 			Title:       item.Title,
 			ArtistID:    artistIDs[0],

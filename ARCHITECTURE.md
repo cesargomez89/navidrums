@@ -46,7 +46,7 @@ web/                  # Embedded UI templates and assets
 │   Repository        │   Providers   │   Filesystem          │
 │   (internal/store)  │(internal/     │   (internal/storage)  │
 │   - Job persistence │ catalog)      │   - File operations   │
-│   - Download state  │   - External  │   - Path sanitization │
+│   - Track state     │   - External  │   - Path sanitization │
 │                     │     API calls │   - Directory mgmt    │
 └─────────────────────┴───────────────┴───────────────────────┘
                               ↓
@@ -75,8 +75,8 @@ web/                  # Embedded UI templates and assets
 
 ### Repository (internal/store)
 - Persistent state and queries
-- Job CRUD operations
-- Download tracking
+- Job CRUD operations (minimal work queue state)
+- Track persistence (full metadata + download state)
 - Settings storage
 
 ### Providers (internal/catalog)

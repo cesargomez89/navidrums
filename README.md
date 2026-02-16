@@ -173,3 +173,13 @@ To create a new release:
 
 2. GitHub Actions will automatically build binaries for all platforms and create a release.
 
+## Architecture
+
+Navidrums uses a two-table architecture:
+- **Jobs table**: Minimal work queue (id, type, status, source_id)
+- **Tracks table**: Full metadata and download state for all tracks
+
+This separation allows storing complete track metadata for features like custom download paths and better history tracking.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) and [DOMAIN.md](DOMAIN.md) for technical details.
+

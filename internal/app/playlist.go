@@ -13,7 +13,7 @@ type ExtensionLookupFunc func(trackID string) string
 
 type PlaylistGenerator interface {
 	Generate(pl *domain.Playlist, lookup ExtensionLookupFunc) error
-	GenerateFromTracks(artistName string, tracks []domain.Track, lookup ExtensionLookupFunc) error
+	GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup ExtensionLookupFunc) error
 }
 
 type playlistGenerator struct {
@@ -31,12 +31,12 @@ func (pg *playlistGenerator) Generate(pl *domain.Playlist, lookup ExtensionLooku
 	return pg.writePlaylist(filename, pl.Tracks, lookup)
 }
 
-func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.Track, lookup ExtensionLookupFunc) error {
+func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup ExtensionLookupFunc) error {
 	filename := fmt.Sprintf("%s - Top Tracks.m3u", storage.Sanitize(artistName))
 	return pg.writePlaylist(filename, tracks, lookup)
 }
 
-func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.Track, lookup ExtensionLookupFunc) error {
+func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.CatalogTrack, lookup ExtensionLookupFunc) error {
 	if len(tracks) == 0 {
 		return nil
 	}

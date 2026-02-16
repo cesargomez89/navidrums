@@ -18,7 +18,7 @@ func (p *MockProvider) Search(ctx context.Context, query string, searchType stri
 	res := &domain.SearchResult{
 		Artists: []domain.Artist{{ID: "1", Name: "Mock Artist"}},
 		Albums:  []domain.Album{{ID: "1", Title: "Mock Album", Artist: "Mock Artist"}},
-		Tracks:  []domain.Track{{ID: "1", Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1, Duration: 180}},
+		Tracks:  []domain.CatalogTrack{{ID: "1", Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1, Duration: 180}},
 	}
 
 	if searchType == "" {
@@ -49,7 +49,7 @@ func (p *MockProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 		Title:    "Mock Album",
 		Artist:   "Mock Artist",
 		ArtistID: "1",
-		Tracks: []domain.Track{
+		Tracks: []domain.CatalogTrack{
 			{ID: "1", Title: "Track 1", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1, Duration: 180},
 			{ID: "2", Title: "Track 2", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 2, Duration: 200},
 		},
@@ -60,14 +60,14 @@ func (p *MockProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 	return &domain.Playlist{
 		ID:    id,
 		Title: "Mock Playlist",
-		Tracks: []domain.Track{
+		Tracks: []domain.CatalogTrack{
 			{ID: "3", Title: "Track 3", ArtistID: "2", Artist: "Unknown", AlbumID: "2", Album: "Unknown Album", TrackNumber: 1},
 		},
 	}, nil
 }
 
-func (p *MockProvider) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
-	return &domain.Track{ID: id, Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1}, nil
+func (p *MockProvider) GetTrack(ctx context.Context, id string) (*domain.CatalogTrack, error) {
+	return &domain.CatalogTrack{ID: id, Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1}, nil
 }
 
 func (p *MockProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {

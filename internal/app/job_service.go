@@ -19,7 +19,6 @@ func NewJobService(repo *store.DB) *JobService {
 }
 
 func (s *JobService) EnqueueJob(sourceID string, jobType domain.JobType) (*domain.Job, error) {
-	// Check if already exists and is active to avoid duplicates
 	existing, err := s.Repo.GetActiveJobBySourceID(sourceID, jobType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check for existing job: %w", err)
@@ -36,7 +35,6 @@ func (s *JobService) EnqueueJob(sourceID string, jobType domain.JobType) (*domai
 		SourceID:  sourceID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Title:     fmt.Sprintf("Pending %s %s", jobType, sourceID), // Will be updated by worker
 	}
 
 	if err := s.Repo.CreateJob(job); err != nil {

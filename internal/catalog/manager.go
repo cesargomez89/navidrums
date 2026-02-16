@@ -65,7 +65,7 @@ func (m *ProviderManager) GetPlaylist(ctx context.Context, id string) (*domain.P
 	return m.GetProvider().GetPlaylist(ctx, id)
 }
 
-func (m *ProviderManager) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
+func (m *ProviderManager) GetTrack(ctx context.Context, id string) (*domain.CatalogTrack, error) {
 	return m.GetProvider().GetTrack(ctx, id)
 }
 

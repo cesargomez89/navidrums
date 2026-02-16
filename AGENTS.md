@@ -86,12 +86,12 @@ spawning goroutines in handlers
 ## Job Lifecycle (Invariant)
 
 ```
-queued → resolving_tracks → downloading → completed | failed | cancelled
+queued → running → completed | failed | cancelled
 ```
 
-**Container jobs** (album/playlist/artist): resolve tracks → create child track jobs → complete
+**Container jobs** (album/playlist/artist): fetch tracks from provider → create Track records → create child track jobs → complete
 
-**Track jobs**: resolve metadata → check if downloaded → download stream → tag → save art → record
+**Track jobs**: lookup stored Track metadata → check if downloaded → download stream → tag → save art → update Track record
 
 Rules:
 - Cancelled jobs must stop work
@@ -104,9 +104,34 @@ Rules:
 
 - Track file must exist before tagging
 - Providers are stateless, responses not stored raw
-- Downloads decompose into track jobs
-- Duplicate downloads prevented via download tracking
+- Container jobs decompose into track jobs via Track records
+- Duplicate downloads prevented via tracks table (provider_id unique)
 - Deleting job does not delete files
+- Job.SourceID links to Track.ProviderID
+- Tracks table stores full metadata; Jobs table stores minimal state
+
+---
+
+## Domain Models
+
+### Job (Work Queue)
+Minimal state for work tracking:
+- `ID`, `Type`, `Status`, `SourceID`, `Progress`, `Error`, timestamps
+- Status: queued | running | completed | failed | cancelled
+
+### Track (Download Domain)
+Full metadata for downloaded/pending tracks:
+- Identity: `ID`, `ProviderID`
+- Metadata: Title, Artist, Album, TrackNumber, ISRC, Lyrics, etc.
+- Extended: BPM, Key, ReplayGain, AudioQuality, etc.
+- Processing: `Status`, `Error`, `ParentJobID`
+- File: `FilePath`, `FileExtension`
+- Status: pending | downloading | completed | failed
+
+### CatalogTrack (Provider Data)
+Used by catalog providers for search results:
+- Similar to Track but with provider-specific fields
+- Converted to Track when persisting to database
 
 ---
 
@@ -139,4 +164,6 @@ Never start from handlers.
 - The application requires a writable downloads directory
 - Workers start automatically with the server
 - SQLite database is created automatically on first run
-- Stuck jobs (resolving_tracks, downloading) are reset on startup
+- Stuck jobs (running) are reset on startup
+- Two-table architecture: `jobs` (work queue) + `tracks` (metadata)
+

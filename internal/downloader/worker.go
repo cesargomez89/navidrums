@@ -60,7 +60,6 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 		cancel:          cancel,
 	}
 
-	// Initialize app
 	worker.downloader = app.NewDownloader(pm, cfg)
 	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
@@ -97,7 +96,6 @@ func (w *Worker) processJobs() {
 		case <-w.ctx.Done():
 			return
 		case <-ticker.C:
-			// List available jobs
 			jobs, err := w.Repo.ListActiveJobs()
 			if err != nil {
 				w.Logger.Error("Failed to list jobs", "error", err)
@@ -112,7 +110,7 @@ func (w *Worker) processJobs() {
 			queuedJobs := []*domain.Job{}
 
 			for _, j := range jobs {
-				if j.Status == domain.JobStatusDownloading || j.Status == domain.JobStatusResolve {
+				if j.Status == domain.JobStatusRunning {
 					activeCount++
 				} else if j.Status == domain.JobStatusQueued {
 					queuedJobs = append(queuedJobs, j)
@@ -124,11 +122,9 @@ func (w *Worker) processJobs() {
 				continue
 			}
 
-			// Launch workers for queued jobs
 			for i := 0; i < toStart && i < len(queuedJobs); i++ {
 				job := queuedJobs[i]
 
-				// Double check if it was cancelled while in memory
 				current, _ := w.Repo.GetJob(job.ID)
 				if current != nil && current.Status == domain.JobStatusCancelled {
 					continue
@@ -164,193 +160,81 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	)
 	logger.Info("Running job")
 
-	// 1. Resolution phase
-	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusResolve, 0); err != nil {
+	// Mark job as running
+	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusRunning, 0); err != nil {
 		logger.Error("Failed to update status", "error", err)
 		return
 	}
 
-	// Check if cancelled
 	if w.isCancelled(job.ID) {
-		logger.Info("Job cancelled before resolution finished")
+		logger.Info("Job cancelled before processing")
 		return
 	}
 
-	var tracks []domain.Track
-	var albumArtURL string
-	var playlistImageURL string
-	var err error
-
-	// Fetch details based on type
+	// Dispatch based on job type
 	switch job.Type {
 	case domain.JobTypeTrack:
-		var track *domain.Track
-		track, err = w.Provider.GetTrack(ctx, job.SourceID)
-		if err == nil {
-			tracks = []domain.Track{*track}
-			albumArtURL = track.AlbumArtURL
-		}
+		w.processTrackJob(ctx, job)
 	case domain.JobTypeAlbum:
-		var album *domain.Album
-		album, err = w.Provider.GetAlbum(ctx, job.SourceID)
-		if err == nil {
-			tracks = album.Tracks
-			albumArtURL = album.AlbumArtURL
-			// Save album art using service
-			if albumArtURL != "" {
-				if err := w.albumArtService.DownloadAndSaveAlbumArt(album, albumArtURL); err != nil {
-					logger.Error("Failed to save album art", "error", err)
-				}
-			}
-			// Normalize artists and detect compilations
-			normalizeTracks(tracks)
-		}
+		w.processAlbumJob(ctx, job)
 	case domain.JobTypePlaylist:
-		var pl *domain.Playlist
-		pl, err = w.Provider.GetPlaylist(ctx, job.SourceID)
-		if err == nil {
-			tracks = pl.Tracks
-			playlistImageURL = pl.ImageURL
-			// Save playlist image using service
-			if playlistImageURL != "" {
-				if err := w.albumArtService.DownloadAndSavePlaylistImage(pl, playlistImageURL); err != nil {
-					logger.Error("Failed to save playlist image", "error", err)
-				}
-			}
-			// Generate playlist file using service
-			extLookup := func(trackID string) string {
-				dl, _ := w.Repo.GetDownload(trackID)
-				if dl != nil && dl.FileExtension != "" {
-					return dl.FileExtension
-				}
-				return ".flac"
-			}
-			if err := w.playlistGenerator.Generate(pl, extLookup); err != nil {
-				logger.Error("Failed to generate playlist file", "error", err)
-			}
-		}
+		w.processPlaylistJob(ctx, job)
 	case domain.JobTypeArtist:
-		var artist *domain.Artist
-		artist, err = w.Provider.GetArtist(ctx, job.SourceID)
-		if err == nil {
-			tracks = artist.TopTracks
-			// Generate playlist file for top tracks
-			if len(tracks) > 0 {
-				extLookup := func(trackID string) string {
-					dl, _ := w.Repo.GetDownload(trackID)
-					if dl != nil && dl.FileExtension != "" {
-						return dl.FileExtension
-					}
-					return ".flac"
-				}
-				if err := w.playlistGenerator.GenerateFromTracks(artist.Name, tracks, extLookup); err != nil {
-					logger.Error("Failed to generate playlist file", "error", err)
-				}
-			}
-		}
+		w.processArtistJob(ctx, job)
+	default:
+		logger.Error("Unknown job type")
+		w.Repo.UpdateJobError(job.ID, "Unknown job type")
 	}
+}
 
-	if err != nil {
-		logger.Error("Job request error", "error", err)
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Resolution failed: %v", err))
+func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	// Check if track already exists and is completed
+	existingTrack, _ := w.Repo.GetTrackByProviderID(job.SourceID)
+	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted {
+		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
+		w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 		return
 	}
 
-	if len(tracks) == 0 {
-		logger.Error("No tracks found")
-		w.Repo.UpdateJobError(job.ID, "No tracks found")
-		return
-	}
-
-	// 2. Handle Container Types (Album, Playlist, Artist)
-	if job.Type != domain.JobTypeTrack {
-		if w.isCancelled(job.ID) {
-			logger.Info("Job cancelled before decomposition")
+	// Fetch track metadata from provider if not already stored
+	var track *domain.Track
+	if existingTrack != nil {
+		track = existingTrack
+	} else {
+		catalogTrack, err := w.Provider.GetTrack(ctx, job.SourceID)
+		if err != nil {
+			logger.Error("Failed to fetch track metadata", "error", err)
+			w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch track: %v", err))
 			return
 		}
-		logger.Info("Decomposing container job", "track_count", len(tracks))
 
-		for _, t := range tracks {
-			// Check if already downloaded
-			dl, _ := w.Repo.GetDownload(t.ID)
-			if dl != nil {
-				logger.Debug("Track already downloaded, skipping", "track_id", t.ID)
-				continue
-			}
+		// Convert catalog track to domain track
+		track = w.catalogTrackToDomainTrack(catalogTrack)
+		track.Status = domain.TrackStatusPending
+		track.ParentJobID = job.ID
+		track.CreatedAt = time.Now()
+		track.UpdatedAt = time.Now()
 
-			// Check if already active
-			active, _ := w.Repo.IsTrackActive(t.ID)
-			if active {
-				logger.Debug("Track already being processed, skipping", "track_id", t.ID)
-				continue
-			}
-
-			// Enqueue new track job
-			newJob := &domain.Job{
-				ID:        uuid.New().String(),
-				Type:      domain.JobTypeTrack,
-				Status:    domain.JobStatusQueued,
-				SourceID:  t.ID,
-				Title:     t.Title,
-				Artist:    t.Artist,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-			}
-			if err := w.Repo.CreateJob(newJob); err != nil {
-				logger.Error("Failed to create track job", "track_id", t.ID, "error", err)
-			}
+		if err := w.Repo.CreateTrack(track); err != nil {
+			logger.Error("Failed to create track record", "error", err)
+			w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create track record: %v", err))
+			return
 		}
+	}
 
-		if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-			logger.Error("Failed to update job status to completed", "error", err)
-		}
-
-		// Update job metadata with container info before completing
-		switch job.Type {
-		case domain.JobTypeAlbum:
-			if len(tracks) > 0 {
-				if err := w.Repo.UpdateJobMetadata(job.ID, tracks[0].Album, tracks[0].AlbumArtist); err != nil {
-					logger.Error("Failed to update job metadata", "error", err)
-				}
-			}
-		case domain.JobTypePlaylist:
-			if pl, err := w.Provider.GetPlaylist(ctx, job.SourceID); err == nil && pl != nil {
-				if err := w.Repo.UpdateJobMetadata(job.ID, pl.Title, ""); err != nil {
-					logger.Error("Failed to update job metadata", "error", err)
-				}
-			}
-		case domain.JobTypeArtist:
-			if artist, err := w.Provider.GetArtist(ctx, job.SourceID); err == nil && artist != nil {
-				if err := w.Repo.UpdateJobMetadata(job.ID, artist.Name, ""); err != nil {
-					logger.Error("Failed to update job metadata", "error", err)
-				}
-			}
-		}
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled before download")
 		return
 	}
 
-	// 3. Handle Single Track Type
-	track := tracks[0]
+	// Update track status to downloading
+	track.Status = domain.TrackStatusDownloading
+	track.UpdatedAt = time.Now()
+	w.Repo.UpdateTrack(track)
 
-	// Check if already downloaded
-	dl, _ := w.Repo.GetDownload(track.ID)
-	if dl != nil {
-		logger.Info("Track already downloaded", "file_path", dl.FilePath)
-		if err := w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist); err != nil {
-			logger.Error("Failed to update job metadata", "error", err)
-		}
-		if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-			logger.Error("Failed to update job status", "error", err)
-		}
-		return
-	}
-
-	// Update job metadata with actual track info
-	if err := w.Repo.UpdateJobMetadata(job.ID, track.Title, track.Artist); err != nil {
-		logger.Error("Failed to update job metadata", "error", err)
-	}
-
-	// Prepare final destination path
+	// Prepare download path
 	artistForFolder := track.AlbumArtist
 	if artistForFolder == "" {
 		artistForFolder = track.Artist
@@ -360,29 +244,21 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 
 	if err := storage.EnsureDir(finalDir); err != nil {
 		logger.Error("Failed to create directory", "error", err)
+		w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create directory: %v", err))
 		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", err))
 		return
 	}
 
-	if w.isCancelled(job.ID) {
-		logger.Info("Job cancelled before download")
-		return
-	}
-
-	w.Repo.UpdateJobStatus(job.ID, domain.JobStatusDownloading, 0)
-
-	// Download using service
+	// Download the track
 	finalPath, err := w.downloader.Download(ctx, track, finalDir)
-
 	if err != nil {
-		logger.Error("Download failed", "track_id", track.ID, "error", err)
+		logger.Error("Download failed", "error", err)
+		w.Repo.MarkTrackFailed(track.ID, err.Error())
 		w.Repo.UpdateJobError(job.ID, err.Error())
 		return
 	}
 
-	logger.Info("Download finished, starting tagging",
-		"file_path", finalPath,
-	)
+	logger.Info("Download finished, starting tagging", "file_path", finalPath)
 
 	// Download album art for tagging
 	var albumArtData []byte
@@ -395,7 +271,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 
 	// Fetch lyrics if not already present
 	if track.Lyrics == "" || track.Subtitles == "" {
-		lyrics, subtitles, err := w.Provider.GetLyrics(ctx, track.ID)
+		lyrics, subtitles, err := w.Provider.GetLyrics(ctx, track.ProviderID)
 		if err != nil {
 			logger.Debug("Failed to fetch lyrics", "error", err)
 		} else {
@@ -409,12 +285,12 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Tag the file with metadata
-	if err := tagging.TagFile(finalPath, &track, albumArtData); err != nil {
+	// Tag the file
+	if err := tagging.TagFile(finalPath, track, albumArtData); err != nil {
 		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)
 	}
 
-	// Save album art to folder if not already saved
+	// Save album art to folder
 	if len(albumArtData) > 0 {
 		artPath := filepath.Join(finalDir, "cover.jpg")
 		if _, err := os.Stat(artPath); os.IsNotExist(err) {
@@ -426,29 +302,270 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Record download in DB
+	// Mark track as completed
 	ext := filepath.Ext(finalPath)
 	if ext == "" {
-		ext = ".flac" // Default extension
+		ext = ".flac"
 	}
-	err = w.Repo.CreateDownload(&domain.Download{
-		ProviderID:    track.ID,
-		Title:         track.Title,
-		Artist:        track.Artist,
-		Album:         track.Album,
-		FilePath:      finalPath,
-		FileExtension: ext,
-		CompletedAt:   time.Now(),
-	})
-	if err != nil {
-		logger.Error("Failed to record download in DB", "error", err)
-	}
+	track.FileExtension = ext
+	w.Repo.MarkTrackCompleted(track.ID, finalPath)
 
+	// Mark job as completed
 	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-		logger.Error("Failed to update final status", "error", err)
+		logger.Error("Failed to update final job status", "error", err)
 	}
 
 	logger.Info("Job completed successfully")
+}
+
+func (w *Worker) processAlbumJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	album, err := w.Provider.GetAlbum(ctx, job.SourceID)
+	if err != nil {
+		logger.Error("Failed to fetch album", "error", err)
+		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
+		return
+	}
+
+	if len(album.Tracks) == 0 {
+		logger.Error("No tracks found in album")
+		w.Repo.UpdateJobError(job.ID, "No tracks found")
+		return
+	}
+
+	// Save album art
+	if album.AlbumArtURL != "" {
+		if err := w.albumArtService.DownloadAndSaveAlbumArt(album, album.AlbumArtURL); err != nil {
+			logger.Error("Failed to save album art", "error", err)
+		}
+	}
+
+	// Create tracks and child jobs for each track
+	logger.Info("Creating track jobs", "track_count", len(album.Tracks))
+	createdCount := 0
+
+	for _, catalogTrack := range album.Tracks {
+		// Check if already downloaded
+		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
+			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Check if already active
+		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
+			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Create track record
+		track := w.catalogTrackToDomainTrack(&catalogTrack)
+		track.Status = domain.TrackStatusPending
+		track.ParentJobID = job.ID
+		track.CreatedAt = time.Now()
+		track.UpdatedAt = time.Now()
+
+		if err := w.Repo.CreateTrack(track); err != nil {
+			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
+			continue
+		}
+
+		// Create child job for this track
+		childJob := &domain.Job{
+			ID:        uuid.New().String(),
+			Type:      domain.JobTypeTrack,
+			Status:    domain.JobStatusQueued,
+			SourceID:  catalogTrack.ID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err := w.Repo.CreateJob(childJob); err != nil {
+			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
+		} else {
+			createdCount++
+		}
+	}
+
+	// Mark album job as completed
+	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
+		logger.Error("Failed to update job status to completed", "error", err)
+	}
+
+	logger.Info("Album job completed", "tracks_created", createdCount)
+}
+
+func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	pl, err := w.Provider.GetPlaylist(ctx, job.SourceID)
+	if err != nil {
+		logger.Error("Failed to fetch playlist", "error", err)
+		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
+		return
+	}
+
+	if len(pl.Tracks) == 0 {
+		logger.Error("No tracks found in playlist")
+		w.Repo.UpdateJobError(job.ID, "No tracks found")
+		return
+	}
+
+	// Save playlist image
+	if pl.ImageURL != "" {
+		if err := w.albumArtService.DownloadAndSavePlaylistImage(pl, pl.ImageURL); err != nil {
+			logger.Error("Failed to save playlist image", "error", err)
+		}
+	}
+
+	// Create tracks and child jobs
+	logger.Info("Creating track jobs", "track_count", len(pl.Tracks))
+	createdCount := 0
+
+	for _, catalogTrack := range pl.Tracks {
+		// Check if already downloaded
+		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
+			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Check if already active
+		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
+			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Create track record
+		track := w.catalogTrackToDomainTrack(&catalogTrack)
+		track.Status = domain.TrackStatusPending
+		track.ParentJobID = job.ID
+		track.CreatedAt = time.Now()
+		track.UpdatedAt = time.Now()
+
+		if err := w.Repo.CreateTrack(track); err != nil {
+			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
+			continue
+		}
+
+		// Create child job
+		childJob := &domain.Job{
+			ID:        uuid.New().String(),
+			Type:      domain.JobTypeTrack,
+			Status:    domain.JobStatusQueued,
+			SourceID:  catalogTrack.ID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err := w.Repo.CreateJob(childJob); err != nil {
+			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
+		} else {
+			createdCount++
+		}
+	}
+
+	// Generate playlist file
+	extLookup := func(trackID string) string {
+		t, _ := w.Repo.GetTrackByProviderID(trackID)
+		if t != nil && t.FileExtension != "" {
+			return t.FileExtension
+		}
+		return ".flac"
+	}
+	if err := w.playlistGenerator.Generate(pl, extLookup); err != nil {
+		logger.Error("Failed to generate playlist file", "error", err)
+	}
+
+	// Mark job as completed
+	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
+		logger.Error("Failed to update job status to completed", "error", err)
+	}
+
+	logger.Info("Playlist job completed", "tracks_created", createdCount)
+}
+
+func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	artist, err := w.Provider.GetArtist(ctx, job.SourceID)
+	if err != nil {
+		logger.Error("Failed to fetch artist", "error", err)
+		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
+		return
+	}
+
+	if len(artist.TopTracks) == 0 {
+		logger.Error("No tracks found for artist")
+		w.Repo.UpdateJobError(job.ID, "No tracks found")
+		return
+	}
+
+	// Create tracks and child jobs
+	logger.Info("Creating track jobs", "track_count", len(artist.TopTracks))
+	createdCount := 0
+
+	for _, catalogTrack := range artist.TopTracks {
+		// Check if already downloaded
+		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
+			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Check if already active
+		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
+			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
+			continue
+		}
+
+		// Create track record
+		track := w.catalogTrackToDomainTrack(&catalogTrack)
+		track.Status = domain.TrackStatusPending
+		track.ParentJobID = job.ID
+		track.CreatedAt = time.Now()
+		track.UpdatedAt = time.Now()
+
+		if err := w.Repo.CreateTrack(track); err != nil {
+			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
+			continue
+		}
+
+		// Create child job
+		childJob := &domain.Job{
+			ID:        uuid.New().String(),
+			Type:      domain.JobTypeTrack,
+			Status:    domain.JobStatusQueued,
+			SourceID:  catalogTrack.ID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err := w.Repo.CreateJob(childJob); err != nil {
+			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
+		} else {
+			createdCount++
+		}
+	}
+
+	// Generate playlist file for top tracks
+	extLookup := func(trackID string) string {
+		t, _ := w.Repo.GetTrackByProviderID(trackID)
+		if t != nil && t.FileExtension != "" {
+			return t.FileExtension
+		}
+		return ".flac"
+	}
+	// Convert CatalogTrack slice to the type expected by playlist generator
+	catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
+	for i, t := range artist.TopTracks {
+		catalogTracks[i] = t
+	}
+	if err := w.playlistGenerator.GenerateFromTracks(artist.Name, catalogTracks, extLookup); err != nil {
+		logger.Error("Failed to generate playlist file", "error", err)
+	}
+
+	// Mark job as completed
+	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
+		logger.Error("Failed to update job status to completed", "error", err)
+	}
+
+	logger.Info("Artist job completed", "tracks_created", createdCount)
 }
 
 func (w *Worker) isCancelled(id string) bool {
@@ -459,52 +576,44 @@ func (w *Worker) isCancelled(id string) bool {
 	return job.Status == domain.JobStatusCancelled
 }
 
-func normalizeTracks(tracks []domain.Track) {
-	if len(tracks) == 0 {
-		return
+// catalogTrackToDomainTrack converts a CatalogTrack to a domain Track
+func (w *Worker) catalogTrackToDomainTrack(ct *domain.CatalogTrack) *domain.Track {
+	return &domain.Track{
+		ProviderID:     ct.ID,
+		Title:          ct.Title,
+		Artist:         ct.Artist,
+		Artists:        ct.Artists,
+		ArtistIDs:      ct.ArtistIDs,
+		Album:          ct.Album,
+		AlbumArtist:    ct.AlbumArtist,
+		AlbumArtists:   ct.AlbumArtists,
+		AlbumArtistIDs: ct.AlbumArtistIDs,
+		TrackNumber:    ct.TrackNumber,
+		DiscNumber:     ct.DiscNumber,
+		TotalTracks:    ct.TotalTracks,
+		TotalDiscs:     ct.TotalDiscs,
+		Year:           ct.Year,
+		ReleaseDate:    ct.ReleaseDate,
+		Genre:          ct.Genre,
+		Label:          ct.Label,
+		ISRC:           ct.ISRC,
+		Copyright:      ct.Copyright,
+		Composer:       ct.Composer,
+		Duration:       ct.Duration,
+		Explicit:       ct.ExplicitLyrics,
+		Compilation:    ct.Compilation,
+		AlbumArtURL:    ct.AlbumArtURL,
+		Lyrics:         ct.Lyrics,
+		Subtitles:      ct.Subtitles,
+		BPM:            ct.BPM,
+		Key:            ct.Key,
+		KeyScale:       ct.KeyScale,
+		ReplayGain:     ct.ReplayGain,
+		Peak:           ct.Peak,
+		Version:        ct.Version,
+		Description:    ct.Description,
+		URL:            ct.URL,
+		AudioQuality:   ct.AudioQuality,
+		AudioModes:     ct.AudioModes,
 	}
-
-	isCompilation := detectCompilation(tracks)
-	if isCompilation {
-		for i := range tracks {
-			tracks[i].AlbumArtist = "Various Artists"
-			tracks[i].AlbumArtists = []string{"Various Artists"}
-			tracks[i].Compilation = true
-		}
-		return
-	}
-
-	for i := range tracks {
-		if len(tracks[i].Artists) > 1 && tracks[i].Artist != tracks[i].Artists[0] {
-			var normalized []string
-			normalized = append(normalized, tracks[i].Artist)
-			for _, a := range tracks[i].Artists {
-				if a != tracks[i].Artist {
-					normalized = append(normalized, a)
-				}
-			}
-			tracks[i].Artists = normalized
-		}
-
-		if len(tracks[i].AlbumArtists) > 1 && tracks[i].AlbumArtist != tracks[i].AlbumArtists[0] {
-			var normalized []string
-			normalized = append(normalized, tracks[i].AlbumArtist)
-			for _, a := range tracks[i].AlbumArtists {
-				if a != tracks[i].AlbumArtist {
-					normalized = append(normalized, a)
-				}
-			}
-			tracks[i].AlbumArtists = normalized
-		}
-	}
-}
-
-func detectCompilation(tracks []domain.Track) bool {
-	artistSet := make(map[string]bool)
-	for _, t := range tracks {
-		for _, aa := range t.AlbumArtists {
-			artistSet[aa] = true
-		}
-	}
-	return len(artistSet) > 1
 }

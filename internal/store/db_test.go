@@ -28,8 +28,6 @@ func TestDB_Jobs(t *testing.T) {
 		SourceID:  "track_123",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Title:     "Test Job",
-		Artist:    "Test Artist",
 	}
 
 	err = db.CreateJob(job)
@@ -50,14 +48,14 @@ func TestDB_Jobs(t *testing.T) {
 	}
 
 	// Test UpdateJobStatus
-	err = db.UpdateJobStatus("123", domain.JobStatusDownloading, 50.0)
+	err = db.UpdateJobStatus("123", domain.JobStatusRunning, 50.0)
 	if err != nil {
 		t.Errorf("UpdateJobStatus failed: %v", err)
 	}
 
 	fetched, _ = db.GetJob("123")
-	if fetched.Status != domain.JobStatusDownloading {
-		t.Errorf("Expected status %s, got %s", domain.JobStatusDownloading, fetched.Status)
+	if fetched.Status != domain.JobStatusRunning {
+		t.Errorf("Expected status %s, got %s", domain.JobStatusRunning, fetched.Status)
 	}
 	if fetched.Progress != 50.0 {
 		t.Errorf("Expected progress 50.0, got %f", fetched.Progress)

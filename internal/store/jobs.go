@@ -8,20 +8,20 @@ import (
 )
 
 func (db *DB) CreateJob(job *domain.Job) error {
-	query := `INSERT OR IGNORE INTO jobs (id, type, status, title, artist, progress, source_id, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT OR IGNORE INTO jobs (id, type, status, progress, source_id, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-	_, err := db.Exec(query, job.ID, job.Type, job.Status, job.Title, job.Artist, job.Progress, job.SourceID, job.CreatedAt, job.UpdatedAt)
+	_, err := db.Exec(query, job.ID, job.Type, job.Status, job.Progress, job.SourceID, job.CreatedAt, job.UpdatedAt)
 	return err
 }
 
 func (db *DB) GetJob(id string) (*domain.Job, error) {
-	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs WHERE id = ?`
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE id = ?`
 	row := db.QueryRow(query, id)
 
 	job := &domain.Job{}
 	var errMsg sql.NullString
-	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
+	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
 	if err != nil {
 		return nil, err
 	}
@@ -43,14 +43,8 @@ func (db *DB) UpdateJobError(id string, errorMsg string) error {
 	return err
 }
 
-func (db *DB) UpdateJobMetadata(id string, title string, artist string) error {
-	query := `UPDATE jobs SET title = ?, artist = ?, updated_at = ? WHERE id = ?`
-	_, err := db.Exec(query, title, artist, time.Now(), id)
-	return err
-}
-
 func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
 	rows, err := db.Query(query, limit)
 	if err != nil {
 		return nil, err
@@ -61,7 +55,7 @@ func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 	for rows.Next() {
 		job := &domain.Job{}
 		var errMsg sql.NullString
-		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
+		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +68,7 @@ func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 }
 
 func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
-	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'resolving_tracks', 'downloading') ORDER BY created_at ASC`
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'running') ORDER BY created_at ASC`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -84,7 +78,7 @@ func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
 	var jobs []*domain.Job
 	for rows.Next() {
 		job := &domain.Job{}
-		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
+		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +88,7 @@ func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
 }
 
 func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN ('completed', 'failed', 'cancelled') ORDER BY updated_at DESC LIMIT ?`
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN ('completed', 'failed', 'cancelled') ORDER BY updated_at DESC LIMIT ?`
 	rows, err := db.Query(query, limit)
 	if err != nil {
 		return nil, err
@@ -105,7 +99,7 @@ func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
 	for rows.Next() {
 		job := &domain.Job{}
 		var errMsg sql.NullString
-		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
+		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
 		if err != nil {
 			return nil, err
 		}
@@ -118,29 +112,29 @@ func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
 }
 
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*domain.Job, error) {
-	query := `SELECT id, type, status, title, artist, progress, source_id, created_at, updated_at 
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at 
 		FROM jobs 
-		WHERE source_id = ? AND type = ? AND status IN ('queued', 'resolving_tracks', 'downloading')
+		WHERE source_id = ? AND type = ? AND status IN ('queued', 'running')
 		LIMIT 1`
 	row := db.QueryRow(query, sourceID, jobType)
 
 	job := &domain.Job{}
-	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Title, &job.Artist, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
+	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
 	return job, err
 }
 
-func (db *DB) IsTrackActive(trackID string) (bool, error) {
-	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = 'track' AND status IN ('queued', 'resolving_tracks', 'downloading')`
+func (db *DB) IsTrackActive(providerID string) (bool, error) {
+	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = 'track' AND status IN ('queued', 'running')`
 	var count int
-	err := db.QueryRow(query, trackID).Scan(&count)
+	err := db.QueryRow(query, providerID).Scan(&count)
 	return count > 0, err
 }
 
 func (db *DB) ResetStuckJobs() error {
-	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status IN ('resolving_tracks', 'downloading')`
+	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status = 'running'`
 	_, err := db.Exec(query, domain.JobStatusQueued, time.Now())
 	return err
 }

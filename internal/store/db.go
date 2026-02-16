@@ -3,7 +3,6 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -14,44 +13,9 @@ type migration struct {
 	up          func(*sql.DB) error
 }
 
-var migrations = []migration{
-	{
-		version:     1,
-		description: "add_file_extension_to_downloads",
-		up: func(db *sql.DB) error {
-			_, err := db.Exec("ALTER TABLE downloads ADD COLUMN file_extension TEXT DEFAULT '.flac'")
-			if err != nil {
-				if strings.Contains(err.Error(), "duplicate column name") {
-					return nil
-				}
-				return err
-			}
-			return nil
-		},
-	},
-	{
-		version:     2,
-		description: "add_title_artist_album_to_downloads",
-		up: func(db *sql.DB) error {
-			if _, err := db.Exec("ALTER TABLE downloads ADD COLUMN title TEXT"); err != nil {
-				if !strings.Contains(err.Error(), "duplicate column name") {
-					return err
-				}
-			}
-			if _, err := db.Exec("ALTER TABLE downloads ADD COLUMN artist TEXT"); err != nil {
-				if !strings.Contains(err.Error(), "duplicate column name") {
-					return err
-				}
-			}
-			if _, err := db.Exec("ALTER TABLE downloads ADD COLUMN album TEXT"); err != nil {
-				if !strings.Contains(err.Error(), "duplicate column name") {
-					return err
-				}
-			}
-			return nil
-		},
-	},
-}
+// Migrations history is cleared for v2.0 refactor
+// New two-table architecture: jobs + tracks
+var migrations = []migration{}
 
 type DB struct {
 	*sql.DB

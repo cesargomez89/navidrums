@@ -37,8 +37,6 @@ func (p *HifiProvider) ensureAbsoluteURL(urlOrID string, size ...string) string 
 	if len(size) > 0 {
 		imgSize = size[0]
 	}
-	// It's a Tidal ID. Use Tidal's official CDN for images.
-	// We replace dashes with slashes if they are present, as many Tidal clients do.
 	path := strings.ReplaceAll(urlOrID, "-", "/")
 	return fmt.Sprintf("https://resources.tidal.com/images/%s/%s.jpg", path, imgSize)
 }
@@ -62,7 +60,6 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 		PictureURL: p.ensureAbsoluteURL(resp.Artist.Picture, "320x320"),
 	}
 
-	// Fetch Albums and Top Tracks using the aggregate endpoint
 	aggUrl := fmt.Sprintf("%s/artist/?f=%s&skip_tracks=true", p.BaseURL, id)
 	var aggResp struct {
 		Albums struct {
@@ -94,7 +91,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 			})
 		}
 		for _, item := range aggResp.Tracks {
-			artist.TopTracks = append(artist.TopTracks, domain.Track{
+			artist.TopTracks = append(artist.TopTracks, domain.CatalogTrack{
 				ID:          formatID(item.ID),
 				Title:       item.Title,
 				Artist:      artist.Name,
@@ -157,13 +154,11 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 		return nil, err
 	}
 
-	// Extract year from release date
 	year := 0
 	if len(resp.Data.ReleaseDate) >= 4 {
 		fmt.Sscanf(resp.Data.ReleaseDate[:4], "%d", &year)
 	}
 
-	// Get album art URL
 	albumArtURL := ""
 	if len(resp.Data.Cover) > 0 {
 		albumArtURL = p.ensureAbsoluteURL(resp.Data.Cover[0], "640x640")
@@ -204,7 +199,7 @@ func (p *HifiProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 			tArtistID = artistIDs[0]
 		}
 
-		track := domain.Track{
+		track := domain.CatalogTrack{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
 			ArtistID:       tArtistID,
@@ -302,7 +297,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 			albumArtURL = p.ensureAbsoluteURL(item.Album.Cover[0], "640x640")
 		}
 
-		pl.Tracks = append(pl.Tracks, domain.Track{
+		pl.Tracks = append(pl.Tracks, domain.CatalogTrack{
 			ID:             formatID(item.ID),
 			Title:          item.Title,
 			ArtistID:       artistIDs[0],
@@ -322,7 +317,7 @@ func (p *HifiProvider) GetPlaylist(ctx context.Context, id string) (*domain.Play
 	return pl, nil
 }
 
-func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, error) {
+func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.CatalogTrack, error) {
 	u := fmt.Sprintf("%s/info/?id=%s", p.BaseURL, id)
 	var resp struct {
 		Data struct {
@@ -367,22 +362,18 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, 
 		return nil, err
 	}
 
-	// Extract year from release date
 	year := 0
 	if len(resp.Data.Album.ReleaseDate) >= 4 {
 		fmt.Sscanf(resp.Data.Album.ReleaseDate[:4], "%d", &year)
 	}
 
-	// Get album art URL
 	albumArtURL := ""
 	if len(resp.Data.Album.Cover) > 0 {
 		albumArtURL = p.ensureAbsoluteURL(resp.Data.Album.Cover[0], "640x640")
 	}
 
-	// Get album artist (use first artist or main artist)
 	albumArtist := resp.Data.Artist.Name
 
-	// Build audio modes string
 	audioModes := ""
 	if len(resp.Data.AudioModes) > 0 {
 		audioModes = resp.Data.AudioModes[0]
@@ -399,7 +390,7 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Track, 
 		artistIDs = []string{formatID(resp.Data.Artist.ID)}
 	}
 
-	track := &domain.Track{
+	track := &domain.CatalogTrack{
 		ID:             formatID(resp.Data.ID),
 		Title:          resp.Data.Title,
 		ArtistID:       artistIDs[0],
@@ -473,7 +464,6 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 			return nil, "", fmt.Errorf("no urls in manifest")
 		}
 
-		// Fetch stream
 		streamUrl := manifest.Urls[0]
 		sResp, err := p.Client.Get(streamUrl)
 		if err != nil {
@@ -483,18 +473,16 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 			sResp.Body.Close()
 			return nil, "", fmt.Errorf("stream fetch failed: %s", sResp.Status)
 		}
-		return sResp.Body, "audio/flac", nil // Assuming FLAC for now
+		return sResp.Body, "audio/flac", nil
 	}
 
 	if resp.Data.ManifestMimeType == "application/dash+xml" {
 		s := string(decoded)
 
-		// Check for SegmentTemplate (segmented DASH)
 		if strings.Contains(s, "<SegmentTemplate") {
 			return p.handleSegmentedDash(ctx, s)
 		}
 
-		// Regex to find BaseURL content regardless of namespaces or attributes
 		re := regexp.MustCompile(`(?is)<BaseURL[^>]*>(.*?)</BaseURL>`)
 		match := re.FindStringSubmatch(s)
 		streamUrl := ""
@@ -506,7 +494,6 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 			return nil, "", fmt.Errorf("no BaseURL found in DASH manifest")
 		}
 
-		// Fetch stream
 		sResp, err := p.Client.Get(streamUrl)
 		if err != nil {
 			return nil, "", err
@@ -637,8 +624,6 @@ func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) 
 		return fmt.Errorf("API request failed: %s", resp.Status)
 	}
 
-	// For debugging, peek at the body if it fails to decode?
-	// or just decode.
 	decoder := json.NewDecoder(resp.Body)
 	decoder.UseNumber()
 	err = decoder.Decode(target)

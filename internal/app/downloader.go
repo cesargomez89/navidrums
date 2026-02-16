@@ -15,7 +15,7 @@ import (
 )
 
 type Downloader interface {
-	Download(ctx context.Context, track domain.Track, destDir string) (string, error)
+	Download(ctx context.Context, track *domain.Track, destDir string) (string, error)
 }
 
 type downloader struct {
@@ -30,7 +30,7 @@ func NewDownloader(provider catalog.Provider, cfg *config.Config) Downloader {
 	}
 }
 
-func (d *downloader) Download(ctx context.Context, track domain.Track, destDir string) (string, error) {
+func (d *downloader) Download(ctx context.Context, track *domain.Track, destDir string) (string, error) {
 	var finalPath string
 	var finalExt string
 
@@ -41,7 +41,7 @@ func (d *downloader) Download(ctx context.Context, track domain.Track, destDir s
 		default:
 		}
 
-		stream, mimeType, err := d.provider.GetStream(ctx, track.ID, d.config.Quality)
+		stream, mimeType, err := d.provider.GetStream(ctx, track.ProviderID, d.config.Quality)
 		if err != nil {
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 			continue

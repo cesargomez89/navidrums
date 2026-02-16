@@ -333,13 +333,13 @@ func (h *Handler) DownloadsPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
-	var downloads []*domain.Download
+	var tracks []*domain.Track
 	var err error
 
 	if query != "" {
-		downloads, err = h.DownloadsService.SearchDownloads(query)
+		tracks, err = h.DownloadsService.SearchDownloads(query)
 	} else {
-		downloads, err = h.DownloadsService.ListDownloads()
+		tracks, err = h.DownloadsService.ListDownloads()
 	}
 	if err != nil {
 		h.Logger.Error("Failed to list downloads", "error", err)
@@ -348,7 +348,7 @@ func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
-		"Downloads": downloads,
+		"Downloads": tracks,
 	})
 }
 

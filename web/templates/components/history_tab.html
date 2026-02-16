@@ -26,8 +26,8 @@
     {{range .HistoryJobs}}
     <div class="job">
         <div class="job-info">
-            <div class="job-title">{{.Title}}</div>
-            <div class="job-meta">{{.Artist}}</div>
+            <div class="job-title">{{.Type}} - {{.SourceID}}</div>
+            <div class="job-meta">Progress: {{printf "%.0f" .Progress}}%</div>
         </div>
         <div style="text-align: right;">
             <span class="job-status status-{{.Status}}">{{.Status}}</span>
