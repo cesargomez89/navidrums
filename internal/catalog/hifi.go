@@ -74,9 +74,14 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 			Title       string      `json:"title"`
 			TrackNumber int         `json:"trackNumber"`
 			Duration    int         `json:"duration"`
-			Album       struct {
-				Title string `json:"title"`
-				Cover string `json:"cover"`
+			Artist      struct {
+				ID   json.Number `json:"id"`
+				Name string      `json:"name"`
+			} `json:"artist"`
+			Album struct {
+				ID    json.Number `json:"id"`
+				Title string      `json:"title"`
+				Cover string      `json:"cover"`
 			} `json:"album"`
 		} `json:"tracks"`
 	}
@@ -95,7 +100,9 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 			artist.TopTracks = append(artist.TopTracks, domain.CatalogTrack{
 				ID:          formatID(item.ID),
 				Title:       item.Title,
-				Artist:      artist.Name,
+				ArtistID:    formatID(item.Artist.ID),
+				Artist:      item.Artist.Name,
+				AlbumID:     formatID(item.Album.ID),
 				Album:       item.Album.Title,
 				TrackNumber: item.TrackNumber,
 				Duration:    item.Duration,
