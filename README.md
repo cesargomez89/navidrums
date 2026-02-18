@@ -145,6 +145,22 @@ The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
    sudo systemctl status navidrums
    ```
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/full_search.png" width="600" />
+</p>
+
+<p align="center">
+  <img src="screenshots/artist.png" width="300" />
+  <img src="screenshots/downloads.png" width="300" />
+</p>
+
+<p align="center">
+  <img src="screenshots/queue.png" width="300" />
+  <img src="screenshots/settings.png" width="300" />
+</p>
+
 ## Development
 
 Run tests:
