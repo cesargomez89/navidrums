@@ -25,6 +25,8 @@ Optimized for low-end hardware.
 - **Go 1.22+** (for building from source)
 - **Hifi API** running (default: `http://127.0.0.1:8000`)
 
+HiFi API: https://github.com/binimum/hifi-api
+
 ## Installation
 
 ### Option 1: Download Pre-built Binary (Recommended)
