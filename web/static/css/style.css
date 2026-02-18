@@ -702,7 +702,7 @@ input:focus, select:focus { outline: none; border-color: var(--accent); }
         margin-right: 0;
     }
     .nav-links { 
-        gap: 14px;
+        gap: 12px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;

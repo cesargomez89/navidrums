@@ -145,33 +145,6 @@ The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
    sudo systemctl status navidrums
    ```
 
-### Reverse Proxy Setup (Optional)
-
-To expose Navidrums securely with HTTPS, use a reverse proxy like Nginx or Caddy.
-
-**Example Caddy configuration:**
-```
-navidrums.yourdomain.com {
-    reverse_proxy localhost:8080
-}
-```
-
-**Example Nginx configuration:**
-```nginx
-server {
-    listen 80;
-    server_name navidrums.yourdomain.com;
-
-    location / {
-        proxy_pass http://localhost:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
 ## Development
 
 Run tests:

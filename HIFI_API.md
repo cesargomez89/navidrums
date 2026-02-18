@@ -4,8 +4,6 @@
 Default: `http://127.0.0.1:8000`  
 Override via `PROVIDER_URL` environment variable.
 
-For manual/real testing, you can use: `https://tidal-api.binimum.org`
-
 ### Endpoints
 
 #### Track & Playback
