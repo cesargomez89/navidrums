@@ -1,68 +1,64 @@
 {
-    "version": "2.4",
-    "data": {
-        "id": 3489551,
-        "title": "On Melancholy Hill",
-        "duration": 234,
-        "replayGain": -10.88,
-        "peak": 0.999847,
-        "allowStreaming": true,
-        "streamReady": true,
-        "payToStream": false,
-        "adSupportedStreamReady": true,
-        "djReady": true,
-        "stemReady": false,
-        "streamStartDate": "2010-03-08T00:00:00.000+0000",
-        "premiumStreamingOnly": false,
-        "trackNumber": 10,
-        "volumeNumber": 1,
-        "version": null,
-        "popularity": 81,
-        "copyright": "\u2117 2010 Parlophone Records Ltd, a Warner Music Group Company",
-        "bpm": 120,
-        "key": "D",
-        "keyScale": "MAJOR",
-        "url": "http://www.tidal.com/track/3489551",
-        "isrc": "GBAYE1000010",
-        "editable": false,
-        "explicit": false,
-        "audioQuality": "LOSSLESS",
-        "audioModes": [
-            "STEREO"
-        ],
-        "mediaMetadata": {
-            "tags": [
-                "LOSSLESS"
-            ]
-        },
-        "upload": false,
-        "accessType": "PUBLIC",
-        "spotlighted": false,
-        "artist": {
-            "id": 8853,
-            "name": "Gorillaz",
-            "handle": null,
-            "type": "MAIN",
-            "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
-        },
-        "artists": [
-            {
-                "id": 8853,
-                "name": "Gorillaz",
-                "handle": null,
-                "type": "MAIN",
-                "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
-            }
-        ],
-        "album": {
-            "id": 3489541,
-            "title": "Plastic Beach",
-            "cover": "38b14a02-2d6f-4515-bb81-8aeb6f300b37",
-            "vibrantColor": "#f2d39d",
-            "videoCover": null
-        },
-        "mixes": {
-            "TRACK_MIX": "001d2627461a3c1baeb387c26215eb"
-        }
+  "version": "2.4",
+  "data": {
+    "id": 3489551,
+    "title": "On Melancholy Hill",
+    "duration": 234,
+    "replayGain": -10.88,
+    "peak": 0.999847,
+    "allowStreaming": true,
+    "streamReady": true,
+    "payToStream": false,
+    "adSupportedStreamReady": true,
+    "djReady": true,
+    "stemReady": false,
+    "streamStartDate": "2010-03-08T00:00:00.000+0000",
+    "premiumStreamingOnly": false,
+    "trackNumber": 10,
+    "volumeNumber": 1,
+    "version": null,
+    "popularity": 81,
+    "copyright": "℗ 2010 Parlophone Records Ltd, a Warner Music Group Company",
+    "bpm": 120,
+    "key": "D",
+    "keyScale": "MAJOR",
+    "url": "http://www.tidal.com/track/3489551",
+    "isrc": "GBAYE1000010",
+    "editable": false,
+    "explicit": false,
+    "audioQuality": "LOSSLESS",
+    "audioModes": ["STEREO"],
+    "mediaMetadata": {
+      "tags": ["LOSSLESS"]
+    },
+    "upload": false,
+    "accessType": "PUBLIC",
+    "spotlighted": false,
+    "artist": {
+      "id": 8853,
+      "name": "Gorillaz",
+      "handle": null,
+      "type": "MAIN",
+      "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+    },
+    "artists": [
+      {
+        "id": 8853,
+        "name": "Gorillaz",
+        "handle": null,
+        "type": "MAIN",
+        "picture": "81e5ce93-c1dd-4ad3-b501-538047fa9765"
+      }
+    ],
+    "album": {
+      "id": 3489541,
+      "title": "Plastic Beach",
+      "cover": "38b14a02-2d6f-4515-bb81-8aeb6f300b37",
+      "vibrantColor": "#f2d39d",
+      "videoCover": null
+    },
+    "mixes": {
+      "TRACK_MIX": "001d2627461a3c1baeb387c26215eb"
     }
+  }
 }

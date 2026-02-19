@@ -38,6 +38,8 @@ go fmt ./...
 | `LOG_FORMAT` | text | Log format (text, json) |
 | `NAVIDRUMS_USERNAME` | navidrums | Basic auth username |
 | `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
+| `CACHE_TTL` | 12h | Provider response cache TTL |
+| `MUSICBRAINZ_URL` | https://musicbrainz.org/ws/2 | MusicBrainz API endpoint for metadata enrichment |
 
 **Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
 
@@ -121,20 +123,38 @@ Rules:
 Minimal state for work tracking:
 - `ID`, `Type`, `Status`, `SourceID`, `Progress`, `Error`, timestamps
 - Status: queued | running | completed | failed | cancelled
+- Types: track, album, playlist, artist, sync_file, sync_musicbrainz, sync_hifi
 
 ### Track (Download Domain)
 Full metadata for downloaded/pending tracks:
-- Identity: `ID`, `ProviderID`, `AlbumID`
-- Metadata: Title, Artist, Album, TrackNumber, ISRC, Lyrics, etc.
-- Extended: BPM, Key, ReplayGain, AudioQuality, etc.
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
+- Genre/Label: `Genre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Credit: `Credit`, `Composer`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`, `AlbumArtURL`
+- Explicit: `Explicit`
+- Position: `TotalTracks`, `TotalDiscs`
 - Processing: `Status`, `Error`, `ParentJobID`
 - File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
-- Verification: `LastVerifiedAt`
+- Verification: `LastVerifiedAt`, `CompletedAt`
 - Status: missing | queued | downloading | processing | completed | failed
 
 ### CatalogTrack (Provider Data)
 Used by catalog providers for search results:
-- Similar to Track but with provider-specific fields
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ArtistID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
+- Genre/Label: `Genre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Composer`, `Version`, `Description`, `URL`, `AlbumArtURL`
+- Explicit: `ExplicitLyrics`
+- Position: `TotalTracks`, `TotalDiscs`
 - Converted to Track when persisting to database
 
 ---

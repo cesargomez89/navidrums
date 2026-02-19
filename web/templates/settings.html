@@ -22,6 +22,17 @@
     <div id="providers-list"></div>
 </div>
 
+<div class="section">
+    <h2>Genre Mapping</h2>
+    <p class="hint">Customize how MusicBrainz genres are normalized. Maps sub-genres to main genres.</p>
+    <div id="genre-map-status"></div>
+    <textarea id="genre-map-input" rows="12" style="width: 100%; font-family: monospace; font-size: 12px;" placeholder='{"death metal": "Metal", "indie pop": "Pop"}'></textarea>
+    <div style="margin-top: 10px;">
+        <button onclick="saveGenreMap()" class="btn btn-primary">Save</button>
+        <button onclick="resetGenreMap()" class="btn btn-secondary">Reset to Default</button>
+    </div>
+</div>
+
 <script>
 function loadProviders() {
     fetch('/htmx/providers', { cache: 'no-store' })
@@ -83,6 +94,61 @@ function removeProvider(url) {
         .then(() => loadProviders());
 }
 
+function loadGenreMap() {
+    fetch('/htmx/genre-map', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+            const textarea = document.getElementById('genre-map-input');
+            const statusDiv = document.getElementById('genre-map-status');
+            
+            if (data.custom) {
+                textarea.value = JSON.stringify(data.custom, null, 2);
+                statusDiv.innerHTML = '<span class="badge badge-custom">Using custom mapping</span>';
+            } else {
+                textarea.value = JSON.stringify(data.default, null, 2);
+                statusDiv.innerHTML = '<span class="badge badge-default">Using default mapping</span>';
+            }
+        });
+}
+
+function saveGenreMap() {
+    const textarea = document.getElementById('genre-map-input');
+    let genreMap;
+    
+    try {
+        genreMap = JSON.parse(textarea.value);
+    } catch (e) {
+        alert('Invalid JSON: ' + e.message);
+        return;
+    }
+    
+    fetch('/htmx/genre-map', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ genreMap: genreMap })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                loadGenreMap();
+                alert('Genre map saved');
+            }
+        });
+}
+
+function resetGenreMap() {
+    if (!confirm('Reset to default genre mapping?')) return;
+    
+    fetch('/htmx/genre-map/reset', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                loadGenreMap();
+            }
+        });
+}
+
 loadProviders();
+loadGenreMap();
 </script>
 {{end}}

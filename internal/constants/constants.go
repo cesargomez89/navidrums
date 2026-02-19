@@ -12,6 +12,7 @@ const (
 	DefaultConcurrency    = 2
 	DefaultPollInterval   = 2 * time.Second
 	DefaultHTTPTimeout    = 5 * time.Minute
+	ImageHTTPTimeout      = 30 * time.Second
 	DefaultRetryCount     = 3
 	DefaultRetryBase      = 1 * time.Second
 	DefaultUsername       = "navidrums"
@@ -68,7 +69,8 @@ const (
 
 // File Names
 const (
-	PlaylistsDir = "playlists"
+	PlaylistsDir  = "playlists"
+	CoverFileName = "cover.jpg"
 )
 
 // File Permissions
