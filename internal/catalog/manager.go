@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"encoding/json"
+	"log/slog"
 	"sync"
 )
 
@@ -35,6 +36,7 @@ func (m *ProviderManager) GetProvider() Provider {
 func (m *ProviderManager) SetProvider(baseURL string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	slog.Info("Setting provider", "url", baseURL)
 	m.provider = NewHifiProvider(baseURL)
 	m.baseURL = baseURL
 }

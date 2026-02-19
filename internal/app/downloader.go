@@ -18,20 +18,22 @@ type Downloader interface {
 }
 
 type downloader struct {
-	provider catalog.Provider
-	config   *config.Config
+	providerManager *catalog.ProviderManager
+	config          *config.Config
 }
 
-func NewDownloader(provider catalog.Provider, cfg *config.Config) Downloader {
+func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 	return &downloader{
-		provider: provider,
-		config:   cfg,
+		providerManager: pm,
+		config:          cfg,
 	}
 }
 
 func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
 	var finalPath string
 	var finalExt string
+
+	provider := d.providerManager.GetProvider()
 
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
 		select {
@@ -40,7 +42,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		default:
 		}
 
-		stream, mimeType, err := d.provider.GetStream(ctx, track.ProviderID, d.config.Quality)
+		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, d.config.Quality)
 		if err != nil {
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 			continue

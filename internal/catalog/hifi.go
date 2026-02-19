@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
@@ -13,6 +14,8 @@ import (
 
 	"github.com/cesargomez89/navidrums/internal/domain"
 )
+
+var hifiLogger = slog.Default().WithGroup("hifi")
 
 type HifiProvider struct {
 	BaseURL string
@@ -447,6 +450,7 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 
 func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
 	u := fmt.Sprintf("%s/track/?id=%s&quality=%s", p.BaseURL, trackID, quality)
+	hifiLogger.Info("GetStream request", "base_url", p.BaseURL, "track_id", trackID, "quality", quality)
 
 	var resp struct {
 		Data struct {
@@ -636,6 +640,7 @@ func parseYear(date string) int {
 }
 
 func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) error {
+	hifiLogger.Debug("API request", "url", url, "base_url", p.BaseURL)
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return err

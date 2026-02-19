@@ -29,7 +29,10 @@ func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := h.Provider.Search(r.Context(), query, searchType)
+	provider := h.ProviderManager.GetProvider()
+	h.Logger.Info("search", "provider_url", h.ProviderManager.GetBaseURL(), "query", query, "type", searchType)
+
+	results, err := provider.Search(r.Context(), query, searchType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -40,7 +43,7 @@ func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ArtistPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	artist, err := h.Provider.GetArtist(r.Context(), id)
+	artist, err := h.ProviderManager.GetProvider().GetArtist(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -58,7 +61,7 @@ func (h *Handler) ArtistPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AlbumPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	album, err := h.Provider.GetAlbum(r.Context(), id)
+	album, err := h.ProviderManager.GetProvider().GetAlbum(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -72,7 +75,7 @@ func (h *Handler) AlbumPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) PlaylistPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	pl, err := h.Provider.GetPlaylist(r.Context(), id)
+	pl, err := h.ProviderManager.GetProvider().GetPlaylist(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -307,7 +310,7 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 
 func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	albums, err := h.Provider.GetSimilarAlbums(r.Context(), id)
+	albums, err := h.ProviderManager.GetProvider().GetSimilarAlbums(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

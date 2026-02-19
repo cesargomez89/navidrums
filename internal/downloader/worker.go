@@ -30,7 +30,6 @@ var (
 
 type Worker struct {
 	Repo              *store.DB
-	Provider          catalog.Provider
 	ProviderManager   *catalog.ProviderManager
 	Config            *config.Config
 	MaxConcurrent     int
@@ -53,7 +52,6 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 	worker := &Worker{
 		Repo:            repo,
 		ProviderManager: pm,
-		Provider:        pm.GetProvider(),
 		Config:          cfg,
 		MaxConcurrent:   constants.DefaultConcurrency,
 		Logger:          log.WithComponent("worker"),
@@ -61,7 +59,7 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 		cancel:          cancel,
 	}
 
-	worker.downloader = app.NewDownloader(pm.GetProvider(), cfg)
+	worker.downloader = app.NewDownloader(pm, cfg)
 	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
 
@@ -252,7 +250,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	if existingTrack != nil {
 		track = existingTrack
 	} else {
-		catalogTrack, err := w.Provider.GetTrack(ctx, job.SourceID)
+		catalogTrack, err := w.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
 		if err != nil {
 			logger.Error("Failed to fetch track metadata", "error", err)
 			w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch track: %v", err))
@@ -393,7 +391,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 
 	// Fetch lyrics if not already present
 	if track.Lyrics == "" || track.Subtitles == "" {
-		lyrics, subtitles, err := w.Provider.GetLyrics(ctx, track.ProviderID)
+		lyrics, subtitles, err := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
 		if err != nil {
 			logger.Debug("Failed to fetch lyrics", "error", err)
 		} else {
@@ -462,7 +460,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 func (w *Worker) processAlbumJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
-	album, err := w.Provider.GetAlbum(ctx, job.SourceID)
+	album, err := w.ProviderManager.GetProvider().GetAlbum(ctx, job.SourceID)
 	if err != nil {
 		logger.Error("Failed to fetch album", "error", err)
 		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
@@ -497,7 +495,7 @@ func (w *Worker) processAlbumJob(ctx context.Context, job *domain.Job) {
 func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
-	pl, err := w.Provider.GetPlaylist(ctx, job.SourceID)
+	pl, err := w.ProviderManager.GetProvider().GetPlaylist(ctx, job.SourceID)
 	if err != nil {
 		logger.Error("Failed to fetch playlist", "error", err)
 		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
@@ -536,7 +534,7 @@ func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
 func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
-	artist, err := w.Provider.GetArtist(ctx, job.SourceID)
+	artist, err := w.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))

@@ -17,7 +17,6 @@ import (
 type Handler struct {
 	JobService       *app.JobService
 	DownloadsService *app.DownloadsService
-	Provider         catalog.Provider
 	ProviderManager  *catalog.ProviderManager
 	SettingsRepo     *store.SettingsRepo
 	Templates        *template.Template
@@ -28,7 +27,6 @@ func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.Provid
 	h := &Handler{
 		JobService:       js,
 		DownloadsService: ds,
-		Provider:         pm.GetProvider(),
 		ProviderManager:  pm,
 		SettingsRepo:     sr,
 		Logger:           logger.Default(),
