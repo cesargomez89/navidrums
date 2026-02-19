@@ -4,20 +4,30 @@ import (
 	"encoding/json"
 	"log/slog"
 	"sync"
+	"time"
+
+	"github.com/cesargomez89/navidrums/internal/store"
 )
 
 type ProviderManager struct {
 	mu         sync.RWMutex
 	provider   Provider
+	cached     *CachedProvider
 	baseURL    string
 	defaultURL string
 }
 
-func NewProviderManager(baseURL string) *ProviderManager {
+func NewProviderManager(baseURL string, db *store.DB, cacheTTL time.Duration) *ProviderManager {
+	hifi := NewHifiProvider(baseURL)
+	var cached *CachedProvider
+	if db != nil {
+		cached = NewCachedProvider(hifi, &storeCache{store: db}, cacheTTL)
+	}
 	return &ProviderManager{
 		baseURL:    baseURL,
 		defaultURL: baseURL,
-		provider:   NewHifiProvider(baseURL),
+		provider:   hifi,
+		cached:     cached,
 	}
 }
 
@@ -30,6 +40,9 @@ func (m *ProviderManager) GetDefaultURL() string {
 func (m *ProviderManager) GetProvider() Provider {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+	if m.cached != nil {
+		return m.cached
+	}
 	return m.provider
 }
 
@@ -38,6 +51,10 @@ func (m *ProviderManager) SetProvider(baseURL string) {
 	defer m.mu.Unlock()
 	slog.Info("Setting provider", "url", baseURL)
 	m.provider = NewHifiProvider(baseURL)
+	if m.cached != nil {
+		m.cached.provider = m.provider
+		m.cached.ClearCache()
+	}
 	m.baseURL = baseURL
 }
 

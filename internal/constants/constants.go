@@ -16,6 +16,7 @@ const (
 	DefaultRetryBase      = 1 * time.Second
 	DefaultUsername       = "navidrums"
 	DefaultSubdirTemplate = "{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}"
+	DefaultCacheTTL       = 12 * time.Hour
 )
 
 // Quality levels

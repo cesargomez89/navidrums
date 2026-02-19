@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/cesargomez89/navidrums/internal/constants"
 )
@@ -24,6 +25,7 @@ type Config struct {
 	Username       string
 	Password       string
 	SubdirTemplate string
+	CacheTTL       time.Duration
 }
 
 // Load loads configuration from environment variables with defaults
@@ -42,6 +44,7 @@ func Load() *Config {
 		Username:       getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
 		Password:       getEnv("NAVIDRUMS_PASSWORD", ""),
 		SubdirTemplate: getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
+		CacheTTL:       getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
 	}
 }
 
@@ -127,6 +130,11 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	// Validate CacheTTL
+	if c.CacheTTL <= 0 {
+		errors = append(errors, "CACHE_TTL must be greater than 0")
+	}
+
 	if len(errors) > 0 {
 		return fmt.Errorf("configuration validation failed:\n  - %s", strings.Join(errors, "\n  - "))
 	}
@@ -138,6 +146,16 @@ func (c *Config) Validate() error {
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
+	}
+	return fallback
+}
+
+// getEnvDuration retrieves an environment variable as time.Duration with a fallback default
+func getEnvDuration(key string, fallback time.Duration) time.Duration {
+	if value, ok := os.LookupEnv(key); ok {
+		if d, err := time.ParseDuration(value); err == nil {
+			return d
+		}
 	}
 	return fallback
 }

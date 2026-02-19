@@ -47,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize Provider Manager
-	providerManager := catalog.NewProviderManager(cfg.ProviderURL)
+	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL)
 
 	// Load saved provider from settings if exists
 	settingsRepo := store.NewSettingsRepo(db)
