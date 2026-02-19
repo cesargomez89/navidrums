@@ -55,21 +55,21 @@ func New(cfg Config) *Logger {
 // WithComponent returns a logger with a component attribute
 func (l *Logger) WithComponent(component string) *Logger {
 	return &Logger{
-		Logger: l.Logger.With("component", component),
+		Logger: l.With("component", component),
 	}
 }
 
 // WithJob returns a logger with job context attributes
 func (l *Logger) WithJob(jobID, jobType string) *Logger {
 	return &Logger{
-		Logger: l.Logger.With("job_id", jobID, "job_type", jobType),
+		Logger: l.With("job_id", jobID, "job_type", jobType),
 	}
 }
 
 // WithTrack returns a logger with track context attributes
 func (l *Logger) WithTrack(trackID, trackTitle string) *Logger {
 	return &Logger{
-		Logger: l.Logger.With("track_id", trackID, "track_title", trackTitle),
+		Logger: l.With("track_id", trackID, "track_title", trackTitle),
 	}
 }
 

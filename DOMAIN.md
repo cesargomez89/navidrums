@@ -3,7 +3,17 @@
 ## CatalogTrack
 Remote metadata entity describing a song from the provider/catalog.
 
-Fields include title, artist, album, track number, disc number, duration, year, genre, label, ISRC, copyright, composer, album art URL, explicit lyrics, BPM, key, replay gain, peak, version, description, URL, audio quality, audio modes, lyrics, subtitles, and release date.
+Fields include:
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ArtistID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
+- Genre/Label: `Genre`, `SubGenre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Composer`, `Version`, `Description`, `URL`, `AlbumArtURL`
+- Explicit: `ExplicitLyrics`
+- Position: `TotalTracks`, `TotalDiscs`
 
 Not guaranteed to exist locally. Used by providers for search results.
 
@@ -12,18 +22,32 @@ Not guaranteed to exist locally. Used by providers for search results.
 ## Track
 Local download domain entity representing a track stored in the database.
 
-Contains full metadata (same fields as CatalogTrack) plus:
-- `ProviderID` - Links to the provider's track ID
-- `AlbumID` - Links to the album
+Metadata fields:
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
+- Genre/Label: `Genre`, `SubGenre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`
+- Explicit: `Explicit`
+- Credit: `Credit`, `Composer`
+- Position: `TotalTracks`, `TotalDiscs`
+
+Processing:
 - `Status` - missing | queued | downloading | processing | completed | failed
 - `ParentJobID` - Reference to the container job that created this track
+- `Error` - Error message if download failed
+
+File:
 - `FilePath` - Local filesystem path after download
 - `FileExtension` - Audio file extension (.flac, .mp3, .m4a)
 - `FileHash` - SHA256 hash of downloaded file for verification
 - `ETag` - HTTP ETag from download source
-- `LastVerifiedAt` - Last verification timestamp
-- `Error` - Error message if download failed
-- Timestamps for creation, update, and completion
+
+Timestamps:
+- `CreatedAt`, `UpdatedAt`, `CompletedAt`, `LastVerifiedAt`
 
 Stored in the `tracks` table. Prevents duplicate downloads via unique `provider_id` constraint.
 
@@ -32,7 +56,7 @@ Stored in the `tracks` table. Prevents duplicate downloads via unique `provider_
 ## Album
 Collection of tracks grouped under a release.
 
-Fields include ID, title, artist, year, release date, genre, label, copyright, total tracks, total discs, album art URL, track list (CatalogTrack), UPC, album type, URL, and explicit flag.
+Fields include: `ID`, `Title`, `Artist`, `ArtistID`, `Artists`, `ArtistIDs`, `Year`, `ReleaseDate`, `Genre`, `Label`, `Copyright`, `TotalTracks`, `TotalDiscs`, `AlbumArtURL`, `Tracks` (CatalogTrack list), `UPC`, `AlbumType`, `URL`, `Explicit`.
 
 ---
 
@@ -58,6 +82,9 @@ Types:
 - `album` - Album download (decomposes into track jobs)
 - `playlist` - Playlist download (decomposes into track jobs)
 - `artist` - Artist top tracks download (decomposes into track jobs)
+- `sync_file` - Re-tag file with existing DB metadata
+- `sync_musicbrainz` - Enrich from MusicBrainz, fill gaps, re-tag
+- `sync_hifi` - Fetch fresh Hi-Fi data, then MusicBrainz enrichment, re-tag
 
 Status machine:
 ```
@@ -102,11 +129,15 @@ Track operations:
 - `CreateTrack` - Create new track record
 - `GetTrackByID` / `GetTrackByProviderID` - Lookup tracks
 - `UpdateTrack` - Update full track metadata
+- `UpdateTrackPartial` - Update specific track fields
 - `UpdateTrackStatus` - Update track status and file path
 - `MarkTrackCompleted` - Mark track completed with file path and hash
 - `MarkTrackFailed` - Mark track failed with error message
 - `ListTracks`, `ListTracksByStatus`, `ListTracksByParentJobID` - List queries
+- `ListCompletedTracks`, `ListCompletedTracksWithISRC` - Completed track queries
 - `IsTrackDownloaded`, `GetDownloadedTrack` - Download verification
+- `SearchTracks` - Search tracks by title/artist/album
+- `DeleteTrack` - Delete track record
 - `FindInterruptedTracks` - Find tracks stuck in downloading/processing
 - `RecomputeAlbumState` - Recompute album download state (missing/partial/completed)
 

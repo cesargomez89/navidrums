@@ -40,7 +40,7 @@ func (c *CachedProvider) Search(ctx context.Context, query string, searchType st
 	}
 	if data != nil {
 		var result domain.SearchResult
-		if err := json.Unmarshal(data, &result); err == nil {
+		if unmarshalErr := json.Unmarshal(data, &result); unmarshalErr == nil {
 			return &result, nil
 		}
 	}
@@ -50,8 +50,8 @@ func (c *CachedProvider) Search(ctx context.Context, query string, searchType st
 		return nil, err
 	}
 
-	if data, err := json.Marshal(result); err == nil {
-		c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if data, marshalErr := json.Marshal(result); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
 	}
 
 	return result, nil
@@ -66,7 +66,7 @@ func (c *CachedProvider) GetArtist(ctx context.Context, id string) (*domain.Arti
 	}
 	if data != nil {
 		var artist domain.Artist
-		if err := json.Unmarshal(data, &artist); err == nil {
+		if unmarshalErr := json.Unmarshal(data, &artist); unmarshalErr == nil {
 			return &artist, nil
 		}
 	}
@@ -76,8 +76,8 @@ func (c *CachedProvider) GetArtist(ctx context.Context, id string) (*domain.Arti
 		return nil, err
 	}
 
-	if data, err := json.Marshal(artist); err == nil {
-		c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if data, marshalErr := json.Marshal(artist); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
 	}
 
 	return artist, nil
@@ -92,7 +92,7 @@ func (c *CachedProvider) GetAlbum(ctx context.Context, id string) (*domain.Album
 	}
 	if data != nil {
 		var album domain.Album
-		if err := json.Unmarshal(data, &album); err == nil {
+		if unmarshalErr := json.Unmarshal(data, &album); unmarshalErr == nil {
 			return &album, nil
 		}
 	}
@@ -102,8 +102,8 @@ func (c *CachedProvider) GetAlbum(ctx context.Context, id string) (*domain.Album
 		return nil, err
 	}
 
-	if data, err := json.Marshal(album); err == nil {
-		c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if data, marshalErr := json.Marshal(album); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
 	}
 
 	return album, nil
@@ -118,7 +118,7 @@ func (c *CachedProvider) GetPlaylist(ctx context.Context, id string) (*domain.Pl
 	}
 	if data != nil {
 		var playlist domain.Playlist
-		if err := json.Unmarshal(data, &playlist); err == nil {
+		if unmarshalErr := json.Unmarshal(data, &playlist); unmarshalErr == nil {
 			return &playlist, nil
 		}
 	}
@@ -128,8 +128,8 @@ func (c *CachedProvider) GetPlaylist(ctx context.Context, id string) (*domain.Pl
 		return nil, err
 	}
 
-	if data, err := json.Marshal(playlist); err == nil {
-		c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if data, marshalErr := json.Marshal(playlist); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
 	}
 
 	return playlist, nil
@@ -144,7 +144,7 @@ func (c *CachedProvider) GetTrack(ctx context.Context, id string) (*domain.Catal
 	}
 	if data != nil {
 		var track domain.CatalogTrack
-		if err := json.Unmarshal(data, &track); err == nil {
+		if unmarshalErr := json.Unmarshal(data, &track); unmarshalErr == nil {
 			return &track, nil
 		}
 	}
@@ -154,8 +154,8 @@ func (c *CachedProvider) GetTrack(ctx context.Context, id string) (*domain.Catal
 		return nil, err
 	}
 
-	if data, err := json.Marshal(track); err == nil {
-		c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if data, marshalErr := json.Marshal(track); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
 	}
 
 	return track, nil

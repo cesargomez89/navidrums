@@ -72,26 +72,13 @@ func formatID(v interface{}) string {
 	}
 }
 
-// manifestResponse represents the manifest data from the streaming endpoint
-type manifestResponse struct {
-	Data struct {
-		Manifest         string `json:"manifest"`
-		ManifestMimeType string `json:"manifestMimeType"`
-	} `json:"data"`
-}
-
-// btsManifest represents the BTS manifest format
-type btsManifest struct {
-	Urls []string `json:"urls"`
-}
-
 // multiSegmentReader implements io.ReadCloser for segmented DASH streams
 type multiSegmentReader struct {
-	urls     []string
-	client   *http.Client
 	ctx      context.Context
-	currIdx  int
 	currBody io.ReadCloser
+	client   *http.Client
+	urls     []string
+	currIdx  int
 }
 
 func (r *multiSegmentReader) Read(p []byte) (n int, err error) {
@@ -108,16 +95,18 @@ func (r *multiSegmentReader) Read(p []byte) (n int, err error) {
 		}
 
 		// Fetch next segment
-		req, err := http.NewRequestWithContext(r.ctx, "GET", r.urls[r.currIdx], nil)
+		var req *http.Request
+		req, err = http.NewRequestWithContext(r.ctx, "GET", r.urls[r.currIdx], nil)
 		if err != nil {
 			return 0, err
 		}
-		resp, err := r.client.Do(req)
+		var resp *http.Response
+		resp, err = r.client.Do(req)
 		if err != nil {
 			return 0, err
 		}
 		if resp.StatusCode != http.StatusOK {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			return 0, fmt.Errorf("segment fetch failed (%d): %s", r.currIdx, resp.Status)
 		}
 		r.currBody = resp.Body
@@ -126,7 +115,7 @@ func (r *multiSegmentReader) Read(p []byte) (n int, err error) {
 
 	n, err = r.currBody.Read(p)
 	if err == io.EOF {
-		r.currBody.Close()
+		_ = r.currBody.Close()
 		r.currBody = nil
 		// Check context before recursive call
 		select {
