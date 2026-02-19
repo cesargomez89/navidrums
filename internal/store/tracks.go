@@ -1,7 +1,6 @@
 package store
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -9,19 +8,125 @@ import (
 	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
-func trackColumns() string {
-	return `id, provider_id, title, artist, artists, album, album_id, album_artist, album_artists,
-		track_number, disc_number, total_tracks, total_discs,
-		year, genre, label, isrc, copyright, composer,
-		duration, explicit, compilation, album_art_url, lyrics, subtitles,
-		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
-		barcode, catalog_number, release_type, release_id,
-		status, error, parent_job_id, file_path, file_extension,
-		created_at, updated_at, completed_at, etag, file_hash, last_verified_at`
+type dbTrack struct {
+	ID             int        `db:"id"`
+	ProviderID     string     `db:"provider_id"`
+	Title          string     `db:"title"`
+	Artist         string     `db:"artist"`
+	Artists        string     `db:"artists"`
+	Album          string     `db:"album"`
+	AlbumID        string     `db:"album_id"`
+	AlbumArtist    string     `db:"album_artist"`
+	AlbumArtists   string     `db:"album_artists"`
+	TrackNumber    int        `db:"track_number"`
+	DiscNumber     int        `db:"disc_number"`
+	TotalTracks    int        `db:"total_tracks"`
+	TotalDiscs     int        `db:"total_discs"`
+	Year           int        `db:"year"`
+	Genre          string     `db:"genre"`
+	Label          string     `db:"label"`
+	ISRC           string     `db:"isrc"`
+	Copyright      string     `db:"copyright"`
+	Composer       string     `db:"composer"`
+	Duration       int        `db:"duration"`
+	Explicit       bool       `db:"explicit"`
+	Compilation    bool       `db:"compilation"`
+	AlbumArtURL    string     `db:"album_art_url"`
+	Lyrics         string     `db:"lyrics"`
+	Subtitles      string     `db:"subtitles"`
+	BPM            int        `db:"bpm"`
+	KeyName        string     `db:"key_name"`
+	KeyScale       string     `db:"key_scale"`
+	ReplayGain     float64    `db:"replay_gain"`
+	Peak           float64    `db:"peak"`
+	Version        string     `db:"version"`
+	Description    string     `db:"description"`
+	URL            string     `db:"url"`
+	AudioQuality   string     `db:"audio_quality"`
+	AudioModes     string     `db:"audio_modes"`
+	ReleaseDate    string     `db:"release_date"`
+	Barcode        string     `db:"barcode"`
+	CatalogNumber  string     `db:"catalog_number"`
+	ReleaseType    string     `db:"release_type"`
+	ReleaseID      string     `db:"release_id"`
+	Status         string     `db:"status"`
+	Error          string     `db:"error"`
+	ParentJobID    string     `db:"parent_job_id"`
+	FilePath       string     `db:"file_path"`
+	FileExtension  string     `db:"file_extension"`
+	CreatedAt      time.Time  `db:"created_at"`
+	UpdatedAt      time.Time  `db:"updated_at"`
+	CompletedAt    *time.Time `db:"completed_at"`
+	ETag           string     `db:"etag"`
+	FileHash       string     `db:"file_hash"`
+	LastVerifiedAt *time.Time `db:"last_verified_at"`
 }
 
-func trackSelect(where string, args ...interface{}) string {
-	return "SELECT " + trackColumns() + " FROM tracks " + where
+func (d *dbTrack) toDomain() *domain.Track {
+	track := &domain.Track{
+		ID:            d.ID,
+		ProviderID:    d.ProviderID,
+		Title:         d.Title,
+		Artist:        d.Artist,
+		Album:         d.Album,
+		AlbumID:       d.AlbumID,
+		AlbumArtist:   d.AlbumArtist,
+		Genre:         d.Genre,
+		Label:         d.Label,
+		ISRC:          d.ISRC,
+		Copyright:     d.Copyright,
+		Composer:      d.Composer,
+		AlbumArtURL:   d.AlbumArtURL,
+		Status:        domain.TrackStatus(d.Status),
+		CreatedAt:     d.CreatedAt,
+		UpdatedAt:     d.UpdatedAt,
+		TrackNumber:   d.TrackNumber,
+		DiscNumber:    d.DiscNumber,
+		TotalTracks:   d.TotalTracks,
+		TotalDiscs:    d.TotalDiscs,
+		Year:          d.Year,
+		Duration:      d.Duration,
+		Explicit:      d.Explicit,
+		Compilation:   d.Compilation,
+		BPM:           d.BPM,
+		ReplayGain:    d.ReplayGain,
+		Peak:          d.Peak,
+		Key:           d.KeyName,
+		KeyScale:      d.KeyScale,
+		Version:       d.Version,
+		Description:   d.Description,
+		URL:           d.URL,
+		AudioQuality:  d.AudioQuality,
+		AudioModes:    d.AudioModes,
+		ReleaseDate:   d.ReleaseDate,
+		Barcode:       d.Barcode,
+		CatalogNumber: d.CatalogNumber,
+		ReleaseType:   d.ReleaseType,
+		ReleaseID:     d.ReleaseID,
+		Error:         d.Error,
+		ParentJobID:   d.ParentJobID,
+		FilePath:      d.FilePath,
+		FileExtension: d.FileExtension,
+		Lyrics:        d.Lyrics,
+		Subtitles:     d.Subtitles,
+		ETag:          d.ETag,
+		FileHash:      d.FileHash,
+	}
+
+	if d.Artists != "" {
+		json.Unmarshal([]byte(d.Artists), &track.Artists)
+	}
+	if d.AlbumArtists != "" {
+		json.Unmarshal([]byte(d.AlbumArtists), &track.AlbumArtists)
+	}
+	if d.CompletedAt != nil {
+		track.CompletedAt = *d.CompletedAt
+	}
+	if d.LastVerifiedAt != nil {
+		track.LastVerifiedAt = *d.LastVerifiedAt
+	}
+
+	return track
 }
 
 func (db *DB) CreateTrack(track *domain.Track) error {
@@ -43,7 +148,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		barcode, catalog_number, release_type, release_id,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := db.Exec(query,
 		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
@@ -69,13 +174,25 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 }
 
 func (db *DB) GetTrackByID(id int) (*domain.Track, error) {
-	row := db.QueryRow(trackSelect("WHERE id = ?"), id)
-	return scanTrack(row)
+	query := `SELECT * FROM tracks WHERE id = ?`
+
+	var t dbTrack
+	err := db.Get(&t, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return t.toDomain(), nil
 }
 
 func (db *DB) GetTrackByProviderID(providerID string) (*domain.Track, error) {
-	row := db.QueryRow(trackSelect("WHERE provider_id = ?"), providerID)
-	return scanTrack(row)
+	query := `SELECT * FROM tracks WHERE provider_id = ?`
+
+	var t dbTrack
+	err := db.Get(&t, query, providerID)
+	if err != nil {
+		return nil, err
+	}
+	return t.toDomain(), nil
 }
 
 func (db *DB) UpdateTrack(track *domain.Track) error {
@@ -172,50 +289,68 @@ func (db *DB) MarkTrackFailed(id int, errorMsg string) error {
 }
 
 func (db *DB) ListTracks(limit int) ([]*domain.Track, error) {
-	rows, err := db.Query(trackSelect("ORDER BY created_at DESC LIMIT ?"), limit)
+	query := `SELECT * FROM tracks ORDER BY created_at DESC LIMIT ?`
+
+	var tracks []*domain.Track
+	var rows []dbTrack
+	err := db.Select(&rows, query, limit)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	return scanTracks(rows)
+	for i := range rows {
+		tracks = append(tracks, rows[i].toDomain())
+	}
+	return tracks, nil
 }
 
 func (db *DB) ListTracksByStatus(status domain.TrackStatus, limit int) ([]*domain.Track, error) {
-	rows, err := db.Query(trackSelect("WHERE status = ? ORDER BY created_at DESC LIMIT ?"), status, limit)
+	query := `SELECT * FROM tracks WHERE status = ? ORDER BY created_at DESC LIMIT ?`
+
+	var tracks []*domain.Track
+	var rows []dbTrack
+	err := db.Select(&rows, query, status, limit)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	return scanTracks(rows)
+	for i := range rows {
+		tracks = append(tracks, rows[i].toDomain())
+	}
+	return tracks, nil
 }
 
 func (db *DB) ListTracksByParentJobID(parentJobID string) ([]*domain.Track, error) {
-	rows, err := db.Query(trackSelect("WHERE parent_job_id = ? ORDER BY track_number ASC"), parentJobID)
+	query := `SELECT * FROM tracks WHERE parent_job_id = ? ORDER BY track_number ASC`
+
+	var tracks []*domain.Track
+	var rows []dbTrack
+	err := db.Select(&rows, query, parentJobID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	return scanTracks(rows)
+	for i := range rows {
+		tracks = append(tracks, rows[i].toDomain())
+	}
+	return tracks, nil
 }
 
 func (db *DB) ListCompletedTracks(limit int) ([]*domain.Track, error) {
 	return db.ListTracksByStatus(domain.TrackStatusCompleted, limit)
 }
 
-func (db *DB) SearchTracks(query string, limit int) ([]*domain.Track, error) {
-	sqlQuery := trackSelect(`WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? ORDER BY created_at DESC LIMIT ?`)
-	searchTerm := "%" + query + "%"
+func (db *DB) SearchTracks(q string, limit int) ([]*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? ORDER BY created_at DESC LIMIT ?`
+	searchTerm := "%" + q + "%"
 
-	rows, err := db.Query(sqlQuery, searchTerm, searchTerm, searchTerm, limit)
+	var tracks []*domain.Track
+	var rows []dbTrack
+	err := db.Select(&rows, query, searchTerm, searchTerm, searchTerm, limit)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	return scanTracks(rows)
+	for i := range rows {
+		tracks = append(tracks, rows[i].toDomain())
+	}
+	return tracks, nil
 }
 
 func (db *DB) DeleteTrack(id int) error {
@@ -226,191 +361,19 @@ func (db *DB) DeleteTrack(id int) error {
 func (db *DB) IsTrackDownloaded(providerID string) (bool, error) {
 	query := `SELECT COUNT(*) FROM tracks WHERE provider_id = ? AND status = 'completed' AND file_path IS NOT NULL`
 	var count int
-	err := db.QueryRow(query, providerID).Scan(&count)
+	err := db.Get(&count, query, providerID)
 	return count > 0, err
 }
 
 func (db *DB) GetDownloadedTrack(providerID string) (*domain.Track, error) {
-	row := db.QueryRow(trackSelect("WHERE provider_id = ? AND status = 'completed' AND file_path IS NOT NULL LIMIT 1"), providerID)
-	return scanTrack(row)
-}
+	query := `SELECT * FROM tracks WHERE provider_id = ? AND status = 'completed' AND file_path IS NOT NULL LIMIT 1`
 
-// scanTrack scans a single track from a row
-func scanTrack(row *sql.Row) (*domain.Track, error) {
-	track, err := scanTrackFromScanner(row)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	return track, err
-}
-
-// rowsScanner wraps sql.Rows to implement trackScanner
-type rowsScanner struct {
-	rows *sql.Rows
-}
-
-func (r *rowsScanner) Scan(dest ...interface{}) error {
-	return r.rows.Scan(dest...)
-}
-
-func scanTracks(rows *sql.Rows) ([]*domain.Track, error) {
-	var tracks []*domain.Track
-	for rows.Next() {
-		track, err := scanTrackFromScanner(rows)
-		if err != nil {
-			return nil, err
-		}
-		tracks = append(tracks, track)
-	}
-	return tracks, rows.Err()
-}
-
-// scanTrackFromScanner scans a track from any scanner (Row or Rows)
-func scanTrackFromScanner(scanner interface {
-	Scan(dest ...interface{}) error
-}) (*domain.Track, error) {
-	track := &domain.Track{}
-	var artistsJSON, albumArtistsJSON string
-	var errMsg, filePath, fileExt, lyrics, subtitles, parentJobID sql.NullString
-	var trackNum, discNum, totalTracks, totalDiscs, year, duration, bpm sql.NullInt64
-	var replayGain, peak sql.NullFloat64
-	var explicit, compilation sql.NullBool
-	var completedAt, lastVerifiedAt sql.NullTime
-	var key, keyScale, version, description, url, audioQuality, audioModes, releaseDate, etag, fileHash, dbAlbumID sql.NullString
-	var barcode, catalogNumber, releaseType, releaseID sql.NullString
-
-	err := scanner.Scan(
-		&track.ID, &track.ProviderID, &track.Title, &track.Artist, &artistsJSON, &track.Album, &dbAlbumID, &track.AlbumArtist, &albumArtistsJSON,
-		&trackNum, &discNum, &totalTracks, &totalDiscs,
-		&year, &track.Genre, &track.Label, &track.ISRC, &track.Copyright, &track.Composer,
-		&duration, &explicit, &compilation, &track.AlbumArtURL, &lyrics, &subtitles,
-		&bpm, &key, &keyScale, &replayGain, &peak, &version, &description, &url, &audioQuality, &audioModes, &releaseDate,
-		&barcode, &catalogNumber, &releaseType, &releaseID,
-		&track.Status, &errMsg, &parentJobID, &filePath, &fileExt,
-		&track.CreatedAt, &track.UpdatedAt, &completedAt, &etag, &fileHash, &lastVerifiedAt,
-	)
+	var t dbTrack
+	err := db.Get(&t, query, providerID)
 	if err != nil {
 		return nil, err
 	}
-
-	if dbAlbumID.Valid {
-		track.AlbumID = dbAlbumID.String
-	}
-
-	// Unmarshal JSON arrays
-	if artistsJSON != "" {
-		if err := json.Unmarshal([]byte(artistsJSON), &track.Artists); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal artists: %w", err)
-		}
-	}
-	if albumArtistsJSON != "" {
-		if err := json.Unmarshal([]byte(albumArtistsJSON), &track.AlbumArtists); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal album artists: %w", err)
-		}
-	}
-
-	// Set nullable fields
-	if trackNum.Valid {
-		track.TrackNumber = int(trackNum.Int64)
-	}
-	if discNum.Valid {
-		track.DiscNumber = int(discNum.Int64)
-	}
-	if totalTracks.Valid {
-		track.TotalTracks = int(totalTracks.Int64)
-	}
-	if totalDiscs.Valid {
-		track.TotalDiscs = int(totalDiscs.Int64)
-	}
-	if year.Valid {
-		track.Year = int(year.Int64)
-	}
-	if duration.Valid {
-		track.Duration = int(duration.Int64)
-	}
-	if bpm.Valid {
-		track.BPM = int(bpm.Int64)
-	}
-	if replayGain.Valid {
-		track.ReplayGain = replayGain.Float64
-	}
-	if peak.Valid {
-		track.Peak = peak.Float64
-	}
-	if explicit.Valid {
-		track.Explicit = explicit.Bool
-	}
-	if compilation.Valid {
-		track.Compilation = compilation.Bool
-	}
-	if key.Valid {
-		track.Key = key.String
-	}
-	if keyScale.Valid {
-		track.KeyScale = keyScale.String
-	}
-	if version.Valid {
-		track.Version = version.String
-	}
-	if description.Valid {
-		track.Description = description.String
-	}
-	if url.Valid {
-		track.URL = url.String
-	}
-	if audioQuality.Valid {
-		track.AudioQuality = audioQuality.String
-	}
-	if audioModes.Valid {
-		track.AudioModes = audioModes.String
-	}
-	if releaseDate.Valid {
-		track.ReleaseDate = releaseDate.String
-	}
-	if barcode.Valid {
-		track.Barcode = barcode.String
-	}
-	if catalogNumber.Valid {
-		track.CatalogNumber = catalogNumber.String
-	}
-	if releaseType.Valid {
-		track.ReleaseType = releaseType.String
-	}
-	if releaseID.Valid {
-		track.ReleaseID = releaseID.String
-	}
-	if errMsg.Valid {
-		track.Error = errMsg.String
-	}
-	if parentJobID.Valid {
-		track.ParentJobID = parentJobID.String
-	}
-	if filePath.Valid {
-		track.FilePath = filePath.String
-	}
-	if fileExt.Valid {
-		track.FileExtension = fileExt.String
-	}
-	if lyrics.Valid {
-		track.Lyrics = lyrics.String
-	}
-	if subtitles.Valid {
-		track.Subtitles = subtitles.String
-	}
-	if completedAt.Valid {
-		track.CompletedAt = completedAt.Time
-	}
-	if etag.Valid {
-		track.ETag = etag.String
-	}
-	if fileHash.Valid {
-		track.FileHash = fileHash.String
-	}
-	if lastVerifiedAt.Valid {
-		track.LastVerifiedAt = lastVerifiedAt.Time
-	}
-
-	return track, nil
+	return t.toDomain(), nil
 }
 
 func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
@@ -419,26 +382,35 @@ func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
 		SUM(CASE WHEN status = 'completed' AND file_path IS NOT NULL THEN 1 ELSE 0 END) as completed 
 	FROM tracks WHERE album_id = ?`
 
-	var total, completed int
-	if err := db.QueryRow(query, albumID).Scan(&total, &completed); err != nil {
+	type result struct {
+		Total     int `db:"total"`
+		Completed int `db:"completed"`
+	}
+	var r result
+	if err := db.Get(&r, query, albumID); err != nil {
 		return "", err
 	}
 
-	if completed == 0 {
+	if r.Completed == 0 {
 		return "missing", nil
 	}
-	if completed < total {
+	if r.Completed < r.Total {
 		return "partial", nil
 	}
 	return "completed", nil
 }
 
 func (db *DB) FindInterruptedTracks() ([]*domain.Track, error) {
-	rows, err := db.Query(trackSelect("WHERE status IN ('downloading', 'processing')"))
+	query := `SELECT * FROM tracks WHERE status IN ('downloading', 'processing')`
+
+	var tracks []*domain.Track
+	var rows []dbTrack
+	err := db.Select(&rows, query)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	return scanTracks(rows)
+	for i := range rows {
+		tracks = append(tracks, rows[i].toDomain())
+	}
+	return tracks, nil
 }

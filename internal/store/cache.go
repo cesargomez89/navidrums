@@ -6,10 +6,13 @@ import (
 )
 
 func (db *DB) GetCache(key string) ([]byte, error) {
-	var data []byte
-	var expiresAt sql.NullTime
+	type cacheRow struct {
+		Data      []byte       `db:"data"`
+		ExpiresAt sql.NullTime `db:"expires_at"`
+	}
 
-	err := db.QueryRow("SELECT data, expires_at FROM cache WHERE key = ?", key).Scan(&data, &expiresAt)
+	var row cacheRow
+	err := db.Get(&row, "SELECT data, expires_at FROM cache WHERE key = ?", key)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -17,12 +20,12 @@ func (db *DB) GetCache(key string) ([]byte, error) {
 		return nil, err
 	}
 
-	if expiresAt.Valid && time.Now().After(expiresAt.Time) {
+	if row.ExpiresAt.Valid && time.Now().After(row.ExpiresAt.Time) {
 		db.Exec("DELETE FROM cache WHERE key = ?", key)
 		return nil, nil
 	}
 
-	return data, nil
+	return row.Data, nil
 }
 
 func (db *DB) SetCache(key string, data []byte, ttl time.Duration) error {

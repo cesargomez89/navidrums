@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
 
 type migration struct {
 	version     int
 	description string
-	up          func(*sql.DB) error
+	up          func(*sqlx.DB) error
 }
 
 // Migrations history is cleared for v2.0 refactor
@@ -20,7 +21,7 @@ var migrations = []migration{
 	{
 		version:     1,
 		description: "Add track lifecycle fields",
-		up: func(db *sql.DB) error {
+		up: func(db *sqlx.DB) error {
 			columns := []string{
 				"ALTER TABLE tracks ADD COLUMN file_hash TEXT",
 				"ALTER TABLE tracks ADD COLUMN etag TEXT",
@@ -29,7 +30,24 @@ var migrations = []migration{
 			}
 			for _, q := range columns {
 				if _, err := db.Exec(q); err != nil {
-					// Ignore duplicate column errors if migration ran partially
+					continue
+				}
+			}
+			return nil
+		},
+	},
+	{
+		version:     2,
+		description: "Add MusicBrainz metadata fields",
+		up: func(db *sqlx.DB) error {
+			columns := []string{
+				"ALTER TABLE tracks ADD COLUMN barcode TEXT",
+				"ALTER TABLE tracks ADD COLUMN catalog_number TEXT",
+				"ALTER TABLE tracks ADD COLUMN release_type TEXT",
+				"ALTER TABLE tracks ADD COLUMN release_id TEXT",
+			}
+			for _, q := range columns {
+				if _, err := db.Exec(q); err != nil {
 					continue
 				}
 			}
@@ -39,13 +57,10 @@ var migrations = []migration{
 }
 
 type DB struct {
-	*sql.DB
+	*sqlx.DB
 }
 
 func NewSQLiteDB(dsn string) (*DB, error) {
-	// Append pragmas to DSN to ensure they apply to all connections in the pool
-	// _pragma=busy_timeout(30000) avoids "database is locked" errors
-	// _pragma=journal_mode(WAL) enables Write-Ahead Logging for better concurrency
 	if !strings.Contains(dsn, "?") {
 		dsn += "?"
 	} else {
@@ -53,7 +68,7 @@ func NewSQLiteDB(dsn string) (*DB, error) {
 	}
 	dsn += "_pragma=busy_timeout(30000)&_pragma=journal_mode(WAL)"
 
-	db, err := sql.Open("sqlite", dsn)
+	db, err := sqlx.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open db: %w", err)
 	}
@@ -73,7 +88,7 @@ func NewSQLiteDB(dsn string) (*DB, error) {
 	return &DB{db}, nil
 }
 
-func runMigrations(db *sql.DB) error {
+func runMigrations(db *sqlx.DB) error {
 	for _, m := range migrations {
 		applied, err := isMigrationApplied(db, m.version)
 		if err != nil {
@@ -96,7 +111,7 @@ func runMigrations(db *sql.DB) error {
 	return nil
 }
 
-func isMigrationApplied(db *sql.DB, version int) (bool, error) {
+func isMigrationApplied(db *sqlx.DB, version int) (bool, error) {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM schema_migrations WHERE version = ?", version).Scan(&count)
 	if err == sql.ErrNoRows {
@@ -108,7 +123,7 @@ func isMigrationApplied(db *sql.DB, version int) (bool, error) {
 	return count > 0, nil
 }
 
-func recordMigration(db *sql.DB, version int, description string) error {
+func recordMigration(db *sqlx.DB, version int, description string) error {
 	_, err := db.Exec("INSERT INTO schema_migrations (version, description) VALUES (?, ?)", version, description)
 	return err
 }

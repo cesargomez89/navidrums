@@ -57,10 +57,6 @@ CREATE TABLE IF NOT EXISTS tracks (
 	audio_quality TEXT,
 	audio_modes TEXT,
 	release_date TEXT,
-	barcode TEXT,
-	catalog_number TEXT,
-	release_type TEXT,
-	release_id TEXT,
 	
 	-- Processing
 	status TEXT NOT NULL DEFAULT 'missing',

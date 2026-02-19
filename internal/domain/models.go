@@ -25,14 +25,14 @@ const (
 
 // Job represents a work item in the queue
 type Job struct {
-	ID        string    `json:"id"`
-	Type      JobType   `json:"type"`
-	Status    JobStatus `json:"status"`
-	Progress  float64   `json:"progress"` // 0-100
-	SourceID  string    `json:"source_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Error     string    `json:"error,omitempty"`
+	ID        string    `json:"id" db:"id"`
+	Type      JobType   `json:"type" db:"type"`
+	Status    JobStatus `json:"status" db:"status"`
+	Progress  float64   `json:"progress" db:"progress"`
+	SourceID  string    `json:"source_id" db:"source_id"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	Error     *string   `json:"error,omitempty" db:"error"`
 }
 
 // TrackStatus represents the download status of a track

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -14,11 +15,11 @@ func NewSettingsRepo(db *DB) *SettingsRepo {
 
 func (r *SettingsRepo) Get(key string) (string, error) {
 	var value string
-	err := r.db.QueryRow("SELECT value FROM settings WHERE key = ?", key).Scan(&value)
-	if err != nil {
+	err := r.db.Get(&value, "SELECT value FROM settings WHERE key = ?", key)
+	if err == sql.ErrNoRows {
 		return "", nil
 	}
-	return value, nil
+	return value, err
 }
 
 func (r *SettingsRepo) Set(key, value string) error {
