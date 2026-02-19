@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/subtle"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,16 +26,17 @@ import (
 func main() {
 	cfg := config.Load()
 
-	// Validate configuration
-	if err := cfg.Validate(); err != nil {
-		log.Fatalf("Configuration error: %v", err)
-	}
-
 	// Initialize Logger
 	appLogger := logger.New(logger.Config{
 		Level:  cfg.LogLevel,
 		Format: cfg.LogFormat,
 	})
+
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		appLogger.Error("Configuration error", "error", err)
+		os.Exit(1)
+	}
 
 	// Initialize DB
 	db, err := store.NewSQLiteDB(cfg.DBPath)
@@ -47,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	// Initialize Provider Manager
-	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL)
+	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
 
 	// Load saved provider from settings if exists
 	settingsRepo := store.NewSettingsRepo(db)
@@ -61,8 +61,8 @@ func main() {
 	defer w.Stop()
 
 	// Initialize Services
-	jobService := app.NewJobService(db)
-	downloadsService := app.NewDownloadsService(db)
+	jobService := app.NewJobService(db, appLogger)
+	downloadsService := app.NewDownloadsService(db, appLogger)
 
 	// Initialize Router
 	r := chi.NewRouter()
@@ -110,9 +110,9 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Server listening on %s", srv.Addr)
+		appLogger.Info("Server listening", "addr", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server error: %v", err)
+			appLogger.Error("Server error", "error", err)
 		}
 	}()
 
@@ -121,15 +121,15 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	appLogger.Info("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		appLogger.Error("Server forced to shutdown", "error", err)
 	}
 
-	log.Println("Server exiting")
+	appLogger.Info("Server exiting")
 }
 
 func basicAuthMiddleware(username, password string) func(http.Handler) http.Handler {

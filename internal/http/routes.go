@@ -30,7 +30,6 @@ func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	provider := h.ProviderManager.GetProvider()
-	h.Logger.Info("search", "provider_url", h.ProviderManager.GetBaseURL(), "query", query, "type", searchType)
 
 	results, err := provider.Search(r.Context(), query, searchType)
 	if err != nil {

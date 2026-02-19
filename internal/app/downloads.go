@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
 )
@@ -12,11 +13,12 @@ import (
 const defaultLimit = 30
 
 type DownloadsService struct {
-	Repo *store.DB
+	Repo   *store.DB
+	Logger *logger.Logger
 }
 
-func NewDownloadsService(repo *store.DB) *DownloadsService {
-	return &DownloadsService{Repo: repo}
+func NewDownloadsService(repo *store.DB, log *logger.Logger) *DownloadsService {
+	return &DownloadsService{Repo: repo, Logger: log}
 }
 
 func (s *DownloadsService) ListDownloads() ([]*domain.Track, error) {
@@ -51,5 +53,6 @@ func (s *DownloadsService) DeleteDownload(providerID string) error {
 		return fmt.Errorf("failed to delete track record: %w", err)
 	}
 
+	s.Logger.Info("Download deleted", "provider_id", providerID, "file_path", track.FilePath)
 	return nil
 }
