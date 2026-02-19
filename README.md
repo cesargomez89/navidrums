@@ -22,41 +22,9 @@ Optimized for low-end hardware.
 
 ## Prerequisites
 
+- **Docker & Docker Compose** (for Docker installation only)
 - **Go 1.22+** (for building from source)
 - **Hifi API** running (default: `http://127.0.0.1:8000`)
-
-HiFi API: https://github.com/binimum/hifi-api
-
-## Installation
-
-### Option 1: Download Pre-built Binary (Recommended)
-
-1. Download the latest release for your platform from the [Releases page](https://github.com/cesargomez89/navidrums/releases):
-   - **Linux (x86_64)**: `navidrums-linux-amd64`
-   - **Linux (ARM64/Raspberry Pi)**: `navidrums-linux-arm64`
-   - **macOS (Intel)**: `navidrums-darwin-amd64`
-   - **macOS (Apple Silicon)**: `navidrums-darwin-arm64`
-   - **Windows (x86_64)**: `navidrums-windows-amd64.exe`
-
-2. Make the binary executable (Linux/macOS):
-   ```bash
-   chmod +x navidrums-*
-   ```
-
-3. Optionally, move it to a directory in your PATH:
-   ```bash
-   sudo mv navidrums-* /usr/local/bin/navidrums
-   ```
-
-**Note:** The binary is self-contained with all templates and assets embedded. You only need the single executable file to run the application.
-
-### Option 2: Build from Source
-
-1. Clone the repository.
-2. Build the server:
-   ```bash
-   go build -o navidrums ./cmd/server
-   ```
 
 ## Configuration
 
@@ -93,19 +61,33 @@ The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
 ~/Downloads/navidrums/Pink Floyd/1973 - The Dark Side of the Moon/01-01 Speak to Me.flac
 ```
 
-## Usage
+HiFi API: https://github.com/binimum/hifi-api
 
-1. Start the server:
+## Installation
+
+### Option 1: Download Pre-built Binary (Recommended)
+
+1. Download the latest release for your platform from the [Releases page](https://github.com/cesargomez89/navidrums/releases):
+   - **Linux (x86_64)**: `navidrums-linux-amd64`
+   - **Linux (ARM64/Raspberry Pi)**: `navidrums-linux-arm64`
+   - **macOS (Intel)**: `navidrums-darwin-amd64`
+   - **macOS (Apple Silicon)**: `navidrums-darwin-arm64`
+   - **Windows (x86_64)**: `navidrums-windows-amd64.exe`
+
+2. Make the binary executable (Linux/macOS):
    ```bash
-   ./navidrums
+   chmod +x navidrums-*
    ```
-2. Open browser at `http://localhost:8080`.
-3. Search for music and click download.
-4. Check the "Queue" tab for progress.
 
-## Self-Hosted Server Setup
+3. Optionally, move it to a directory in your PATH:
+   ```bash
+   sudo mv navidrums-* /usr/local/bin/navidrums
 
-### Running as a Systemd Service (Linux)
+   ```
+
+### Self-Hosted Server Setup
+
+#### Running as a Systemd Service (Linux)
 
 1. Create a systemd service file at `/etc/systemd/system/navidrums.service`:
 
@@ -146,6 +128,49 @@ The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
    ```bash
    sudo systemctl status navidrums
    ```
+
+
+**Note:** The binary is self-contained with all templates and assets embedded. You only need the single executable file to run the application.
+
+## Build from Source / Development Setup
+
+1. Clone the repository.
+2. Build the server:
+   ```bash
+   go build -o navidrums ./cmd/server
+   ```
+
+### Usage
+
+1. Start the server:
+   ```bash
+   NAVIDRUMS_PASSWORD=admin PROVIDER_URL=https://your-hifi-url.com ./navidrums
+   ```
+2. Open browser at `http://localhost:8080`.
+3. Search for music and click download.
+4. Check the "Queue" tab for progress.
+
+## Docker Compose
+
+1. Clone the repository.
+2. Copy the `.env.sample` file to `.env` and adjust the settings as needed.
+3. Start the services:
+   ```bash
+   docker-compose up -d
+   ```
+4. Open browser at `http://localhost:8080`.
+
+**Note:** The `downloads` directory and `navidrums.db` database are created in the same directory as the docker-compose.yml file.
+You can also use the `docker-compose.override.yml` file to override the host's `downloads` and `navidrums.db` directories.
+
+**Example:** The `docker-compose.override.yml` file:
+```yaml
+services:
+  navidrums:
+    volumes:
+      - /mnt/nas/music:/downloads
+      - /mnt/nas/navidrums.db:/app/navidrums.db
+```
 
 ## Screenshots
 

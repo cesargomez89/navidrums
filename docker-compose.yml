@@ -1,0 +1,18 @@
+services:
+  navidrums:
+    build: .
+    container_name: navidrums
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./downloads:/downloads
+      - ./navidrums.db:/app/navidrums.db
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - navidrums
+
+networks:
+  navidrums:
+    driver: bridge
