@@ -26,6 +26,7 @@ type Config struct {
 	Password       string
 	SubdirTemplate string
 	CacheTTL       time.Duration
+	MusicBrainzURL string
 }
 
 // Load loads configuration from environment variables with defaults
@@ -45,6 +46,7 @@ func Load() *Config {
 		Password:       getEnv("NAVIDRUMS_PASSWORD", ""),
 		SubdirTemplate: getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
 		CacheTTL:       getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
+		MusicBrainzURL: getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
 	}
 }
 

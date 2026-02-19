@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/cesargomez89/navidrums/internal/constants"
 )
@@ -85,6 +86,7 @@ func TestValidate(t *testing.T) {
 				Username:       "navidrums",
 				Password:       "testpass",
 				SubdirTemplate: "{{.AlbumArtist}}/{{.Album}}/{{.Title}}",
+				CacheTTL:       12 * time.Hour,
 			},
 			wantErr: false,
 		},

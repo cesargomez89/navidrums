@@ -16,6 +16,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/logger"
+	"github.com/cesargomez89/navidrums/internal/musicbrainz"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/internal/tagging"
@@ -37,6 +38,7 @@ type Worker struct {
 	downloader        app.Downloader
 	playlistGenerator app.PlaylistGenerator
 	albumArtService   app.AlbumArtService
+	musicBrainzClient *musicbrainz.Client
 	wg                sync.WaitGroup
 	ctx               context.Context
 	cancel            context.CancelFunc
@@ -62,6 +64,7 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 	worker.downloader = app.NewDownloader(pm, cfg)
 	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
+	worker.musicBrainzClient = musicbrainz.NewClient(cfg.MusicBrainzURL)
 
 	return worker
 }
@@ -402,6 +405,20 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 				track.Subtitles = subtitles
 			}
 			logger.Debug("Fetched lyrics successfully")
+		}
+	}
+
+	// Fetch genre from MusicBrainz if not available from provider
+	if track.Genre == "" && track.ISRC != "" {
+		logger.Debug("Fetching genre from MusicBrainz", "isrc", track.ISRC)
+		genres, err := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		if err != nil {
+			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", err)
+		} else if len(genres) > 0 {
+			track.Genre = genres[0]
+			logger.Debug("Fetched genre from MusicBrainz", "genre", track.Genre, "isrc", track.ISRC)
+		} else {
+			logger.Debug("No genre found in MusicBrainz", "isrc", track.ISRC)
 		}
 	}
 

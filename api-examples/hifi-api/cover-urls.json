@@ -1,12 +1,12 @@
 {
-    "version": "2.4",
-    "covers": [
-        {
-            "id": 3489541,
-            "name": "Plastic Beach",
-            "1280": "https://resources.tidal.com/images/38b14a02/2d6f/4515/bb81/8aeb6f300b37/1280x1280.jpg",
-            "640": "https://resources.tidal.com/images/38b14a02/2d6f/4515/bb81/8aeb6f300b37/640x640.jpg",
-            "80": "https://resources.tidal.com/images/38b14a02/2d6f/4515/bb81/8aeb6f300b37/80x80.jpg"
-        }
-    ]
+  "version": "2.4",
+  "covers": [
+    {
+      "id": 3489541,
+      "name": "Plastic Beach",
+      "1280": "https://resources.tidal.com/images/38b14a02/2d6f/4515/bb81/8aeb6f300b37/1280x1280.jpg",
+      "640": "https://resources.tidal.com/images/38b14a02/2d6f/4515/bb81/8aeb6f300b37/640x640.jpg",
+      "80": "https://resources.tidal.com/images/38b14a02/2d6f/4515/bb81/8aeb6f300b37/80x80.jpg"
+    }
+  ]
 }
