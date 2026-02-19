@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/config"
@@ -20,7 +22,6 @@ import (
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/internal/tagging"
-	"github.com/google/uuid"
 )
 
 var (
@@ -30,18 +31,18 @@ var (
 )
 
 type Worker struct {
-	Repo              *store.DB
-	ProviderManager   *catalog.ProviderManager
-	Config            *config.Config
-	MaxConcurrent     int
-	Logger            *logger.Logger
 	downloader        app.Downloader
 	playlistGenerator app.PlaylistGenerator
 	albumArtService   app.AlbumArtService
-	musicBrainzClient *musicbrainz.Client
-	wg                sync.WaitGroup
 	ctx               context.Context
+	Repo              *store.DB
+	ProviderManager   *catalog.ProviderManager
+	Config            *config.Config
+	Logger            *logger.Logger
+	musicBrainzClient *musicbrainz.Client
 	cancel            context.CancelFunc
+	wg                sync.WaitGroup
+	MaxConcurrent     int
 }
 
 func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, log *logger.Logger) *Worker {
@@ -114,7 +115,7 @@ func (w *Worker) recoverInterruptedTracks() {
 			// Remove known extensions if they exist
 			// This is best-effort
 			for _, ext := range []string{".flac", ".mp3", ".m4a"} {
-				storage.RemoveFile(fullPathNoExt + ext)
+				_ = storage.RemoveFile(fullPathNoExt + ext)
 			}
 		}
 
@@ -156,9 +157,10 @@ func (w *Worker) processJobs() {
 			queuedJobs := []*domain.Job{}
 
 			for _, j := range jobs {
-				if j.Status == domain.JobStatusRunning {
+				switch j.Status {
+				case domain.JobStatusRunning:
 					activeCount++
-				} else if j.Status == domain.JobStatusQueued {
+				case domain.JobStatusQueued:
 					queuedJobs = append(queuedJobs, j)
 				}
 			}
@@ -199,7 +201,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 				"job_id", job.ID,
 				"panic", r,
 			)
-			w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Panic: %v", r))
+			_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Panic: %v", r))
 		}
 	}()
 
@@ -233,7 +235,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 		w.processArtistJob(ctx, job)
 	default:
 		logger.Error("Unknown job type")
-		w.Repo.UpdateJobError(job.ID, "Unknown job type")
+		_ = w.Repo.UpdateJobError(job.ID, "Unknown job type")
 	}
 }
 
@@ -244,7 +246,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	existingTrack, _ := w.Repo.GetTrackByProviderID(job.SourceID)
 	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted {
 		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
-		w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+		_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 		return
 	}
 
@@ -256,7 +258,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		catalogTrack, err := w.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
 		if err != nil {
 			logger.Error("Failed to fetch track metadata", "error", err)
-			w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch track: %v", err))
+			_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch track: %v", err))
 			return
 		}
 
@@ -269,7 +271,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 
 		if err := w.Repo.CreateTrack(track); err != nil {
 			logger.Error("Failed to create track record", "error", err)
-			w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create track record: %v", err))
+			_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create track record: %v", err))
 			return
 		}
 	}
@@ -297,8 +299,8 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	fullPathNoExt, err := storage.BuildPath(w.Config.SubdirTemplate, templateData)
 	if err != nil {
 		logger.Error("Failed to build path from template", "error", err)
-		w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to build path: %v", err))
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to build path: %v", err))
+		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to build path: %v", err))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to build path: %v", err))
 		return
 	}
 
@@ -314,10 +316,10 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 
 	if track.Status == domain.TrackStatusCompleted {
 		exists := false
-		if _, err := os.Stat(predictedPath); err == nil {
+		if _, statErr := os.Stat(predictedPath); statErr == nil {
 			exists = true
 		} else if track.FilePath != "" {
-			if _, err := os.Stat(track.FilePath); err == nil {
+			if _, statErr := os.Stat(track.FilePath); statErr == nil {
 				exists = true
 				predictedPath = track.FilePath
 			}
@@ -334,36 +336,36 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			} else {
 				// Trust existing if completed? Or re-hash?
 				// Be safe: re-hash and update
-				newHash, err := storage.HashFile(predictedPath)
-				if err == nil {
+				newHash, hashErr := storage.HashFile(predictedPath)
+				if hashErr == nil {
 					track.FileHash = newHash
-					w.Repo.UpdateTrack(track)
+					_ = w.Repo.UpdateTrack(track)
 					match = true
 				}
 			}
 
 			if match {
 				logger.Info("Track already exists and verified, skipping download", "path", predictedPath)
-				w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+				_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 				return
 			} else {
 				logger.Info("Track exists but hash mismatch, redownloading", "path", predictedPath)
-				storage.RemoveFile(predictedPath)
+				_ = storage.RemoveFile(predictedPath)
 			}
 		}
 	}
 
 	// Update track status to downloading
-	if err := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusDownloading, ""); err != nil {
+	if updateErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusDownloading, ""); updateErr != nil {
 		logger.Error("Failed to update track status to downloading", "error", err)
 		return
 	}
 
 	finalDir := filepath.Dir(fullPathNoExt)
-	if err := storage.EnsureDir(finalDir); err != nil {
-		logger.Error("Failed to create directory", "error", err)
-		w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create directory: %v", err))
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", err))
+	if dirErr := storage.EnsureDir(finalDir); dirErr != nil {
+		logger.Error("Failed to create directory", "error", dirErr)
+		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create directory: %v", dirErr))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", dirErr))
 		return
 	}
 
@@ -371,14 +373,14 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	finalPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
-		w.Repo.MarkTrackFailed(track.ID, err.Error())
-		w.Repo.UpdateJobError(job.ID, err.Error())
+		_ = w.Repo.MarkTrackFailed(track.ID, err.Error())
+		_ = w.Repo.UpdateJobError(job.ID, err.Error())
 		return
 	}
 
 	// Set track.Status = processing
-	if err := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); err != nil {
-		logger.Error("Failed to update track status to processing", "error", err)
+	if statusErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); statusErr != nil {
+		logger.Error("Failed to update track status to processing", "error", statusErr)
 	}
 
 	logger.Info("Download finished, starting tagging", "file_path", finalPath)
@@ -394,8 +396,8 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 
 	// Fetch lyrics if not already present
 	if track.Lyrics == "" || track.Subtitles == "" {
-		lyrics, subtitles, err := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
-		if err != nil {
+		lyrics, subtitles, lyricsErr := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
+		if lyricsErr != nil {
 			logger.Debug("Failed to fetch lyrics", "error", err)
 		} else {
 			if track.Lyrics == "" && lyrics != "" {
@@ -404,18 +406,15 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			if track.Subtitles == "" && subtitles != "" {
 				track.Subtitles = subtitles
 			}
-			logger.Debug("Fetched lyrics successfully")
 		}
 	}
 
 	// Fetch metadata from MusicBrainz if ISRC available
 	if track.ISRC != "" {
-		logger.Debug("Fetching metadata from MusicBrainz", "isrc", track.ISRC)
-
 		// Fetch recording metadata (album, artist, duration, release date, etc.)
-		meta, err := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC)
-		if err != nil {
-			logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", err)
+		meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC)
+		if mbErr != nil {
+			logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
 		} else if meta != nil {
 			// Replace with MusicBrainz data (authoritative source)
 			if meta.Album != "" {
@@ -451,34 +450,29 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			if meta.ReleaseID != "" {
 				track.ReleaseID = meta.ReleaseID
 			}
-			logger.Debug("Applied MusicBrainz metadata", "album", track.Album, "artist", track.Artist)
 		}
 
 		// Fetch genre from MusicBrainz if not available from provider
 		if track.Genre == "" {
-			logger.Debug("Fetching genre from MusicBrainz", "isrc", track.ISRC)
-			genres, err := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
-			if err != nil {
-				logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", err)
+			genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+			if genreErr != nil {
+				logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
 			} else if len(genres) > 0 {
 				track.Genre = genres[0]
-				logger.Debug("Fetched genre from MusicBrainz", "genre", track.Genre, "isrc", track.ISRC)
-			} else {
-				logger.Debug("No genre found in MusicBrainz", "isrc", track.ISRC)
 			}
 		}
 	}
 
 	// Tag the file
-	if err := tagging.TagFile(finalPath, track, albumArtData); err != nil {
+	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
 		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)
 	}
 
 	// Save album art to folder
 	if len(albumArtData) > 0 {
 		artPath := filepath.Join(finalDir, "cover.jpg")
-		if _, err := os.Stat(artPath); os.IsNotExist(err) {
-			if err := storage.WriteFile(artPath, albumArtData); err != nil {
+		if _, artStatErr := os.Stat(artPath); os.IsNotExist(artStatErr) {
+			if writeErr := storage.WriteFile(artPath, albumArtData); writeErr != nil {
 				logger.Error("Failed to save album art", "path", artPath, "error", err)
 			} else {
 				logger.Info("Saved album art", "path", artPath)
@@ -510,7 +504,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	if track.AlbumID != "" {
 		// Just call it, we don't do anything with result yet other than maybe log or if we had a table
 		// User requirement: "Create function: RecomputeAlbumState(albumID)"
-		w.Repo.RecomputeAlbumState(track.AlbumID)
+		_, _ = w.Repo.RecomputeAlbumState(track.AlbumID)
 	}
 
 	// Mark job as completed
@@ -527,13 +521,13 @@ func (w *Worker) processAlbumJob(ctx context.Context, job *domain.Job) {
 	album, err := w.ProviderManager.GetProvider().GetAlbum(ctx, job.SourceID)
 	if err != nil {
 		logger.Error("Failed to fetch album", "error", err)
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
 		return
 	}
 
 	if len(album.Tracks) == 0 {
 		logger.Error("No tracks found in album")
-		w.Repo.UpdateJobError(job.ID, "No tracks found")
+		_ = w.Repo.UpdateJobError(job.ID, "No tracks found")
 		return
 	}
 
@@ -562,13 +556,13 @@ func (w *Worker) processPlaylistJob(ctx context.Context, job *domain.Job) {
 	pl, err := w.ProviderManager.GetProvider().GetPlaylist(ctx, job.SourceID)
 	if err != nil {
 		logger.Error("Failed to fetch playlist", "error", err)
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
 		return
 	}
 
 	if len(pl.Tracks) == 0 {
 		logger.Error("No tracks found in playlist")
-		w.Repo.UpdateJobError(job.ID, "No tracks found")
+		_ = w.Repo.UpdateJobError(job.ID, "No tracks found")
 		return
 	}
 
@@ -601,13 +595,13 @@ func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
 	artist, err := w.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
-		w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
 		return
 	}
 
 	if len(artist.TopTracks) == 0 {
 		logger.Error("No tracks found for artist")
-		w.Repo.UpdateJobError(job.ID, "No tracks found")
+		_ = w.Repo.UpdateJobError(job.ID, "No tracks found")
 		return
 	}
 
@@ -616,9 +610,7 @@ func (w *Worker) processArtistJob(ctx context.Context, job *domain.Job) {
 	createdCount := w.createTracksAndJobs(job.ID, artist.TopTracks, logger)
 
 	catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
-	for i, t := range artist.TopTracks {
-		catalogTracks[i] = t
-	}
+	copy(catalogTracks, artist.TopTracks)
 	if err := w.playlistGenerator.GenerateFromTracks(artist.Name, catalogTracks, w.lookupTrackExtension); err != nil {
 		logger.Error("Failed to generate playlist file", "error", err)
 	}
@@ -695,13 +687,11 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 	for _, catalogTrack := range catalogTracks {
 		// Check if already downloaded
 		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
-			logger.Debug("Track already downloaded, skipping", "track_id", catalogTrack.ID)
 			continue
 		}
 
 		// Check if already active
 		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
-			logger.Debug("Track already being processed, skipping", "track_id", catalogTrack.ID)
 			continue
 		}
 

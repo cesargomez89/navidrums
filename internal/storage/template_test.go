@@ -7,12 +7,12 @@ import (
 
 func TestBuildPath(t *testing.T) {
 	tests := []struct {
+		data       *PathTemplateData
 		name       string
 		template   string
-		data       *PathTemplateData
 		want       string
-		wantErr    bool
 		errContain string
+		wantErr    bool
 	}{
 		{
 			name:     "default template",
@@ -203,14 +203,14 @@ func TestBuildFullPath(t *testing.T) {
 
 func TestFormatTrackNumber(t *testing.T) {
 	tests := []struct {
-		input int
 		want  string
+		input int
 	}{
-		{1, "01"},
-		{5, "05"},
-		{10, "10"},
-		{99, "99"},
-		{100, "100"},
+		{"01", 1},
+		{"05", 5},
+		{"10", 10},
+		{"99", 99},
+		{"100", 100},
 	}
 
 	for _, tt := range tests {
@@ -225,12 +225,12 @@ func TestFormatTrackNumber(t *testing.T) {
 
 func TestFormatDiscNumber(t *testing.T) {
 	tests := []struct {
-		input int
 		want  string
+		input int
 	}{
-		{1, "01"},
-		{2, "02"},
-		{10, "10"},
+		{"01", 1},
+		{"02", 2},
+		{"10", 10},
 	}
 
 	for _, tt := range tests {

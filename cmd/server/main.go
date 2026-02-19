@@ -44,7 +44,11 @@ func main() {
 		appLogger.Error("Failed to init DB", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			appLogger.Error("Failed to close DB", "error", closeErr)
+		}
+	}()
 
 	// Initialize Provider Manager
 	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
@@ -96,7 +100,7 @@ func main() {
 			contentType = "image/svg+xml"
 		}
 		w.Header().Set("Content-Type", contentType)
-		w.Write(data)
+		_, _ = w.Write(data)
 	}))
 
 	// Routes

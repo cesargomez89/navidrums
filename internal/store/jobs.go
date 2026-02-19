@@ -38,6 +38,12 @@ func (db *DB) UpdateJobError(id string, errorMsg string) error {
 	return err
 }
 
+func (db *DB) ClearJobError(id string) error {
+	query := `UPDATE jobs SET status = ?, progress = 0, error = NULL, updated_at = ? WHERE id = ?`
+	_, err := db.Exec(query, domain.JobStatusQueued, time.Now(), id)
+	return err
+}
+
 func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
 

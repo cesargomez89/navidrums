@@ -10,9 +10,9 @@ import (
 )
 
 type migration struct {
-	version     int
-	description string
 	up          func(*sqlx.DB) error
+	description string
+	version     int
 }
 
 // Migrations history is cleared for v2.0 refactor

@@ -25,8 +25,8 @@ type Config struct {
 	Username       string
 	Password       string
 	SubdirTemplate string
-	CacheTTL       time.Duration
 	MusicBrainzURL string
+	CacheTTL       time.Duration
 }
 
 // Load loads configuration from environment variables with defaults

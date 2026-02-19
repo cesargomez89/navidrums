@@ -116,19 +116,19 @@ func (p *HifiProvider) searchTracks(ctx context.Context, query string) ([]domain
 	var resp struct {
 		Data struct {
 			Items []struct {
-				ID          json.Number `json:"id"`
-				Title       string      `json:"title"`
-				Duration    int         `json:"duration"`
-				TrackNumber int         `json:"trackNumber"`
-				Album       struct {
+				Album struct {
 					ID    json.Number `json:"id"`
 					Title string      `json:"title"`
 					Cover string      `json:"cover"`
 				} `json:"album"`
+				ID      json.Number `json:"id"`
+				Title   string      `json:"title"`
 				Artists []struct {
 					ID   json.Number `json:"id"`
 					Name string      `json:"name"`
 				} `json:"artists"`
+				Duration    int `json:"duration"`
+				TrackNumber int `json:"trackNumber"`
 			} `json:"items"`
 		} `json:"data"`
 	}

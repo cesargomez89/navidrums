@@ -45,7 +45,7 @@ func (s *albumArtService) DownloadAndSaveAlbumArt(album *domain.Album, imageURL 
 		// Try to parse year from release date (YYYY-MM-DD format)
 		if len(album.ReleaseDate) >= 4 {
 			var parsedYear int
-			fmt.Sscanf(album.ReleaseDate[:4], "%d", &parsedYear)
+			_, _ = fmt.Sscanf(album.ReleaseDate[:4], "%d", &parsedYear)
 			year = parsedYear
 		}
 	}

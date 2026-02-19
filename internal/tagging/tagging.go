@@ -11,11 +11,12 @@ import (
 	"strings"
 
 	"github.com/bogem/id3v2/v2"
+	"github.com/mewkiz/flac"
+	"github.com/mewkiz/flac/meta"
+
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/storage"
-	"github.com/mewkiz/flac"
-	"github.com/mewkiz/flac/meta"
 )
 
 // TagFile writes metadata tags to the audio file at filePath.
@@ -57,7 +58,7 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 
 	// Build metadata block bytes from the already-parsed stream (no re-open).
 	metaBytes, err := buildMetadataBytes(stream, track, albumArtData)
-	stream.Close() // done with the reader; we re-open below as raw bytes
+	_ = stream.Close() // done with the reader; we re-open below as raw bytes
 	if err != nil {
 		return fmt.Errorf("failed to build metadata bytes: %w", err)
 	}
@@ -67,10 +68,12 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to open FLAC file for reading: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	// Seek to audio start.
-	if _, err := f.Seek(audioOffset, io.SeekStart); err != nil {
+	if _, seekErr := f.Seek(audioOffset, io.SeekStart); seekErr != nil {
 		return fmt.Errorf("failed to seek to audio section: %w", err)
 	}
 
@@ -85,25 +88,25 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	success := false
 	defer func() {
 		if !success {
-			os.Remove(tmpPath)
+			_ = os.Remove(tmpPath)
 		}
 	}()
 
 	// Write the fLaC magic.
 	if _, err := tmpFile.Write([]byte("fLaC")); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return fmt.Errorf("failed to write fLaC magic: %w", err)
 	}
 
 	// Write the new metadata blocks.
 	if _, err := tmpFile.Write(metaBytes); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return fmt.Errorf("failed to write metadata blocks: %w", err)
 	}
 
 	// Copy raw audio bytes verbatim.
 	if _, err := io.Copy(tmpFile, f); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return fmt.Errorf("failed to copy audio data: %w", err)
 	}
 
@@ -131,7 +134,7 @@ func calcAudioOffset(stream *flac.Stream) int64 {
 	offset := int64(4) // "fLaC"
 	for _, b := range stream.Blocks {
 		// 4-byte block header + block body length
-		offset += 4 + int64(b.Header.Length)
+		offset += 4 + int64(b.Length)
 	}
 	return offset
 }
@@ -476,7 +479,9 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to open MP3 file: %w", err)
 	}
-	defer tag.Close()
+	defer func() {
+		_ = tag.Close()
+	}()
 
 	tag.SetVersion(4)
 
@@ -679,7 +684,9 @@ func DownloadImage(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to download image: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to download image: status %d (URL: %s)", resp.StatusCode, url)

@@ -61,20 +61,19 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 
 		f, err := storage.CreateFile(finalPath)
 		if err != nil {
-			stream.Close()
+			_ = stream.Close()
 			continue
 		}
 
 		_, err = io.Copy(f, stream)
-		stream.Close()
-		f.Close()
+		_ = stream.Close()
+		_ = f.Close()
 
 		if err == nil {
 			return finalPath, nil
 		}
 
-		storage.RemoveFile(finalPath)
-		finalPath = ""
+		_ = storage.RemoveFile(finalPath)
 
 		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 	}

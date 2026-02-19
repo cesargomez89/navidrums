@@ -7,8 +7,8 @@ import (
 
 func (db *DB) GetCache(key string) ([]byte, error) {
 	type cacheRow struct {
-		Data      []byte       `db:"data"`
 		ExpiresAt sql.NullTime `db:"expires_at"`
+		Data      []byte       `db:"data"`
 	}
 
 	var row cacheRow
@@ -21,7 +21,7 @@ func (db *DB) GetCache(key string) ([]byte, error) {
 	}
 
 	if row.ExpiresAt.Valid && time.Now().After(row.ExpiresAt.Time) {
-		db.Exec("DELETE FROM cache WHERE key = ?", key)
+		_, _ = db.Exec("DELETE FROM cache WHERE key = ?", key)
 		return nil, nil
 	}
 

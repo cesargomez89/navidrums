@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/store"
-	"github.com/go-chi/chi/v5"
 )
 
 func (h *Handler) SearchPage(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,7 @@ func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
 		searchType = "album"
 	}
 	if query == "" {
-		w.Write([]byte(""))
+		_, _ = w.Write([]byte(""))
 		return
 	}
 
@@ -97,7 +98,7 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return updated queue or confirmation
-	w.Write([]byte("<div class='alert alert-success'>Download started!</div>"))
+	_, _ = w.Write([]byte("<div class='alert alert-success'>Download started!</div>"))
 }
 
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
@@ -174,13 +175,13 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 	type ProviderData struct {
+		Active     string `json:"active"`
+		Default    string `json:"default"`
 		Predefined []struct {
 			Name string `json:"name"`
 			URL  string `json:"url"`
 		} `json:"predefined"`
-		Custom  []catalog.CustomProvider `json:"custom"`
-		Active  string                   `json:"active"`
-		Default string                   `json:"default"`
+		Custom []catalog.CustomProvider `json:"custom"`
 	}
 
 	data := ProviderData{
@@ -227,7 +228,7 @@ func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
+	_, _ = w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
 }
 
 func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
@@ -244,8 +245,8 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 	}
 	var customProviders []catalog.CustomProvider
 	if customProvidersJSON != "" {
-		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
-			h.Logger.Error("Failed to unmarshal custom providers", "error", err)
+		if unmarshalErr := json.Unmarshal([]byte(customProvidersJSON), &customProviders); unmarshalErr != nil {
+			h.Logger.Error("Failed to unmarshal custom providers", "error", unmarshalErr)
 		}
 	}
 
@@ -263,7 +264,7 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Write([]byte(`{"success":true}`))
+	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
 func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
@@ -275,13 +276,13 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 
 	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
 	if err != nil || customProvidersJSON == "" {
-		w.Write([]byte(`{"success":false,"error":"no custom catalog"}`))
+		_, _ = w.Write([]byte(`{"success":false,"error":"no custom catalog"}`))
 		return
 	}
 
 	var customProviders []catalog.CustomProvider
-	if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
-		w.Write([]byte(`{"success":false,"error":"invalid data"}`))
+	if unmarshalErr := json.Unmarshal([]byte(customProvidersJSON), &customProviders); unmarshalErr != nil {
+		_, _ = w.Write([]byte(`{"success":false,"error":"invalid data"}`))
 		return
 	}
 
@@ -304,7 +305,7 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	w.Write([]byte(`{"success":true}`))
+	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
 func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {

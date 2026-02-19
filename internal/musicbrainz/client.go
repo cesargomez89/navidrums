@@ -17,10 +17,10 @@ const (
 )
 
 type Client struct {
+	lastRequest time.Time
+	httpClient  *http.Client
 	baseURL     string
 	userAgent   string
-	httpClient  *http.Client
-	lastRequest time.Time
 }
 
 func NewClient(baseURL string) *Client {
@@ -54,7 +54,9 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) ([]string, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
@@ -94,7 +96,9 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
@@ -132,7 +136,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 		meta.CatalogNumber = rel.CatalogNumber
 		meta.ReleaseType = rel.ReleaseGroup.PrimaryType
 		if rel.Date != "" && len(rel.Date) >= 4 {
-			fmt.Sscanf(rel.Date, "%d", &meta.Year)
+			_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
 		}
 	}
 
@@ -172,10 +176,10 @@ type searchResponse struct {
 type recording struct {
 	ID       string    `json:"id"`
 	Title    string    `json:"title"`
-	Length   int       `json:"length"` // milliseconds
 	Tags     []tag     `json:"tags"`
 	Releases []release `json:"releases"`
 	Artists  []artist  `json:"artists"`
+	Length   int       `json:"length"`
 }
 
 type release struct {
@@ -214,13 +218,13 @@ type tag struct {
 type RecordingMetadata struct {
 	Title         string
 	Artist        string
-	Artists       []string
 	Album         string
 	ReleaseDate   string
-	Year          int
-	Duration      int // milliseconds
 	Barcode       string
 	CatalogNumber string
 	ReleaseType   string
 	ReleaseID     string
+	Artists       []string
+	Year          int
+	Duration      int
 }

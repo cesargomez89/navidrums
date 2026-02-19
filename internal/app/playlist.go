@@ -54,9 +54,9 @@ func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.Cata
 	}
 	writeErr := error(nil)
 	defer func() {
-		f.Close()
+		_ = f.Close()
 		if writeErr != nil {
-			storage.RemoveFile(playlistPath)
+			_ = storage.RemoveFile(playlistPath)
 		}
 	}()
 

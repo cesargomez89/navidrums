@@ -9,57 +9,57 @@ import (
 )
 
 type dbTrack struct {
-	ID             int        `db:"id"`
-	ProviderID     string     `db:"provider_id"`
-	Title          string     `db:"title"`
-	Artist         string     `db:"artist"`
-	Artists        string     `db:"artists"`
-	Album          string     `db:"album"`
+	CreatedAt      time.Time  `db:"created_at"`
+	UpdatedAt      time.Time  `db:"updated_at"`
+	LastVerifiedAt *time.Time `db:"last_verified_at"`
+	CompletedAt    *time.Time `db:"completed_at"`
+	Barcode        string     `db:"barcode"`
+	ISRC           string     `db:"isrc"`
 	AlbumID        string     `db:"album_id"`
 	AlbumArtist    string     `db:"album_artist"`
 	AlbumArtists   string     `db:"album_artists"`
-	TrackNumber    int        `db:"track_number"`
-	DiscNumber     int        `db:"disc_number"`
-	TotalTracks    int        `db:"total_tracks"`
-	TotalDiscs     int        `db:"total_discs"`
-	Year           int        `db:"year"`
+	ProviderID     string     `db:"provider_id"`
+	FileHash       string     `db:"file_hash"`
+	ETag           string     `db:"etag"`
+	Title          string     `db:"title"`
+	Artist         string     `db:"artist"`
 	Genre          string     `db:"genre"`
 	Label          string     `db:"label"`
-	ISRC           string     `db:"isrc"`
+	KeyScale       string     `db:"key_scale"`
 	Copyright      string     `db:"copyright"`
 	Composer       string     `db:"composer"`
-	Duration       int        `db:"duration"`
-	Explicit       bool       `db:"explicit"`
-	Compilation    bool       `db:"compilation"`
+	Artists        string     `db:"artists"`
+	FileExtension  string     `db:"file_extension"`
+	FilePath       string     `db:"file_path"`
 	AlbumArtURL    string     `db:"album_art_url"`
 	Lyrics         string     `db:"lyrics"`
 	Subtitles      string     `db:"subtitles"`
-	BPM            int        `db:"bpm"`
+	ParentJobID    string     `db:"parent_job_id"`
+	Album          string     `db:"album"`
 	KeyName        string     `db:"key_name"`
-	KeyScale       string     `db:"key_scale"`
-	ReplayGain     float64    `db:"replay_gain"`
-	Peak           float64    `db:"peak"`
+	ReleaseDate    string     `db:"release_date"`
+	Error          string     `db:"error"`
 	Version        string     `db:"version"`
 	Description    string     `db:"description"`
 	URL            string     `db:"url"`
 	AudioQuality   string     `db:"audio_quality"`
 	AudioModes     string     `db:"audio_modes"`
-	ReleaseDate    string     `db:"release_date"`
-	Barcode        string     `db:"barcode"`
+	Status         string     `db:"status"`
+	ReleaseID      string     `db:"release_id"`
 	CatalogNumber  string     `db:"catalog_number"`
 	ReleaseType    string     `db:"release_type"`
-	ReleaseID      string     `db:"release_id"`
-	Status         string     `db:"status"`
-	Error          string     `db:"error"`
-	ParentJobID    string     `db:"parent_job_id"`
-	FilePath       string     `db:"file_path"`
-	FileExtension  string     `db:"file_extension"`
-	CreatedAt      time.Time  `db:"created_at"`
-	UpdatedAt      time.Time  `db:"updated_at"`
-	CompletedAt    *time.Time `db:"completed_at"`
-	ETag           string     `db:"etag"`
-	FileHash       string     `db:"file_hash"`
-	LastVerifiedAt *time.Time `db:"last_verified_at"`
+	ID             int        `db:"id"`
+	ReplayGain     float64    `db:"replay_gain"`
+	Peak           float64    `db:"peak"`
+	BPM            int        `db:"bpm"`
+	Duration       int        `db:"duration"`
+	Year           int        `db:"year"`
+	TotalDiscs     int        `db:"total_discs"`
+	TotalTracks    int        `db:"total_tracks"`
+	DiscNumber     int        `db:"disc_number"`
+	TrackNumber    int        `db:"track_number"`
+	Compilation    bool       `db:"compilation"`
+	Explicit       bool       `db:"explicit"`
 }
 
 func (d *dbTrack) toDomain() *domain.Track {
@@ -114,10 +114,10 @@ func (d *dbTrack) toDomain() *domain.Track {
 	}
 
 	if d.Artists != "" {
-		json.Unmarshal([]byte(d.Artists), &track.Artists)
+		_ = json.Unmarshal([]byte(d.Artists), &track.Artists)
 	}
 	if d.AlbumArtists != "" {
-		json.Unmarshal([]byte(d.AlbumArtists), &track.AlbumArtists)
+		_ = json.Unmarshal([]byte(d.AlbumArtists), &track.AlbumArtists)
 	}
 	if d.CompletedAt != nil {
 		track.CompletedAt = *d.CompletedAt
