@@ -6,12 +6,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/form/v4"
+
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/web"
-	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
@@ -21,6 +23,7 @@ type Handler struct {
 	SettingsRepo     *store.SettingsRepo
 	Templates        *template.Template
 	Logger           *logger.Logger
+	FormDecoder      *form.Decoder
 }
 
 func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
@@ -30,6 +33,7 @@ func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.Provid
 		ProviderManager:  pm,
 		SettingsRepo:     sr,
 		Logger:           logger.Default(),
+		FormDecoder:      form.NewDecoder(),
 	}
 	h.ParseTemplates()
 	return h
@@ -58,12 +62,27 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/downloads", h.DownloadsPage)
 	r.Get("/htmx/downloads", h.DownloadsHTMX)
+	r.Post("/htmx/downloads/sync", h.SyncAllHTMX)
+	r.Post("/htmx/downloads/bulk-delete", h.BulkDeleteHTMX)
+	r.Post("/htmx/downloads/bulk-sync", h.BulkSyncHTMX)
+	r.Post("/htmx/downloads/bulk-genre", h.BulkUpdateGenreHTMX)
 	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
+
+	r.Get("/track/{id}", h.TrackPage)
+	r.Get("/htmx/track/{id}", h.TrackHTMX)
+	r.Post("/htmx/track/{id}/save", h.SaveTrackHTMX)
+	r.Post("/htmx/track/{id}/sync", h.SyncTrackHTMX)
+	r.Post("/htmx/track/{id}/enrich", h.EnrichTrackHTMX)
+	r.Post("/htmx/track/{id}/enrich-hifi", h.EnrichHiFiHTMX)
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)
 	r.Post("/htmx/provider/add", h.AddCustomProviderHTMX)
 	r.Post("/htmx/provider/remove", h.RemoveCustomProviderHTMX)
+
+	r.Get("/htmx/genre-map", h.GetGenreMapHTMX)
+	r.Post("/htmx/genre-map", h.SetGenreMapHTMX)
+	r.Post("/htmx/genre-map/reset", h.ResetGenreMapHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {

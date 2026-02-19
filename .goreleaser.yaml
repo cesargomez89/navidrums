@@ -16,8 +16,9 @@ release:
   github:
     owner: cesargomez89
     name: navidrums
-  draft: false
+  draft: true
   prerelease: auto
+  make_latest: false
 
 builds:
   - id: navidrums

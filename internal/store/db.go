@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
 
 type migration struct {
-	version     int
+	up          func(*sqlx.Tx) error
 	description string
-	up          func(*sql.DB) error
+	version     int
 }
 
 // Migrations history is cleared for v2.0 refactor
@@ -20,7 +21,7 @@ var migrations = []migration{
 	{
 		version:     1,
 		description: "Add track lifecycle fields",
-		up: func(db *sql.DB) error {
+		up: func(tx *sqlx.Tx) error {
 			columns := []string{
 				"ALTER TABLE tracks ADD COLUMN file_hash TEXT",
 				"ALTER TABLE tracks ADD COLUMN etag TEXT",
@@ -28,35 +29,151 @@ var migrations = []migration{
 				"ALTER TABLE tracks ADD COLUMN album_id TEXT",
 			}
 			for _, q := range columns {
-				if _, err := db.Exec(q); err != nil {
-					// Ignore duplicate column errors if migration ran partially
-					continue
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
 				}
 			}
 			return nil
 		},
 	},
+	{
+		version:     2,
+		description: "Consolidated beta schema updates and full backfill",
+		up: func(tx *sqlx.Tx) error {
+			columns := []string{
+				"ALTER TABLE tracks ADD COLUMN barcode TEXT",
+				"ALTER TABLE tracks ADD COLUMN catalog_number TEXT",
+				"ALTER TABLE tracks ADD COLUMN release_type TEXT",
+				"ALTER TABLE tracks ADD COLUMN release_id TEXT",
+				"ALTER TABLE tracks ADD COLUMN sub_genre TEXT",
+				"ALTER TABLE tracks ADD COLUMN recording_id TEXT",
+				"ALTER TABLE tracks ADD COLUMN tags TEXT",
+				"ALTER TABLE tracks ADD COLUMN artist_ids TEXT",
+				"ALTER TABLE tracks ADD COLUMN album_artist_ids TEXT",
+			}
+			for _, q := range columns {
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
+				}
+			}
+
+			// Clear version field (no longer used)
+			if _, err := tx.Exec("UPDATE tracks SET version = ''"); err != nil {
+				return err
+			}
+
+			// Comprehensive backfill to avoid NULL scan panics
+			_, err := tx.Exec(`UPDATE tracks SET
+				artist = COALESCE(artist, ''),
+				album = COALESCE(album, ''),
+				album_id = COALESCE(album_id, ''),
+				album_artist = COALESCE(album_artist, ''),
+				genre = COALESCE(genre, ''),
+				sub_genre = COALESCE(sub_genre, ''),
+				label = COALESCE(label, ''),
+				isrc = COALESCE(isrc, ''),
+				copyright = COALESCE(copyright, ''),
+				composer = COALESCE(composer, ''),
+				album_art_url = COALESCE(album_art_url, ''),
+				lyrics = COALESCE(lyrics, ''),
+				subtitles = COALESCE(subtitles, ''),
+				key_name = COALESCE(key_name, ''),
+				key_scale = COALESCE(key_scale, ''),
+				version = COALESCE(version, ''),
+				description = COALESCE(description, ''),
+				url = COALESCE(url, ''),
+				audio_quality = COALESCE(audio_quality, ''),
+				audio_modes = COALESCE(audio_modes, ''),
+				release_date = COALESCE(release_date, ''),
+				barcode = COALESCE(barcode, ''),
+				catalog_number = COALESCE(catalog_number, ''),
+				release_type = COALESCE(release_type, ''),
+				release_id = COALESCE(release_id, ''),
+				recording_id = COALESCE(recording_id, ''),
+				tags = COALESCE(tags, '[]'),
+				artist_ids = COALESCE(artist_ids, '[]'),
+				album_artist_ids = COALESCE(album_artist_ids, '[]'),
+				error = COALESCE(error, ''),
+				parent_job_id = COALESCE(parent_job_id, ''),
+				file_path = COALESCE(file_path, ''),
+				file_extension = COALESCE(file_extension, ''),
+				file_hash = COALESCE(file_hash, ''),
+				etag = COALESCE(etag, ''),
+				track_number = COALESCE(track_number, 0),
+				disc_number = COALESCE(disc_number, 0),
+				total_tracks = COALESCE(total_tracks, 0),
+				total_discs = COALESCE(total_discs, 0),
+				year = COALESCE(year, 0),
+				duration = COALESCE(duration, 0),
+				bpm = COALESCE(bpm, 0),
+				replay_gain = COALESCE(replay_gain, 0.0),
+				peak = COALESCE(peak, 0.0),
+				explicit = COALESCE(explicit, 0),
+				compilation = COALESCE(compilation, 0)
+			`)
+			return err
+		},
+	},
+	{
+		version:     3,
+		description: "Merge sub_genre into genre as 'genre; subgenre'",
+		up: func(tx *sqlx.Tx) error {
+			// Merge sub_genre into genre for tracks that have a non-empty sub_genre
+			// that is different from the genre (avoid "Genre; Genre" duplication).
+			// The sub_genre column is kept in the DB but no longer used by the app.
+			_, err := tx.Exec(`
+				UPDATE tracks
+				SET genre = genre || '; ' || sub_genre
+				WHERE sub_genre IS NOT NULL
+				  AND TRIM(sub_genre) != ''
+				  AND LOWER(REPLACE(REPLACE(REPLACE(genre, ' ', ''), '-', ''), '_', ''))
+				    != LOWER(REPLACE(REPLACE(REPLACE(sub_genre, ' ', ''), '-', ''), '_', ''))
+			`)
+			return err
+		},
+	},
+}
+
+type dbOps interface {
+	Rebind(query string) string
+	BindNamed(query string, arg interface{}) (string, []interface{}, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	QueryRowx(query string, args ...interface{}) *sqlx.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Get(dest interface{}, query string, args ...interface{}) error
+	Select(dest interface{}, query string, args ...interface{}) error
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	NamedExec(query string, arg interface{}) (sql.Result, error)
 }
 
 type DB struct {
-	*sql.DB
+	dbOps
+	root *sqlx.DB
 }
 
 func NewSQLiteDB(dsn string) (*DB, error) {
-	// Append pragmas to DSN to ensure they apply to all connections in the pool
-	// _pragma=busy_timeout(30000) avoids "database is locked" errors
-	// _pragma=journal_mode(WAL) enables Write-Ahead Logging for better concurrency
 	if !strings.Contains(dsn, "?") {
 		dsn += "?"
 	} else {
 		dsn += "&"
 	}
-	dsn += "_pragma=busy_timeout(30000)&_pragma=journal_mode(WAL)"
+	// Increase busy_timeout significantly and enable WAL mode for better concurrency
+	dsn += "_pragma=busy_timeout(60000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)"
 
-	db, err := sql.Open("sqlite", dsn)
+	db, err := sqlx.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open db: %w", err)
 	}
+
+	// SQLite only supports one concurrent writer. Setting MaxOpenConns to 1
+	// ensures writers queue inside Go rather than failing at the SQLite level with SQLITE_BUSY.
+	db.SetMaxOpenConns(1)
 
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping db: %w", err)
@@ -70,10 +187,41 @@ func NewSQLiteDB(dsn string) (*DB, error) {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	return &DB{db}, nil
+	return &DB{dbOps: db, root: db}, nil
 }
 
-func runMigrations(db *sql.DB) error {
+// RunInTx runs the given function within a transaction.
+// It yields a *DB instance that transparently executes operations
+// over the active transaction instead of the connection pool.
+func (db *DB) RunInTx(fn func(txDB *DB) error) error {
+	if db.root == nil {
+		// Already in a transaction, just run the function
+		return fn(db)
+	}
+
+	tx, err := db.root.Beginx()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback() //nolint:errcheck // rollback is best-effort; commit result is what matters
+
+	txDB := &DB{
+		dbOps: tx,
+		root:  nil, // txDB is a transaction unit, cannot spawn nested tx
+	}
+
+	if err := fn(txDB); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func runMigrations(db *sqlx.DB) error {
 	for _, m := range migrations {
 		applied, err := isMigrationApplied(db, m.version)
 		if err != nil {
@@ -84,19 +232,30 @@ func runMigrations(db *sql.DB) error {
 			continue
 		}
 
-		if err := m.up(db); err != nil {
+		tx, err := db.Beginx()
+		if err != nil {
+			return fmt.Errorf("failed to begin transaction for migration %d: %w", m.version, err)
+		}
+
+		if err := m.up(tx); err != nil {
+			_ = tx.Rollback()
 			return fmt.Errorf("failed to apply migration %d (%s): %w", m.version, m.description, err)
 		}
 
-		if err := recordMigration(db, m.version, m.description); err != nil {
+		if err := recordMigration(tx, m.version, m.description); err != nil {
+			_ = tx.Rollback()
 			return fmt.Errorf("failed to record migration %d: %w", m.version, err)
+		}
+
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("failed to commit migration %d: %w", m.version, err)
 		}
 	}
 
 	return nil
 }
 
-func isMigrationApplied(db *sql.DB, version int) (bool, error) {
+func isMigrationApplied(db *sqlx.DB, version int) (bool, error) {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM schema_migrations WHERE version = ?", version).Scan(&count)
 	if err == sql.ErrNoRows {
@@ -108,11 +267,14 @@ func isMigrationApplied(db *sql.DB, version int) (bool, error) {
 	return count > 0, nil
 }
 
-func recordMigration(db *sql.DB, version int, description string) error {
-	_, err := db.Exec("INSERT INTO schema_migrations (version, description) VALUES (?, ?)", version, description)
+func recordMigration(tx *sqlx.Tx, version int, description string) error {
+	_, err := tx.Exec("INSERT INTO schema_migrations (version, description) VALUES (?, ?)", version, description)
 	return err
 }
 
 func (db *DB) Close() error {
-	return db.DB.Close()
+	if db.root != nil {
+		return db.root.Close()
+	}
+	return nil
 }

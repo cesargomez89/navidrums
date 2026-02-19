@@ -1,6 +1,7 @@
 <div class="card">
     <a href="/artist/{{.ID}}">
-        <img src="{{if .PictureURL}}{{.PictureURL}}{{else}}https://via.placeholder.com/300?text=Artist{{end}}" alt="{{.Name}}" loading="lazy">
+        <img src="{{if .PictureURL}}{{.PictureURL}}{{else}}https://via.placeholder.com/300?text=Artist{{end}}"
+            alt="{{.Name}}" loading="lazy">
     </a>
     <div class="card-title"><a href="/artist/{{.ID}}">{{.Name}}</a></div>
 </div>

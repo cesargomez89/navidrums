@@ -1,9 +1,20 @@
 <div class="track">
-    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}" alt="{{.Title}}">
+    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
+        alt="{{.Title}}">
     <div class="track-info">
         <div class="track-title">{{.Title}}</div>
         <div class="track-artist"><a href="/artist/{{.ArtistID}}">{{.Artist}}</a></div>
         <div class="track-album"><a href="/album/{{.AlbumID}}">{{.Album}}</a></div>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="queueDownload('track', '{{.ID}}', this)">Download</button>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        {{if .AudioQuality}}
+        <span class="quality-badge{{if eq .AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
+            .AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .AudioQuality "HIGH" }}
+            quality-badge--high{{else if eq .AudioQuality "LOW" }} quality-badge--low{{end}}">
+            {{if eq .AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .AudioQuality "LOSSLESS"}}Lossless{{else if eq
+            .AudioQuality "HIGH"}}High{{else if eq .AudioQuality "LOW"}}Low{{else}}{{.AudioQuality}}{{end}}
+        </span>
+        {{end}}
+        <button class="btn btn-primary btn-sm" onclick="queueDownload('track', '{{.ID}}', this)">Download</button>
+    </div>
 </div>
