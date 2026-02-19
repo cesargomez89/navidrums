@@ -409,6 +409,11 @@ func newVorbisComment(track *domain.Track) *meta.VorbisComment {
 		addTag("MUSICBRAINZ_ALBUMARTISTID", id)
 	}
 
+	addTag("BARCODE", track.Barcode)
+	addTag("CATALOGNUMBER", track.CatalogNumber)
+	addTag("RELEASETYPE", track.ReleaseType)
+	addTag("MUSICBRAINZ_RELEASEGROUPID", track.ReleaseID)
+
 	return vc
 }
 
@@ -598,6 +603,35 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 			Encoding:    id3v2.EncodingUTF8,
 			Description: "MUSICBRAINZ_ALBUMARTISTID",
 			Value:       id,
+		})
+	}
+
+	if track.Barcode != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "BARCODE",
+			Value:       track.Barcode,
+		})
+	}
+	if track.CatalogNumber != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "CATALOGNUMBER",
+			Value:       track.CatalogNumber,
+		})
+	}
+	if track.ReleaseType != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "RELEASETYPE",
+			Value:       track.ReleaseType,
+		})
+	}
+	if track.ReleaseID != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "MUSICBRAINZ_RELEASEGROUPID",
+			Value:       track.ReleaseID,
 		})
 	}
 

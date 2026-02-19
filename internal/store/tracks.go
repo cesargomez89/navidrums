@@ -15,6 +15,7 @@ func trackColumns() string {
 		year, genre, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
+		barcode, catalog_number, release_type, release_id,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, completed_at, etag, file_hash, last_verified_at`
 }
@@ -39,9 +40,10 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		year, genre, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
+		barcode, catalog_number, release_type, release_id,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := db.Exec(query,
 		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
@@ -49,6 +51,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		track.Year, track.Genre, track.Label, track.ISRC, track.Copyright, track.Composer,
 		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
+		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
 		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
 		track.CreatedAt, track.UpdatedAt, track.ETag, track.FileHash, track.LastVerifiedAt,
 	)
@@ -91,6 +94,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		year = ?, genre = ?, label = ?, isrc = ?, copyright = ?, composer = ?,
 		duration = ?, explicit = ?, compilation = ?, album_art_url = ?, lyrics = ?, subtitles = ?,
 		bpm = ?, key_name = ?, key_scale = ?, replay_gain = ?, peak = ?, version = ?, description = ?, url = ?, audio_quality = ?, audio_modes = ?, release_date = ?,
+		barcode = ?, catalog_number = ?, release_type = ?, release_id = ?,
 		status = ?, error = ?, parent_job_id = ?, file_path = ?, file_extension = ?,
 		updated_at = ?, etag = ?, file_hash = ?, last_verified_at = ?
 	WHERE id = ?`
@@ -101,6 +105,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		track.Year, track.Genre, track.Label, track.ISRC, track.Copyright, track.Composer,
 		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
+		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
 		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
 		time.Now(), track.ETag, track.FileHash, track.LastVerifiedAt, track.ID,
 	)
@@ -272,6 +277,7 @@ func scanTrackFromScanner(scanner interface {
 	var explicit, compilation sql.NullBool
 	var completedAt, lastVerifiedAt sql.NullTime
 	var key, keyScale, version, description, url, audioQuality, audioModes, releaseDate, etag, fileHash, dbAlbumID sql.NullString
+	var barcode, catalogNumber, releaseType, releaseID sql.NullString
 
 	err := scanner.Scan(
 		&track.ID, &track.ProviderID, &track.Title, &track.Artist, &artistsJSON, &track.Album, &dbAlbumID, &track.AlbumArtist, &albumArtistsJSON,
@@ -279,6 +285,7 @@ func scanTrackFromScanner(scanner interface {
 		&year, &track.Genre, &track.Label, &track.ISRC, &track.Copyright, &track.Composer,
 		&duration, &explicit, &compilation, &track.AlbumArtURL, &lyrics, &subtitles,
 		&bpm, &key, &keyScale, &replayGain, &peak, &version, &description, &url, &audioQuality, &audioModes, &releaseDate,
+		&barcode, &catalogNumber, &releaseType, &releaseID,
 		&track.Status, &errMsg, &parentJobID, &filePath, &fileExt,
 		&track.CreatedAt, &track.UpdatedAt, &completedAt, &etag, &fileHash, &lastVerifiedAt,
 	)
@@ -359,6 +366,18 @@ func scanTrackFromScanner(scanner interface {
 	}
 	if releaseDate.Valid {
 		track.ReleaseDate = releaseDate.String
+	}
+	if barcode.Valid {
+		track.Barcode = barcode.String
+	}
+	if catalogNumber.Valid {
+		track.CatalogNumber = catalogNumber.String
+	}
+	if releaseType.Valid {
+		track.ReleaseType = releaseType.String
+	}
+	if releaseID.Valid {
+		track.ReleaseID = releaseID.String
 	}
 	if errMsg.Valid {
 		track.Error = errMsg.String

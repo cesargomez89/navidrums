@@ -92,6 +92,10 @@ type Track struct {
 	AudioQuality   string   `json:"audio_quality,omitempty"`
 	AudioModes     string   `json:"audio_modes,omitempty"`
 	ReleaseDate    string   `json:"release_date,omitempty"`
+	Barcode        string   `json:"barcode,omitempty"`
+	CatalogNumber  string   `json:"catalog_number,omitempty"`
+	ReleaseType    string   `json:"release_type,omitempty"`
+	ReleaseID      string   `json:"release_id,omitempty"`
 
 	// Processing
 	Status      TrackStatus `json:"status"`

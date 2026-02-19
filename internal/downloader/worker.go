@@ -408,17 +408,64 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Fetch genre from MusicBrainz if not available from provider
-	if track.Genre == "" && track.ISRC != "" {
-		logger.Debug("Fetching genre from MusicBrainz", "isrc", track.ISRC)
-		genres, err := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+	// Fetch metadata from MusicBrainz if ISRC available
+	if track.ISRC != "" {
+		logger.Debug("Fetching metadata from MusicBrainz", "isrc", track.ISRC)
+
+		// Fetch recording metadata (album, artist, duration, release date, etc.)
+		meta, err := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC)
 		if err != nil {
-			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", err)
-		} else if len(genres) > 0 {
-			track.Genre = genres[0]
-			logger.Debug("Fetched genre from MusicBrainz", "genre", track.Genre, "isrc", track.ISRC)
-		} else {
-			logger.Debug("No genre found in MusicBrainz", "isrc", track.ISRC)
+			logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", err)
+		} else if meta != nil {
+			// Replace with MusicBrainz data (authoritative source)
+			if meta.Album != "" {
+				track.Album = meta.Album
+			}
+			if meta.Artist != "" {
+				track.Artist = meta.Artist
+			}
+			if len(meta.Artists) > 0 {
+				track.Artists = meta.Artists
+			}
+			if meta.Title != "" {
+				track.Title = meta.Title
+			}
+			if meta.Duration > 0 {
+				track.Duration = meta.Duration
+			}
+			if meta.Year > 0 {
+				track.Year = meta.Year
+			}
+			if meta.ReleaseDate != "" {
+				track.ReleaseDate = meta.ReleaseDate
+			}
+			if meta.Barcode != "" {
+				track.Barcode = meta.Barcode
+			}
+			if meta.CatalogNumber != "" {
+				track.CatalogNumber = meta.CatalogNumber
+			}
+			if meta.ReleaseType != "" {
+				track.ReleaseType = meta.ReleaseType
+			}
+			if meta.ReleaseID != "" {
+				track.ReleaseID = meta.ReleaseID
+			}
+			logger.Debug("Applied MusicBrainz metadata", "album", track.Album, "artist", track.Artist)
+		}
+
+		// Fetch genre from MusicBrainz if not available from provider
+		if track.Genre == "" {
+			logger.Debug("Fetching genre from MusicBrainz", "isrc", track.ISRC)
+			genres, err := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+			if err != nil {
+				logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", err)
+			} else if len(genres) > 0 {
+				track.Genre = genres[0]
+				logger.Debug("Fetched genre from MusicBrainz", "genre", track.Genre, "isrc", track.ISRC)
+			} else {
+				logger.Debug("No genre found in MusicBrainz", "isrc", track.ISRC)
+			}
 		}
 	}
 

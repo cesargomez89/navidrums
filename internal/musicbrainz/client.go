@@ -73,6 +73,72 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) ([]string, er
 	return genres, nil
 }
 
+func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*RecordingMetadata, error) {
+	if isrc == "" {
+		return nil, nil
+	}
+
+	c.throttle()
+
+	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+
+	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
+	}
+
+	var result searchResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(result.Recordings) == 0 {
+		return nil, nil
+	}
+
+	rec := result.Recordings[0]
+	meta := &RecordingMetadata{
+		Title:    rec.Title,
+		Duration: rec.Length,
+	}
+
+	if len(rec.Artists) > 0 {
+		meta.Artist = rec.Artists[0].Name
+		meta.Artists = make([]string, len(rec.Artists))
+		for i, a := range rec.Artists {
+			meta.Artists[i] = a.Name
+		}
+	}
+
+	if len(rec.Releases) > 0 {
+		rel := rec.Releases[0]
+		meta.Album = rel.Title
+		meta.ReleaseDate = rel.Date
+		meta.ReleaseID = rel.ID
+		meta.Barcode = rel.Barcode
+		meta.CatalogNumber = rel.CatalogNumber
+		meta.ReleaseType = rel.ReleaseGroup.PrimaryType
+		if rel.Date != "" && len(rel.Date) >= 4 {
+			fmt.Sscanf(rel.Date, "%d", &meta.Year)
+		}
+	}
+
+	return meta, nil
+}
+
 func (c *Client) throttle() {
 	now := time.Now()
 	elapsed := now.Sub(c.lastRequest)
@@ -104,10 +170,57 @@ type searchResponse struct {
 }
 
 type recording struct {
-	Tags []tag `json:"tags"`
+	ID       string    `json:"id"`
+	Title    string    `json:"title"`
+	Length   int       `json:"length"` // milliseconds
+	Tags     []tag     `json:"tags"`
+	Releases []release `json:"releases"`
+	Artists  []artist  `json:"artists"`
+}
+
+type release struct {
+	ID            string       `json:"id"`
+	Title         string       `json:"title"`
+	Status        string       `json:"status"`
+	Date          string       `json:"date"`
+	Country       string       `json:"country"`
+	Barcode       string       `json:"barcode"`
+	CatalogNumber string       `json:"catalognumber"`
+	Label         string       `json:"label"`
+	ReleaseGroup  releaseGroup `json:"release-group"`
+	Media         []media      `json:"media"`
+}
+
+type releaseGroup struct {
+	ID          string `json:"id"`
+	PrimaryType string `json:"primary-type"`
+}
+
+type media struct {
+	TrackCount int `json:"trackCount"`
+}
+
+type artist struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	SortName string `json:"sort-name"`
 }
 
 type tag struct {
 	Name  string `json:"name"`
 	Count int    `json:"count"`
+}
+
+type RecordingMetadata struct {
+	Title         string
+	Artist        string
+	Artists       []string
+	Album         string
+	ReleaseDate   string
+	Year          int
+	Duration      int // milliseconds
+	Barcode       string
+	CatalogNumber string
+	ReleaseType   string
+	ReleaseID     string
 }
