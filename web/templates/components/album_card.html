@@ -1,7 +1,18 @@
 <div class="card">
     <a href="/album/{{.ID}}">
-        <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/300?text=No+Cover{{end}}" alt="{{.Title}}" loading="lazy">
+        <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/300?text=No+Cover{{end}}"
+            alt="{{.Title}}" loading="lazy">
     </a>
-    <div class="card-title"><a href="/album/{{.ID}}">{{.Title}}</a></div>
+    <div class="card-title">
+        <a href="/album/{{.ID}}">{{.Title}}</a>
+        {{if .AudioQuality}}
+        <span class="quality-badge{{if eq .AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
+            .AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .AudioQuality "HIGH" }}
+            quality-badge--high{{end}}">
+            {{if eq .AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .AudioQuality "LOSSLESS"}}Lossless{{else if eq
+            .AudioQuality "HIGH"}}High{{else if eq .AudioQuality "LOW"}}Low{{else}}{{.AudioQuality}}{{end}}
+        </span>
+        {{end}}
+    </div>
     <div class="card-sub">{{.Artist}}</div>
 </div>

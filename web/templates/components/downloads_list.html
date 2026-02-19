@@ -1,19 +1,36 @@
 {{define "downloads_list"}}
+{{if .SyncEnqueued}}
+<div class="alert alert-success" style="margin-bottom: 16px;">
+    {{.SyncEnqueued}} sync job(s) enqueued. Check the <a href="/queue">queue</a> for progress.
+</div>
+{{end}}
 {{if .Downloads}}
 <div class="downloads-list">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0;">
+        <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" title="Select all">
+        <span style="font-size: 13px; color: var(--color-text-muted, #888);">Select all</span>
+    </div>
     {{range .Downloads}}
     <div class="download" id="download-{{.ProviderID}}">
-        <div class="download-info">
-            <div class="download-title">{{.Title}}</div>
-            <div class="download-meta">{{.Artist}} - {{.Album}}</div>
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+            <input type="checkbox" class="download-cb" value="{{.ProviderID}}" onchange="onSelectionChange()"
+                title="Select">
+            <div class="download-info">
+                <a href="/track/{{.ID}}" class="download-title">{{.Title}}</a>
+                <div class="download-meta">{{.Artist}} - {{.Album}}</div>
+            </div>
         </div>
-        <div style="text-align: right;">
-            <span class="download-date">{{.CompletedAt.Format "Jan 02, 2006"}}</span>
-            <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm" style="margin-top: 8px; margin-left: 12px;">Delete</button>
+        <div style="text-align: right; flex-shrink: 0;">
+            <span class="download-date">
+                {{if .CompletedAt}}{{.CompletedAt.Format "Jan 02, 2006"}}{{else}}N/A{{end}}
+            </span>
+            <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm"
+                style="margin-top: 8px; margin-left: 12px;">Delete</button>
         </div>
     </div>
     {{end}}
 </div>
+<script>onSelectionChange();</script>
 {{else}}
 <div class="empty">No downloads yet.</div>
 {{end}}

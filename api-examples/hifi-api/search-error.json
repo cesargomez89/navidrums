@@ -1,1 +1,5 @@
-{"detail":"Provide one of s, a, al, v, or p"}
+{
+  "status": 404,
+  "subStatus": 2001,
+  "userMessage": "No results found"
+}

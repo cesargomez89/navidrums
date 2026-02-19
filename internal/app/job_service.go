@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/store"
-	"github.com/google/uuid"
 )
 
 type JobService struct {
@@ -76,7 +77,7 @@ func (s *JobService) RetryJob(id string) error {
 	if job == nil {
 		return fmt.Errorf("job not found")
 	}
-	err = s.Repo.UpdateJobStatus(id, domain.JobStatusQueued, 0)
+	err = s.Repo.ClearJobError(id)
 	if err != nil {
 		return err
 	}

@@ -3,14 +3,27 @@
     <img src="{{if .Album.AlbumArtURL}}{{.Album.AlbumArtURL}}{{else}}https://via.placeholder.com/600?text=No+Cover{{end}}"
         alt="{{.Album.Title}}">
     <div class="detail-info">
-        <h2>{{.Album.Title}}</h2>
+        <h2>
+            {{.Album.Title}}
+            {{if .Album.AudioQuality}}
+            <span class="quality-badge{{if eq .Album.AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
+                .Album.AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .Album.AudioQuality "HIGH" }}
+                quality-badge--high{{end}}">
+                {{if eq .Album.AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .Album.AudioQuality
+                "LOSSLESS"}}Lossless{{else if eq .Album.AudioQuality "HIGH"}}High{{else if eq .Album.AudioQuality
+                "LOW"}}Low{{else}}{{.Album.AudioQuality}}{{end}}
+            </span>
+            {{end}}
+        </h2>
         <div class="detail-meta">
             <span>{{.Album.Artist}}</span>
             {{if .Album.Year}}<span>{{.Album.Year}}</span>{{end}}
             {{if .Album.TotalTracks}}<span>[ {{.Album.TotalTracks}} tracks ]</span>{{end}}
         </div>
-        <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)" style="margin-top: 16px;">Download Full Album</button>
-        <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar" hx-target="#similar-albums-container" hx-swap="innerHTML" style="margin-top: 8px;">Similar Albums</button>
+        <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)"
+            style="margin-top: 16px;">Download Full Album</button>
+        <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar" hx-target="#similar-albums-container"
+            hx-swap="innerHTML" style="margin-top: 8px;">Similar Albums</button>
     </div>
 </div>
 

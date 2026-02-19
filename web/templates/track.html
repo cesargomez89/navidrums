@@ -1,0 +1,114 @@
+{{define "content"}}
+<h1>Track Details</h1>
+
+<div id="track-form-container" hx-get="/htmx/track/{{.Track.ID}}" hx-trigger="load">
+    <div class="loading">Loading track...</div>
+</div>
+
+<div class="section track-warning-banner">
+    <div class="track-warning-banner-inner">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+        </svg>
+        <div>
+            <strong>Destructive Operation</strong>
+            <p>
+                Clicking "Sync to File" will modify the actual audio file on disk.
+                If done incorrectly, this could cause data loss or playback issues.
+                Only use this if you know what you're doing.
+            </p>
+        </div>
+    </div>
+</div>
+
+
+<div class="section">
+    <h2>File Information</h2>
+    <div class="track-info-text">
+        <p><strong>File Path:</strong> {{.Track.FilePath}}</p>
+        <p><strong>File Extension:</strong> {{.Track.FileExtension}}</p>
+        <p><strong>Status:</strong> {{.Track.Status}}</p>
+        <p><strong>Completed:</strong>
+            {{if .Track.CompletedAt}}
+            {{.Track.CompletedAt.Format "Jan 02, 2006 15:04"}}
+            {{else}}
+            N/A
+            {{end}}
+        </p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Audio Information</h2>
+    <div class="track-info-text">
+        <p><strong>BPM:</strong> {{if .Track.BPM}}{{.Track.BPM}}{{else}}N/A{{end}}</p>
+        <p><strong>Key:</strong> {{.Track.Key}}{{if .Track.KeyScale}} {{.Track.KeyScale}}{{end}}</p>
+        <p><strong>Replay Gain:</strong> {{if .Track.ReplayGain}}{{.Track.ReplayGain}} dB{{else}}N/A{{end}}</p>
+        <p><strong>Peak:</strong> {{if .Track.Peak}}{{.Track.Peak}}{{else}}N/A{{end}}</p>
+        <p><strong>Audio Quality:</strong>
+            {{if .Track.AudioQuality}}
+            <span class="quality-badge{{if eq .Track.AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
+                .Track.AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .Track.AudioQuality "HIGH" }}
+                quality-badge--high{{end}}">
+                {{if eq .Track.AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .Track.AudioQuality
+                "LOSSLESS"}}Lossless{{else if eq .Track.AudioQuality "HIGH"}}High{{else if eq .Track.AudioQuality
+                "LOW"}}Low{{else}}{{.Track.AudioQuality}}{{end}}
+            </span>
+            {{else}}N/A{{end}}
+        </p>
+        <p><strong>Audio Mode:</strong> {{.Track.AudioModes}}</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Additional Information</h2>
+    <div class="track-info-text">
+        <p><strong>Version:</strong> {{.Track.Version}}</p>
+        <p><strong>URL:</strong> {{if .Track.URL}}<a href="{{.Track.URL}}"
+                target="_blank">{{.Track.URL}}</a>{{else}}N/A{{end}}</p>
+        <p><strong>Description:</strong> {{if .Track.Description}}{{.Track.Description}}{{else}}N/A{{end}}</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>MusicBrainz Data</h2>
+    <div class="mb-data-grid">
+        <div class="mb-data-item">
+            <span>Recording ID</span>
+            <span>{{if .Track.RecordingID}}{{.Track.RecordingID}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item">
+            <span>Release ID</span>
+            <span>{{if .Track.ReleaseID}}{{.Track.ReleaseID}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item">
+            <span>ISRC</span>
+            <span>{{if .Track.ISRC}}{{.Track.ISRC}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item">
+            <span>Release Type</span>
+            <span>{{if .Track.ReleaseType}}{{.Track.ReleaseType}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item">
+            <span>Release Date</span>
+            <span>{{if .Track.ReleaseDate}}{{.Track.ReleaseDate}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item">
+            <span>Barcode</span>
+            <span>{{if .Track.Barcode}}{{.Track.Barcode}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item">
+            <span>Catalog Number</span>
+            <span>{{if .Track.CatalogNumber}}{{.Track.CatalogNumber}}{{else}}—{{end}}</span>
+        </div>
+        <div class="mb-data-item mb-data-item--full">
+            <span>Tags</span>
+            <span>{{if .Track.Tags}}{{range $i, $t := .Track.Tags}}{{if $i}},
+                {{end}}{{$t}}{{end}}{{else}}—{{end}}</span>
+        </div>
+    </div>
+</div>
+{{end}}

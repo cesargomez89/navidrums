@@ -5,25 +5,100 @@ Optimized for low-end hardware.
 
 ## Features
 
-- Browse Artists, Albums, and Playlists from remote Hifi API.
-- Download queuing system with concurrency control (Max 2 downloads).
-- **Provider Management**: Switch between multiple Hifi API endpoints and add custom providers.
-- **Download History**: View last 20 completed/failed downloads.
-- **Comprehensive Metadata Tagging**: Automatically tags downloaded files with:
-  - Basic tags: Title, Artist, Album Artist, Album, Track/Disc Numbers
-  - Extended metadata: Year, Genre, Label, ISRC, Copyright, Composer
-  - Embedded album artwork in audio files
-  - Album cover images saved to album folders (`cover.jpg`)
-  - Playlist cover images saved to playlists folder
-- Supports FLAC, MP3, and MP4 audio formats.
-- Automatic retries and resume support.
-- HTMX-powered responsive UI (no JSON APIs for frontend).
-- Efficient SQLite database.
+### Core Functionality
+- **Browse & Search**: Discover artists, albums, playlists, and tracks from remote Hifi API
+- **Download Queue**: Asynchronous job queuing with configurable concurrency control
+- **Provider Management**: Switch between multiple Hifi API endpoints and add custom providers
+- **Quality Selection**: Choose from LOSSLESS, HI_RES_LOSSLESS, HIGH, or LOW audio quality
+
+### Download Management
+- **Queue Page**: Monitor active downloads with real-time progress updates
+- **Downloads Browser**: Browse, search, filter, and manage downloaded tracks with bulk actions (delete, sync, update genre)
+- **History Tracking**: View last 20 completed/failed/cancelled downloads
+- **Job Management**: Cancel active jobs, retry failed downloads, clear history
+- **Stuck Job Recovery**: Automatic reset of interrupted downloads on startup
+
+### Metadata & Tagging
+- **Comprehensive Tagging**: Automatically embeds metadata in audio files:
+  - **Basic**: Title, Artist(s), Album Artist(s), Album, Track/Disc Numbers
+  - **Release Details**: Year, Release Date, Genre, Label, ISRC, Copyright, Composer
+  - **Extended**: BPM, Key, ReplayGain, Peak levels, MusicBrainz IDs
+  - **Commercial**: Barcode, Catalog Number, Release Type
+  - **Lyrics**: Unsynchronized lyrics (LYRICS) and subtitles (LRC format)
+- **Album Art Handling**: Embedded cover art + saved as `cover.jpg` in album folders
+- **Playlist Images**: Cover images saved to playlists folder
+- **MusicBrainz Integration**: Metadata enrichment using ISRC codes and genre fetching
+
+### File Management
+- **Format Support**: FLAC and MP3 audio formats (MP4/M4A support stubbed)
+- **File Verification**: SHA256 hash checking with `LastVerifiedAt` tracking
+- **Path Organization**: Configurable directory structure via Go templates
+- **Path Sanitization**: Automatic cleaning of invalid filesystem characters
+- **Empty Directory Cleanup**: Automatic removal of empty folders after deletions
+- **Playlist Generation**: Automatic M3U file creation for playlists and artist top tracks
+
+### Performance & Reliability
+- **Caching System**: Provider response caching with configurable TTL
+- **API Throttling**: Built-in request throttling for external APIs (HiFi, MusicBrainz) to prevent rate limiting
+- **Automatic Retries**: Exponential backoff with 3 attempts for failed downloads
+- **Concurrent Downloads**: Configurable worker concurrency (default: 2)
+- **File Hash Verification**: Prevents duplicate downloads via hash matching
+- **Statistics Tracking**: Job success/failure rates and performance metrics
+
+### User Interface
+- **HTMX-Powered**: Responsive UI with no JSON APIs for frontend
+- **Real-time Updates**: Live progress updates without page reloads
+- **Component-based**: Modular templates for maintainable UI code
+- **Basic Authentication**: Optional HTTP basic auth protection
+
+### Data Architecture
+- **Two-Table Design**: Jobs (work queue) + Tracks (full metadata) separation
+- **SQLite Database**: Efficient embedded database with WAL mode for concurrency
+- **Data Invariants**: Prevents duplicate downloads, ensures file-tagging order
 
 ## Prerequisites
 
+- **Docker & Docker Compose** (for Docker installation only)
 - **Go 1.22+** (for building from source)
 - **Hifi API** running (default: `http://127.0.0.1:8000`)
+
+## Configuration
+
+Environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `8080` | HTTP server port |
+| `DB_PATH` | `navidrums.db` | SQLite database file path |
+| `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Output directory for downloaded music |
+| `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Go template for file organization |
+| `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API provider |
+| `QUALITY` | `LOSSLESS` | Audio quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
+| `LOG_LEVEL` | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
+| `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
+| `NAVIDRUMS_USERNAME` | `navidrums` | Username for HTTP basic authentication |
+| `NAVIDRUMS_PASSWORD` | (empty) | Password for HTTP basic authentication (empty disables auth) |
+| `CACHE_TTL` | `12h` | Provider response cache TTL (e.g., `1h`, `24h`, `7d`) |
+| `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | MusicBrainz API endpoint for metadata enrichment |
+
+**Template Variables:**
+
+The `SUBDIR_TEMPLATE` uses Go's `text/template` syntax. Available variables:
+- `{{.AlbumArtist}}` - Album artist (falls back to track artist if empty)
+- `{{.OriginalYear}}` - Release year (integer)
+- `{{.Album}}` - Album name
+- `{{.Disc}}` - Disc number, zero-padded (01, 02, etc.)
+- `{{.Track}}` - Track number, zero-padded (01, 02, etc.)
+- `{{.Title}}` - Track title
+
+The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
+
+**Example:** The default template produces paths like:
+```
+~/Downloads/navidrums/Pink Floyd/1973 - The Dark Side of the Moon/01-01 Speak to Me.flac
+```
+
+**Note:** Invalid filesystem characters (`<>:"/\|?*`) are automatically sanitized from paths.
 
 HiFi API: https://github.com/binimum/hifi-api
 
@@ -46,66 +121,12 @@ HiFi API: https://github.com/binimum/hifi-api
 3. Optionally, move it to a directory in your PATH:
    ```bash
    sudo mv navidrums-* /usr/local/bin/navidrums
+
    ```
 
-**Note:** The binary is self-contained with all templates and assets embedded. You only need the single executable file to run the application.
+### Self-Hosted Server Setup
 
-### Option 2: Build from Source
-
-1. Clone the repository.
-2. Build the server:
-   ```bash
-   go build -o navidrums ./cmd/server
-   ```
-
-## Configuration
-
-Environment variables:
-
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `8080` | HTTP port |
-| `DB_PATH` | `navidrums.db` | SQLite database path |
-| `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Output directory for music |
-| `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
-| `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API |
-| `QUALITY` | `LOSSLESS` | Download quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
-| `USE_MOCK` | `false` | Set to `true` to use Mock provider |
-| `LOG_LEVEL` | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
-| `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
-| `NAVIDRUMS_USERNAME` | `navidrums` | Username for the Navidrome web interface |
-| `NAVIDRUMS_PASSWORD` |  | Password for the Navidrome web interface |
-
-**Template Variables:**
-
-The `SUBDIR_TEMPLATE` uses Go's `text/template` syntax. Available variables:
-- `{{.AlbumArtist}}` - Album artist (falls back to track artist if empty)
-- `{{.OriginalYear}}` - Release year (integer)
-- `{{.Album}}` - Album name
-- `{{.Disc}}` - Disc number, zero-padded (01, 02, etc.)
-- `{{.Track}}` - Track number, zero-padded (01, 02, etc.)
-- `{{.Title}}` - Track title
-
-The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
-
-**Example:** The default template produces paths like:
-```
-~/Downloads/navidrums/Pink Floyd/1973 - The Dark Side of the Moon/01-01 Speak to Me.flac
-```
-
-## Usage
-
-1. Start the server:
-   ```bash
-   ./navidrums
-   ```
-2. Open browser at `http://localhost:8080`.
-3. Search for music and click download.
-4. Check the "Queue" tab for progress.
-
-## Self-Hosted Server Setup
-
-### Running as a Systemd Service (Linux)
+#### Running as a Systemd Service (Linux)
 
 1. Create a systemd service file at `/etc/systemd/system/navidrums.service`:
 
@@ -147,6 +168,108 @@ The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
    sudo systemctl status navidrums
    ```
 
+
+**Note:** The binary is self-contained with all templates and assets embedded. You only need the single executable file to run the application.
+
+## Build from Source / Development Setup
+
+1. Clone the repository.
+2. Build the server:
+   ```bash
+   go build -o navidrums ./cmd/server
+   ```
+
+### Usage
+
+1. Start the server:
+   ```bash
+   NAVIDRUMS_PASSWORD=admin PROVIDER_URL=https://your-hifi-url.com ./navidrums
+   ```
+2. Open browser at `http://localhost:8080`.
+3. Search for music and click download.
+4. Check the "Queue" tab for progress.
+
+## Docker
+
+### Option 1: Docker Compose
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/cesargomez89/navidrums.git
+   cd navidrums
+   ```
+
+2. Create `.env` file:
+   ```bash
+   cp .env.sample .env
+   ```
+   Edit `.env` and set at least:
+   ```
+   PROVIDER_URL=https://your-hifi-api.com
+   NAVIDRUMS_PASSWORD=your-secure-password
+   ```
+
+3. Start the container:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. Open browser at `http://localhost:8080`.
+
+**Note:** Downloads are saved to `./downloads` and database to `./navidrums.db` in the project directory.
+
+### Option 2: Docker Run (Without Compose)
+
+1. Create a directory for downloads and database:
+   ```bash
+   mkdir -p ~/navidrums/downloads
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -d \
+     --name navidrums \
+     -p 8080:8080 \
+     -v ~/navidrums/downloads:/downloads \
+     -v ~/navidrums/navidrums.db:/app/navidrums.db \
+     -e PROVIDER_URL=https://your-hifi-api.com \
+     -e NAVIDRUMS_PASSWORD=your-secure-password \
+     --restart unless-stopped \
+     ghcr.io/cesargomez89/navidrums:latest
+   ```
+
+3. Open browser at `http://localhost:8080`.
+
+### Environment Variables
+
+See the [Configuration](#configuration) section for all available options. The most important ones:
+
+| Variable | Description |
+|----------|-------------|
+| `PROVIDER_URL` | Your Hifi API URL (required) |
+| `NAVIDRUMS_PASSWORD` | Web interface password (empty disables auth) |
+| `DOWNLOADS_DIR` | Container path `/downloads` (mounted volume) |
+| `DB_PATH` | Container path `/app/navidrums.db` (mounted volume) |
+| `SUBDIR_TEMPLATE` | File organization template (optional) |
+| `QUALITY` | Audio quality preference (optional) |
+
+### Customizing Paths
+
+To use different host directories, modify the volume mounts:
+
+**Docker Compose:** Edit `docker-compose.yml`:
+```yaml
+volumes:
+  - /custom/path/to/music:/downloads
+  - /custom/path/to/database.db:/app/navidrums.db
+```
+
+**Docker Run:** Change the `-v` arguments:
+```bash
+-v /custom/path/to/music:/downloads \
+-v /custom/path/to/database.db:/app/navidrums.db
+```
+
 ## Screenshots
 
 <p align="center">
@@ -161,6 +284,11 @@ The file extension (`.flac`, `.mp3`, or `.mp4`) is appended automatically.
 <p align="center">
   <img src="screenshots/queue.png" width="300" />
   <img src="screenshots/settings.png" width="300" />
+</p>
+
+<p align="center">
+  <img src="screenshots/track_details.png" width="300" />
+  <img src="screenshots/track_options.png" width="300" />
 </p>
 
 ## Development
@@ -184,11 +312,28 @@ To create a new release:
 
 ## Architecture
 
-Navidrums uses a two-table architecture:
-- **Jobs table**: Minimal work queue (id, type, status, source_id)
-- **Tracks table**: Full metadata and download state for all tracks
+Navidrums follows a clean layered architecture with clear separation of concerns:
 
-This separation allows storing complete track metadata for features like custom download paths and better history tracking.
+### Data Architecture
+- **Two-Table Design**: Jobs (minimal work queue) + Tracks (full metadata and download state)
+- **Job Lifecycle**: `queued → running → completed | failed | cancelled`
+- **Track Lifecycle**: `missing → queued → downloading → processing → completed | failed`
+- **Duplicate Prevention**: Unique `provider_id` constraint prevents duplicate downloads
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) and [DOMAIN.md](DOMAIN.md) for technical details.
+### Layer Separation
+- **HTTP Handlers**: Request parsing and HTML rendering only
+- **Application Services**: Business logic and workflow orchestration  
+- **Repository**: Database persistence and queries
+- **Providers**: External API adapters and catalog interface
+- **Storage**: Filesystem operations and path management
+- **Workers**: Background job processing with concurrency control
+
+### Key Design Principles
+- No downloads in HTTP handlers
+- No goroutines in HTTP handlers  
+- No database access outside store package
+- No file writes outside storage package
+- All heavy operations run asynchronously via background workers
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for technical architecture details and [DOMAIN.md](DOMAIN.md) for domain model specifications.
 

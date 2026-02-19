@@ -16,12 +16,12 @@ type Logger interface {
 }
 
 type ProviderManager struct {
-	mu         sync.RWMutex
 	provider   Provider
+	logger     Logger
 	cached     *CachedProvider
 	baseURL    string
 	defaultURL string
-	logger     Logger
+	mu         sync.RWMutex
 }
 
 func NewProviderManager(baseURL string, db *store.DB, cacheTTL time.Duration, logger Logger) *ProviderManager {
@@ -63,7 +63,7 @@ func (m *ProviderManager) SetProvider(baseURL string) {
 	m.provider = NewHifiProvider(baseURL)
 	if m.cached != nil {
 		m.cached.provider = m.provider
-		m.cached.ClearCache()
+		_ = m.cached.ClearCache()
 	}
 	m.baseURL = baseURL
 }
