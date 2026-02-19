@@ -9,24 +9,19 @@ import (
 
 func (db *DB) CreateJob(job *domain.Job) error {
 	query := `INSERT OR IGNORE INTO jobs (id, type, status, progress, source_id, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`
+		VALUES (:id, :type, :status, :progress, :source_id, :created_at, :updated_at)`
 
-	_, err := db.Exec(query, job.ID, job.Type, job.Status, job.Progress, job.SourceID, job.CreatedAt, job.UpdatedAt)
+	_, err := db.NamedExec(query, job)
 	return err
 }
 
 func (db *DB) GetJob(id string) (*domain.Job, error) {
 	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE id = ?`
-	row := db.QueryRow(query, id)
 
 	job := &domain.Job{}
-	var errMsg sql.NullString
-	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
+	err := db.Get(job, query, id)
 	if err != nil {
 		return nil, err
-	}
-	if errMsg.Valid {
-		job.Error = errMsg.String
 	}
 	return job, nil
 }
@@ -43,72 +38,34 @@ func (db *DB) UpdateJobError(id string, errorMsg string) error {
 	return err
 }
 
+func (db *DB) ClearJobError(id string) error {
+	query := `UPDATE jobs SET status = ?, progress = 0, error = NULL, updated_at = ? WHERE id = ?`
+	_, err := db.Exec(query, domain.JobStatusQueued, time.Now(), id)
+	return err
+}
+
 func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
-	rows, err := db.Query(query, limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 
 	var jobs []*domain.Job
-	for rows.Next() {
-		job := &domain.Job{}
-		var errMsg sql.NullString
-		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
-		if err != nil {
-			return nil, err
-		}
-		if errMsg.Valid {
-			job.Error = errMsg.String
-		}
-		jobs = append(jobs, job)
-	}
-	return jobs, nil
+	err := db.Select(&jobs, query, limit)
+	return jobs, err
 }
 
 func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
 	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'running') ORDER BY created_at ASC`
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 
 	var jobs []*domain.Job
-	for rows.Next() {
-		job := &domain.Job{}
-		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
-		if err != nil {
-			return nil, err
-		}
-		jobs = append(jobs, job)
-	}
-	return jobs, nil
+	err := db.Select(&jobs, query)
+	return jobs, err
 }
 
 func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
 	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN ('completed', 'failed', 'cancelled') ORDER BY updated_at DESC LIMIT ?`
-	rows, err := db.Query(query, limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
 
 	var jobs []*domain.Job
-	for rows.Next() {
-		job := &domain.Job{}
-		var errMsg sql.NullString
-		err := rows.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt, &errMsg)
-		if err != nil {
-			return nil, err
-		}
-		if errMsg.Valid {
-			job.Error = errMsg.String
-		}
-		jobs = append(jobs, job)
-	}
-	return jobs, nil
+	err := db.Select(&jobs, query, limit)
+	return jobs, err
 }
 
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*domain.Job, error) {
@@ -116,20 +73,22 @@ func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*
 		FROM jobs 
 		WHERE source_id = ? AND type = ? AND status IN ('queued', 'running')
 		LIMIT 1`
-	row := db.QueryRow(query, sourceID, jobType)
 
 	job := &domain.Job{}
-	err := row.Scan(&job.ID, &job.Type, &job.Status, &job.Progress, &job.SourceID, &job.CreatedAt, &job.UpdatedAt)
+	err := db.Get(job, query, sourceID, jobType)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return job, err
+	if err != nil {
+		return nil, err
+	}
+	return job, nil
 }
 
 func (db *DB) IsTrackActive(providerID string) (bool, error) {
 	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = 'track' AND status IN ('queued', 'running')`
 	var count int
-	err := db.QueryRow(query, providerID).Scan(&count)
+	err := db.Get(&count, query, providerID)
 	return count > 0, err
 }
 
@@ -146,15 +105,13 @@ func (db *DB) ClearFinishedJobs() error {
 }
 
 type JobStats struct {
-	Total     int
-	Completed int
-	Failed    int
-	Cancelled int
+	Total     int `db:"total"`
+	Completed int `db:"completed"`
+	Failed    int `db:"failed"`
+	Cancelled int `db:"cancelled"`
 }
 
 func (db *DB) GetJobStats() (*JobStats, error) {
-	stats := &JobStats{}
-
 	query := `SELECT 
 		COUNT(*) as total,
 		SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
@@ -163,26 +120,7 @@ func (db *DB) GetJobStats() (*JobStats, error) {
 	FROM jobs 
 	WHERE status IN ('completed', 'failed', 'cancelled')`
 
-	var total sql.NullInt64
-	var completed, failed, cancelled sql.NullInt64
-
-	err := db.QueryRow(query).Scan(&total, &completed, &failed, &cancelled)
-	if err != nil {
-		return nil, err
-	}
-
-	if total.Valid {
-		stats.Total = int(total.Int64)
-	}
-	if completed.Valid {
-		stats.Completed = int(completed.Int64)
-	}
-	if failed.Valid {
-		stats.Failed = int(failed.Int64)
-	}
-	if cancelled.Valid {
-		stats.Cancelled = int(cancelled.Int64)
-	}
-
-	return stats, nil
+	stats := &JobStats{}
+	err := db.Get(stats, query)
+	return stats, err
 }

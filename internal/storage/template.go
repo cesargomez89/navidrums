@@ -12,11 +12,11 @@ import (
 // PathTemplateData holds the data for path template execution
 type PathTemplateData struct {
 	AlbumArtist  string
-	OriginalYear int
 	Album        string
-	Disc         string // zero-padded: "01", "02"
-	Track        string // zero-padded: "01", "02"
+	Disc         string
+	Track        string
 	Title        string
+	OriginalYear int
 }
 
 // BuildPath executes the template and returns the full path (without extension)

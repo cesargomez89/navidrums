@@ -1,0 +1,165 @@
+{{define "track_form"}}
+<form id="track-form" hx-post="/htmx/track/{{.Track.ID}}/save" hx-target="#track-form-container" hx-swap="innerHTML">
+    <div class="section">
+        <h2>Basic Information</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" value="{{.Track.Title}}">
+            </div>
+            <div class="form-group">
+                <label for="artist">Artist</label>
+                <input type="text" id="artist" name="artist" value="{{.Track.Artist}}">
+            </div>
+            <div class="form-group">
+                <label for="album">Album</label>
+                <input type="text" id="album" name="album" value="{{.Track.Album}}">
+            </div>
+            <div class="form-group">
+                <label for="album_artist">Album Artist</label>
+                <input type="text" id="album_artist" name="album_artist" value="{{.Track.AlbumArtist}}">
+            </div>
+            <div class="form-group">
+                <label for="genre">Genre</label>
+                <input type="text" id="genre" name="genre" value="{{.Track.Genre}}">
+            </div>
+            <div class="form-group">
+                <label for="sub_genre">Sub-Genre</label>
+                <input type="text" id="sub_genre" name="sub_genre" value="{{.Track.SubGenre}}">
+            </div>
+            <div class="form-group">
+                <label for="label">Label</label>
+                <input type="text" id="label" name="label" value="{{.Track.Label}}">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Track Numbers</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="track_number">Track Number</label>
+                <input type="number" id="track_number" name="track_number" value="{{.Track.TrackNumber}}">
+            </div>
+            <div class="form-group">
+                <label for="total_tracks">Total Tracks</label>
+                <input type="number" id="total_tracks" name="total_tracks" value="{{.Track.TotalTracks}}">
+            </div>
+            <div class="form-group">
+                <label for="disc_number">Disc Number</label>
+                <input type="number" id="disc_number" name="disc_number" value="{{.Track.DiscNumber}}">
+            </div>
+            <div class="form-group">
+                <label for="total_discs">Total Discs</label>
+                <input type="number" id="total_discs" name="total_discs" value="{{.Track.TotalDiscs}}">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Release Information</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="year">Year</label>
+                <input type="number" id="year" name="year" value="{{.Track.Year}}">
+            </div>
+            <div class="form-group">
+                <label for="release_date">Release Date</label>
+                <input type="text" id="release_date" name="release_date" value="{{.Track.ReleaseDate}}"
+                    placeholder="YYYY-MM-DD">
+            </div>
+            <div class="form-group">
+                <label for="barcode">Barcode</label>
+                <input type="text" id="barcode" name="barcode" value="{{.Track.Barcode}}">
+            </div>
+            <div class="form-group">
+                <label for="catalog_number">Catalog Number</label>
+                <input type="text" id="catalog_number" name="catalog_number" value="{{.Track.CatalogNumber}}">
+            </div>
+            <div class="form-group">
+                <label for="release_type">Release Type</label>
+                <input type="text" id="release_type" name="release_type" value="{{.Track.ReleaseType}}">
+            </div>
+            <div class="form-group">
+                <label for="compilation">
+                    <input type="checkbox" id="compilation" name="compilation" {{if .Track.Compilation}}checked{{end}}>
+                    Compilation
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Credits</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="composer">Composer</label>
+                <input type="text" id="composer" name="composer" value="{{.Track.Composer}}">
+            </div>
+            <div class="form-group">
+                <label for="copyright">Copyright</label>
+                <input type="text" id="copyright" name="copyright" value="{{.Track.Copyright}}">
+            </div>
+            <div class="form-group">
+                <label for="isrc">ISRC</label>
+                <input type="text" id="isrc" name="isrc" value="{{.Track.ISRC}}">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Lyrics</h2>
+        <div class="form-grid">
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="lyrics">Unsynced Lyrics</label>
+                <textarea id="lyrics" name="lyrics" rows="4" placeholder="Lyrics text...">{{.Track.Lyrics}}</textarea>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="subtitles">Subtitles (LRC format)</label>
+                <textarea id="subtitles" name="subtitles" rows="4"
+                    placeholder="[00:12.00] Lyrics line...">{{.Track.Subtitles}}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="track-actions">
+        <button type="submit" class="btn btn-primary">Save to Database</button>
+        <button type="submit" class="btn btn-warning" formaction="/htmx/track/{{.Track.ID}}/sync">Sync to File</button>
+        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich">Enrich from
+            MusicBrainz</button>
+        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich-hifi">Enrich from
+            Hi-Fi</button>
+        <a href="/downloads" class="btn btn-outline">Cancel</a>
+    </div>
+</form>
+
+{{if .JobEnqueued}}
+<div class="alert alert-success" style="margin-bottom: 16px;">
+    {{if eq .JobEnqueuedType "sync_file"}}
+    Sync job enqueued. Check the <a href="/queue">queue</a> for progress.
+    {{else if eq .JobEnqueuedType "sync_hifi"}}
+    Hi-Fi enrichment job enqueued. Check the <a href="/queue">queue</a> for progress.
+    {{else}}
+    Metadata enrichment job enqueued. Check the <a href="/queue">queue</a> for progress.
+    {{end}}
+</div>
+{{end}}
+
+{{if .SaveSuccess}}
+<div class="alert alert-success" style="margin-bottom: 16px;">
+    Track saved to database successfully!
+</div>
+{{end}}
+
+{{if .ValidationErrors}}
+<div class="alert alert-error" style="margin-bottom: 16px;">
+    <strong>Validation Error{{if gt (len .ValidationErrors) 1}}s{{end}}:</strong>
+    <ul style="margin: 8px 0 0 16px;">
+        {{range $field, $msg := .ValidationErrors}}
+        <li>{{$field}}: {{$msg}}</li>
+        {{end}}
+    </ul>
+</div>
+{{end}}
+
+{{end}}

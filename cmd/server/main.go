@@ -44,7 +44,11 @@ func main() {
 		appLogger.Error("Failed to init DB", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			appLogger.Error("Failed to close DB", "error", closeErr)
+		}
+	}()
 
 	// Initialize Provider Manager
 	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
@@ -56,7 +60,7 @@ func main() {
 	}
 
 	// Initialize Worker
-	w := downloader.NewWorker(db, providerManager, cfg, appLogger)
+	w := downloader.NewWorker(db, settingsRepo, providerManager, cfg, appLogger)
 	w.Start()
 	defer w.Stop()
 
@@ -96,7 +100,7 @@ func main() {
 			contentType = "image/svg+xml"
 		}
 		w.Header().Set("Content-Type", contentType)
-		w.Write(data)
+		_, _ = w.Write(data)
 	}))
 
 	// Routes

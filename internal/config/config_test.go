@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/cesargomez89/navidrums/internal/constants"
 )
@@ -36,15 +37,31 @@ func TestLoad(t *testing.T) {
 
 func TestLoadWithEnvVars(t *testing.T) {
 	// Set environment variables
-	os.Setenv("PORT", "9090")
-	os.Setenv("DB_PATH", "/tmp/test.db")
-	os.Setenv("PROVIDER_URL", "http://example.com:8000")
-	os.Setenv("QUALITY", "HIGH")
+	if err := os.Setenv("PORT", "9090"); err != nil {
+		t.Fatalf("Setenv failed: %v", err)
+	}
+	if err := os.Setenv("DB_PATH", "/tmp/test.db"); err != nil {
+		t.Fatalf("Setenv failed: %v", err)
+	}
+	if err := os.Setenv("PROVIDER_URL", "http://example.com:8000"); err != nil {
+		t.Fatalf("Setenv failed: %v", err)
+	}
+	if err := os.Setenv("QUALITY", "HIGH"); err != nil {
+		t.Fatalf("Setenv failed: %v", err)
+	}
 	defer func() {
-		os.Unsetenv("PORT")
-		os.Unsetenv("DB_PATH")
-		os.Unsetenv("PROVIDER_URL")
-		os.Unsetenv("QUALITY")
+		if err := os.Unsetenv("PORT"); err != nil {
+			t.Logf("Unsetenv error: %v", err)
+		}
+		if err := os.Unsetenv("DB_PATH"); err != nil {
+			t.Logf("Unsetenv error: %v", err)
+		}
+		if err := os.Unsetenv("PROVIDER_URL"); err != nil {
+			t.Logf("Unsetenv error: %v", err)
+		}
+		if err := os.Unsetenv("QUALITY"); err != nil {
+			t.Logf("Unsetenv error: %v", err)
+		}
 	}()
 
 	cfg := Load()
@@ -85,6 +102,7 @@ func TestValidate(t *testing.T) {
 				Username:       "navidrums",
 				Password:       "testpass",
 				SubdirTemplate: "{{.AlbumArtist}}/{{.Album}}/{{.Title}}",
+				CacheTTL:       12 * time.Hour,
 			},
 			wantErr: false,
 		},
@@ -228,8 +246,14 @@ func TestValidate(t *testing.T) {
 
 func TestGetEnv(t *testing.T) {
 	// Test with existing env var
-	os.Setenv("TEST_VAR", "test_value")
-	defer os.Unsetenv("TEST_VAR")
+	if err := os.Setenv("TEST_VAR", "test_value"); err != nil {
+		t.Fatalf("Setenv failed: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("TEST_VAR"); err != nil {
+			t.Logf("Unsetenv error: %v", err)
+		}
+	}()
 
 	value := getEnv("TEST_VAR", "default")
 	if value != "test_value" {
