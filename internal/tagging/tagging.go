@@ -51,12 +51,12 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to open FLAC file: %w", err)
 	}
-	defer rawFile.Close()
+	defer func() { _ = rawFile.Close() }()
 
 	// Validate magic
 	magic := make([]byte, 4)
-	if _, err := io.ReadFull(rawFile, magic); err != nil {
-		return fmt.Errorf("failed to read fLaC magic: %w", err)
+	if _, rErr := io.ReadFull(rawFile, magic); rErr != nil {
+		return fmt.Errorf("failed to read fLaC magic: %w", rErr)
 	}
 	if string(magic) != "fLaC" {
 		return fmt.Errorf("not a valid FLAC file: %s", filePath)
@@ -64,8 +64,8 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 
 	// Read STREAMINFO verbatim (38 bytes)
 	rawStreamInfo := make([]byte, 38)
-	if _, err := io.ReadFull(rawFile, rawStreamInfo); err != nil {
-		return fmt.Errorf("failed to read STREAMINFO: %w", err)
+	if _, rErr := io.ReadFull(rawFile, rawStreamInfo); rErr != nil {
+		return fmt.Errorf("failed to read STREAMINFO: %w", rErr)
 	}
 
 	stream, err := flac.ParseFile(filePath)
@@ -81,7 +81,9 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 			break
 		}
 	}
-	_ = stream.Close()
+	if cErr := stream.Close(); cErr != nil {
+		return fmt.Errorf("failed to close FLAC stream: %w", cErr)
+	}
 
 	// ---- Build new metadata ----
 
@@ -116,29 +118,29 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	metaBuf.Write(rawStreamInfo[1:])
 
 	type rawBlock struct {
-		blockType byte
 		body      []byte
+		blockType byte
 	}
 	var blocks []rawBlock
 
 	if seekTableBlock != nil {
-		body, err := encodeSeekTable(seekTableBlock.Body.(*meta.SeekTable))
-		if err != nil {
-			return err
+		body, encErr := encodeSeekTable(seekTableBlock.Body.(*meta.SeekTable))
+		if encErr != nil {
+			return encErr
 		}
-		blocks = append(blocks, rawBlock{byte(meta.TypeSeekTable), body})
+		blocks = append(blocks, rawBlock{body: body, blockType: byte(meta.TypeSeekTable)})
 	}
 
-	blocks = append(blocks, rawBlock{byte(meta.TypeVorbisComment), vcBody})
+	blocks = append(blocks, rawBlock{body: vcBody, blockType: byte(meta.TypeVorbisComment)})
 
 	if len(picBody) > 0 {
-		blocks = append(blocks, rawBlock{byte(meta.TypePicture), picBody})
+		blocks = append(blocks, rawBlock{body: picBody, blockType: byte(meta.TypePicture)})
 	}
 
 	for i, blk := range blocks {
 		isLast := i == len(blocks)-1
-		if err := writeRawBlock(&metaBuf, blk.blockType, blk.body, isLast); err != nil {
-			return err
+		if wErr := writeRawBlock(&metaBuf, blk.blockType, blk.body, isLast); wErr != nil {
+			return wErr
 		}
 	}
 
@@ -149,14 +151,14 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 
 	// ---- Copy audio ----
 
-	if _, err := rawFile.Seek(audioOffset, io.SeekStart); err != nil {
-		return err
+	if _, seekErr := rawFile.Seek(audioOffset, io.SeekStart); seekErr != nil {
+		return seekErr
 	}
 
 	dir := filepath.Dir(filePath)
-	tmpFile, err := os.CreateTemp(dir, "*.flac.tmp")
-	if err != nil {
-		return err
+	tmpFile, tmpErr := os.CreateTemp(dir, "*.flac.tmp")
+	if tmpErr != nil {
+		return tmpErr
 	}
 	tmpPath := tmpFile.Name()
 
@@ -168,23 +170,23 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	}()
 
 	if _, err := tmpFile.Write([]byte("fLaC")); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return err
 	}
 
 	if _, err := tmpFile.Write(metaBuf.Bytes()); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return err
 	}
 
 	if _, err := io.Copy(tmpFile, rawFile); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return err
 	}
 
 	// Ensure file is fully flushed
 	if err := tmpFile.Sync(); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return err
 	}
 
@@ -219,7 +221,7 @@ func metadataChanged(filePath string, newVC []byte, newPic []byte) (bool, error)
 	if err != nil {
 		return false, err
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }()
 
 	var currentVC []byte
 	var currentPic []byte

@@ -124,7 +124,9 @@ func TestDeleteFolderIfEmpty(t *testing.T) {
 
 	// Test deleting empty folder
 	emptyDir := filepath.Join(tmpDir, "empty")
-	os.MkdirAll(emptyDir, 0755)
+	if err := os.MkdirAll(emptyDir, 0755); err != nil {
+		t.Fatalf("MkdirAll failed: %v", err)
+	}
 
 	err := DeleteFolderIfEmpty(emptyDir)
 	if err != nil {
@@ -138,8 +140,12 @@ func TestDeleteFolderIfEmpty(t *testing.T) {
 
 	// Test keeping non-empty folder
 	nonEmptyDir := filepath.Join(tmpDir, "nonempty")
-	os.MkdirAll(nonEmptyDir, 0755)
-	os.WriteFile(filepath.Join(nonEmptyDir, "file.txt"), []byte("content"), 0644)
+	if mErr := os.MkdirAll(nonEmptyDir, 0755); mErr != nil {
+		t.Fatalf("MkdirAll failed: %v", mErr)
+	}
+	if wErr := os.WriteFile(filepath.Join(nonEmptyDir, "file.txt"), []byte("content"), 0644); wErr != nil {
+		t.Fatalf("WriteFile failed: %v", wErr)
+	}
 
 	err = DeleteFolderIfEmpty(nonEmptyDir)
 	if err != nil {
@@ -161,7 +167,9 @@ func TestDeleteFolderIfEmpty(t *testing.T) {
 func TestIsNotExist(t *testing.T) {
 	// Test with existing file
 	tmpFile := filepath.Join(t.TempDir(), "exists.txt")
-	os.WriteFile(tmpFile, []byte("test"), 0644)
+	if err := os.WriteFile(tmpFile, []byte("test"), 0644); err != nil {
+		t.Fatalf("WriteFile failed: %v", err)
+	}
 
 	err := os.Remove(tmpFile)
 	if err != nil {
@@ -176,7 +184,9 @@ func TestIsNotExist(t *testing.T) {
 
 	// Test IsNotExist with no error
 	existingFile := filepath.Join(t.TempDir(), "still_exists.txt")
-	os.WriteFile(existingFile, []byte("test"), 0644)
+	if wErr := os.WriteFile(existingFile, []byte("test"), 0644); wErr != nil {
+		t.Fatalf("WriteFile failed: %v", wErr)
+	}
 
 	_, err = os.Stat(existingFile)
 	if IsNotExist(err) {

@@ -17,8 +17,12 @@ func setupTestDB(t *testing.T) (*store.DB, func()) {
 		t.Fatalf("Failed to open db: %v", err)
 	}
 	cleanup := func() {
-		db.Close()
-		os.Remove(tmpFile)
+		if cErr := db.Close(); cErr != nil {
+			t.Logf("db.Close error: %v", cErr)
+		}
+		if rErr := os.Remove(tmpFile); rErr != nil {
+			t.Logf("os.Remove error: %v", rErr)
+		}
 	}
 	return db, cleanup
 }
@@ -77,7 +81,9 @@ func TestJobService_CancelJob(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	db.CreateJob(job)
+	if cErr := db.CreateJob(job); cErr != nil {
+		t.Fatalf("CreateJob failed: %v", cErr)
+	}
 
 	// Cancel the job
 	err := svc.CancelJob("cancel_test")
@@ -108,7 +114,9 @@ func TestJobService_RetryJob(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	db.CreateJob(job)
+	if err := db.CreateJob(job); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
 
 	// Retry the job
 	err := svc.RetryJob("retry_test")
@@ -145,7 +153,9 @@ func TestJobService_RetryJobClearsError(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	db.CreateJob(job)
+	if err := db.CreateJob(job); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
 
 	errMsg := "download failed: network error"
 	err := db.UpdateJobError("retry_error_test", errMsg)
@@ -192,7 +202,9 @@ func TestJobService_ListJobs(t *testing.T) {
 		{ID: "job_3", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: "s3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
 	}
 	for _, j := range jobs {
-		db.CreateJob(j)
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
 	}
 
 	// Test ListJobs
@@ -238,7 +250,9 @@ func TestJobService_GetJobStats(t *testing.T) {
 		{ID: "stat_4", Type: domain.JobTypeTrack, Status: domain.JobStatusCancelled, SourceID: "s4", CreatedAt: time.Now(), UpdatedAt: time.Now()},
 	}
 	for _, j := range jobs {
-		db.CreateJob(j)
+		if cErr := db.CreateJob(j); cErr != nil {
+			t.Fatalf("CreateJob failed: %v", cErr)
+		}
 	}
 
 	// Test GetJobStats
@@ -281,7 +295,9 @@ func TestJobService_GetJob(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	db.CreateJob(job)
+	if cErr := db.CreateJob(job); cErr != nil {
+		t.Fatalf("CreateJob failed: %v", cErr)
+	}
 
 	// Test GetJob
 	fetched, err := svc.GetJob("get_test")

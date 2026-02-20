@@ -15,8 +15,12 @@ func setupTestDB(t *testing.T) (*DB, func()) {
 		t.Fatalf("Failed to open db: %v", err)
 	}
 	cleanup := func() {
-		db.Close()
-		os.Remove(tmpFile)
+		if cErr := db.Close(); cErr != nil {
+			t.Logf("db.Close error: %v", cErr)
+		}
+		if rErr := os.Remove(tmpFile); rErr != nil {
+			t.Logf("os.Remove error: %v", rErr)
+		}
 	}
 	return db, cleanup
 }
@@ -209,7 +213,10 @@ func TestDB_Tracks(t *testing.T) {
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
-	db.CreateTrack(anotherTrack)
+	err = db.CreateTrack(anotherTrack)
+	if err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
 
 	err = db.MarkTrackFailed(anotherTrack.ID, "Download failed")
 	if err != nil {
@@ -238,7 +245,9 @@ func TestDB_TrackListOperations(t *testing.T) {
 	}
 
 	for _, tr := range tracks {
-		db.CreateTrack(tr)
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
 	}
 
 	// Test ListTracks
@@ -293,7 +302,9 @@ func TestDB_RecomputeAlbumState(t *testing.T) {
 	}
 
 	for _, tr := range tracks {
-		db.CreateTrack(tr)
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
 	}
 
 	// Test RecomputeAlbumState - partial
@@ -307,7 +318,10 @@ func TestDB_RecomputeAlbumState(t *testing.T) {
 
 	// Update all to completed
 	for _, tr := range tracks {
-		db.UpdateTrackStatus(tr.ID, domain.TrackStatusCompleted, tr.FilePath)
+		err = db.UpdateTrackStatus(tr.ID, domain.TrackStatusCompleted, tr.FilePath)
+		if err != nil {
+			t.Fatalf("UpdateTrackStatus failed: %v", err)
+		}
 	}
 
 	state, err = db.RecomputeAlbumState(albumID)
@@ -333,7 +347,9 @@ func TestDB_JobStats(t *testing.T) {
 	}
 
 	for _, j := range jobs {
-		db.CreateJob(j)
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
 	}
 
 	// Test GetJobStats
@@ -381,7 +397,9 @@ func TestDB_GetActiveJobBySourceID(t *testing.T) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	db.CreateJob(job)
+	if err := db.CreateJob(job); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
 
 	// Test GetActiveJobBySourceID - finds running job
 	active, err := db.GetActiveJobBySourceID("track_123", domain.JobTypeTrack)

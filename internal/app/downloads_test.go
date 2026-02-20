@@ -25,7 +25,9 @@ func TestDownloadsService_ListDownloads(t *testing.T) {
 	}
 
 	for _, tr := range tracks {
-		db.CreateTrack(tr)
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
 	}
 
 	// Test ListDownloads - should only return completed
@@ -53,7 +55,9 @@ func TestDownloadsService_SearchDownloads(t *testing.T) {
 	}
 
 	for _, tr := range tracks {
-		db.CreateTrack(tr)
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
 	}
 
 	// Search by title
@@ -120,17 +124,25 @@ func TestDownloadsService_DeleteDownload(t *testing.T) {
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
-	db.CreateTrack(track)
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
 
 	// Create a folder with a file in it (to test empty folder deletion)
 	folderPath := filepath.Join(tmpDir, "Album Artist", "2020 - Album")
-	os.MkdirAll(folderPath, 0755)
+	if err := os.MkdirAll(folderPath, 0755); err != nil {
+		t.Fatalf("MkdirAll failed: %v", err)
+	}
 	folderFile := filepath.Join(folderPath, "track.flac")
-	os.WriteFile(folderFile, []byte("test"), 0644)
+	if err := os.WriteFile(folderFile, []byte("test"), 0644); err != nil {
+		t.Fatalf("WriteFile failed: %v", err)
+	}
 
 	// Update track with new path
 	track.FilePath = folderFile
-	db.UpdateTrack(track)
+	if err := db.UpdateTrack(track); err != nil {
+		t.Fatalf("UpdateTrack failed: %v", err)
+	}
 
 	// Test DeleteDownload
 	err := svc.DeleteDownload("delete_test")
