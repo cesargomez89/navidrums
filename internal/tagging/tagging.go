@@ -22,7 +22,11 @@ import (
 
 // TagFile writes metadata tags to the audio file at filePath.
 func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
-	ext := strings.ToLower(filepath.Ext(filePath))
+	extPath := filePath
+	if strings.HasSuffix(strings.ToLower(filePath), ".tmp") {
+		extPath = filePath[:len(filePath)-4]
+	}
+	ext := strings.ToLower(filepath.Ext(extPath))
 	switch ext {
 	case ".flac":
 		return tagFLAC(filePath, track, albumArtData)

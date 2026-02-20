@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -370,7 +371,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 
 	// Download the track
-	finalPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
+	tmpPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = w.Repo.MarkTrackFailed(track.ID, err.Error())
@@ -378,12 +379,15 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
+	// Calculate final path (tmpPath without .tmp suffix)
+	finalPath := strings.TrimSuffix(tmpPath, ".tmp")
+
 	// Set track.Status = processing
 	if statusErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); statusErr != nil {
 		logger.Error("Failed to update track status to processing", "error", statusErr)
 	}
 
-	logger.Info("Download finished, starting tagging", "file_path", finalPath)
+	logger.Info("Download finished, starting tagging", "file_path", tmpPath)
 
 	// Download album art for tagging
 	var albumArtData []byte
@@ -463,9 +467,9 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Tag the file
-	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
-		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)
+	// Tag the file (operates on tmp file)
+	if tagErr := tagging.TagFile(tmpPath, track, albumArtData); tagErr != nil {
+		logger.Error("Failed to tag file", "file_path", tmpPath, "error", err)
 	}
 
 	// Save album art to folder
@@ -479,6 +483,16 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			}
 		}
 	}
+
+	// Atomic rename: tmp -> final (Navidrome sees completed file for first time)
+	if renameErr := os.Rename(tmpPath, finalPath); renameErr != nil {
+		logger.Error("Failed to rename tmp file", "tmp_path", tmpPath, "final_path", finalPath, "error", renameErr)
+		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to rename file: %v", renameErr))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to rename file: %v", renameErr))
+		return
+	}
+
+	logger.Info("File finalized", "original_path", finalPath)
 
 	// Hash file
 	fileHash, err := storage.HashFile(finalPath)

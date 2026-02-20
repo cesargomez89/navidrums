@@ -30,7 +30,7 @@ func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 }
 
 func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
-	var finalPath string
+	var tmpPath string
 	var finalExt string
 
 	provider := d.providerManager.GetProvider()
@@ -57,9 +57,10 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		}
 		finalExt = ext
 
-		finalPath = destPathNoExt + finalExt
+		finalPath := destPathNoExt + finalExt
+		tmpPath = finalPath + ".tmp"
 
-		f, err := storage.CreateFile(finalPath)
+		f, err := storage.CreateFile(tmpPath)
 		if err != nil {
 			_ = stream.Close()
 			continue
@@ -70,10 +71,10 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		_ = f.Close()
 
 		if err == nil {
-			return finalPath, nil
+			return tmpPath, nil
 		}
 
-		_ = storage.RemoveFile(finalPath)
+		_ = storage.RemoveFile(tmpPath)
 
 		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 	}
