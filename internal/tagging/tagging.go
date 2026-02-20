@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/bogem/id3v2/v2"
 	"github.com/mewkiz/flac"
@@ -44,43 +45,35 @@ func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
 //  3. Build new metadata: verbatim STREAMINFO + optional SeekTable + fresh
 //     VorbisComment + optional Picture.
 //  4. Atomic write: temp file → rename.
+
 func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
-	// ── Step 1: grab raw STREAMINFO bytes (4-byte header + 34-byte body = 38) ──
 	rawFile, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to open FLAC file: %w", err)
 	}
+	defer rawFile.Close()
 
-	// Skip the 4-byte "fLaC" magic.
+	// Validate magic
 	magic := make([]byte, 4)
 	if _, err := io.ReadFull(rawFile, magic); err != nil {
-		_ = rawFile.Close()
 		return fmt.Errorf("failed to read fLaC magic: %w", err)
 	}
 	if string(magic) != "fLaC" {
-		_ = rawFile.Close()
-		return fmt.Errorf("not a valid FLAC file (bad magic): %s", filePath)
+		return fmt.Errorf("not a valid FLAC file: %s", filePath)
 	}
 
-	// Read the raw STREAMINFO block (header + body) verbatim.
+	// Read STREAMINFO verbatim (38 bytes)
 	rawStreamInfo := make([]byte, 38)
 	if _, err := io.ReadFull(rawFile, rawStreamInfo); err != nil {
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to read STREAMINFO block: %w", err)
+		return fmt.Errorf("failed to read STREAMINFO: %w", err)
 	}
 
-	// We need rawFile open below to copy audio frames; keep it.
-
-	// ── Step 2: parse metadata to find audio offset and existing blocks ──
 	stream, err := flac.ParseFile(filePath)
 	if err != nil {
-		_ = rawFile.Close()
 		return fmt.Errorf("failed to parse FLAC metadata: %w", err)
 	}
-
 	audioOffset := calcAudioOffset(stream)
 
-	// Collect the SeekTable if present (preserve it).
 	var seekTableBlock *meta.Block
 	for _, b := range stream.Blocks {
 		if b.Type == meta.TypeSeekTable {
@@ -90,84 +83,80 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	}
 	_ = stream.Close()
 
-	// ── Step 3: build new metadata buffer ──
-	// We will NOT set the last-block flag on STREAMINFO ourselves — instead we
-	// mark the actual final block as last below.
+	// ---- Build new metadata ----
+
+	vc := newVorbisComment(track)
+	vcBody, err := encodeVorbisComment(vc)
+	if err != nil {
+		return err
+	}
+
+	var picBody []byte
+	if len(albumArtData) > 0 {
+		picBody, err = encodePictureData(albumArtData)
+		if err != nil {
+			return err
+		}
+	}
+
+	// 🔥 FAST PATH: skip rewrite if metadata identical
+	changed, err := metadataChanged(filePath, vcBody, picBody)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+
 	var metaBuf bytes.Buffer
 
-	// 3a. STREAMINFO verbatim — but we must update the last-block flag (bit 7
-	//     of the first byte). STREAMINFO is never last when more blocks follow,
-	//     so clear that bit.
-	siHeader := rawStreamInfo[0] & 0x7F // clear last-block flag
+	// STREAMINFO (clear last flag)
+	siHeader := rawStreamInfo[0] & 0x7F
 	metaBuf.WriteByte(siHeader)
-	metaBuf.Write(rawStreamInfo[1:]) // remaining 37 bytes (3-byte length + 34-byte body)
+	metaBuf.Write(rawStreamInfo[1:])
 
-	// Collect subsequent blocks in order.
 	type rawBlock struct {
 		blockType byte
 		body      []byte
 	}
 	var blocks []rawBlock
 
-	// 3b. SeekTable.
 	if seekTableBlock != nil {
 		body, err := encodeSeekTable(seekTableBlock.Body.(*meta.SeekTable))
 		if err != nil {
-			_ = rawFile.Close()
-			return fmt.Errorf("failed to encode SeekTable: %w", err)
+			return err
 		}
 		blocks = append(blocks, rawBlock{byte(meta.TypeSeekTable), body})
 	}
 
-	// 3c. VorbisComment.
-	vc := newVorbisComment(track)
-	vcBody, err := encodeVorbisComment(vc)
-	if err != nil {
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to encode VorbisComment: %w", err)
-	}
 	blocks = append(blocks, rawBlock{byte(meta.TypeVorbisComment), vcBody})
 
-	// 3d. Picture (optional).
-	if len(albumArtData) > 0 {
-		picBody, err := encodePictureData(albumArtData)
-		if err != nil {
-			_ = rawFile.Close()
-			return fmt.Errorf("failed to encode Picture block: %w", err)
-		}
+	if len(picBody) > 0 {
 		blocks = append(blocks, rawBlock{byte(meta.TypePicture), picBody})
 	}
 
-	// Write blocks, setting the last-block flag only on the final one.
 	for i, blk := range blocks {
 		isLast := i == len(blocks)-1
 		if err := writeRawBlock(&metaBuf, blk.blockType, blk.body, isLast); err != nil {
-			_ = rawFile.Close()
 			return err
 		}
 	}
 
-	// Edge case: if there are no extra blocks (no seektable, no art, somehow no
-	// vorbis comment — unlikely but guard it), STREAMINFO must be marked last.
-	// We already wrote STREAMINFO without the last flag; if blocks is empty we
-	// need to patch it. In practice this won't happen because we always add a
-	// VorbisComment, but be safe.
 	if len(blocks) == 0 {
 		b := metaBuf.Bytes()
-		b[0] |= 0x80 // set last-block flag on STREAMINFO
+		b[0] |= 0x80
 	}
 
-	// ── Step 4: seek rawFile to audio start, then atomic write ──
+	// ---- Copy audio ----
+
 	if _, err := rawFile.Seek(audioOffset, io.SeekStart); err != nil {
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to seek to audio section: %w", err)
+		return err
 	}
 
 	dir := filepath.Dir(filePath)
 	tmpFile, err := os.CreateTemp(dir, "*.flac.tmp")
 	if err != nil {
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to create temp file: %w", err)
+		return err
 	}
 	tmpPath := tmpFile.Name()
 
@@ -178,38 +167,90 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 		}
 	}()
 
-	// fLaC magic.
 	if _, err := tmpFile.Write([]byte("fLaC")); err != nil {
-		_ = tmpFile.Close()
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to write fLaC magic: %w", err)
+		tmpFile.Close()
+		return err
 	}
 
-	// New metadata.
 	if _, err := tmpFile.Write(metaBuf.Bytes()); err != nil {
-		_ = tmpFile.Close()
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to write metadata blocks: %w", err)
+		tmpFile.Close()
+		return err
 	}
 
-	// Verbatim audio frames.
 	if _, err := io.Copy(tmpFile, rawFile); err != nil {
-		_ = tmpFile.Close()
-		_ = rawFile.Close()
-		return fmt.Errorf("failed to copy audio data: %w", err)
+		tmpFile.Close()
+		return err
 	}
 
-	_ = rawFile.Close()
+	// Ensure file is fully flushed
+	if err := tmpFile.Sync(); err != nil {
+		tmpFile.Close()
+		return err
+	}
 
 	if err := tmpFile.Close(); err != nil {
-		return fmt.Errorf("failed to close temp file: %w", err)
+		return err
 	}
 
+	// Atomic replace
 	if err := os.Rename(tmpPath, filePath); err != nil {
-		return fmt.Errorf("failed to replace original FLAC file: %w", err)
+		return err
 	}
+
+	// 🔥 Guarantee Navidrome detection
+	now := time.Now()
+	if err := os.Chtimes(filePath, now, now); err != nil {
+		return err
+	}
+
+	// Sync directory (extra safety)
+	if dirHandle, err := os.Open(dir); err == nil {
+		_ = dirHandle.Sync()
+		_ = dirHandle.Close()
+	}
+
 	success = true
 	return nil
+}
+
+// Detect if metadata actually changed
+func metadataChanged(filePath string, newVC []byte, newPic []byte) (bool, error) {
+	stream, err := flac.ParseFile(filePath)
+	if err != nil {
+		return false, err
+	}
+	defer stream.Close()
+
+	var currentVC []byte
+	var currentPic []byte
+
+	for _, b := range stream.Blocks {
+		switch b.Type {
+		case meta.TypeVorbisComment:
+			body, err := encodeVorbisComment(b.Body.(*meta.VorbisComment))
+			if err != nil {
+				return false, err
+			}
+			currentVC = body
+		case meta.TypePicture:
+			p := b.Body.(*meta.Picture)
+			body, err := encodePictureData(p.Data)
+			if err != nil {
+				return false, err
+			}
+			currentPic = body
+		}
+	}
+
+	if !bytes.Equal(currentVC, newVC) {
+		return true, nil
+	}
+
+	if len(newPic) > 0 && !bytes.Equal(currentPic, newPic) {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // writeRawBlock writes a single metadata block to w.
@@ -217,7 +258,7 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 func writeRawBlock(w *bytes.Buffer, blockType byte, body []byte, isLast bool) error {
 	length := len(body)
 	if length > 0xFFFFFF {
-		return fmt.Errorf("metadata block body too large: %d bytes", length)
+		return fmt.Errorf("metadata block too large")
 	}
 	flags := blockType & 0x7F
 	if isLast {
@@ -245,9 +286,8 @@ func writeRawBlock(w *bytes.Buffer, blockType byte, body []byte, isLast bool) er
 // mewkiz/flac exposes STREAMINFO in stream.Info only — it is NOT in
 // stream.Blocks — so we account for it explicitly.
 func calcAudioOffset(stream *flac.Stream) int64 {
-	offset := int64(4) // "fLaC"
-	offset += 4 + 34   // STREAMINFO header + body
-
+	offset := int64(4)
+	offset += 4 + 34
 	for _, b := range stream.Blocks {
 		offset += 4 + int64(b.Length)
 	}
@@ -295,7 +335,6 @@ func encodePictureData(data []byte) ([]byte, error) {
 	if idx := strings.Index(mime, ";"); idx != -1 {
 		mime = strings.TrimSpace(mime[:idx])
 	}
-
 	mimeBytes := []byte(mime)
 	desc := []byte("Front Cover")
 
@@ -306,15 +345,15 @@ func encodePictureData(data []byte) ([]byte, error) {
 		buf.Write(b[:])
 	}
 
-	write32(3) // picture type: Cover (front)
+	write32(3)
 	write32(uint32(len(mimeBytes)))
 	buf.Write(mimeBytes)
 	write32(uint32(len(desc)))
 	buf.Write(desc)
-	write32(0) // width  (0 = unknown)
-	write32(0) // height (0 = unknown)
-	write32(0) // color depth (0 = unknown)
-	write32(0) // color count (0 = not indexed)
+	write32(0)
+	write32(0)
+	write32(0)
+	write32(0)
 	write32(uint32(len(data)))
 	buf.Write(data)
 
