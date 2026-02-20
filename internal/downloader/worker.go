@@ -306,6 +306,11 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 
 	fullPathNoExt = filepath.Join(w.Config.DownloadsDir, fullPathNoExt)
 
+	// Make file hidden during download and processing
+	dir := filepath.Dir(fullPathNoExt)
+	base := filepath.Base(fullPathNoExt)
+	fullPathNoExt = filepath.Join(dir, "."+base)
+
 	// Check for existing file (Idempotency)
 	// We guess extension - usually .flac for now, or check generic
 	ext := track.FileExtension
@@ -314,10 +319,16 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 	predictedPath := fullPathNoExt + ext
 
+	// Also check the non-hidden path for completed tracks
+	nonHiddenPath := filepath.Join(dir, base[1:]) + ext // base[1:] removes the leading dot
+
 	if track.Status == domain.TrackStatusCompleted {
 		exists := false
 		if _, statErr := os.Stat(predictedPath); statErr == nil {
 			exists = true
+		} else if _, statErr := os.Stat(nonHiddenPath); statErr == nil {
+			exists = true
+			predictedPath = nonHiddenPath
 		} else if track.FilePath != "" {
 			if _, statErr := os.Stat(track.FilePath); statErr == nil {
 				exists = true
@@ -352,6 +363,13 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 				logger.Info("Track exists but hash mismatch, redownloading", "path", predictedPath)
 				_ = storage.RemoveFile(predictedPath)
 			}
+		}
+	}
+
+	// Check for interrupted download (hidden file exists from previous attempt)
+	if track.Status == domain.TrackStatusDownloading || track.Status == domain.TrackStatusProcessing {
+		if _, statErr := os.Stat(predictedPath); statErr == nil {
+			logger.Info("Found interrupted download, resuming processing", "path", predictedPath)
 		}
 	}
 
@@ -468,9 +486,10 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)
 	}
 
-	// Save album art to folder
+	// Save album art to folder (use non-hidden directory)
 	if len(albumArtData) > 0 {
-		artPath := filepath.Join(finalDir, "cover.jpg")
+		nonHiddenDir := filepath.Dir(nonHiddenPath)
+		artPath := filepath.Join(nonHiddenDir, "cover.jpg")
 		if _, artStatErr := os.Stat(artPath); os.IsNotExist(artStatErr) {
 			if writeErr := storage.WriteFile(artPath, albumArtData); writeErr != nil {
 				logger.Error("Failed to save album art", "path", artPath, "error", err)
@@ -486,6 +505,15 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		logger.Error("Failed to hash file", "error", err)
 		// Proceed but log? Or fail?
 		// "store current hash"
+	}
+
+	// Remove hidden dot from filename
+	finalPath, err = storage.ToggleHiddenFile(finalPath, false)
+	if err != nil {
+		logger.Error("Failed to unhide file", "error", err)
+		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to unhide file: %v", err))
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to unhide file: %v", err))
+		return
 	}
 
 	// Mark track as completed

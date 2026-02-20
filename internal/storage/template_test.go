@@ -189,7 +189,7 @@ func TestBuildFullPath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := BuildFullPath(tt.downloadsDir, tt.template, data, tt.ext)
+			got, err := BuildFullPath(tt.downloadsDir, tt.template, data, tt.ext, false)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BuildFullPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
