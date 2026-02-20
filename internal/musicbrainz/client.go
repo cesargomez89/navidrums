@@ -82,7 +82,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 
 	c.throttle()
 
-	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -119,11 +119,13 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 		Duration: rec.Length,
 	}
 
-	if len(rec.Artists) > 0 {
-		meta.Artist = rec.Artists[0].Name
-		meta.Artists = make([]string, len(rec.Artists))
-		for i, a := range rec.Artists {
-			meta.Artists[i] = a.Name
+	if len(rec.ArtistCredit) > 0 {
+		meta.Artist = rec.ArtistCredit[0].Artist.Name
+		meta.Artists = make([]string, len(rec.ArtistCredit))
+		meta.ArtistIDs = make([]string, len(rec.ArtistCredit))
+		for i, ac := range rec.ArtistCredit {
+			meta.Artists[i] = ac.Artist.Name
+			meta.ArtistIDs[i] = ac.Artist.ID
 		}
 	}
 
@@ -131,12 +133,18 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 		rel := rec.Releases[0]
 		meta.Album = rel.Title
 		meta.ReleaseDate = rel.Date
-		meta.ReleaseID = rel.ID
+		meta.ReleaseID = rel.ReleaseGroup.ID
 		meta.Barcode = rel.Barcode
 		meta.CatalogNumber = rel.CatalogNumber
 		meta.ReleaseType = rel.ReleaseGroup.PrimaryType
 		if rel.Date != "" && len(rel.Date) >= 4 {
 			_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
+		}
+		if len(rel.ArtistCredit) > 0 {
+			meta.AlbumArtistIDs = make([]string, len(rel.ArtistCredit))
+			for i, ac := range rel.ArtistCredit {
+				meta.AlbumArtistIDs[i] = ac.Artist.ID
+			}
 		}
 	}
 
@@ -174,25 +182,31 @@ type searchResponse struct {
 }
 
 type recording struct {
-	ID       string    `json:"id"`
-	Title    string    `json:"title"`
-	Tags     []tag     `json:"tags"`
-	Releases []release `json:"releases"`
-	Artists  []artist  `json:"artists"`
-	Length   int       `json:"length"`
+	ID           string         `json:"id"`
+	Title        string         `json:"title"`
+	Tags         []tag          `json:"tags"`
+	Releases     []release      `json:"releases"`
+	ArtistCredit []artistCredit `json:"artist-credit"`
+	Length       int            `json:"length"`
 }
 
 type release struct {
-	ID            string       `json:"id"`
-	Title         string       `json:"title"`
-	Status        string       `json:"status"`
-	Date          string       `json:"date"`
-	Country       string       `json:"country"`
-	Barcode       string       `json:"barcode"`
-	CatalogNumber string       `json:"catalognumber"`
-	Label         string       `json:"label"`
-	ReleaseGroup  releaseGroup `json:"release-group"`
-	Media         []media      `json:"media"`
+	ID            string         `json:"id"`
+	Title         string         `json:"title"`
+	Status        string         `json:"status"`
+	Date          string         `json:"date"`
+	Country       string         `json:"country"`
+	Barcode       string         `json:"barcode"`
+	CatalogNumber string         `json:"catalognumber"`
+	Label         string         `json:"label"`
+	ReleaseGroup  releaseGroup   `json:"release-group"`
+	Media         []media        `json:"media"`
+	ArtistCredit  []artistCredit `json:"artist-credit"`
+}
+
+type artistCredit struct {
+	Name   string `json:"name"`
+	Artist artist `json:"artist"`
 }
 
 type releaseGroup struct {
@@ -216,15 +230,17 @@ type tag struct {
 }
 
 type RecordingMetadata struct {
-	Title         string
-	Artist        string
-	Album         string
-	ReleaseDate   string
-	Barcode       string
-	CatalogNumber string
-	ReleaseType   string
-	ReleaseID     string
-	Artists       []string
-	Year          int
-	Duration      int
+	Title          string
+	Artist         string
+	Album          string
+	ReleaseDate    string
+	Barcode        string
+	CatalogNumber  string
+	ReleaseType    string
+	ReleaseID      string
+	Artists        []string
+	ArtistIDs      []string
+	AlbumArtistIDs []string
+	Year           int
+	Duration       int
 }
