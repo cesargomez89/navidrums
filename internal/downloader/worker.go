@@ -379,8 +379,13 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
-	// Calculate final path (tmpPath without .tmp suffix)
-	finalPath := strings.TrimSuffix(tmpPath, ".tmp")
+	// Calculate final path from original destination + extension from tmp file
+	var finalPath string
+	tmpExt := strings.TrimPrefix(filepath.Ext(tmpPath), ".tmp")
+	if tmpExt == "" || strings.HasPrefix(tmpExt, "/") {
+		tmpExt = ".flac"
+	}
+	finalPath = fullPathNoExt + tmpExt
 
 	// Set track.Status = processing
 	if statusErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); statusErr != nil {

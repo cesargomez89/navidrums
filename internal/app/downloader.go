@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -35,6 +37,11 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 
 	provider := d.providerManager.GetProvider()
 
+	incomingDir := filepath.Join(d.config.DownloadsDir, ".incoming")
+	if err := os.MkdirAll(incomingDir, 0750); err != nil {
+		return "", fmt.Errorf("failed to create incoming directory: %w", err)
+	}
+
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
 		select {
 		case <-ctx.Done():
@@ -58,7 +65,8 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		finalExt = ext
 
 		finalPath := destPathNoExt + finalExt
-		tmpPath = finalPath + ".tmp"
+		tmpFileName := filepath.Base(finalPath)
+		tmpPath = filepath.Join(incomingDir, tmpFileName)
 
 		f, err := storage.CreateFile(tmpPath)
 		if err != nil {
