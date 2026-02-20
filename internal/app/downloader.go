@@ -37,7 +37,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 
 	provider := d.providerManager.GetProvider()
 
-	incomingDir := filepath.Join(d.config.DownloadsDir, ".incoming")
+	incomingDir := d.config.IncomingDir
 	if err := os.MkdirAll(incomingDir, 0750); err != nil {
 		return "", fmt.Errorf("failed to create incoming directory: %w", err)
 	}

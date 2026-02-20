@@ -70,6 +70,7 @@ Environment variables:
 | `PORT` | `8080` | HTTP server port |
 | `DB_PATH` | `navidrums.db` | SQLite database file path |
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Output directory for downloaded music |
+| `INCOMING_DIR` | `~/Downloads/incoming` | Temporary directory for downloads before moving to final location (keep separate from Navidrome library) |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Go template for file organization |
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API provider |
 | `QUALITY` | `LOSSLESS` | Audio quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |

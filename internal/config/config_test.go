@@ -95,6 +95,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -112,6 +113,7 @@ func TestValidate(t *testing.T) {
 				Port:           "abc",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -126,6 +128,7 @@ func TestValidate(t *testing.T) {
 				Port:           "99999",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -140,6 +143,7 @@ func TestValidate(t *testing.T) {
 				Port:           "",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -154,6 +158,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -168,6 +173,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "INVALID",
 				LogLevel:       "info",
@@ -182,6 +188,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "invalid",
@@ -196,6 +203,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -210,6 +218,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -224,6 +233,7 @@ func TestValidate(t *testing.T) {
 				Port:           "8080",
 				DBPath:         "test.db",
 				DownloadsDir:   "/tmp/downloads",
+				IncomingDir:    "/tmp/incoming",
 				ProviderURL:    "http://localhost:8000",
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
@@ -278,5 +288,19 @@ func TestDownloadsDirDefault(t *testing.T) {
 	expectedDir := filepath.Join(home, "Downloads/navidrums")
 	if cfg.DownloadsDir != expectedDir {
 		t.Errorf("Expected DownloadsDir to be %s, got %s", expectedDir, cfg.DownloadsDir)
+	}
+}
+
+func TestIncomingDirDefault(t *testing.T) {
+	// Ensure HOME is set
+	home := os.Getenv("HOME")
+	if home == "" {
+		t.Skip("HOME environment variable not set")
+	}
+
+	cfg := Load()
+	expectedDir := filepath.Join(home, "Downloads/incoming")
+	if cfg.IncomingDir != expectedDir {
+		t.Errorf("Expected IncomingDir to be %s, got %s", expectedDir, cfg.IncomingDir)
 	}
 }
