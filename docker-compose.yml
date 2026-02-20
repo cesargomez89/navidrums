@@ -5,10 +5,29 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./downloads:/downloads
-      - ./navidrums.db:/app/navidrums.db
+      - ~/Downloads/navidrums/:/music
+      - ./docker.navidrums.db:/app/navidrums.db
     env_file:
       - .env
+    restart: unless-stopped
+    networks:
+      - navidrums
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    ports:
+      - "4533:4533"
+    volumes:
+      - ~/Downloads/navidrums/:/music
+      - ./navidrome_data:/data
+    environment:
+      - ND_SCANSCHEDULE=@every 24h
+      - ND_LOGLEVEL=info
+      - ND_PORT=4533
+      - ND_AUTHREQUIRED=true
+      - ND_DEFAULTUSER_NAME=navidrums
+      - ND_DEFAULTUSER_PASSWORD=admin
+      - ND_DEFAULTUSER_EMAIL=admin@navidrums.local
     restart: unless-stopped
     networks:
       - navidrums

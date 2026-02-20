@@ -1,5 +1,7 @@
-navidrums.db*
+*navidrums.db*
 server
 navidrums
 downloads
 .env
+tmp
+navidrome_data
