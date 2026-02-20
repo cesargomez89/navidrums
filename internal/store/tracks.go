@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -9,57 +10,57 @@ import (
 )
 
 type dbTrack struct {
-	CreatedAt      time.Time  `db:"created_at"`
-	UpdatedAt      time.Time  `db:"updated_at"`
-	LastVerifiedAt *time.Time `db:"last_verified_at"`
-	CompletedAt    *time.Time `db:"completed_at"`
-	Barcode        string     `db:"barcode"`
-	ISRC           string     `db:"isrc"`
-	AlbumID        string     `db:"album_id"`
-	AlbumArtist    string     `db:"album_artist"`
-	AlbumArtists   string     `db:"album_artists"`
-	ProviderID     string     `db:"provider_id"`
-	FileHash       string     `db:"file_hash"`
-	ETag           string     `db:"etag"`
-	Title          string     `db:"title"`
-	Artist         string     `db:"artist"`
-	Genre          string     `db:"genre"`
-	Label          string     `db:"label"`
-	KeyScale       string     `db:"key_scale"`
-	Copyright      string     `db:"copyright"`
-	Composer       string     `db:"composer"`
-	Artists        string     `db:"artists"`
-	FileExtension  string     `db:"file_extension"`
-	FilePath       string     `db:"file_path"`
-	AlbumArtURL    string     `db:"album_art_url"`
-	Lyrics         string     `db:"lyrics"`
-	Subtitles      string     `db:"subtitles"`
-	ParentJobID    string     `db:"parent_job_id"`
-	Album          string     `db:"album"`
-	KeyName        string     `db:"key_name"`
-	ReleaseDate    string     `db:"release_date"`
-	Error          string     `db:"error"`
-	Version        string     `db:"version"`
-	Description    string     `db:"description"`
-	URL            string     `db:"url"`
-	AudioQuality   string     `db:"audio_quality"`
-	AudioModes     string     `db:"audio_modes"`
-	Status         string     `db:"status"`
-	ReleaseID      string     `db:"release_id"`
-	CatalogNumber  string     `db:"catalog_number"`
-	ReleaseType    string     `db:"release_type"`
-	ID             int        `db:"id"`
-	ReplayGain     float64    `db:"replay_gain"`
-	Peak           float64    `db:"peak"`
-	BPM            int        `db:"bpm"`
-	Duration       int        `db:"duration"`
-	Year           int        `db:"year"`
-	TotalDiscs     int        `db:"total_discs"`
-	TotalTracks    int        `db:"total_tracks"`
-	DiscNumber     int        `db:"disc_number"`
-	TrackNumber    int        `db:"track_number"`
-	Compilation    bool       `db:"compilation"`
-	Explicit       bool       `db:"explicit"`
+	CreatedAt      time.Time      `db:"created_at"`
+	UpdatedAt      time.Time      `db:"updated_at"`
+	LastVerifiedAt *time.Time     `db:"last_verified_at"`
+	CompletedAt    *time.Time     `db:"completed_at"`
+	Barcode        sql.NullString `db:"barcode"`
+	ISRC           string         `db:"isrc"`
+	AlbumID        string         `db:"album_id"`
+	AlbumArtist    string         `db:"album_artist"`
+	AlbumArtists   string         `db:"album_artists"`
+	ProviderID     string         `db:"provider_id"`
+	FileHash       string         `db:"file_hash"`
+	ETag           string         `db:"etag"`
+	Title          string         `db:"title"`
+	Artist         string         `db:"artist"`
+	Genre          string         `db:"genre"`
+	Label          string         `db:"label"`
+	KeyScale       string         `db:"key_scale"`
+	Copyright      string         `db:"copyright"`
+	Composer       string         `db:"composer"`
+	Artists        string         `db:"artists"`
+	FileExtension  string         `db:"file_extension"`
+	FilePath       string         `db:"file_path"`
+	AlbumArtURL    string         `db:"album_art_url"`
+	Lyrics         string         `db:"lyrics"`
+	Subtitles      string         `db:"subtitles"`
+	ParentJobID    string         `db:"parent_job_id"`
+	Album          string         `db:"album"`
+	KeyName        string         `db:"key_name"`
+	ReleaseDate    string         `db:"release_date"`
+	Error          string         `db:"error"`
+	Version        string         `db:"version"`
+	Description    string         `db:"description"`
+	URL            string         `db:"url"`
+	AudioQuality   string         `db:"audio_quality"`
+	AudioModes     string         `db:"audio_modes"`
+	Status         string         `db:"status"`
+	ReleaseID      sql.NullString `db:"release_id"`
+	CatalogNumber  sql.NullString `db:"catalog_number"`
+	ReleaseType    sql.NullString `db:"release_type"`
+	ID             int            `db:"id"`
+	ReplayGain     float64        `db:"replay_gain"`
+	Peak           float64        `db:"peak"`
+	BPM            int            `db:"bpm"`
+	Duration       int            `db:"duration"`
+	Year           int            `db:"year"`
+	TotalDiscs     int            `db:"total_discs"`
+	TotalTracks    int            `db:"total_tracks"`
+	DiscNumber     int            `db:"disc_number"`
+	TrackNumber    int            `db:"track_number"`
+	Compilation    bool           `db:"compilation"`
+	Explicit       bool           `db:"explicit"`
 }
 
 func (d *dbTrack) toDomain() *domain.Track {
@@ -99,10 +100,10 @@ func (d *dbTrack) toDomain() *domain.Track {
 		AudioQuality:  d.AudioQuality,
 		AudioModes:    d.AudioModes,
 		ReleaseDate:   d.ReleaseDate,
-		Barcode:       d.Barcode,
-		CatalogNumber: d.CatalogNumber,
-		ReleaseType:   d.ReleaseType,
-		ReleaseID:     d.ReleaseID,
+		Barcode:       d.Barcode.String,
+		CatalogNumber: d.CatalogNumber.String,
+		ReleaseType:   d.ReleaseType.String,
+		ReleaseID:     d.ReleaseID.String,
 		Error:         d.Error,
 		ParentJobID:   d.ParentJobID,
 		FilePath:      d.FilePath,
