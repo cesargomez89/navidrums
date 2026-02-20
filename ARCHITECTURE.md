@@ -110,3 +110,38 @@ web/                  # Embedded UI templates and assets
 - Each job runs in its own goroutine
 - Container jobs (album/playlist/artist) spawn child track jobs
 - Context cancellation stops downloads gracefully
+
+## Data Architecture
+
+Navidrums uses a two-table design that separates work queue state from track metadata:
+
+### Jobs Table (Work Queue)
+Minimal state for tracking background work:
+- `ID`, `Type`, `Status`, `SourceID`, `Progress`, `Error`, timestamps
+- Status: `queued → running → completed | failed | cancelled`
+- `SourceID` links to `Track.ProviderID`
+
+### Tracks Table (Download Domain)
+Full metadata and download state for all tracks:
+- Identity: `ID`, `ProviderID`, `AlbumID`
+- Metadata: Title, Artist, Album, TrackNumber, ISRC, Lyrics, etc.
+- Extended: BPM, Key, ReplayGain, AudioQuality, etc.
+- Processing: `Status`, `Error`, `ParentJobID`
+- File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
+- Verification: `LastVerifiedAt`
+- Status: `missing → queued → downloading → processing → completed | failed`
+
+### Key Data Invariants
+1. Track file must exist before tagging
+2. Duplicate downloads prevented via unique `provider_id` constraint
+3. Deleting job doesn't delete files
+4. Job.SourceID links to Track.ProviderID
+5. Container jobs decompose into track jobs via Track records
+
+### Workflow
+```
+HTTP Request → App Workflow → Store State
+Worker observes state → Downloader executes → Storage writes → App finalizes
+```
+
+See [DOMAIN.md](DOMAIN.md) for detailed domain model specifications.

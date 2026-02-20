@@ -13,7 +13,7 @@ All routes are server-rendered HTML endpoints using HTMX for partial updates.
 | GET | `/album/{id}` | Album detail page |
 | GET | `/playlist/{id}` | Playlist detail page |
 | GET | `/queue` | Download queue page |
-| GET | `/history` | Download history page |
+| GET | `/downloads` | Downloads browser page |
 | GET | `/settings` | Settings page |
 
 ### HTMX Fragments
@@ -23,10 +23,12 @@ All routes are server-rendered HTML endpoints using HTMX for partial updates.
 | GET | `/htmx/search?q={query}&type={type}` | Search results fragment |
 | GET | `/htmx/album/{id}/similar` | Similar albums fragment |
 | POST | `/htmx/download/{type}/{id}` | Enqueue download job |
-| GET | `/htmx/queue` | Queue list fragment |
+| GET | `/htmx/queue/active` | Active jobs fragment |
+| GET | `/htmx/queue/history` | Job history fragment |
 | POST | `/htmx/cancel/{id}` | Cancel a job |
 | POST | `/htmx/retry/{id}` | Retry a failed job |
 | POST | `/htmx/history/clear` | Clear finished jobs |
+| GET | `/htmx/downloads?q={query}` | Downloads browser fragment |
 | GET | `/htmx/providers` | Get provider configuration |
 | POST | `/htmx/provider/set?url={url}` | Set active provider |
 | POST | `/htmx/provider/add?name={name}&url={url}` | Add custom provider |
@@ -42,9 +44,9 @@ Jobs are processed by background workers.
 
 Download types accepted:
 - `track` - Single track
-- `album` - Full album (decomposes into tracks)
-- `playlist` - Playlist (decomposes into tracks)
-- `artist` - Artist top tracks (decomposes into tracks)
+- `album` - Full album (decomposes into tracks, saves cover.jpg)
+- `playlist` - Playlist (decomposes into tracks, generates M3U file)
+- `artist` - Artist top tracks (decomposes into tracks, generates M3U file)
 
 ---
 
