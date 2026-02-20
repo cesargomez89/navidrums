@@ -12,11 +12,14 @@ archives:
 checksum:
   algorithm: sha256
 
+snapshot:
+  name_template: "{{ .Tag }}-snapshot-{{ .ShortCommit }}"
+
 release:
   github:
     owner: cesargomez89
     name: navidrums
-  draft: false
+  draft: true
   prerelease: auto
 
 builds:
