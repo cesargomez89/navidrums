@@ -459,6 +459,12 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			if meta.ReleaseID != "" {
 				track.ReleaseID = meta.ReleaseID
 			}
+			if len(meta.ArtistIDs) > 0 {
+				track.ArtistIDs = meta.ArtistIDs
+			}
+			if len(meta.AlbumArtistIDs) > 0 {
+				track.AlbumArtistIDs = meta.AlbumArtistIDs
+			}
 		}
 
 		// Fetch genre from MusicBrainz if not available from provider
