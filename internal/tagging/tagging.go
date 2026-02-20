@@ -363,7 +363,6 @@ func encodePictureData(data []byte) ([]byte, error) {
 }
 
 // newVorbisComment builds a populated VorbisComment from a Track.
-// Only minimal metadata required for Navidrome is included.
 func newVorbisComment(track *domain.Track) *meta.VorbisComment {
 	vc := &meta.VorbisComment{
 		Vendor: "navidrums",
@@ -411,19 +410,74 @@ func newVorbisComment(track *domain.Track) *meta.VorbisComment {
 		add("DATE", fmt.Sprintf("%d", track.Year))
 	}
 
+	add("RELEASEDATE", track.ReleaseDate)
 	add("GENRE", track.Genre)
+	add("LABEL", track.Label)
+	add("ISRC", track.ISRC)
+	add("COPYRIGHT", track.Copyright)
+	add("COMPOSER", track.Composer)
+
+	if track.BPM > 0 {
+		add("BPM", fmt.Sprintf("%d", track.BPM))
+	}
+	add("KEY", track.Key)
+	add("KEY_SCALE", track.KeyScale)
+
+	if track.ReplayGain != 0 {
+		add("REPLAYGAIN_TRACK_GAIN", fmt.Sprintf("%.2f dB", track.ReplayGain))
+	}
+	if track.Peak != 0 {
+		add("REPLAYGAIN_TRACK_PEAK", fmt.Sprintf("%.6f", track.Peak))
+	}
+
+	add("VERSION", track.Version)
+	add("DESCRIPTION", track.Description)
+	add("URL", track.URL)
+	add("AUDIO_QUALITY", track.AudioQuality)
+	add("AUDIO_MODE", track.AudioModes)
+	add("UNSYNCEDLYRICS", track.Lyrics)
+
+	if track.Subtitles != "" {
+		add("LYRICS", formatToLRC(track.Subtitles))
+	}
 
 	if track.Compilation {
 		add("COMPILATION", "1")
 	}
 
+	for _, id := range track.ArtistIDs {
+		add("MUSICBRAINZ_ARTISTID", id)
+	}
+	for _, id := range track.AlbumArtistIDs {
+		add("MUSICBRAINZ_ALBUMARTISTID", id)
+	}
+
+	add("BARCODE", track.Barcode)
+	add("CATALOGNUMBER", track.CatalogNumber)
+	add("RELEASETYPE", track.ReleaseType)
+	add("MUSICBRAINZ_RELEASEGROUPID", track.ReleaseID)
+
 	return vc
+}
+
+// formatToLRC converts subtitle lines to LRC format.
+// Input lines are expected to look like "[MM:SS.mm] Lyrics text".
+func formatToLRC(subtitles string) string {
+	var sb strings.Builder
+	for _, line := range strings.Split(subtitles, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		sb.WriteString(line)
+		sb.WriteByte('\n')
+	}
+	return sb.String()
 }
 
 // ── MP3 ──────────────────────────────────────────────────────────────────────
 
 // tagMP3 writes ID3v2.4 tags to an MP3 file.
-// Only minimal metadata required for Navidrome is included.
 func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 	tag, err := id3v2.Open(filePath, id3v2.Options{Parse: true})
 	if err != nil {
@@ -472,8 +526,117 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 		tag.AddTextFrame(tag.CommonID("Part of a set"), tag.DefaultEncoding(), discStr)
 	}
 
+	if track.Composer != "" {
+		tag.AddTextFrame(tag.CommonID("Composer"), tag.DefaultEncoding(), track.Composer)
+	}
+	if track.Label != "" {
+		tag.AddTextFrame(tag.CommonID("Publisher"), tag.DefaultEncoding(), track.Label)
+	}
+	if track.ISRC != "" {
+		tag.AddTextFrame(tag.CommonID("ISRC"), tag.DefaultEncoding(), track.ISRC)
+	}
+	if track.Copyright != "" {
+		tag.AddTextFrame(tag.CommonID("Copyright message"), tag.DefaultEncoding(), track.Copyright)
+	}
+	if track.BPM > 0 {
+		tag.AddTextFrame(tag.CommonID("BPM"), tag.DefaultEncoding(), fmt.Sprintf("%d", track.BPM))
+	}
+	if track.Key != "" {
+		tag.AddTextFrame(tag.CommonID("Key"), tag.DefaultEncoding(), track.Key)
+	}
+	if track.ReplayGain != 0 {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "REPLAYGAIN_TRACK_GAIN",
+			Value:       fmt.Sprintf("%.2f dB", track.ReplayGain),
+		})
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "REPLAYGAIN_TRACK_PEAK",
+			Value:       fmt.Sprintf("%.6f", track.Peak),
+		})
+	}
+	if track.Version != "" {
+		tag.AddTextFrame(tag.CommonID("Version"), tag.DefaultEncoding(), track.Version)
+	}
+	if track.Description != "" {
+		tag.AddTextFrame(tag.CommonID("Comments"), tag.DefaultEncoding(), track.Description)
+	}
+	if track.URL != "" {
+		tag.AddTextFrame(tag.CommonID("WWWAudioSource"), tag.DefaultEncoding(), track.URL)
+	}
+	if track.AudioQuality != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "AUDIO_QUALITY",
+			Value:       track.AudioQuality,
+		})
+	}
+	if track.AudioModes != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "AUDIO_MODE",
+			Value:       track.AudioModes,
+		})
+	}
+	if track.Lyrics != "" {
+		tag.AddTextFrame(tag.CommonID("Lyrics"), tag.DefaultEncoding(), track.Lyrics)
+	}
+	if track.Subtitles != "" {
+		tag.AddUnsynchronisedLyricsFrame(id3v2.UnsynchronisedLyricsFrame{
+			Encoding:          id3v2.EncodingUTF8,
+			Language:          "eng",
+			ContentDescriptor: "LRC",
+			Lyrics:            formatToLRC(track.Subtitles),
+		})
+	}
+	if track.ReleaseDate != "" {
+		tag.AddTextFrame(tag.CommonID("Release time"), tag.DefaultEncoding(), track.ReleaseDate)
+	}
 	if track.Compilation {
 		tag.AddTextFrame("TCMP", tag.DefaultEncoding(), "1")
+	}
+	for _, id := range track.ArtistIDs {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "MUSICBRAINZ_ARTISTID",
+			Value:       id,
+		})
+	}
+	for _, id := range track.AlbumArtistIDs {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "MUSICBRAINZ_ALBUMARTISTID",
+			Value:       id,
+		})
+	}
+	if track.Barcode != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "BARCODE",
+			Value:       track.Barcode,
+		})
+	}
+	if track.CatalogNumber != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "CATALOGNUMBER",
+			Value:       track.CatalogNumber,
+		})
+	}
+	if track.ReleaseType != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "RELEASETYPE",
+			Value:       track.ReleaseType,
+		})
+	}
+	if track.ReleaseID != "" {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "MUSICBRAINZ_RELEASEGROUPID",
+			Value:       track.ReleaseID,
+		})
 	}
 
 	if len(albumArtData) > 0 {
