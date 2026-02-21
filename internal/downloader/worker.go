@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -371,7 +370,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 
 	// Download the track
-	tmpPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
+	finalPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = w.Repo.MarkTrackFailed(track.ID, err.Error())
@@ -379,20 +378,12 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
-	// Calculate final path from original destination + extension from tmp file
-	var finalPath string
-	tmpExt := strings.TrimPrefix(filepath.Ext(tmpPath), ".tmp")
-	if tmpExt == "" || strings.HasPrefix(tmpExt, "/") {
-		tmpExt = ".flac"
-	}
-	finalPath = fullPathNoExt + tmpExt
-
 	// Set track.Status = processing
 	if statusErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); statusErr != nil {
 		logger.Error("Failed to update track status to processing", "error", statusErr)
 	}
 
-	logger.Info("Download finished, starting tagging", "file_path", tmpPath)
+	logger.Info("Download finished, starting tagging", "file_path", finalPath)
 
 	// Download album art for tagging
 	var albumArtData []byte
@@ -487,9 +478,9 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Tag the file (operates on tmp file)
-	if tagErr := tagging.TagFile(tmpPath, track, albumArtData); tagErr != nil {
-		logger.Error("Failed to tag file", "file_path", tmpPath, "error", err)
+	// Tag the file
+	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
+		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)
 	}
 
 	// Save album art to folder
@@ -502,14 +493,6 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 				logger.Info("Saved album art", "path", artPath)
 			}
 		}
-	}
-
-	// Atomic rename: tmp -> final (Navidrome sees completed file for first time)
-	if renameErr := os.Rename(tmpPath, finalPath); renameErr != nil {
-		logger.Error("Failed to rename tmp file", "tmp_path", tmpPath, "final_path", finalPath, "error", renameErr)
-		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to rename file: %v", renameErr))
-		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to rename file: %v", renameErr))
-		return
 	}
 
 	logger.Info("File finalized", "original_path", finalPath)

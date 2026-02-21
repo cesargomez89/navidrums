@@ -31,7 +31,6 @@ go fmt ./...
 | `PORT` | 8080 | HTTP server port |
 | `DB_PATH` | navidrums.db | SQLite database path |
 | `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
-| `INCOMING_DIR` | ~/Downloads/incoming | Temporary directory for downloads before moving to final location |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
 | `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL |
 | `QUALITY` | LOSSLESS | Audio quality |

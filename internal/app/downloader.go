@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -32,15 +30,7 @@ func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 }
 
 func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
-	var tmpPath string
-	var finalExt string
-
 	provider := d.providerManager.GetProvider()
-
-	incomingDir := d.config.IncomingDir
-	if err := os.MkdirAll(incomingDir, 0750); err != nil {
-		return "", fmt.Errorf("failed to create incoming directory: %w", err)
-	}
 
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
 		select {
@@ -62,13 +52,10 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		case constants.MimeTypeMP3:
 			ext = constants.ExtMP3
 		}
-		finalExt = ext
 
-		finalPath := destPathNoExt + finalExt
-		tmpFileName := filepath.Base(finalPath)
-		tmpPath = filepath.Join(incomingDir, tmpFileName)
+		finalPath := destPathNoExt + ext
 
-		f, err := storage.CreateFile(tmpPath)
+		f, err := storage.CreateFile(finalPath)
 		if err != nil {
 			_ = stream.Close()
 			continue
@@ -79,10 +66,8 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		_ = f.Close()
 
 		if err == nil {
-			return tmpPath, nil
+			return finalPath, nil
 		}
-
-		_ = storage.RemoveFile(tmpPath)
 
 		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 	}
