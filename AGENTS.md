@@ -124,17 +124,29 @@ Minimal state for work tracking:
 
 ### Track (Download Domain)
 Full metadata for downloaded/pending tracks:
-- Identity: `ID`, `ProviderID`, `AlbumID`
-- Metadata: Title, Artist, Album, TrackNumber, ISRC, Lyrics, etc.
-- Extended: BPM, Key, ReplayGain, AudioQuality, etc.
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
+- Genre/Label: `Genre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Credit: `Credit`, `Composer`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`, `AlbumArtURL`
 - Processing: `Status`, `Error`, `ParentJobID`
 - File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
-- Verification: `LastVerifiedAt`
+- Verification: `LastVerifiedAt`, `CompletedAt`
 - Status: missing | queued | downloading | processing | completed | failed
 
 ### CatalogTrack (Provider Data)
 Used by catalog providers for search results:
-- Similar to Track but with provider-specific fields
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ArtistID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Genre/Label: `Genre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`, `AlbumArtURL`
 - Converted to Track when persisting to database
 
 ---

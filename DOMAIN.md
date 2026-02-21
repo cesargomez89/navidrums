@@ -3,7 +3,15 @@
 ## CatalogTrack
 Remote metadata entity describing a song from the provider/catalog.
 
-Fields include title, artist, album, track number, disc number, duration, year, genre, label, ISRC, copyright, composer, album art URL, explicit lyrics, BPM, key, replay gain, peak, version, description, URL, audio quality, audio modes, lyrics, subtitles, and release date.
+Fields include:
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ArtistID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Genre/Label: `Genre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`, `AlbumArtURL`
+- Explicit: `Explicit`
 
 Not guaranteed to exist locally. Used by providers for search results.
 
@@ -12,18 +20,31 @@ Not guaranteed to exist locally. Used by providers for search results.
 ## Track
 Local download domain entity representing a track stored in the database.
 
-Contains full metadata (same fields as CatalogTrack) plus:
-- `ProviderID` - Links to the provider's track ID
-- `AlbumID` - Links to the album
+Metadata fields:
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`
+- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
+- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
+- Genre/Label: `Genre`, `Label`, `Compilation`
+- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
+- Lyrics: `Lyrics`, `Subtitles`
+- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`
+- Explicit: `Explicit`
+- Credit: `Credit`, `Composer`
+
+Processing:
 - `Status` - missing | queued | downloading | processing | completed | failed
 - `ParentJobID` - Reference to the container job that created this track
+- `Error` - Error message if download failed
+
+File:
 - `FilePath` - Local filesystem path after download
 - `FileExtension` - Audio file extension (.flac, .mp3, .m4a)
 - `FileHash` - SHA256 hash of downloaded file for verification
 - `ETag` - HTTP ETag from download source
-- `LastVerifiedAt` - Last verification timestamp
-- `Error` - Error message if download failed
-- Timestamps for creation, update, and completion
+
+Timestamps:
+- `CreatedAt`, `UpdatedAt`, `CompletedAt`, `LastVerifiedAt`
 
 Stored in the `tracks` table. Prevents duplicate downloads via unique `provider_id` constraint.
 
