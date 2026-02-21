@@ -5,9 +5,11 @@ go 1.25.5
 require (
 	github.com/bogem/id3v2/v2 v2.1.4
 	github.com/go-chi/chi/v5 v5.2.5
+	github.com/go-flac/flacpicture v0.2.0
+	github.com/go-flac/flacvorbis v0.2.0
+	github.com/go-flac/go-flac v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/mewkiz/flac v1.0.13
 	modernc.org/sqlite v1.45.0
 )
 

@@ -24,6 +24,8 @@ linters-settings:
           - errcheck
           - ineffassign
           - unused
+    paths:
+      - navidrome_data
 
 formatters:
   enable:
