@@ -416,10 +416,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		if mbErr != nil {
 			logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
 		} else if meta != nil {
-			// Replace with MusicBrainz data (authoritative source)
-			if meta.Album != "" {
-				track.Album = meta.Album
-			}
+			// Use MusicBrainz for supplementary data only - preserve provider's Album/AlbumArtist
 			if meta.Artist != "" {
 				track.Artist = meta.Artist
 			}
@@ -459,9 +456,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			if len(meta.AlbumArtists) > 0 {
 				track.AlbumArtists = meta.AlbumArtists
 			}
-			if meta.AlbumArtist != "" {
-				track.AlbumArtist = meta.AlbumArtist
-			}
+			// Note: Album and AlbumArtist intentionally NOT overwritten to preserve provider's original values
 			if meta.Composer != "" {
 				track.Composer = meta.Composer
 			}
@@ -505,16 +500,20 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		// "store current hash"
 	}
 
-	// Mark track as completed
+	// Mark track as completed and persist enriched metadata
 	ext = filepath.Ext(finalPath)
 	if ext == "" {
 		ext = ".flac"
 	}
 	track.FileExtension = ext
+	track.Status = domain.TrackStatusCompleted
+	track.FilePath = finalPath
+	track.FileHash = fileHash
+	track.LastVerifiedAt = time.Now()
+	track.UpdatedAt = time.Now()
 
-	// w.Repo.MarkTrackCompleted(track.ID, finalPath, fileHash)
-	if err := w.Repo.MarkTrackCompleted(track.ID, finalPath, fileHash); err != nil {
-		logger.Error("Failed to mark track completed", "error", err)
+	if err := w.Repo.UpdateTrack(track); err != nil {
+		logger.Error("Failed to update track", "error", err)
 	}
 
 	// Recompute album state

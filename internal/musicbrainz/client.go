@@ -82,7 +82,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 
 	c.throttle()
 
-	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+	u := fmt.Sprintf("%s/recording?query=isrc:%s+type:album&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
