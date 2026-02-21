@@ -1,7 +1,7 @@
 {{define "content"}}
 <h1>Downloads</h1>
 
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
     <input type="text" 
            id="downloads-search" 
            name="q" 
@@ -9,7 +9,9 @@
            hx-get="/htmx/downloads"
            hx-trigger="input changed delay:300ms"
            hx-target="#downloads-list"
-           style="width: 100%; max-width: 400px; padding: 8px; font-size: 14px;">
+           style="flex: 1; max-width: 400px; padding: 8px; font-size: 14px;">
+    
+    <button onclick="syncMetadata()" class="btn btn-outline btn-sm">Sync Metadata</button>
 </div>
 
 <div id="downloads-list" hx-get="/htmx/downloads" hx-trigger="load">
@@ -22,6 +24,22 @@ function deleteDownload(id) {
         return;
     }
     htmx.ajax('DELETE', '/htmx/download/' + id, {
+        target: '#downloads-list',
+        swap: 'innerHTML'
+    });
+}
+
+function syncMetadata() {
+    if (!confirm('This will update metadata for all completed tracks using MusicBrainz (ISRC lookup).\n\n' +
+                 '- Only missing fields will be filled (existing data preserved)\n' +
+                 '- Audio files will be re-tagged with updated metadata\n' +
+                 '- Tracks without ISRC will be skipped\n' +
+                 '- MusicBrainz rate limits to ~1 request/second\n' +
+                 '- Operation cannot be undone\n\n' +
+                 'Continue?')) {
+        return;
+    }
+    htmx.ajax('POST', '/htmx/downloads/sync', {
         target: '#downloads-list',
         swap: 'innerHTML'
     });

@@ -11,6 +11,8 @@ const (
 	JobTypeAlbum    JobType = "album"
 	JobTypePlaylist JobType = "playlist"
 	JobTypeArtist   JobType = "artist"
+	JobTypeSyncFile JobType = "sync_file"
+	JobTypeSync     JobType = "sync"
 )
 
 type JobStatus string

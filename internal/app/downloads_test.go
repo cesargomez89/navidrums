@@ -10,6 +10,89 @@ import (
 	"github.com/cesargomez89/navidrums/internal/logger"
 )
 
+func TestDownloadsService_EnqueueSyncFileJob(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	log := logger.Default()
+	svc := NewDownloadsService(db, log)
+
+	track := &domain.Track{
+		ProviderID: "sync_file_test",
+		Title:      "Track",
+		Artist:     "Artist",
+		Album:      "Album",
+		Status:     domain.TrackStatusCompleted,
+		FilePath:   "/path/track.flac",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
+
+	err := svc.EnqueueSyncFileJob("sync_file_test")
+	if err != nil {
+		t.Fatalf("EnqueueSyncFileJob failed: %v", err)
+	}
+
+	job, err := db.GetActiveJobBySourceID("sync_file_test", domain.JobTypeSyncFile)
+	if err != nil {
+		t.Fatalf("GetActiveJobBySourceID failed: %v", err)
+	}
+	if job == nil {
+		t.Fatal("Expected job to be created")
+	}
+	if job.Type != domain.JobTypeSyncFile {
+		t.Errorf("Expected job type %s, got %s", domain.JobTypeSyncFile, job.Type)
+	}
+	if job.Status != domain.JobStatusQueued {
+		t.Errorf("Expected status %s, got %s", domain.JobStatusQueued, job.Status)
+	}
+}
+
+func TestDownloadsService_EnqueueSyncMetadataJob(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	log := logger.Default()
+	svc := NewDownloadsService(db, log)
+
+	track := &domain.Track{
+		ProviderID: "sync_metadata_test",
+		Title:      "Track",
+		Artist:     "Artist",
+		Album:      "Album",
+		Status:     domain.TrackStatusCompleted,
+		FilePath:   "/path/track.flac",
+		ISRC:       "USABC1234567",
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
+
+	err := svc.EnqueueSyncMetadataJob("sync_metadata_test")
+	if err != nil {
+		t.Fatalf("EnqueueSyncMetadataJob failed: %v", err)
+	}
+
+	job, err := db.GetActiveJobBySourceID("sync_metadata_test", domain.JobTypeSync)
+	if err != nil {
+		t.Fatalf("GetActiveJobBySourceID failed: %v", err)
+	}
+	if job == nil {
+		t.Fatal("Expected job to be created")
+	}
+	if job.Type != domain.JobTypeSync {
+		t.Errorf("Expected job type %s, got %s", domain.JobTypeSync, job.Type)
+	}
+	if job.Status != domain.JobStatusQueued {
+		t.Errorf("Expected status %s, got %s", domain.JobStatusQueued, job.Status)
+	}
+}
+
 func TestDownloadsService_ListDownloads(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()

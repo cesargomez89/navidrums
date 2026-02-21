@@ -119,19 +119,24 @@
     <div style="display: flex; gap: 12px; margin: 24px 0px;">
         <button type="submit" class="btn btn-primary">Save to Database</button>
         <button type="submit" class="btn" style="background: var(--warning); color: #0d0b00;" formaction="/htmx/track/{{.Track.ID}}/sync">Sync to File</button>
+        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich">Enrich from MusicBrainz</button>
         <a href="/downloads" class="btn btn-outline">Cancel</a>
     </div>
 </form>
 
-{{if .SaveSuccess}}
+{{if .JobEnqueued}}
 <div class="alert alert-success" style="margin-bottom: 16px;">
-    Track saved to database successfully!
+    {{if eq .JobEnqueuedType "sync_file"}}
+    Sync job enqueued. Check the <a href="/queue">queue</a> for progress.
+    {{else}}
+    Metadata enrichment job enqueued. Check the <a href="/queue">queue</a> for progress.
+    {{end}}
 </div>
 {{end}}
 
-{{if .SyncSuccess}}
+{{if .SaveSuccess}}
 <div class="alert alert-success" style="margin-bottom: 16px;">
-    Track synced to database and file successfully!
+    Track saved to database successfully!
 </div>
 {{end}}
 

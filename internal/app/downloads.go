@@ -3,12 +3,14 @@ package app
 import (
 	"fmt"
 	"path/filepath"
+	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
-	"github.com/cesargomez89/navidrums/internal/tagging"
 )
 
 const defaultLimit = 30
@@ -38,30 +40,28 @@ func (s *DownloadsService) UpdateTrackPartial(id int, updates map[string]interfa
 	return s.Repo.UpdateTrackPartial(id, updates)
 }
 
-func (s *DownloadsService) SyncTrackToFile(id int) error {
-	track, err := s.Repo.GetTrackByID(id)
-	if err != nil {
-		return fmt.Errorf("failed to get track: %w", err)
+func (s *DownloadsService) EnqueueSyncFileJob(providerID string) error {
+	job := &domain.Job{
+		ID:        uuid.New().String(),
+		Type:      domain.JobTypeSyncFile,
+		Status:    domain.JobStatusQueued,
+		SourceID:  providerID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
-	if track == nil {
-		return fmt.Errorf("track not found")
-	}
-	if track.FilePath == "" {
-		return fmt.Errorf("track has no file path")
-	}
+	return s.Repo.CreateJob(job)
+}
 
-	albumArtData, err := tagging.DownloadImage(track.AlbumArtURL)
-	if err != nil {
-		s.Logger.Warn("failed to download album art for sync", "error", err)
-		albumArtData = nil
+func (s *DownloadsService) EnqueueSyncMetadataJob(providerID string) error {
+	job := &domain.Job{
+		ID:        uuid.New().String(),
+		Type:      domain.JobTypeSync,
+		Status:    domain.JobStatusQueued,
+		SourceID:  providerID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
-
-	if err := tagging.TagFile(track.FilePath, track, albumArtData); err != nil {
-		return fmt.Errorf("failed to tag file: %w", err)
-	}
-
-	s.Logger.Info("track metadata synced to file", "id", id, "file_path", track.FilePath)
-	return nil
+	return s.Repo.CreateJob(job)
 }
 
 func (s *DownloadsService) DeleteDownload(providerID string) error {
@@ -100,4 +100,35 @@ func (s *DownloadsService) DeleteDownload(providerID string) error {
 
 	s.Logger.Info("Download deleted", "provider_id", providerID, "file_path", track.FilePath)
 	return nil
+}
+
+func (s *DownloadsService) EnqueueSyncJobs() (int, error) {
+	tracks, err := s.Repo.ListCompletedTracksWithISRC()
+	if err != nil {
+		return 0, fmt.Errorf("failed to list tracks: %w", err)
+	}
+
+	count := 0
+	for _, track := range tracks {
+		existing, _ := s.Repo.GetActiveJobBySourceID(track.ProviderID, domain.JobTypeSync)
+		if existing != nil {
+			continue
+		}
+
+		job := &domain.Job{
+			ID:        uuid.New().String(),
+			Type:      domain.JobTypeSync,
+			Status:    domain.JobStatusQueued,
+			SourceID:  track.ProviderID,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err := s.Repo.CreateJob(job); err != nil {
+			s.Logger.Error("Failed to create sync job", "track_id", track.ID, "error", err)
+			continue
+		}
+		count++
+	}
+
+	return count, nil
 }

@@ -62,12 +62,14 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/downloads", h.DownloadsPage)
 	r.Get("/htmx/downloads", h.DownloadsHTMX)
+	r.Post("/htmx/downloads/sync", h.SyncAllHTMX)
 	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
 
 	r.Get("/track/{id}", h.TrackPage)
 	r.Get("/htmx/track/{id}", h.TrackHTMX)
 	r.Post("/htmx/track/{id}/save", h.SaveTrackHTMX)
 	r.Post("/htmx/track/{id}/sync", h.SyncTrackHTMX)
+	r.Post("/htmx/track/{id}/enrich", h.EnrichTrackHTMX)
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)

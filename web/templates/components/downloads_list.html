@@ -1,4 +1,9 @@
 {{define "downloads_list"}}
+{{if .SyncEnqueued}}
+<div class="alert alert-success" style="margin-bottom: 16px;">
+    {{.SyncEnqueued}} sync job(s) enqueued. Check the <a href="/queue">queue</a> for progress.
+</div>
+{{end}}
 {{if .Downloads}}
 <div class="downloads-list">
     {{range .Downloads}}

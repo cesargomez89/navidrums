@@ -233,6 +233,10 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 		w.processPlaylistJob(ctx, job)
 	case domain.JobTypeArtist:
 		w.processArtistJob(ctx, job)
+	case domain.JobTypeSyncFile:
+		w.processSyncFileJob(ctx, job)
+	case domain.JobTypeSync:
+		w.processSyncJob(ctx, job)
 	default:
 		logger.Error("Unknown job type")
 		_ = w.Repo.UpdateJobError(job.ID, "Unknown job type")
@@ -410,65 +414,14 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 
 	// Fetch metadata from MusicBrainz if ISRC available
-	if track.ISRC != "" {
-		// Fetch recording metadata (album, artist, duration, release date, etc.)
-		meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC)
-		if mbErr != nil {
-			logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
-		} else if meta != nil {
-			// Use MusicBrainz only to fill missing fields - never override provider data
-			if track.Artist == "" && meta.Artist != "" {
-				track.Artist = meta.Artist
-			}
-			if len(track.Artists) == 0 && len(meta.Artists) > 0 {
-				track.Artists = meta.Artists
-			}
-			if track.Title == "" && meta.Title != "" {
-				track.Title = meta.Title
-			}
-			if track.Duration == 0 && meta.Duration > 0 {
-				track.Duration = meta.Duration
-			}
-			if track.Year == 0 && meta.Year > 0 {
-				track.Year = meta.Year
-			}
-			if track.ReleaseDate == "" && meta.ReleaseDate != "" {
-				track.ReleaseDate = meta.ReleaseDate
-			}
-			if track.Barcode == "" && meta.Barcode != "" {
-				track.Barcode = meta.Barcode
-			}
-			if track.CatalogNumber == "" && meta.CatalogNumber != "" {
-				track.CatalogNumber = meta.CatalogNumber
-			}
-			if track.ReleaseType == "" && meta.ReleaseType != "" {
-				track.ReleaseType = meta.ReleaseType
-			}
-			if track.ReleaseID == "" && meta.ReleaseID != "" {
-				track.ReleaseID = meta.ReleaseID
-			}
-			if len(track.ArtistIDs) == 0 && len(meta.ArtistIDs) > 0 {
-				track.ArtistIDs = meta.ArtistIDs
-			}
-			if len(track.AlbumArtistIDs) == 0 && len(meta.AlbumArtistIDs) > 0 {
-				track.AlbumArtistIDs = meta.AlbumArtistIDs
-			}
-			if len(track.AlbumArtists) == 0 && len(meta.AlbumArtists) > 0 {
-				track.AlbumArtists = meta.AlbumArtists
-			}
-			if track.Composer == "" && meta.Composer != "" {
-				track.Composer = meta.Composer
-			}
-		}
+	w.enrichFromMusicBrainz(ctx, track, logger)
 
-		// Fetch genre from MusicBrainz if not available from provider
-		if track.Genre == "" {
-			genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
-			if genreErr != nil {
-				logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
-			} else if len(genres) > 0 {
-				track.Genre = genres[0]
-			}
+	if track.Genre == "" && track.ISRC != "" {
+		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		if genreErr != nil {
+			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
+		} else if len(genres) > 0 {
+			track.Genre = genres[0]
 		}
 	}
 
@@ -702,17 +655,14 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 	createdCount := 0
 
 	for _, catalogTrack := range catalogTracks {
-		// Check if already downloaded
 		if downloaded, _ := w.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
 			continue
 		}
 
-		// Check if already active
 		if active, _ := w.Repo.IsTrackActive(catalogTrack.ID); active {
 			continue
 		}
 
-		// Create track record
 		track := w.catalogTrackToDomainTrack(&catalogTrack)
 		track.Status = domain.TrackStatusQueued
 		track.ParentJobID = parentJobID
@@ -724,7 +674,6 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 			continue
 		}
 
-		// Create child job
 		childJob := &domain.Job{
 			ID:        uuid.New().String(),
 			Type:      domain.JobTypeTrack,
@@ -741,4 +690,155 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 	}
 
 	return createdCount
+}
+
+func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+	if track.ISRC == "" {
+		return
+	}
+
+	meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC)
+	if mbErr != nil {
+		logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
+		return
+	}
+	if meta == nil {
+		return
+	}
+
+	if track.Artist == "" && meta.Artist != "" {
+		track.Artist = meta.Artist
+	}
+	if len(track.Artists) == 0 && len(meta.Artists) > 0 {
+		track.Artists = meta.Artists
+	}
+	if track.Title == "" && meta.Title != "" {
+		track.Title = meta.Title
+	}
+	if track.Duration == 0 && meta.Duration > 0 {
+		track.Duration = meta.Duration
+	}
+	if track.Year == 0 && meta.Year > 0 {
+		track.Year = meta.Year
+	}
+	if track.ReleaseDate == "" && meta.ReleaseDate != "" {
+		track.ReleaseDate = meta.ReleaseDate
+	}
+	if track.Barcode == "" && meta.Barcode != "" {
+		track.Barcode = meta.Barcode
+	}
+	if track.CatalogNumber == "" && meta.CatalogNumber != "" {
+		track.CatalogNumber = meta.CatalogNumber
+	}
+	if track.ReleaseType == "" && meta.ReleaseType != "" {
+		track.ReleaseType = meta.ReleaseType
+	}
+	if track.ReleaseID == "" && meta.ReleaseID != "" {
+		track.ReleaseID = meta.ReleaseID
+	}
+	if len(track.ArtistIDs) == 0 && len(meta.ArtistIDs) > 0 {
+		track.ArtistIDs = meta.ArtistIDs
+	}
+	if len(track.AlbumArtistIDs) == 0 && len(meta.AlbumArtistIDs) > 0 {
+		track.AlbumArtistIDs = meta.AlbumArtistIDs
+	}
+	if len(track.AlbumArtists) == 0 && len(meta.AlbumArtists) > 0 {
+		track.AlbumArtists = meta.AlbumArtists
+	}
+	if track.Composer == "" && meta.Composer != "" {
+		track.Composer = meta.Composer
+	}
+}
+
+func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
+	if err != nil {
+		logger.Error("Failed to get track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
+		return
+	}
+	if track == nil {
+		logger.Error("Track not found")
+		_ = w.Repo.UpdateJobError(job.ID, "Track not found")
+		return
+	}
+
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled")
+		return
+	}
+
+	w.enrichFromMusicBrainz(ctx, track, logger)
+
+	if track.Genre == "" && track.ISRC != "" {
+		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		if genreErr != nil {
+			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
+		} else if len(genres) > 0 {
+			track.Genre = genres[0]
+		}
+	}
+
+	track.UpdatedAt = time.Now()
+	if err := w.Repo.UpdateTrack(track); err != nil {
+		logger.Error("Failed to update track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
+		return
+	}
+
+	if track.FilePath != "" {
+		var albumArtData []byte
+		if track.AlbumArtURL != "" {
+			albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
+		}
+		if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
+			logger.Error("Failed to tag file", "error", tagErr)
+		}
+	}
+
+	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+	logger.Info("Sync job completed")
+}
+
+func (w *Worker) processSyncFileJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
+	if err != nil {
+		logger.Error("Failed to get track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
+		return
+	}
+	if track == nil {
+		logger.Error("Track not found")
+		_ = w.Repo.UpdateJobError(job.ID, "Track not found")
+		return
+	}
+
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled")
+		return
+	}
+
+	track.UpdatedAt = time.Now()
+	if err := w.Repo.UpdateTrack(track); err != nil {
+		logger.Error("Failed to update track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
+		return
+	}
+
+	if track.FilePath != "" {
+		var albumArtData []byte
+		if track.AlbumArtURL != "" {
+			albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
+		}
+		if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
+			logger.Error("Failed to tag file", "error", tagErr)
+		}
+	}
+
+	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+	logger.Info("Sync file job completed")
 }
