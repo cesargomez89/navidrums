@@ -2,6 +2,7 @@ package httpapp
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -9,6 +10,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/http/dto"
 	"github.com/cesargomez89/navidrums/internal/store"
 )
 
@@ -364,4 +366,154 @@ func (h *Handler) DeleteDownloadHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.DownloadsHTMX(w, r)
+}
+
+func (h *Handler) TrackPage(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var trackID int
+	if _, err := fmt.Sscanf(id, "%d", &trackID); err != nil {
+		http.Error(w, "Invalid track ID", http.StatusBadRequest)
+		return
+	}
+
+	track, err := h.DownloadsService.GetTrackByID(trackID)
+	if err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	h.RenderPage(w, "track.html", map[string]interface{}{
+		"ActivePage": "downloads",
+		"Track":      track,
+	})
+}
+
+func (h *Handler) TrackHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var trackID int
+	if _, err := fmt.Sscanf(id, "%d", &trackID); err != nil {
+		http.Error(w, "Invalid track ID", http.StatusBadRequest)
+		return
+	}
+
+	track, err := h.DownloadsService.GetTrackByID(trackID)
+	if err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+		"Track": track,
+	})
+}
+
+func (h *Handler) SaveTrackHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var trackID int
+	if _, err := fmt.Sscanf(id, "%d", &trackID); err != nil {
+		http.Error(w, "Invalid track ID", http.StatusBadRequest)
+		return
+	}
+
+	track, err := h.DownloadsService.GetTrackByID(trackID)
+	if err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	if parseErr := r.ParseForm(); parseErr != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	var dto dto.TrackUpdate
+	if decodeErr := h.FormDecoder.Decode(&dto, r.PostForm); decodeErr != nil {
+		h.Logger.Error("Failed to decode form", "error", decodeErr)
+		http.Error(w, "Failed to decode form", http.StatusBadRequest)
+		return
+	}
+
+	updates := DTOToUpdates(&dto)
+	if len(updates) == 0 {
+		h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+			"Track": track,
+		})
+		return
+	}
+
+	if updateErr := h.DownloadsService.UpdateTrackPartial(trackID, updates); updateErr != nil {
+		h.Logger.Error("Failed to update track", "error", updateErr)
+		http.Error(w, updateErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	track, err = h.DownloadsService.GetTrackByID(trackID)
+	if err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+		"Track":       track,
+		"SaveSuccess": true,
+	})
+}
+
+func (h *Handler) SyncTrackHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var trackID int
+	if _, err := fmt.Sscanf(id, "%d", &trackID); err != nil {
+		http.Error(w, "Invalid track ID", http.StatusBadRequest)
+		return
+	}
+
+	if _, err := h.DownloadsService.GetTrackByID(trackID); err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	if parseErr := r.ParseForm(); parseErr != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	var d dto.TrackUpdate
+	if decodeErr := h.FormDecoder.Decode(&d, r.PostForm); decodeErr != nil {
+		h.Logger.Error("Failed to decode form", "error", decodeErr)
+		http.Error(w, "Failed to decode form", http.StatusBadRequest)
+		return
+	}
+
+	updates := DTOToUpdates(&d)
+
+	if len(updates) > 0 {
+		if updateErr := h.DownloadsService.UpdateTrackPartial(trackID, updates); updateErr != nil {
+			h.Logger.Error("Failed to update track", "error", updateErr)
+			http.Error(w, updateErr.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if syncErr := h.DownloadsService.SyncTrackToFile(trackID); syncErr != nil {
+		h.Logger.Error("Failed to sync track to file", "error", syncErr)
+		http.Error(w, syncErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	track, err := h.DownloadsService.GetTrackByID(trackID)
+	if err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+		"Track":       track,
+		"SyncSuccess": true,
+	})
 }

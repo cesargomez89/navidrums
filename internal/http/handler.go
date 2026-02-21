@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/form/v4"
 
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -22,6 +23,7 @@ type Handler struct {
 	SettingsRepo     *store.SettingsRepo
 	Templates        *template.Template
 	Logger           *logger.Logger
+	FormDecoder      *form.Decoder
 }
 
 func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
@@ -31,6 +33,7 @@ func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.Provid
 		ProviderManager:  pm,
 		SettingsRepo:     sr,
 		Logger:           logger.Default(),
+		FormDecoder:      form.NewDecoder(),
 	}
 	h.ParseTemplates()
 	return h
@@ -60,6 +63,11 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/downloads", h.DownloadsPage)
 	r.Get("/htmx/downloads", h.DownloadsHTMX)
 	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
+
+	r.Get("/track/{id}", h.TrackPage)
+	r.Get("/htmx/track/{id}", h.TrackHTMX)
+	r.Post("/htmx/track/{id}/save", h.SaveTrackHTMX)
+	r.Post("/htmx/track/{id}/sync", h.SyncTrackHTMX)
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -247,6 +248,76 @@ func (db *DB) UpdateTrackStatus(id int, status domain.TrackStatus, filePath stri
 	if err != nil {
 		return err
 	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return fmt.Errorf("track with id %d not found", id)
+	}
+	return nil
+}
+
+func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
+	if len(updates) == 0 {
+		return nil
+	}
+
+	allowedColumns := map[string]bool{
+		"title":          true,
+		"artist":         true,
+		"album":          true,
+		"album_artist":   true,
+		"genre":          true,
+		"label":          true,
+		"composer":       true,
+		"copyright":      true,
+		"isrc":           true,
+		"version":        true,
+		"description":    true,
+		"url":            true,
+		"audio_quality":  true,
+		"audio_modes":    true,
+		"lyrics":         true,
+		"subtitles":      true,
+		"barcode":        true,
+		"catalog_number": true,
+		"release_type":   true,
+		"release_date":   true,
+		"key_name":       true,
+		"key_scale":      true,
+		"track_number":   true,
+		"disc_number":    true,
+		"total_tracks":   true,
+		"total_discs":    true,
+		"year":           true,
+		"bpm":            true,
+		"replay_gain":    true,
+		"peak":           true,
+		"compilation":    true,
+		"explicit":       true,
+	}
+
+	setClauses := make([]string, 0, len(updates))
+	args := make([]interface{}, 0, len(updates)+2)
+
+	for col, val := range updates {
+		if !allowedColumns[col] {
+			return fmt.Errorf("invalid column name: %s", col)
+		}
+		setClauses = append(setClauses, col+" = ?")
+		args = append(args, val)
+	}
+
+	args = append(args, time.Now(), id)
+
+	query := fmt.Sprintf("UPDATE tracks SET %s, updated_at = ? WHERE id = ?", strings.Join(setClauses, ", "))
+
+	result, err := db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to update track: %w", err)
+	}
+
 	rows, err := result.RowsAffected()
 	if err != nil {
 		return err

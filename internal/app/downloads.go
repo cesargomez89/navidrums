@@ -8,6 +8,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
+	"github.com/cesargomez89/navidrums/internal/tagging"
 )
 
 const defaultLimit = 30
@@ -27,6 +28,40 @@ func (s *DownloadsService) ListDownloads() ([]*domain.Track, error) {
 
 func (s *DownloadsService) SearchDownloads(query string) ([]*domain.Track, error) {
 	return s.Repo.SearchTracks(query, defaultLimit)
+}
+
+func (s *DownloadsService) GetTrackByID(id int) (*domain.Track, error) {
+	return s.Repo.GetTrackByID(id)
+}
+
+func (s *DownloadsService) UpdateTrackPartial(id int, updates map[string]interface{}) error {
+	return s.Repo.UpdateTrackPartial(id, updates)
+}
+
+func (s *DownloadsService) SyncTrackToFile(id int) error {
+	track, err := s.Repo.GetTrackByID(id)
+	if err != nil {
+		return fmt.Errorf("failed to get track: %w", err)
+	}
+	if track == nil {
+		return fmt.Errorf("track not found")
+	}
+	if track.FilePath == "" {
+		return fmt.Errorf("track has no file path")
+	}
+
+	albumArtData, err := tagging.DownloadImage(track.AlbumArtURL)
+	if err != nil {
+		s.Logger.Warn("failed to download album art for sync", "error", err)
+		albumArtData = nil
+	}
+
+	if err := tagging.TagFile(track.FilePath, track, albumArtData); err != nil {
+		return fmt.Errorf("failed to tag file: %w", err)
+	}
+
+	s.Logger.Info("track metadata synced to file", "id", id, "file_path", track.FilePath)
+	return nil
 }
 
 func (s *DownloadsService) DeleteDownload(providerID string) error {

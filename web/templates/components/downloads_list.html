@@ -4,7 +4,7 @@
     {{range .Downloads}}
     <div class="download" id="download-{{.ProviderID}}">
         <div class="download-info">
-            <div class="download-title">{{.Title}}</div>
+            <a href="/track/{{.ID}}" class="download-title">{{.Title}}</a>
             <div class="download-meta">{{.Artist}} - {{.Album}}</div>
         </div>
         <div style="text-align: right;">

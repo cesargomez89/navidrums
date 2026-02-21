@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -480,13 +481,22 @@ func tagMP4(_ string, _ *domain.Track, _ []byte) error {
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
 // DownloadImage fetches raw image bytes from a URL.
-func DownloadImage(url string) ([]byte, error) {
-	if url == "" {
+func DownloadImage(urlStr string) ([]byte, error) {
+	if urlStr == "" {
 		return nil, nil
 	}
 
-	client := &http.Client{Timeout: constants.DefaultHTTPTimeout}
-	req, err := http.NewRequest("GET", url, nil)
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid image URL: %w", err)
+	}
+
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return nil, fmt.Errorf("invalid URL scheme: %s (only http/https allowed)", parsedURL.Scheme)
+	}
+
+	client := &http.Client{Timeout: constants.ImageHTTPTimeout}
+	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -499,7 +509,7 @@ func DownloadImage(url string) ([]byte, error) {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to download image: status %d (URL: %s)", resp.StatusCode, url)
+		return nil, fmt.Errorf("failed to download image: status %d (URL: %s)", resp.StatusCode, urlStr)
 	}
 
 	var buf bytes.Buffer

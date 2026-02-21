@@ -327,7 +327,7 @@ button:active {
 .track-artist { font-size: 0.85rem; color: var(--text-dim); }
 
 /* Forms */
-input, select {
+input, select, textarea {
     padding: 12px;
     background: var(--input);
     border: 1px solid var(--border);
@@ -337,7 +337,52 @@ input, select {
     width: 100%;
     transition: border-color 0.2s ease;
 }
-input:focus, select:focus { outline: none; border-color: var(--accent); }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; min-height: 80px; }
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: #0d0b00;
+}
+
+.btn-warning:hover {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
 
 /* Settings */
 .section { 
