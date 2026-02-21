@@ -508,7 +508,9 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	track.Status = domain.TrackStatusCompleted
 	track.FilePath = finalPath
 	track.FileHash = fileHash
-	track.LastVerifiedAt = time.Now()
+	now := time.Now()
+	track.CompletedAt = &now
+	track.LastVerifiedAt = &now
 	track.UpdatedAt = time.Now()
 
 	if err := w.Repo.UpdateTrack(track); err != nil {

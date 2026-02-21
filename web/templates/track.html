@@ -29,4 +29,25 @@
         <p><strong>Completed:</strong> {{if .Track.CompletedAt}}{{.Track.CompletedAt.Format "Jan 02, 2006 15:04"}}{{else}}N/A{{end}}</p>
     </div>
 </div>
+
+<div class="section">
+    <h2>Audio Information</h2>
+    <div style="font-size: 0.9rem; color: var(--text-dim);">
+        <p><strong>BPM:</strong> {{if .Track.BPM}}{{.Track.BPM}}{{else}}N/A{{end}}</p>
+        <p><strong>Key:</strong> {{.Track.Key}}{{if .Track.KeyScale}} {{.Track.KeyScale}}{{end}}</p>
+        <p><strong>Replay Gain:</strong> {{if .Track.ReplayGain}}{{.Track.ReplayGain}} dB{{else}}N/A{{end}}</p>
+        <p><strong>Peak:</strong> {{if .Track.Peak}}{{.Track.Peak}}{{else}}N/A{{end}}</p>
+        <p><strong>Audio Quality:</strong> {{.Track.AudioQuality}}</p>
+        <p><strong>Audio Mode:</strong> {{.Track.AudioModes}}</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Additional Information</h2>
+    <div style="font-size: 0.9rem; color: var(--text-dim);">
+        <p><strong>Version:</strong> {{.Track.Version}}</p>
+        <p><strong>URL:</strong> {{if .Track.URL}}<a href="{{.Track.URL}}" target="_blank">{{.Track.URL}}</a>{{else}}N/A{{end}}</p>
+        <p><strong>Description:</strong> {{if .Track.Description}}{{.Track.Description}}{{else}}N/A{{end}}</p>
+    </div>
+</div>
 {{end}}

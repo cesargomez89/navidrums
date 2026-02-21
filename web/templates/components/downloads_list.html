@@ -8,7 +8,7 @@
             <div class="download-meta">{{.Artist}} - {{.Album}}</div>
         </div>
         <div style="text-align: right;">
-            <span class="download-date">{{.CompletedAt.Format "Jan 02, 2006"}}</span>
+            <span class="download-date">{{if .CompletedAt}}{{.CompletedAt.Format "Jan 02, 2006"}}{{else}}N/A{{end}}</span>
             <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm" style="margin-top: 8px; margin-left: 12px;">Delete</button>
         </div>
     </div>

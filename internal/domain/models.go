@@ -49,10 +49,10 @@ const (
 
 // Track represents a track with full metadata for downloading
 type Track struct {
-	LastVerifiedAt time.Time   `json:"last_verified_at,omitempty"`
+	LastVerifiedAt *time.Time  `json:"last_verified_at,omitempty"`
 	CreatedAt      time.Time   `json:"created_at"`
 	UpdatedAt      time.Time   `json:"updated_at"`
-	CompletedAt    time.Time   `json:"completed_at,omitempty"`
+	CompletedAt    *time.Time  `json:"completed_at,omitempty"`
 	Composer       string      `json:"composer"`
 	Error          string      `json:"error,omitempty"`
 	AlbumID        string      `json:"album_id,omitempty"`

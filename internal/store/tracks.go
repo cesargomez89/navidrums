@@ -122,10 +122,10 @@ func (d *dbTrack) toDomain() *domain.Track {
 		_ = json.Unmarshal([]byte(d.AlbumArtists), &track.AlbumArtists)
 	}
 	if d.CompletedAt != nil {
-		track.CompletedAt = *d.CompletedAt
+		track.CompletedAt = d.CompletedAt
 	}
 	if d.LastVerifiedAt != nil {
-		track.LastVerifiedAt = *d.LastVerifiedAt
+		track.LastVerifiedAt = d.LastVerifiedAt
 	}
 
 	return track
@@ -215,8 +215,16 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		bpm = ?, key_name = ?, key_scale = ?, replay_gain = ?, peak = ?, version = ?, description = ?, url = ?, audio_quality = ?, audio_modes = ?, release_date = ?,
 		barcode = ?, catalog_number = ?, release_type = ?, release_id = ?,
 		status = ?, error = ?, parent_job_id = ?, file_path = ?, file_extension = ?,
-		updated_at = ?, etag = ?, file_hash = ?, last_verified_at = ?
+		updated_at = ?, etag = ?, file_hash = ?, completed_at = ?, last_verified_at = ?
 	WHERE id = ?`
+
+	var completedAt, lastVerifiedAt interface{}
+	if track.CompletedAt != nil {
+		completedAt = *track.CompletedAt
+	}
+	if track.LastVerifiedAt != nil {
+		lastVerifiedAt = *track.LastVerifiedAt
+	}
 
 	result, err := db.Exec(query,
 		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
@@ -226,7 +234,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
 		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
 		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
-		time.Now(), track.ETag, track.FileHash, track.LastVerifiedAt, track.ID,
+		time.Now(), track.ETag, track.FileHash, completedAt, lastVerifiedAt, track.ID,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update track: %w", err)
