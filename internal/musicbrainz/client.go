@@ -126,6 +126,9 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 		for i, ac := range rec.ArtistCredit {
 			meta.Artists[i] = ac.Artist.Name
 			meta.ArtistIDs[i] = ac.Artist.ID
+			if ac.Type == "composer" && meta.Composer == "" {
+				meta.Composer = ac.Artist.Name
+			}
 		}
 	}
 
@@ -141,9 +144,14 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 			_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
 		}
 		if len(rel.ArtistCredit) > 0 {
+			meta.AlbumArtists = make([]string, len(rel.ArtistCredit))
 			meta.AlbumArtistIDs = make([]string, len(rel.ArtistCredit))
 			for i, ac := range rel.ArtistCredit {
+				meta.AlbumArtists[i] = ac.Artist.Name
 				meta.AlbumArtistIDs[i] = ac.Artist.ID
+			}
+			if len(meta.AlbumArtists) > 0 {
+				meta.AlbumArtist = meta.AlbumArtists[0]
 			}
 		}
 	}
@@ -205,8 +213,10 @@ type release struct {
 }
 
 type artistCredit struct {
-	Name   string `json:"name"`
-	Artist artist `json:"artist"`
+	Name       string `json:"name"`
+	Artist     artist `json:"artist"`
+	JoinPhrase string `json:"joinphrase"`
+	Type       string `json:"type"`
 }
 
 type releaseGroup struct {
@@ -230,16 +240,19 @@ type tag struct {
 }
 
 type RecordingMetadata struct {
-	Title          string
-	Artist         string
+	ReleaseID      string
+	Composer       string
 	Album          string
+	AlbumArtist    string
 	ReleaseDate    string
 	Barcode        string
+	Artist         string
 	CatalogNumber  string
+	Title          string
 	ReleaseType    string
-	ReleaseID      string
 	Artists        []string
 	ArtistIDs      []string
+	AlbumArtists   []string
 	AlbumArtistIDs []string
 	Year           int
 	Duration       int
