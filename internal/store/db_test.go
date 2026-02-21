@@ -510,3 +510,387 @@ func TestDB_TrackWithJsonFields(t *testing.T) {
 		t.Errorf("Expected empty Artists slice, got %d elements", len(fetchedEmpty.Artists))
 	}
 }
+
+func TestDB_UpdateTrack(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	track := &domain.Track{
+		ProviderID:  "update_test",
+		Title:       "Original Title",
+		Artist:      "Original Artist",
+		Album:       "Original Album",
+		TrackNumber: 1,
+		Year:        2020,
+		Status:      domain.TrackStatusMissing,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
+
+	track.Title = "Updated Title"
+	track.Artist = "Updated Artist"
+	track.Album = "Updated Album"
+	track.TrackNumber = 2
+	track.Year = 2023
+	track.Status = domain.TrackStatusCompleted
+
+	err := db.UpdateTrack(track)
+	if err != nil {
+		t.Fatalf("UpdateTrack failed: %v", err)
+	}
+
+	fetched, err := db.GetTrackByID(track.ID)
+	if err != nil {
+		t.Fatalf("GetTrackByID failed: %v", err)
+	}
+
+	if fetched.Title != "Updated Title" {
+		t.Errorf("Title = %q, want %q", fetched.Title, "Updated Title")
+	}
+	if fetched.Artist != "Updated Artist" {
+		t.Errorf("Artist = %q, want %q", fetched.Artist, "Updated Artist")
+	}
+	if fetched.Album != "Updated Album" {
+		t.Errorf("Album = %q, want %q", fetched.Album, "Updated Album")
+	}
+	if fetched.TrackNumber != 2 {
+		t.Errorf("TrackNumber = %d, want 2", fetched.TrackNumber)
+	}
+	if fetched.Year != 2023 {
+		t.Errorf("Year = %d, want 2023", fetched.Year)
+	}
+
+	err = db.UpdateTrack(&domain.Track{ID: 99999})
+	if err == nil {
+		t.Error("Expected error for non-existent track")
+	}
+}
+
+func TestDB_UpdateTrackPartial(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	track := &domain.Track{
+		ProviderID: "partial_test",
+		Title:      "Original",
+		Artist:     "Artist",
+		Album:      "Album",
+		Year:       2020,
+		Status:     domain.TrackStatusMissing,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
+
+	updates := map[string]interface{}{
+		"title": "Updated Title",
+		"year":  2023,
+		"bpm":   120,
+		"genre": "Rock",
+	}
+
+	err := db.UpdateTrackPartial(track.ID, updates)
+	if err != nil {
+		t.Fatalf("UpdateTrackPartial failed: %v", err)
+	}
+
+	fetched, _ := db.GetTrackByID(track.ID)
+	if fetched.Title != "Updated Title" {
+		t.Errorf("Title = %q, want %q", fetched.Title, "Updated Title")
+	}
+	if fetched.Year != 2023 {
+		t.Errorf("Year = %d, want 2023", fetched.Year)
+	}
+	if fetched.BPM != 120 {
+		t.Errorf("BPM = %d, want 120", fetched.BPM)
+	}
+	if fetched.Genre != "Rock" {
+		t.Errorf("Genre = %q, want %q", fetched.Genre, "Rock")
+	}
+	if fetched.Artist != "Artist" {
+		t.Errorf("Artist should not change, got %q", fetched.Artist)
+	}
+
+	err = db.UpdateTrackPartial(track.ID, map[string]interface{}{"invalid_column": "value"})
+	if err == nil {
+		t.Error("Expected error for invalid column")
+	}
+
+	err = db.UpdateTrackPartial(99999, updates)
+	if err == nil {
+		t.Error("Expected error for non-existent track")
+	}
+
+	err = db.UpdateTrackPartial(track.ID, nil)
+	if err != nil {
+		t.Errorf("UpdateTrackPartial with nil should succeed, got: %v", err)
+	}
+}
+
+func TestDB_ListTracksByParentJobID(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	parentJobID := "parent_job_123"
+
+	tracks := []*domain.Track{
+		{ProviderID: "child_1", Title: "Track 1", Artist: "Artist", ParentJobID: parentJobID, TrackNumber: 3, Status: domain.TrackStatusMissing, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "child_2", Title: "Track 2", Artist: "Artist", ParentJobID: parentJobID, TrackNumber: 1, Status: domain.TrackStatusMissing, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "child_3", Title: "Track 3", Artist: "Artist", ParentJobID: parentJobID, TrackNumber: 2, Status: domain.TrackStatusMissing, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "other", Title: "Other Track", Artist: "Artist", ParentJobID: "other_job", Status: domain.TrackStatusMissing, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	for _, tr := range tracks {
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
+	}
+
+	result, err := db.ListTracksByParentJobID(parentJobID)
+	if err != nil {
+		t.Fatalf("ListTracksByParentJobID failed: %v", err)
+	}
+
+	if len(result) != 3 {
+		t.Errorf("Expected 3 tracks, got %d", len(result))
+	}
+
+	if result[0].TrackNumber != 1 || result[1].TrackNumber != 2 || result[2].TrackNumber != 3 {
+		t.Errorf("Tracks not sorted by track_number: got %d, %d, %d", result[0].TrackNumber, result[1].TrackNumber, result[2].TrackNumber)
+	}
+
+	emptyResult, err := db.ListTracksByParentJobID("nonexistent")
+	if err != nil {
+		t.Fatalf("ListTracksByParentJobID failed: %v", err)
+	}
+	if len(emptyResult) != 0 {
+		t.Errorf("Expected 0 tracks, got %d", len(emptyResult))
+	}
+}
+
+func TestDB_FindInterruptedTracks(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	tracks := []*domain.Track{
+		{ProviderID: "interrupted_1", Title: "Downloading", Artist: "Artist", Status: domain.TrackStatusDownloading, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "interrupted_2", Title: "Processing", Artist: "Artist", Status: domain.TrackStatusProcessing, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "completed", Title: "Completed", Artist: "Artist", Status: domain.TrackStatusCompleted, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "failed", Title: "Failed", Artist: "Artist", Status: domain.TrackStatusFailed, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	for _, tr := range tracks {
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
+	}
+
+	interrupted, err := db.FindInterruptedTracks()
+	if err != nil {
+		t.Fatalf("FindInterruptedTracks failed: %v", err)
+	}
+
+	if len(interrupted) != 2 {
+		t.Errorf("Expected 2 interrupted tracks, got %d", len(interrupted))
+	}
+
+	statuses := make(map[string]bool)
+	for _, tr := range interrupted {
+		statuses[string(tr.Status)] = true
+	}
+	if !statuses["downloading"] || !statuses["processing"] {
+		t.Error("Expected downloading and processing statuses in results")
+	}
+}
+
+func TestDB_ClearJobError(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	job := &domain.Job{
+		ID:        "error_job",
+		Type:      domain.JobTypeTrack,
+		Status:    domain.JobStatusFailed,
+		SourceID:  "track_error",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(job); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	errMsg := "something went wrong"
+	if err := db.UpdateJobError("error_job", errMsg); err != nil {
+		t.Fatalf("UpdateJobError failed: %v", err)
+	}
+
+	fetched, _ := db.GetJob("error_job")
+	if fetched.Error == nil || *fetched.Error != errMsg {
+		t.Errorf("Expected error %q, got %v", errMsg, fetched.Error)
+	}
+
+	err := db.ClearJobError("error_job")
+	if err != nil {
+		t.Fatalf("ClearJobError failed: %v", err)
+	}
+
+	fetched, _ = db.GetJob("error_job")
+	if fetched.Status != domain.JobStatusQueued {
+		t.Errorf("Status = %s, want queued", fetched.Status)
+	}
+	if fetched.Error != nil {
+		t.Errorf("Error should be nil, got %v", fetched.Error)
+	}
+	if fetched.Progress != 0 {
+		t.Errorf("Progress should be 0, got %f", fetched.Progress)
+	}
+}
+
+func TestDB_ResetStuckJobs(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	jobs := []*domain.Job{
+		{ID: "stuck_1", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: "s1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "stuck_2", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: "s2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "queued", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	for _, j := range jobs {
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
+	}
+
+	err := db.ResetStuckJobs()
+	if err != nil {
+		t.Fatalf("ResetStuckJobs failed: %v", err)
+	}
+
+	for _, id := range []string{"stuck_1", "stuck_2"} {
+		job, _ := db.GetJob(id)
+		if job.Status != domain.JobStatusQueued {
+			t.Errorf("Job %s status = %s, want queued", id, job.Status)
+		}
+	}
+
+	queuedJob, _ := db.GetJob("queued")
+	if queuedJob.Status != domain.JobStatusQueued {
+		t.Errorf("Queued job should remain queued, got %s", queuedJob.Status)
+	}
+}
+
+func TestDB_ListJobs(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	jobs := []*domain.Job{
+		{ID: "list_1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "list_2", Type: domain.JobTypeAlbum, Status: domain.JobStatusCompleted, SourceID: "s2", CreatedAt: time.Now().Add(-1 * time.Hour), UpdatedAt: time.Now()},
+		{ID: "list_3", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: "s3", CreatedAt: time.Now().Add(-2 * time.Hour), UpdatedAt: time.Now()},
+	}
+
+	for _, j := range jobs {
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
+	}
+
+	result, err := db.ListJobs(10)
+	if err != nil {
+		t.Fatalf("ListJobs failed: %v", err)
+	}
+
+	if len(result) != 3 {
+		t.Errorf("Expected 3 jobs, got %d", len(result))
+	}
+
+	if result[0].ID != "list_1" {
+		t.Errorf("First job should be most recent, got %s", result[0].ID)
+	}
+
+	limited, err := db.ListJobs(2)
+	if err != nil {
+		t.Fatalf("ListJobs failed: %v", err)
+	}
+	if len(limited) != 2 {
+		t.Errorf("Expected 2 jobs with limit, got %d", len(limited))
+	}
+}
+
+func TestDB_ListFinishedJobs(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	now := time.Now()
+	jobs := []*domain.Job{
+		{ID: "finished_1", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: "s1", CreatedAt: now, UpdatedAt: now.Add(-1 * time.Hour)},
+		{ID: "finished_2", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: "s2", CreatedAt: now, UpdatedAt: now},
+		{ID: "finished_3", Type: domain.JobTypeTrack, Status: domain.JobStatusCancelled, SourceID: "s3", CreatedAt: now, UpdatedAt: now.Add(-2 * time.Hour)},
+		{ID: "active", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s4", CreatedAt: now, UpdatedAt: now},
+	}
+
+	for _, j := range jobs {
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
+	}
+
+	result, err := db.ListFinishedJobs(10)
+	if err != nil {
+		t.Fatalf("ListFinishedJobs failed: %v", err)
+	}
+
+	if len(result) != 3 {
+		t.Errorf("Expected 3 finished jobs, got %d", len(result))
+	}
+
+	for _, j := range result {
+		if j.Status != domain.JobStatusCompleted && j.Status != domain.JobStatusFailed && j.Status != domain.JobStatusCancelled {
+			t.Errorf("Unexpected status in finished jobs: %s", j.Status)
+		}
+	}
+
+	if result[0].ID != "finished_2" {
+		t.Errorf("First job should be most recently updated, got %s", result[0].ID)
+	}
+}
+
+func TestDB_GetTrackByProviderID(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	track := &domain.Track{
+		ProviderID: "provider_lookup_test",
+		Title:      "Test Track",
+		Artist:     "Artist",
+		Status:     domain.TrackStatusMissing,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
+
+	found, err := db.GetTrackByProviderID("provider_lookup_test")
+	if err != nil {
+		t.Fatalf("GetTrackByProviderID failed: %v", err)
+	}
+
+	if found.Title != "Test Track" {
+		t.Errorf("Title = %q, want %q", found.Title, "Test Track")
+	}
+
+	_, err = db.GetTrackByProviderID("nonexistent")
+	if err == nil {
+		t.Error("Expected error for non-existent provider ID")
+	}
+}
