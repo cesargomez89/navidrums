@@ -176,36 +176,22 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
-	type ProviderData struct {
-		Active     string `json:"active"`
-		Default    string `json:"default"`
-		Predefined []struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"predefined"`
-		Custom []catalog.CustomProvider `json:"custom"`
-	}
+	active := h.ProviderManager.GetBaseURL()
+	defaultURL := h.ProviderManager.GetDefaultURL()
 
-	data := ProviderData{
-		Active:  h.ProviderManager.GetBaseURL(),
-		Default: h.ProviderManager.GetDefaultURL(),
-	}
-
+	var customProviders []catalog.CustomProvider
 	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
 	if err == nil && customProvidersJSON != "" {
-		var customProviders []catalog.CustomProvider
-		if err := json.Unmarshal([]byte(customProvidersJSON), &customProviders); err != nil {
-			h.Logger.Error("Failed to unmarshal custom providers", "error", err)
-		} else {
-			data.Custom = customProviders
+		if unmarshalErr := json.Unmarshal([]byte(customProvidersJSON), &customProviders); unmarshalErr != nil {
+			h.Logger.Error("Failed to unmarshal custom providers", "error", unmarshalErr)
 		}
 	}
 
 	response := map[string]interface{}{
 		"predefined": json.RawMessage(catalog.GetPredefinedProvidersJSON()),
-		"custom":     data.Custom,
-		"active":     data.Active,
-		"default":    data.Default,
+		"custom":     customProviders,
+		"active":     active,
+		"default":    defaultURL,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -429,14 +415,24 @@ func (h *Handler) SaveTrackHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var dto dto.TrackUpdate
-	if decodeErr := h.FormDecoder.Decode(&dto, r.PostForm); decodeErr != nil {
+	var d dto.TrackUpdateRequest
+	if decodeErr := h.FormDecoder.Decode(&d, r.PostForm); decodeErr != nil {
 		h.Logger.Error("Failed to decode form", "error", decodeErr)
 		http.Error(w, "Failed to decode form", http.StatusBadRequest)
 		return
 	}
 
-	updates := DTOToUpdates(&dto)
+	validationErrs := d.Validate()
+	if len(validationErrs) > 0 {
+		h.Logger.Warn("Track validation failed", "errors", validationErrs)
+		h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+			"Track":            track,
+			"ValidationErrors": dto.ToMap(validationErrs),
+		})
+		return
+	}
+
+	updates := d.ToUpdates()
 	if len(updates) == 0 {
 		h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
 			"Track": track,
@@ -482,14 +478,25 @@ func (h *Handler) SyncTrackHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var d dto.TrackUpdate
+	var d dto.TrackUpdateRequest
 	if decodeErr := h.FormDecoder.Decode(&d, r.PostForm); decodeErr != nil {
 		h.Logger.Error("Failed to decode form", "error", decodeErr)
 		http.Error(w, "Failed to decode form", http.StatusBadRequest)
 		return
 	}
 
-	updates := DTOToUpdates(&d)
+	validationErrs := d.Validate()
+	if len(validationErrs) > 0 {
+		h.Logger.Warn("Track validation failed", "errors", validationErrs)
+		track, _ := h.DownloadsService.GetTrackByID(trackID)
+		h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+			"Track":            track,
+			"ValidationErrors": dto.ToMap(validationErrs),
+		})
+		return
+	}
+
+	updates := d.ToUpdates()
 
 	if len(updates) > 0 {
 		if updateErr := h.DownloadsService.UpdateTrackPartial(trackID, updates); updateErr != nil {

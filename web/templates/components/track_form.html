@@ -1,15 +1,4 @@
 {{define "track_form"}}
-{{if .SaveSuccess}}
-<div class="alert alert-success" style="margin-bottom: 16px;">
-    Track saved to database successfully!
-</div>
-{{end}}
-{{if .SyncSuccess}}
-<div class="alert alert-success" style="margin-bottom: 16px;">
-    Track synced to database and file successfully!
-</div>
-{{end}}
-
 <form id="track-form" hx-post="/htmx/track/{{.Track.ID}}/save" hx-target="#track-form-container" hx-swap="innerHTML">
     <div class="section">
         <h2>Basic Information</h2>
@@ -183,10 +172,34 @@
         </div>
     </div>
 
-    <div style="display: flex; gap: 12px; margin-top: 24px;">
+    <div style="display: flex; gap: 12px; margin: 24px 0px;">
         <button type="submit" class="btn btn-primary">Save to Database</button>
         <button type="submit" class="btn" style="background: var(--warning); color: #0d0b00;" formaction="/htmx/track/{{.Track.ID}}/sync">Sync to File</button>
         <a href="/downloads" class="btn btn-outline">Cancel</a>
     </div>
 </form>
+
+{{if .SaveSuccess}}
+<div class="alert alert-success" style="margin-bottom: 16px;">
+    Track saved to database successfully!
+</div>
+{{end}}
+
+{{if .SyncSuccess}}
+<div class="alert alert-success" style="margin-bottom: 16px;">
+    Track synced to database and file successfully!
+</div>
+{{end}}
+
+{{if .ValidationErrors}}
+<div class="alert alert-error" style="margin-bottom: 16px;">
+    <strong>Validation Error{{if gt (len .ValidationErrors) 1}}s{{end}}:</strong>
+    <ul style="margin: 8px 0 0 16px;">
+        {{range $field, $msg := .ValidationErrors}}
+        <li>{{$field}}: {{$msg}}</li>
+        {{end}}
+    </ul>
+</div>
+{{end}}
+
 {{end}}

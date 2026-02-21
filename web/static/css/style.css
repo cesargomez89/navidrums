@@ -375,6 +375,12 @@ textarea { resize: vertical; min-height: 80px; }
     color: var(--success);
 }
 
+.alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
 .btn-warning {
     background: var(--warning);
     color: #0d0b00;
