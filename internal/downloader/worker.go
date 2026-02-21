@@ -416,48 +416,47 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		if mbErr != nil {
 			logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
 		} else if meta != nil {
-			// Use MusicBrainz for supplementary data only - preserve provider's Album/AlbumArtist
-			if meta.Artist != "" {
+			// Use MusicBrainz only to fill missing fields - never override provider data
+			if track.Artist == "" && meta.Artist != "" {
 				track.Artist = meta.Artist
 			}
-			if len(meta.Artists) > 0 {
+			if len(track.Artists) == 0 && len(meta.Artists) > 0 {
 				track.Artists = meta.Artists
 			}
-			if meta.Title != "" {
+			if track.Title == "" && meta.Title != "" {
 				track.Title = meta.Title
 			}
-			if meta.Duration > 0 {
+			if track.Duration == 0 && meta.Duration > 0 {
 				track.Duration = meta.Duration
 			}
-			if meta.Year > 0 {
+			if track.Year == 0 && meta.Year > 0 {
 				track.Year = meta.Year
 			}
-			if meta.ReleaseDate != "" {
+			if track.ReleaseDate == "" && meta.ReleaseDate != "" {
 				track.ReleaseDate = meta.ReleaseDate
 			}
-			if meta.Barcode != "" {
+			if track.Barcode == "" && meta.Barcode != "" {
 				track.Barcode = meta.Barcode
 			}
-			if meta.CatalogNumber != "" {
+			if track.CatalogNumber == "" && meta.CatalogNumber != "" {
 				track.CatalogNumber = meta.CatalogNumber
 			}
-			if meta.ReleaseType != "" {
+			if track.ReleaseType == "" && meta.ReleaseType != "" {
 				track.ReleaseType = meta.ReleaseType
 			}
-			if meta.ReleaseID != "" {
+			if track.ReleaseID == "" && meta.ReleaseID != "" {
 				track.ReleaseID = meta.ReleaseID
 			}
-			if len(meta.ArtistIDs) > 0 {
+			if len(track.ArtistIDs) == 0 && len(meta.ArtistIDs) > 0 {
 				track.ArtistIDs = meta.ArtistIDs
 			}
-			if len(meta.AlbumArtistIDs) > 0 {
+			if len(track.AlbumArtistIDs) == 0 && len(meta.AlbumArtistIDs) > 0 {
 				track.AlbumArtistIDs = meta.AlbumArtistIDs
 			}
-			if len(meta.AlbumArtists) > 0 {
+			if len(track.AlbumArtists) == 0 && len(meta.AlbumArtists) > 0 {
 				track.AlbumArtists = meta.AlbumArtists
 			}
-			// Note: Album and AlbumArtist intentionally NOT overwritten to preserve provider's original values
-			if meta.Composer != "" {
+			if track.Composer == "" && meta.Composer != "" {
 				track.Composer = meta.Composer
 			}
 		}
