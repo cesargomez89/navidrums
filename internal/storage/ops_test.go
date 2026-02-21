@@ -164,6 +164,71 @@ func TestDeleteFolderIfEmpty(t *testing.T) {
 	}
 }
 
+func TestDeleteFolderWithCover(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Test deleting empty folder
+	emptyDir := filepath.Join(tmpDir, "empty")
+	if mkdirErr := os.MkdirAll(emptyDir, 0755); mkdirErr != nil {
+		t.Fatalf("MkdirAll failed: %v", mkdirErr)
+	}
+
+	err := DeleteFolderWithCover(emptyDir)
+	if err != nil {
+		t.Fatalf("DeleteFolderWithCover failed: %v", err)
+	}
+
+	if _, statErr := os.Stat(emptyDir); !os.IsNotExist(statErr) {
+		t.Error("Expected empty folder to be deleted")
+	}
+
+	// Test deleting folder with only cover.jpg
+	coverOnlyDir := filepath.Join(tmpDir, "coveronly")
+	if mkdirErr := os.MkdirAll(coverOnlyDir, 0755); mkdirErr != nil {
+		t.Fatalf("MkdirAll failed: %v", mkdirErr)
+	}
+	coverPath := filepath.Join(coverOnlyDir, "cover.jpg")
+	if writeErr := os.WriteFile(coverPath, []byte("fake image"), 0644); writeErr != nil {
+		t.Fatalf("WriteFile failed: %v", writeErr)
+	}
+
+	err = DeleteFolderWithCover(coverOnlyDir)
+	if err != nil {
+		t.Fatalf("DeleteFolderWithCover failed: %v", err)
+	}
+
+	if _, statErr := os.Stat(coverOnlyDir); !os.IsNotExist(statErr) {
+		t.Error("Expected folder with only cover.jpg to be deleted")
+	}
+
+	// Test keeping folder with cover.jpg and other files
+	multiDir := filepath.Join(tmpDir, "multi")
+	if mkdirErr := os.MkdirAll(multiDir, 0755); mkdirErr != nil {
+		t.Fatalf("MkdirAll failed: %v", mkdirErr)
+	}
+	if writeErr := os.WriteFile(filepath.Join(multiDir, "cover.jpg"), []byte("fake image"), 0644); writeErr != nil {
+		t.Fatalf("WriteFile failed: %v", writeErr)
+	}
+	if writeErr := os.WriteFile(filepath.Join(multiDir, "track.flac"), []byte("audio"), 0644); writeErr != nil {
+		t.Fatalf("WriteFile failed: %v", writeErr)
+	}
+
+	err = DeleteFolderWithCover(multiDir)
+	if err != nil {
+		t.Fatalf("DeleteFolderWithCover failed: %v", err)
+	}
+
+	if _, statErr := os.Stat(multiDir); os.IsNotExist(statErr) {
+		t.Error("Expected folder with multiple files to NOT be deleted")
+	}
+
+	// Test on non-existent folder (should not error)
+	err = DeleteFolderWithCover("/nonexistent/folder")
+	if err != nil {
+		t.Errorf("DeleteFolderWithCover on nonexistent should not error: %v", err)
+	}
+}
+
 func TestIsNotExist(t *testing.T) {
 	// Test with existing file
 	tmpFile := filepath.Join(t.TempDir(), "exists.txt")

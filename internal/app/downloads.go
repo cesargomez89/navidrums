@@ -80,8 +80,18 @@ func (s *DownloadsService) DeleteDownload(providerID string) error {
 	}
 
 	folderPath := filepath.Dir(track.FilePath)
-	if err := storage.DeleteFolderIfEmpty(folderPath); err != nil {
+	if err := storage.DeleteFolderWithCover(folderPath); err != nil {
 		return fmt.Errorf("failed to clean up folder: %w", err)
+	}
+
+	albumPath := filepath.Dir(folderPath)
+	if err := storage.DeleteFolderIfEmpty(albumPath); err != nil {
+		return fmt.Errorf("failed to clean up album folder: %w", err)
+	}
+
+	artistPath := filepath.Dir(albumPath)
+	if err := storage.DeleteFolderIfEmpty(artistPath); err != nil {
+		return fmt.Errorf("failed to clean up artist folder: %w", err)
 	}
 
 	if err := s.Repo.DeleteTrack(track.ID); err != nil {

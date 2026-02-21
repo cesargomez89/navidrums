@@ -162,3 +162,60 @@ func TestDownloadsService_DeleteDownload(t *testing.T) {
 		t.Error("Expected error for nonexistent provider")
 	}
 }
+
+func TestDownloadsService_DeleteDownload_CascadeCleanup(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	tmpDir := t.TempDir()
+	log := logger.Default()
+	svc := NewDownloadsService(db, log)
+
+	artistDir := filepath.Join(tmpDir, "Artist", "2020 - Album")
+	if err := os.MkdirAll(artistDir, 0755); err != nil {
+		t.Fatalf("MkdirAll failed: %v", err)
+	}
+
+	trackFile := filepath.Join(artistDir, "1-01 Track.flac")
+	coverFile := filepath.Join(artistDir, "cover.jpg")
+
+	if err := os.WriteFile(trackFile, []byte("audio"), 0644); err != nil {
+		t.Fatalf("WriteFile failed: %v", err)
+	}
+	if err := os.WriteFile(coverFile, []byte("image"), 0644); err != nil {
+		t.Fatalf("WriteFile failed: %v", err)
+	}
+
+	track := &domain.Track{
+		ProviderID: "cascade_test",
+		Title:      "Track",
+		Artist:     "Artist",
+		Album:      "Album",
+		Status:     domain.TrackStatusCompleted,
+		FilePath:   trackFile,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	if err := db.CreateTrack(track); err != nil {
+		t.Fatalf("CreateTrack failed: %v", err)
+	}
+
+	err := svc.DeleteDownload("cascade_test")
+	if err != nil {
+		t.Fatalf("DeleteDownload failed: %v", err)
+	}
+
+	if _, err := os.Stat(trackFile); !os.IsNotExist(err) {
+		t.Error("Expected track file to be deleted")
+	}
+	if _, err := os.Stat(coverFile); !os.IsNotExist(err) {
+		t.Error("Expected cover.jpg to be deleted")
+	}
+	if _, err := os.Stat(artistDir); !os.IsNotExist(err) {
+		t.Error("Expected album folder to be deleted")
+	}
+	artistParent := filepath.Join(tmpDir, "Artist")
+	if _, err := os.Stat(artistParent); !os.IsNotExist(err) {
+		t.Error("Expected artist folder to be deleted")
+	}
+}

@@ -82,7 +82,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 
 	c.throttle()
 
-	u := fmt.Sprintf("%s/recording?query=isrc:%s+type:album&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -132,27 +132,29 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 		}
 	}
 
-	if len(rec.Releases) > 0 {
-		rel := rec.Releases[0]
-		meta.Album = rel.Title
-		meta.ReleaseDate = rel.Date
-		meta.ReleaseID = rel.ReleaseGroup.ID
-		meta.Barcode = rel.Barcode
-		meta.CatalogNumber = rel.CatalogNumber
-		meta.ReleaseType = rel.ReleaseGroup.PrimaryType
-		if rel.Date != "" && len(rel.Date) >= 4 {
-			_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
+	rel := selectBestRelease(rec.Releases)
+	if rel == nil {
+		return meta, nil
+	}
+
+	meta.Album = rel.Title
+	meta.ReleaseDate = rel.Date
+	meta.ReleaseID = rel.ReleaseGroup.ID
+	meta.Barcode = rel.Barcode
+	meta.CatalogNumber = rel.CatalogNumber
+	meta.ReleaseType = rel.ReleaseGroup.PrimaryType
+	if rel.Date != "" && len(rel.Date) >= 4 {
+		_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
+	}
+	if len(rel.ArtistCredit) > 0 {
+		meta.AlbumArtists = make([]string, len(rel.ArtistCredit))
+		meta.AlbumArtistIDs = make([]string, len(rel.ArtistCredit))
+		for i, ac := range rel.ArtistCredit {
+			meta.AlbumArtists[i] = ac.Artist.Name
+			meta.AlbumArtistIDs[i] = ac.Artist.ID
 		}
-		if len(rel.ArtistCredit) > 0 {
-			meta.AlbumArtists = make([]string, len(rel.ArtistCredit))
-			meta.AlbumArtistIDs = make([]string, len(rel.ArtistCredit))
-			for i, ac := range rel.ArtistCredit {
-				meta.AlbumArtists[i] = ac.Artist.Name
-				meta.AlbumArtistIDs[i] = ac.Artist.ID
-			}
-			if len(meta.AlbumArtists) > 0 {
-				meta.AlbumArtist = meta.AlbumArtists[0]
-			}
+		if len(meta.AlbumArtists) > 0 {
+			meta.AlbumArtist = meta.AlbumArtists[0]
 		}
 	}
 
@@ -166,6 +168,35 @@ func (c *Client) throttle() {
 		time.Sleep(minRequestInterval - elapsed)
 	}
 	c.lastRequest = time.Now()
+}
+
+func selectBestRelease(releases []release) *release {
+	if len(releases) == 0 {
+		return nil
+	}
+
+	typeRank := map[string]int{
+		"Album":  3,
+		"EP":     2,
+		"Single": 1,
+	}
+
+	var best *release
+	var bestRank int
+
+	for i := range releases {
+		r := &releases[i]
+		rank := typeRank[r.ReleaseGroup.PrimaryType]
+		if rank > bestRank {
+			bestRank = rank
+			best = r
+		}
+	}
+
+	if best == nil {
+		best = &releases[0]
+	}
+	return best
 }
 
 func extractGenres(recordings []recording) []string {

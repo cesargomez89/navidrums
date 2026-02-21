@@ -69,7 +69,8 @@ const (
 
 // File Names
 const (
-	PlaylistsDir = "playlists"
+	PlaylistsDir  = "playlists"
+	CoverFileName = "cover.jpg"
 )
 
 // File Permissions

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/cesargomez89/navidrums/internal/constants"
@@ -58,6 +59,29 @@ func DeleteFolderIfEmpty(dirPath string) error {
 		}
 		return err
 	}
+	if len(entries) == 0 {
+		return os.Remove(dirPath)
+	}
+	return nil
+}
+
+func DeleteFolderWithCover(dirPath string) error {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	if len(entries) == 1 && entries[0].Name() == constants.CoverFileName {
+		coverPath := filepath.Join(dirPath, constants.CoverFileName)
+		if err := os.Remove(coverPath); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		return os.Remove(dirPath)
+	}
+
 	if len(entries) == 0 {
 		return os.Remove(dirPath)
 	}
