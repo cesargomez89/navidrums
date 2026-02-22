@@ -249,15 +249,40 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
-	// Check if track already exists and is completed
+	track, destPath, skipDownload, err := w.prepareTrackDownload(ctx, job, logger)
+	if err != nil {
+		return
+	}
+
+	if skipDownload {
+		return
+	}
+
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled before download")
+		return
+	}
+
+	finalPath, err := w.executeDownload(ctx, job, track, destPath, logger)
+	if err != nil {
+		return
+	}
+
+	if err := w.postProcessTrack(ctx, track, finalPath, logger); err != nil {
+		logger.Warn("Post-processing had issues", "error", err)
+	}
+
+	w.finalizeTrackDownload(job, track, finalPath, logger)
+}
+
+func (w *Worker) prepareTrackDownload(ctx context.Context, job *domain.Job, logger *slog.Logger) (*domain.Track, string, bool, error) {
 	existingTrack, _ := w.Repo.GetTrackByProviderID(job.SourceID)
 	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted {
 		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
 		_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-		return
+		return nil, "", true, nil
 	}
 
-	// Fetch track metadata from provider if not already stored
 	var track *domain.Track
 	if existingTrack != nil {
 		track = existingTrack
@@ -266,10 +291,9 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		if err != nil {
 			logger.Error("Failed to fetch track metadata", "error", err)
 			_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch track: %v", err))
-			return
+			return nil, "", false, err
 		}
 
-		// Convert catalog track to domain track
 		track = w.catalogTrackToDomainTrack(catalogTrack)
 		track.Status = domain.TrackStatusMissing
 		track.ParentJobID = job.ID
@@ -279,16 +303,10 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		if err := w.Repo.CreateTrack(track); err != nil {
 			logger.Error("Failed to create track record", "error", err)
 			_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create track record: %v", err))
-			return
+			return nil, "", false, err
 		}
 	}
 
-	if w.isCancelled(job.ID) {
-		logger.Info("Job cancelled before download")
-		return
-	}
-
-	// Prepare download path using template (Early for idempotency check)
 	artistForFolder := track.AlbumArtist
 	if artistForFolder == "" {
 		artistForFolder = track.Artist
@@ -308,16 +326,14 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		logger.Error("Failed to build path from template", "error", err)
 		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to build path: %v", err))
 		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to build path: %v", err))
-		return
+		return nil, "", false, err
 	}
 
 	fullPathNoExt = filepath.Join(w.Config.DownloadsDir, fullPathNoExt)
 
-	// Check for existing file (Idempotency)
-	// We guess extension - usually .flac for now, or check generic
 	ext := track.FileExtension
 	if ext == "" {
-		ext = ".flac" // Default guess
+		ext = ".flac"
 	}
 	predictedPath := fullPathNoExt + ext
 
@@ -333,7 +349,6 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 
 		if exists {
-			// Verify hash if available
 			match := false
 			if track.FileHash != "" {
 				verified, _ := storage.VerifyFile(predictedPath, track.FileHash)
@@ -341,8 +356,6 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 					match = true
 				}
 			} else {
-				// Trust existing if completed? Or re-hash?
-				// Be safe: re-hash and update
 				newHash, hashErr := storage.HashFile(predictedPath)
 				if hashErr == nil {
 					track.FileHash = newHash
@@ -354,7 +367,7 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 			if match {
 				logger.Info("Track already exists and verified, skipping download", "path", predictedPath)
 				_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-				return
+				return nil, "", true, nil
 			} else {
 				logger.Info("Track exists but hash mismatch, redownloading", "path", predictedPath)
 				_ = storage.RemoveFile(predictedPath)
@@ -362,50 +375,53 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Update track status to downloading
+	return track, fullPathNoExt, false, nil
+}
+
+func (w *Worker) executeDownload(ctx context.Context, job *domain.Job, track *domain.Track, destPath string, logger *slog.Logger) (string, error) {
 	if updateErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusDownloading, ""); updateErr != nil {
-		logger.Error("Failed to update track status to downloading", "error", err)
-		return
+		logger.Error("Failed to update track status to downloading", "error", updateErr)
+		return "", updateErr
 	}
 
-	finalDir := filepath.Dir(fullPathNoExt)
+	finalDir := filepath.Dir(destPath)
 	if dirErr := storage.EnsureDir(finalDir); dirErr != nil {
 		logger.Error("Failed to create directory", "error", dirErr)
 		_ = w.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create directory: %v", dirErr))
 		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", dirErr))
-		return
+		return "", dirErr
 	}
 
-	// Download the track
-	finalPath, err := w.downloader.Download(ctx, track, fullPathNoExt)
+	finalPath, err := w.downloader.Download(ctx, track, destPath)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = w.Repo.MarkTrackFailed(track.ID, err.Error())
 		_ = w.Repo.UpdateJobError(job.ID, err.Error())
-		return
+		return "", err
 	}
 
-	// Set track.Status = processing
 	if statusErr := w.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusProcessing, finalPath); statusErr != nil {
 		logger.Error("Failed to update track status to processing", "error", statusErr)
 	}
 
 	logger.Info("Download finished, starting tagging", "file_path", finalPath)
+	return finalPath, nil
+}
 
-	// Download album art for tagging
+func (w *Worker) postProcessTrack(ctx context.Context, track *domain.Track, finalPath string, logger *slog.Logger) error {
 	var albumArtData []byte
 	if track.AlbumArtURL != "" {
+		var err error
 		albumArtData, err = w.albumArtService.DownloadImage(track.AlbumArtURL)
 		if err != nil {
 			logger.Error("Failed to download album art for tagging", "error", err)
 		}
 	}
 
-	// Fetch lyrics if not already present
 	if track.Lyrics == "" || track.Subtitles == "" {
 		lyrics, subtitles, lyricsErr := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
 		if lyricsErr != nil {
-			logger.Debug("Failed to fetch lyrics", "error", err)
+			logger.Debug("Failed to fetch lyrics", "error", lyricsErr)
 		} else {
 			if track.Lyrics == "" && lyrics != "" {
 				track.Lyrics = lyrics
@@ -416,29 +432,18 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	// Fetch metadata from MusicBrainz if ISRC available
 	w.enrichFromMusicBrainz(ctx, track, logger)
 
-	if track.Genre == "" && track.ISRC != "" {
-		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
-		if genreErr != nil {
-			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
-		} else if len(genres) > 0 {
-			track.Genre = genres[0]
-		}
-	}
-
-	// Tag the file
 	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
-		logger.Error("Failed to tag file", "file_path", finalPath, "error", err)
+		logger.Error("Failed to tag file", "file_path", finalPath, "error", tagErr)
 	}
 
-	// Save album art to folder
 	if len(albumArtData) > 0 {
+		finalDir := filepath.Dir(finalPath)
 		artPath := filepath.Join(finalDir, "cover.jpg")
 		if _, artStatErr := os.Stat(artPath); os.IsNotExist(artStatErr) {
 			if writeErr := storage.WriteFile(artPath, albumArtData); writeErr != nil {
-				logger.Error("Failed to save album art", "path", artPath, "error", err)
+				logger.Error("Failed to save album art", "path", artPath, "error", writeErr)
 			} else {
 				logger.Info("Saved album art", "path", artPath)
 			}
@@ -446,17 +451,16 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 	}
 
 	logger.Info("File finalized", "original_path", finalPath)
+	return nil
+}
 
-	// Hash file
+func (w *Worker) finalizeTrackDownload(job *domain.Job, track *domain.Track, finalPath string, logger *slog.Logger) {
 	fileHash, err := storage.HashFile(finalPath)
 	if err != nil {
 		logger.Error("Failed to hash file", "error", err)
-		// Proceed but log? Or fail?
-		// "store current hash"
 	}
 
-	// Mark track as completed and persist enriched metadata
-	ext = filepath.Ext(finalPath)
+	ext := filepath.Ext(finalPath)
 	if ext == "" {
 		ext = ".flac"
 	}
@@ -473,14 +477,10 @@ func (w *Worker) processTrackJob(ctx context.Context, job *domain.Job) {
 		logger.Error("Failed to update track", "error", err)
 	}
 
-	// Recompute album state
 	if track.AlbumID != "" {
-		// Just call it, we don't do anything with result yet other than maybe log or if we had a table
-		// User requirement: "Create function: RecomputeAlbumState(albumID)"
 		_, _ = w.Repo.RecomputeAlbumState(track.AlbumID)
 	}
 
-	// Mark job as completed
 	if err := w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
 		logger.Error("Failed to update final job status", "error", err)
 	}
@@ -748,6 +748,15 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	if track.Composer == "" && meta.Composer != "" {
 		track.Composer = meta.Composer
 	}
+
+	if track.Genre == "" {
+		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		if genreErr != nil {
+			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
+		} else if len(genres) > 0 {
+			track.Genre = strings.Join(genres, "; ")
+		}
+	}
 }
 
 func (w *Worker) updateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
@@ -857,28 +866,7 @@ func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
 		}
 	}
 
-	w.enrichFromMusicBrainz(ctx, track, logger)
-
-	if track.Genre == "" && track.ISRC != "" {
-		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
-		if genreErr != nil {
-			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
-		} else if len(genres) > 0 {
-			track.Genre = strings.Join(genres, "; ")
-		}
-	}
-
-	track.UpdatedAt = time.Now()
-	if err := w.Repo.UpdateTrack(track); err != nil {
-		logger.Error("Failed to update track", "error", err)
-		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
-		return
-	}
-
-	w.reTagTrack(track, logger)
-
-	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-	logger.Info("Sync Hi-Fi job completed")
+	w.finalizeSyncJob(ctx, job, track, logger, "Sync Hi-Fi job completed")
 }
 
 func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
@@ -901,16 +889,11 @@ func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
-	w.enrichFromMusicBrainz(ctx, track, logger)
+	w.finalizeSyncJob(ctx, job, track, logger, "Sync job completed")
+}
 
-	if track.Genre == "" && track.ISRC != "" {
-		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
-		if genreErr != nil {
-			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
-		} else if len(genres) > 0 {
-			track.Genre = strings.Join(genres, "; ")
-		}
-	}
+func (w *Worker) finalizeSyncJob(ctx context.Context, job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
+	w.enrichFromMusicBrainz(ctx, track, logger)
 
 	track.UpdatedAt = time.Now()
 	if err := w.Repo.UpdateTrack(track); err != nil {
@@ -922,7 +905,7 @@ func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
 	w.reTagTrack(track, logger)
 
 	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-	logger.Info("Sync job completed")
+	logger.Info(successMsg)
 }
 
 func (w *Worker) processSyncFileJob(ctx context.Context, job *domain.Job) {
