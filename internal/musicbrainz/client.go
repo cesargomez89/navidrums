@@ -1,11 +1,13 @@
 package musicbrainz
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 )
@@ -203,10 +205,16 @@ func selectBestRelease(releases []release, albumName string) *release {
 func extractGenres(recordings []recording) []string {
 	for _, rec := range recordings {
 		if len(rec.Tags) > 0 {
-			genres := make([]string, 0, len(rec.Tags))
+			slices.SortFunc(rec.Tags, func(a, b tag) int {
+				return cmp.Compare(b.Count, a.Count)
+			})
+			genres := make([]string, 0, 3)
 			for _, tag := range rec.Tags {
 				if tag.Count > 0 {
 					genres = append(genres, tag.Name)
+					if len(genres) >= 3 {
+						break
+					}
 				}
 			}
 			if len(genres) > 0 {

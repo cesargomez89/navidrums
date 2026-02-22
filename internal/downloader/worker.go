@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -774,7 +775,7 @@ func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
 		if genreErr != nil {
 			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
 		} else if len(genres) > 0 {
-			track.Genre = genres[0]
+			track.Genre = strings.Join(genres, "; ")
 		}
 	}
 
