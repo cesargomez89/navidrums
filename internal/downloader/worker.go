@@ -320,6 +320,24 @@ func (w *Worker) prepareTrackDownload(ctx context.Context, job *domain.Job, logg
 		}
 
 		track = w.catalogTrackToDomainTrack(catalogTrack)
+
+		if catalogTrack.AlbumID != "" {
+			album, albumErr := w.ProviderManager.GetProvider().GetAlbum(ctx, catalogTrack.AlbumID)
+			if albumErr != nil {
+				logger.Debug("Failed to fetch album metadata", "album_id", catalogTrack.AlbumID, "error", albumErr)
+			} else {
+				track.ReleaseDate = album.ReleaseDate
+				track.Label = album.Label
+				track.Genre = album.Genre
+				track.TotalTracks = album.TotalTracks
+				track.TotalDiscs = album.TotalDiscs
+				track.Barcode = album.UPC
+				if album.AlbumArtURL != "" {
+					track.AlbumArtURL = album.AlbumArtURL
+				}
+			}
+		}
+
 		track.Status = domain.TrackStatusMissing
 		track.ParentJobID = job.ID
 		track.CreatedAt = time.Now()
