@@ -509,3 +509,18 @@ func (db *DB) ListCompletedTracksWithISRC() ([]*domain.Track, error) {
 	}
 	return tracks, nil
 }
+
+func (db *DB) ListAllCompletedTracks() ([]*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = ? ORDER BY created_at DESC`
+
+	var tracks []*domain.Track
+	var rows []dbTrack
+	err := db.Select(&rows, query, domain.TrackStatusCompleted)
+	if err != nil {
+		return nil, err
+	}
+	for i := range rows {
+		tracks = append(tracks, rows[i].toDomain())
+	}
+	return tracks, nil
+}

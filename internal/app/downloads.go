@@ -115,7 +115,7 @@ func (s *DownloadsService) DeleteDownload(providerID string) error {
 }
 
 func (s *DownloadsService) EnqueueSyncJobs() (int, error) {
-	tracks, err := s.Repo.ListCompletedTracks(defaultLimit)
+	tracks, err := s.Repo.ListAllCompletedTracks()
 	if err != nil {
 		return 0, fmt.Errorf("failed to list tracks: %w", err)
 	}
