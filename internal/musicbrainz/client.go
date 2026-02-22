@@ -7,7 +7,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/cesargomez89/navidrums/internal/constants"
 )
 
 const (
@@ -134,6 +137,7 @@ type Client struct {
 	lastRequest time.Time
 	baseURL     string
 	userAgent   string
+	mu          sync.Mutex
 }
 
 func NewClient(baseURL string) *Client {
@@ -167,8 +171,6 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult,
 		return GenreResult{}, nil
 	}
 
-	c.throttle()
-
 	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=tags&fmt=json", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
@@ -179,7 +181,7 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult,
 	req.Header.Set("User-Agent", c.userAgent)
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doWithRetry(ctx, req)
 	if err != nil {
 		return GenreResult{}, fmt.Errorf("failed to execute request: %w", err)
 	}
@@ -205,8 +207,6 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		return nil, nil
 	}
 
-	c.throttle()
-
 	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
@@ -217,7 +217,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 	req.Header.Set("User-Agent", c.userAgent)
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.doWithRetry(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
@@ -286,13 +286,31 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 	return meta, nil
 }
 
-func (c *Client) throttle() {
-	now := time.Now()
-	elapsed := now.Sub(c.lastRequest)
-	if elapsed < minRequestInterval {
-		time.Sleep(minRequestInterval - elapsed)
+func (c *Client) doWithRetry(ctx context.Context, req *http.Request) (*http.Response, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	var lastErr error
+	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+
+		if elapsed := time.Since(c.lastRequest); elapsed < minRequestInterval {
+			time.Sleep(minRequestInterval - elapsed)
+		}
+		c.lastRequest = time.Now()
+
+		resp, err := c.httpClient.Do(req)
+		if err == nil {
+			return resp, nil
+		}
+		lastErr = err
+		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 	}
-	c.lastRequest = time.Now()
+	return nil, lastErr
 }
 
 func selectBestRelease(releases []release, albumName string) *release {

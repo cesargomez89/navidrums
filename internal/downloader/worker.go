@@ -455,7 +455,9 @@ func (w *Worker) postProcessTrack(ctx context.Context, track *domain.Track, fina
 		}
 	}
 
-	w.enrichFromMusicBrainz(ctx, track, logger)
+	if err := w.enrichFromMusicBrainz(ctx, track, logger); err != nil {
+		logger.Warn("MusicBrainz enrichment failed", "isrc", track.ISRC, "error", err)
+	}
 
 	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
 		logger.Error("Failed to tag file", "file_path", finalPath, "error", tagErr)
@@ -718,18 +720,17 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 	return createdCount
 }
 
-func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track, logger *slog.Logger) error {
 	if track.ISRC == "" {
-		return
+		return nil
 	}
 
 	meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC, track.Album)
 	if mbErr != nil {
-		logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
-		return
+		return mbErr
 	}
 	if meta == nil {
-		return
+		return nil
 	}
 
 	if track.Artist == "" && meta.Artist != "" {
@@ -785,6 +786,8 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 			}
 		}
 	}
+
+	return nil
 }
 
 func (w *Worker) updateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
@@ -921,7 +924,10 @@ func (w *Worker) processSyncMusicBrainzJob(ctx context.Context, job *domain.Job)
 }
 
 func (w *Worker) finalizeSyncJob(ctx context.Context, job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
-	w.enrichFromMusicBrainz(ctx, track, logger)
+	if err := w.enrichFromMusicBrainz(ctx, track, logger); err != nil {
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("MusicBrainz enrichment failed: %v", err))
+		return
+	}
 
 	track.UpdatedAt = time.Now()
 	if err := w.Repo.UpdateTrack(track); err != nil {
