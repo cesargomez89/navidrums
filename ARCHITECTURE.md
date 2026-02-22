@@ -145,3 +145,62 @@ Worker observes state → Downloader executes → Storage writes → App finaliz
 ```
 
 See [DOMAIN.md](DOMAIN.md) for detailed domain model specifications.
+
+---
+
+## Metadata Enrichment
+
+### Data Sources
+
+**Hi-Fi API (Primary)**
+All track metadata from the streaming service:
+- Identity: `ProviderID`, `ISRC`, `AlbumID`
+- Basic: `Title`, `Artist`, `Artists`, `Album`, `AlbumArtist`, `AlbumArtists`
+- Position: `TrackNumber`, `DiscNumber`, `TotalTracks`, `TotalDiscs`
+- Release: `Year`, `ReleaseDate`, `Genre`, `Label`, `Copyright`
+- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`
+- URLs: `URL`, `AlbumArtURL`
+
+**MusicBrainz (Secondary Enrichment)**
+Only fills empty fields - never overwrites existing Hi-Fi data:
+- `Artist`, `Artists`, `ArtistIDs`
+- `Title`, `Duration`, `Year`
+- `Barcode`, `CatalogNumber`, `ReleaseType`
+- `AlbumArtistIDs`, `AlbumArtists`
+- `Composer`, `Genre`
+- `ReleaseID` ← Exception: Always overwritten
+
+### Precedence Rule
+
+**Hi-Fi data > MusicBrainz data**
+
+MusicBrainz uses a "fill-in-the-blanks" pattern (`worker.go:enrichFromMusicBrainz`):
+```go
+if track.Artist == "" && meta.Artist != "" {
+    track.Artist = meta.Artist
+}
+```
+
+MusicBrainz enrichment only triggers when `track.ISRC != ""`.
+
+### Sync Job Types
+
+| Job Type | MusicBrainz? | Behavior |
+|----------|--------------|----------|
+| `JobTypeSyncFile` | No | Re-tags file with existing DB metadata only |
+| `JobTypeSync` | Yes | MusicBrainz enrichment → update DB → re-tag |
+
+### Sync Scenarios
+
+| Action | Job Type | Description |
+|--------|----------|-------------|
+| Per-track "Sync" button | `JobTypeSyncFile` | Re-tags with current DB metadata |
+| Per-track "Enrich" button | `JobTypeSync` | Fetches MusicBrainz, fills gaps, re-tags |
+| "Sync All" | `JobTypeSync` | Enriches all completed tracks with ISRC |
+
+### Key Points
+
+1. Initial download: Hi-Fi data written first, then MusicBrainz fills gaps
+2. Resyncing never re-fetches Hi-Fi data - only MusicBrainz can add missing fields
+3. Manual edits via form are saved before sync jobs run, so they're preserved
+4. `ReleaseID` is the only field MusicBrainz can overwrite (for release grouping)
