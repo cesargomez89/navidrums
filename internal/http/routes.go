@@ -579,6 +579,66 @@ func (h *Handler) EnrichTrackHTMX(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) EnrichHiFiHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var trackID int
+	if _, err := fmt.Sscanf(id, "%d", &trackID); err != nil {
+		http.Error(w, "Invalid track ID", http.StatusBadRequest)
+		return
+	}
+
+	track, err := h.DownloadsService.GetTrackByID(trackID)
+	if err != nil {
+		h.Logger.Error("Failed to get track", "error", err)
+		http.Error(w, "Track not found", http.StatusNotFound)
+		return
+	}
+
+	if parseErr := r.ParseForm(); parseErr != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	var d dto.TrackUpdateRequest
+	if decodeErr := h.FormDecoder.Decode(&d, r.PostForm); decodeErr != nil {
+		h.Logger.Error("Failed to decode form", "error", decodeErr)
+		http.Error(w, "Failed to decode form", http.StatusBadRequest)
+		return
+	}
+
+	validationErrs := d.Validate()
+	if len(validationErrs) > 0 {
+		h.Logger.Warn("Track validation failed", "errors", validationErrs)
+		h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+			"Track":            track,
+			"ValidationErrors": dto.ToMap(validationErrs),
+		})
+		return
+	}
+
+	updates := d.ToUpdates()
+	if len(updates) > 0 {
+		if updateErr := h.DownloadsService.UpdateTrackPartial(trackID, updates); updateErr != nil {
+			h.Logger.Error("Failed to update track", "error", updateErr)
+			http.Error(w, updateErr.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if err := h.DownloadsService.EnqueueSyncHiFiJob(track.ProviderID); err != nil {
+		h.Logger.Error("Failed to enqueue enrich Hi-Fi job", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	track, _ = h.DownloadsService.GetTrackByID(trackID)
+	h.RenderFragment(w, "components/track_form.html", map[string]interface{}{
+		"Track":           track,
+		"JobEnqueued":     true,
+		"JobEnqueuedType": "sync_hifi",
+	})
+}
+
 func (h *Handler) SyncAllHTMX(w http.ResponseWriter, r *http.Request) {
 	count, err := h.DownloadsService.EnqueueSyncJobs()
 	if err != nil {

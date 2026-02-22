@@ -238,6 +238,8 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 		w.processSyncFileJob(ctx, job)
 	case domain.JobTypeSync:
 		w.processSyncJob(ctx, job)
+	case domain.JobTypeSyncHiFi:
+		w.processSyncHiFiJob(ctx, job)
 	default:
 		logger.Error("Unknown job type")
 		_ = w.Repo.UpdateJobError(job.ID, "Unknown job type")
@@ -748,6 +750,137 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	}
 }
 
+func (w *Worker) updateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
+	track.Title = ct.Title
+	track.Artist = ct.Artist
+	track.Artists = ct.Artists
+	track.ArtistIDs = ct.ArtistIDs
+	track.Album = ct.Album
+	track.AlbumArtist = ct.AlbumArtist
+	track.AlbumArtists = ct.AlbumArtists
+	track.AlbumArtistIDs = ct.AlbumArtistIDs
+	track.AlbumID = ct.AlbumID
+	track.TrackNumber = ct.TrackNumber
+	track.DiscNumber = ct.DiscNumber
+	track.TotalTracks = ct.TotalTracks
+	track.TotalDiscs = ct.TotalDiscs
+	track.Year = ct.Year
+	track.ReleaseDate = ct.ReleaseDate
+	track.Genre = ct.Genre
+	track.Label = ct.Label
+	track.ISRC = ct.ISRC
+	track.Copyright = ct.Copyright
+	track.Composer = ct.Composer
+	track.Duration = ct.Duration
+	track.Explicit = ct.ExplicitLyrics
+	track.Compilation = ct.Compilation
+	track.AlbumArtURL = ct.AlbumArtURL
+	track.BPM = ct.BPM
+	track.Key = ct.Key
+	track.KeyScale = ct.KeyScale
+	track.ReplayGain = ct.ReplayGain
+	track.Peak = ct.Peak
+	track.Version = ct.Version
+	track.Description = ct.Description
+	track.URL = ct.URL
+	track.AudioQuality = ct.AudioQuality
+	track.AudioModes = ct.AudioModes
+}
+
+func (w *Worker) reTagTrack(track *domain.Track, logger *slog.Logger) {
+	if track.FilePath == "" {
+		return
+	}
+
+	var albumArtData []byte
+	if track.AlbumArtURL != "" {
+		albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
+	}
+	if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
+		logger.Error("Failed to tag file", "error", tagErr)
+	}
+}
+
+func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
+	if err != nil {
+		logger.Error("Failed to get track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
+		return
+	}
+	if track == nil {
+		logger.Error("Track not found")
+		_ = w.Repo.UpdateJobError(job.ID, "Track not found")
+		return
+	}
+
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled")
+		return
+	}
+
+	catalogTrack, err := w.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
+	if err != nil {
+		logger.Warn("Failed to fetch Hi-Fi metadata, using existing data", "error", err)
+	} else {
+		w.updateTrackFromCatalog(track, catalogTrack)
+
+		if catalogTrack.AlbumID != "" {
+			album, albumErr := w.ProviderManager.GetProvider().GetAlbum(ctx, catalogTrack.AlbumID)
+			if albumErr != nil {
+				logger.Debug("Failed to fetch album metadata", "album_id", catalogTrack.AlbumID, "error", albumErr)
+			} else {
+				track.ReleaseDate = album.ReleaseDate
+				track.Label = album.Label
+				track.Genre = album.Genre
+				track.TotalTracks = album.TotalTracks
+				track.TotalDiscs = album.TotalDiscs
+				track.Barcode = album.UPC
+				if album.AlbumArtURL != "" {
+					track.AlbumArtURL = album.AlbumArtURL
+				}
+			}
+		}
+	}
+
+	lyrics, subtitles, lyricsErr := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
+	if lyricsErr != nil {
+		logger.Debug("Failed to fetch lyrics", "error", lyricsErr)
+	} else {
+		if lyrics != "" {
+			track.Lyrics = lyrics
+		}
+		if subtitles != "" {
+			track.Subtitles = subtitles
+		}
+	}
+
+	w.enrichFromMusicBrainz(ctx, track, logger)
+
+	if track.Genre == "" && track.ISRC != "" {
+		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		if genreErr != nil {
+			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
+		} else if len(genres) > 0 {
+			track.Genre = strings.Join(genres, "; ")
+		}
+	}
+
+	track.UpdatedAt = time.Now()
+	if err := w.Repo.UpdateTrack(track); err != nil {
+		logger.Error("Failed to update track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
+		return
+	}
+
+	w.reTagTrack(track, logger)
+
+	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+	logger.Info("Sync Hi-Fi job completed")
+}
+
 func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
@@ -786,15 +919,7 @@ func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
-	if track.FilePath != "" {
-		var albumArtData []byte
-		if track.AlbumArtURL != "" {
-			albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
-		}
-		if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
-			logger.Error("Failed to tag file", "error", tagErr)
-		}
-	}
+	w.reTagTrack(track, logger)
 
 	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 	logger.Info("Sync job completed")
@@ -827,15 +952,7 @@ func (w *Worker) processSyncFileJob(ctx context.Context, job *domain.Job) {
 		return
 	}
 
-	if track.FilePath != "" {
-		var albumArtData []byte
-		if track.AlbumArtURL != "" {
-			albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
-		}
-		if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
-			logger.Error("Failed to tag file", "error", tagErr)
-		}
-	}
+	w.reTagTrack(track, logger)
 
 	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 	logger.Info("Sync file job completed")

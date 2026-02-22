@@ -64,6 +64,18 @@ func (s *DownloadsService) EnqueueSyncMetadataJob(providerID string) error {
 	return s.Repo.CreateJob(job)
 }
 
+func (s *DownloadsService) EnqueueSyncHiFiJob(providerID string) error {
+	job := &domain.Job{
+		ID:        uuid.New().String(),
+		Type:      domain.JobTypeSyncHiFi,
+		Status:    domain.JobStatusQueued,
+		SourceID:  providerID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	return s.Repo.CreateJob(job)
+}
+
 func (s *DownloadsService) DeleteDownload(providerID string) error {
 	track, err := s.Repo.GetDownloadedTrack(providerID)
 	if err != nil {
@@ -103,21 +115,21 @@ func (s *DownloadsService) DeleteDownload(providerID string) error {
 }
 
 func (s *DownloadsService) EnqueueSyncJobs() (int, error) {
-	tracks, err := s.Repo.ListCompletedTracksWithISRC()
+	tracks, err := s.Repo.ListCompletedTracks(defaultLimit)
 	if err != nil {
 		return 0, fmt.Errorf("failed to list tracks: %w", err)
 	}
 
 	count := 0
 	for _, track := range tracks {
-		existing, _ := s.Repo.GetActiveJobBySourceID(track.ProviderID, domain.JobTypeSync)
+		existing, _ := s.Repo.GetActiveJobBySourceID(track.ProviderID, domain.JobTypeSyncHiFi)
 		if existing != nil {
 			continue
 		}
 
 		job := &domain.Job{
 			ID:        uuid.New().String(),
-			Type:      domain.JobTypeSync,
+			Type:      domain.JobTypeSyncHiFi,
 			Status:    domain.JobStatusQueued,
 			SourceID:  track.ProviderID,
 			CreatedAt: time.Now(),

@@ -70,6 +70,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/track/{id}/save", h.SaveTrackHTMX)
 	r.Post("/htmx/track/{id}/sync", h.SyncTrackHTMX)
 	r.Post("/htmx/track/{id}/enrich", h.EnrichTrackHTMX)
+	r.Post("/htmx/track/{id}/enrich-hifi", h.EnrichHiFiHTMX)
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)

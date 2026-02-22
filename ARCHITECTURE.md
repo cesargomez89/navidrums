@@ -185,22 +185,25 @@ MusicBrainz enrichment only triggers when `track.ISRC != ""`.
 
 ### Sync Job Types
 
-| Job Type | MusicBrainz? | Behavior |
-|----------|--------------|----------|
-| `JobTypeSyncFile` | No | Re-tags file with existing DB metadata only |
-| `JobTypeSync` | Yes | MusicBrainz enrichment → update DB → re-tag |
+| Job Type | Hi-Fi API | MusicBrainz | Behavior |
+|----------|-----------|-------------|----------|
+| `JobTypeSyncFile` | No | No | Re-tags file with existing DB metadata only |
+| `JobTypeSync` | No | Yes (fill gaps) | MusicBrainz enrichment → update DB → re-tag |
+| `JobTypeSyncHiFi` | Yes (overwrite) | Yes (fill gaps) | Hi-Fi refresh → MusicBrainz enrichment → update DB → re-tag |
 
 ### Sync Scenarios
 
 | Action | Job Type | Description |
 |--------|----------|-------------|
-| Per-track "Sync" button | `JobTypeSyncFile` | Re-tags with current DB metadata |
-| Per-track "Enrich" button | `JobTypeSync` | Fetches MusicBrainz, fills gaps, re-tags |
-| "Sync All" | `JobTypeSync` | Enriches all completed tracks with ISRC |
+| Per-track "Sync to File" button | `JobTypeSyncFile` | Re-tags with current DB metadata |
+| Per-track "Enrich from MusicBrainz" button | `JobTypeSync` | Fetches MusicBrainz, fills gaps, re-tags |
+| Per-track "Enrich from Hi-Fi" button | `JobTypeSyncHiFi` | Fetches fresh Hi-Fi data, then MusicBrainz fills gaps, re-tags |
+| "Sync All" | `JobTypeSyncHiFi` | Batch refresh from Hi-Fi + MusicBrainz enrichment for all completed tracks |
 
 ### Key Points
 
 1. Initial download: Hi-Fi data written first, then MusicBrainz fills gaps
-2. Resyncing never re-fetches Hi-Fi data - only MusicBrainz can add missing fields
-3. Manual edits via form are saved before sync jobs run, so they're preserved
-4. `ReleaseID` is the only field MusicBrainz can overwrite (for release grouping)
+2. Resyncing via "Enrich from MusicBrainz" only fetches MusicBrainz - never re-fetches Hi-Fi data
+3. "Enrich from Hi-Fi" and "Sync All" fetch fresh Hi-Fi data (overwrites all metadata), then MusicBrainz fills remaining gaps
+4. Manual edits via form are saved before sync jobs run, so they're preserved (unless overwritten by Hi-Fi enrichment)
+5. `ReleaseID` is the only field MusicBrainz can overwrite (for release grouping)

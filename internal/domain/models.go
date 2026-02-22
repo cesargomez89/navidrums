@@ -13,6 +13,7 @@ const (
 	JobTypeArtist   JobType = "artist"
 	JobTypeSyncFile JobType = "sync_file"
 	JobTypeSync     JobType = "sync"
+	JobTypeSyncHiFi JobType = "sync_hifi"
 )
 
 type JobStatus string
