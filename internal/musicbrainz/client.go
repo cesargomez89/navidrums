@@ -524,7 +524,10 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 		}
 	}
 
-	return maxGenre, highestOriginalTag
+	if highestOriginalTag != "" && !strings.EqualFold(highestOriginalTag, maxGenre) {
+		return maxGenre, highestOriginalTag
+	}
+	return maxGenre, ""
 }
 
 type searchResponse struct {

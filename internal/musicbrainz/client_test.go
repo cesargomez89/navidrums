@@ -39,7 +39,7 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "obscure genre",
-			wantSubGenre:  "obscure genre",
+			wantSubGenre:  "",
 		},
 		{
 			name: "aggregates counts for same main genre",
@@ -79,7 +79,7 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "Metal",
-			wantSubGenre:  "metal",
+			wantSubGenre:  "",
 		},
 		{
 			name: "handles case-insensitive matching",
