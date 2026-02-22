@@ -70,6 +70,14 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     5,
+		description: "Add recording_id for MusicBrainz caching",
+		up: func(db *sqlx.DB) error {
+			_, err := db.Exec("ALTER TABLE tracks ADD COLUMN recording_id TEXT")
+			return err
+		},
+	},
 }
 
 type DB struct {

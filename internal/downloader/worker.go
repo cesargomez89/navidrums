@@ -41,7 +41,7 @@ type Worker struct {
 	ProviderManager   *catalog.ProviderManager
 	Config            *config.Config
 	Logger            *logger.Logger
-	musicBrainzClient *musicbrainz.Client
+	musicBrainzClient musicbrainz.ClientInterface
 	cancel            context.CancelFunc
 	wg                sync.WaitGroup
 	MaxConcurrent     int
@@ -68,7 +68,9 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	worker.downloader = app.NewDownloader(pm, cfg)
 	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
-	worker.musicBrainzClient = musicbrainz.NewClient(cfg.MusicBrainzURL)
+
+	baseMBClient := musicbrainz.NewClient(cfg.MusicBrainzURL)
+	worker.musicBrainzClient = musicbrainz.NewCachedClient(baseMBClient, repo, 7*24*time.Hour)
 
 	worker.loadGenreMap()
 
@@ -721,11 +723,11 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 }
 
 func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track, logger *slog.Logger) error {
-	if track.ISRC == "" {
+	if track.ISRC == "" && track.RecordingID == "" {
 		return nil
 	}
 
-	meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC, track.Album)
+	meta, mbErr := w.musicBrainzClient.GetRecording(ctx, track.RecordingID, track.ISRC, track.Album)
 	if mbErr != nil {
 		return mbErr
 	}
@@ -733,6 +735,9 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 		return nil
 	}
 
+	if meta.RecordingID != "" && track.RecordingID == "" {
+		track.RecordingID = meta.RecordingID
+	}
 	if track.Artist == "" && meta.Artist != "" {
 		track.Artist = meta.Artist
 	}
@@ -774,7 +779,7 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	}
 
 	if track.Genre == "" {
-		result, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		result, genreErr := w.musicBrainzClient.GetGenres(ctx, track.RecordingID, track.ISRC)
 		if genreErr != nil {
 			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
 		} else {

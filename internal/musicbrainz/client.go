@@ -161,6 +161,20 @@ func (c *Client) GetGenreMap() map[string]string {
 	return c.genreMap
 }
 
+func (c *Client) GetRecording(ctx context.Context, recordingID, isrc, albumName string) (*RecordingMetadata, error) {
+	if recordingID != "" {
+		return c.GetRecordingByMBID(ctx, recordingID, albumName)
+	}
+	return c.GetRecordingByISRC(ctx, isrc, albumName)
+}
+
+func (c *Client) GetGenres(ctx context.Context, recordingID, isrc string) (GenreResult, error) {
+	if recordingID != "" {
+		return c.GetGenresByMBID(ctx, recordingID)
+	}
+	return c.GetGenresByISRC(ctx, isrc)
+}
+
 type GenreResult struct {
 	MainGenre string
 	SubGenre  string
@@ -240,8 +254,9 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 
 	rec := result.Recordings[0]
 	meta := &RecordingMetadata{
-		Title:    rec.Title,
-		Duration: rec.Length,
+		RecordingID: rec.ID,
+		Title:       rec.Title,
+		Duration:    rec.Length,
 	}
 
 	if len(rec.ArtistCredit) > 0 {
@@ -284,6 +299,130 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 	}
 
 	return meta, nil
+}
+
+func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName string) (*RecordingMetadata, error) {
+	if mbid == "" {
+		return nil, nil
+	}
+
+	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits&fmt=json", c.baseURL, url.PathEscape(mbid))
+
+	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.doWithRetry(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
+	}
+
+	var rec recording
+	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	meta := &RecordingMetadata{
+		RecordingID: rec.ID,
+		Title:       rec.Title,
+		Duration:    rec.Length,
+	}
+
+	if len(rec.ArtistCredit) > 0 {
+		meta.Artist = rec.ArtistCredit[0].Artist.Name
+		meta.Artists = make([]string, len(rec.ArtistCredit))
+		meta.ArtistIDs = make([]string, len(rec.ArtistCredit))
+		for i, ac := range rec.ArtistCredit {
+			meta.Artists[i] = ac.Artist.Name
+			meta.ArtistIDs[i] = ac.Artist.ID
+			if ac.Type == "composer" && meta.Composer == "" {
+				meta.Composer = ac.Artist.Name
+			}
+		}
+	}
+
+	rel := selectBestRelease(rec.Releases, albumName)
+	if rel == nil {
+		return meta, nil
+	}
+
+	meta.Album = rel.Title
+	meta.ReleaseDate = rel.Date
+	meta.ReleaseID = rel.ReleaseGroup.ID
+	meta.Barcode = rel.Barcode
+	meta.CatalogNumber = rel.CatalogNumber
+	meta.ReleaseType = rel.ReleaseGroup.PrimaryType
+	if rel.Date != "" && len(rel.Date) >= 4 {
+		_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
+	}
+	if len(rel.ArtistCredit) > 0 {
+		meta.AlbumArtists = make([]string, len(rel.ArtistCredit))
+		meta.AlbumArtistIDs = make([]string, len(rel.ArtistCredit))
+		for i, ac := range rel.ArtistCredit {
+			meta.AlbumArtists[i] = ac.Artist.Name
+			meta.AlbumArtistIDs[i] = ac.Artist.ID
+		}
+		if len(meta.AlbumArtists) > 0 {
+			meta.AlbumArtist = meta.AlbumArtists[0]
+		}
+	}
+
+	return meta, nil
+}
+
+func (c *Client) GetGenresByMBID(ctx context.Context, mbid string) (GenreResult, error) {
+	if mbid == "" {
+		return GenreResult{}, nil
+	}
+
+	u := fmt.Sprintf("%s/recording/%s?inc=tags&fmt=json", c.baseURL, url.PathEscape(mbid))
+
+	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
+	if err != nil {
+		return GenreResult{}, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.doWithRetry(ctx, req)
+	if err != nil {
+		return GenreResult{}, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return GenreResult{}, nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return GenreResult{}, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
+	}
+
+	var rec recording
+	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
+		return GenreResult{}, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	mainGenre, subGenre := extractMainGenre([]recording{rec}, c.genreMap)
+	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
 }
 
 func (c *Client) doWithRetry(ctx context.Context, req *http.Request) (*http.Response, error) {
@@ -443,6 +582,7 @@ type tag struct {
 }
 
 type RecordingMetadata struct {
+	RecordingID    string
 	ReleaseID      string
 	Composer       string
 	Album          string

@@ -48,6 +48,7 @@ type dbTrack struct {
 	AudioQuality   string         `db:"audio_quality"`
 	AudioModes     string         `db:"audio_modes"`
 	Status         string         `db:"status"`
+	RecordingID    sql.NullString `db:"recording_id"`
 	ReleaseID      sql.NullString `db:"release_id"`
 	CatalogNumber  sql.NullString `db:"catalog_number"`
 	ReleaseType    sql.NullString `db:"release_type"`
@@ -106,6 +107,7 @@ func (d *dbTrack) toDomain() *domain.Track {
 		Barcode:       d.Barcode.String,
 		CatalogNumber: d.CatalogNumber.String,
 		ReleaseType:   d.ReleaseType.String,
+		RecordingID:   d.RecordingID.String,
 		ReleaseID:     d.ReleaseID.String,
 		Error:         d.Error,
 		ParentJobID:   d.ParentJobID,
@@ -149,10 +151,10 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		year, genre, sub_genre, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
-		barcode, catalog_number, release_type, release_id,
+		barcode, catalog_number, release_type, release_id, recording_id,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := db.Exec(query,
 		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
@@ -160,7 +162,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		track.Year, track.Genre, track.SubGenre, track.Label, track.ISRC, track.Copyright, track.Composer,
 		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
-		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
+		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID, track.RecordingID,
 		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
 		track.CreatedAt, track.UpdatedAt, track.ETag, track.FileHash, track.LastVerifiedAt,
 	)
@@ -215,7 +217,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		year = ?, genre = ?, sub_genre = ?, label = ?, isrc = ?, copyright = ?, composer = ?,
 		duration = ?, explicit = ?, compilation = ?, album_art_url = ?, lyrics = ?, subtitles = ?,
 		bpm = ?, key_name = ?, key_scale = ?, replay_gain = ?, peak = ?, version = ?, description = ?, url = ?, audio_quality = ?, audio_modes = ?, release_date = ?,
-		barcode = ?, catalog_number = ?, release_type = ?, release_id = ?,
+		barcode = ?, catalog_number = ?, release_type = ?, release_id = ?, recording_id = ?,
 		status = ?, error = ?, parent_job_id = ?, file_path = ?, file_extension = ?,
 		updated_at = ?, etag = ?, file_hash = ?, completed_at = ?, last_verified_at = ?
 	WHERE id = ?`
@@ -234,7 +236,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		track.Year, track.Genre, track.SubGenre, track.Label, track.ISRC, track.Copyright, track.Composer,
 		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
-		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
+		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID, track.RecordingID,
 		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
 		time.Now(), track.ETag, track.FileHash, completedAt, lastVerifiedAt, track.ID,
 	)

@@ -80,6 +80,7 @@ type Track struct {
 	Subtitles      string      `json:"subtitles"`
 	Status         TrackStatus `json:"status"`
 	ReleaseID      string      `json:"release_id,omitempty"`
+	RecordingID    string      `json:"recording_id,omitempty"`
 	ReleaseType    string      `json:"release_type,omitempty"`
 	Key            string      `json:"key,omitempty"`
 	KeyScale       string      `json:"key_scale,omitempty"`
