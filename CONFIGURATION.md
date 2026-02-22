@@ -96,6 +96,51 @@ CACHE_TTL=168h  # or 7d
 
 Cache is stored in SQLite and automatically invalidated when providers change.
 
+## Genre Map Settings
+
+Genre mapping normalizes MusicBrainz subgenre tags into main genres. Configured via the Settings page UI.
+
+### How It Works
+
+1. MusicBrainz returns genre tags with vote counts (e.g., `"death metal": 5, "thrash metal": 3`)
+2. Each tag is mapped through the genre map (lowercase key → normalized genre)
+3. Counts are aggregated by normalized genre
+4. The genre with the highest total count is selected
+
+### Default Categories
+
+| Category | Example Mappings |
+|----------|------------------|
+| Rock | rock, alternative rock, indie rock, punk, grunge |
+| Metal | metal, death metal, black metal, thrash metal |
+| Pop | pop, indie pop, synthpop, dance pop |
+| Hip-Hop | hip hop, rap, trap, drill |
+| R&B | r&b, soul, neo soul, funk |
+| Electronic | electronic, edm, house, techno, dubstep |
+| Latin | latin, reggaeton, salsa, bachata |
+| Regional Mexican | banda, norteño, corridos, mariachi |
+| Country | country, americana, alt-country |
+| Jazz | jazz, smooth jazz, bebop |
+| Classical | classical, opera, baroque |
+| Folk | folk, indie folk, acoustic |
+| Reggae | reggae, dancehall, ska |
+| Blues | blues |
+| Soundtrack | soundtrack, film score |
+
+### Custom Map
+
+To override or extend the default map, enter JSON in the Settings page:
+
+```json
+{
+  "dark ambient": "Electronic",
+  "indie folk": "Folk",
+  "synthwave": "Electronic"
+}
+```
+
+Click **Reset to Default** to clear the custom map and revert to the built-in mappings.
+
 ## Authentication
 
 Basic HTTP authentication is optional:

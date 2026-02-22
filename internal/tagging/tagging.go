@@ -227,6 +227,7 @@ func newVorbisComment(track *domain.Track) *flacvorbis.MetaDataBlockVorbisCommen
 
 	add("RELEASEDATE", track.ReleaseDate)
 	add("GENRE", track.Genre)
+	add("SUBGENRE", track.SubGenre)
 	add("LABEL", track.Label)
 	add("ISRC", track.ISRC)
 	add("COPYRIGHT", track.Copyright)
@@ -318,6 +319,9 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 	}
 	if track.Genre != "" {
 		tag.SetGenre(track.Genre)
+	}
+	if track.SubGenre != "" {
+		tag.AddTextFrame("TIT3", tag.DefaultEncoding(), track.SubGenre)
 	}
 
 	if len(track.AlbumArtists) > 0 {

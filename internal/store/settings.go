@@ -39,4 +39,5 @@ func (r *SettingsRepo) Delete(key string) error {
 const (
 	SettingActiveProvider  = "active_provider"
 	SettingCustomProviders = "custom_providers"
+	SettingGenreMap        = "genre_map"
 )

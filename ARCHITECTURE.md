@@ -207,3 +207,25 @@ MusicBrainz enrichment only triggers when `track.ISRC != ""`.
 3. "Enrich from Hi-Fi" and "Sync All" fetch fresh Hi-Fi data (overwrites all metadata), then MusicBrainz fills remaining gaps
 4. Manual edits via form are saved before sync jobs run, so they're preserved (unless overwritten by Hi-Fi enrichment)
 5. `ReleaseID` is the only field MusicBrainz can overwrite (for release grouping)
+
+### Genre Normalization
+
+MusicBrainz genre tags are normalized to a single main genre:
+
+1. **Fetch tags** from MusicBrainz (with vote counts)
+2. **Map each tag** through the genre map (lowercase → main genre)
+3. **Aggregate counts** by normalized genre
+4. **Select** the genre with highest total count
+
+**Example:**
+- MusicBrainz returns: `["death metal": 5, "thrash metal": 3, "rock": 2]`
+- After normalization: `Metal: 8, Rock: 2`
+- Result: `Metal`
+
+**Configuration:**
+- Default genre map in `internal/musicbrainz/client.go` (`DefaultGenreMap`)
+- Custom map stored in `settings` table (`genre_map` key)
+- UI for customization in Settings page
+
+If no tags match the genre map, the original tag with highest count is used.
+

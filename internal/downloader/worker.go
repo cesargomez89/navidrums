@@ -2,12 +2,12 @@ package downloader
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -37,6 +37,7 @@ type Worker struct {
 	albumArtService   app.AlbumArtService
 	ctx               context.Context
 	Repo              *store.DB
+	SettingsRepo      *store.SettingsRepo
 	ProviderManager   *catalog.ProviderManager
 	Config            *config.Config
 	Logger            *logger.Logger
@@ -46,7 +47,7 @@ type Worker struct {
 	MaxConcurrent     int
 }
 
-func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, log *logger.Logger) *Worker {
+func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.ProviderManager, cfg *config.Config, log *logger.Logger) *Worker {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if log == nil {
@@ -55,6 +56,7 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 
 	worker := &Worker{
 		Repo:            repo,
+		SettingsRepo:    settingsRepo,
 		ProviderManager: pm,
 		Config:          cfg,
 		MaxConcurrent:   constants.DefaultConcurrency,
@@ -67,6 +69,8 @@ func NewWorker(repo *store.DB, pm *catalog.ProviderManager, cfg *config.Config, 
 	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
 	worker.musicBrainzClient = musicbrainz.NewClient(cfg.MusicBrainzURL)
+
+	worker.loadGenreMap()
 
 	return worker
 }
@@ -82,6 +86,25 @@ func (w *Worker) Start() {
 
 	w.wg.Add(1)
 	go w.processJobs()
+}
+
+func (w *Worker) loadGenreMap() {
+	if w.SettingsRepo == nil {
+		return
+	}
+
+	genreMapJSON, err := w.SettingsRepo.Get(store.SettingGenreMap)
+	if err != nil || genreMapJSON == "" {
+		return
+	}
+
+	var customMap map[string]string
+	if err := json.Unmarshal([]byte(genreMapJSON), &customMap); err != nil {
+		w.Logger.Warn("Failed to parse custom genre map, using default", "error", err)
+		return
+	}
+
+	w.musicBrainzClient.SetGenreMap(customMap)
 }
 
 func (w *Worker) recoverInterruptedTracks() {
@@ -750,11 +773,16 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	}
 
 	if track.Genre == "" {
-		genres, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
+		result, genreErr := w.musicBrainzClient.GetGenresByISRC(ctx, track.ISRC)
 		if genreErr != nil {
 			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
-		} else if len(genres) > 0 {
-			track.Genre = strings.Join(genres, "; ")
+		} else {
+			if result.MainGenre != "" {
+				track.Genre = result.MainGenre
+			}
+			if result.SubGenre != "" {
+				track.SubGenre = result.SubGenre
+			}
 		}
 	}
 }

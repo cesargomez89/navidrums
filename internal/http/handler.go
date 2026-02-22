@@ -76,6 +76,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)
 	r.Post("/htmx/provider/add", h.AddCustomProviderHTMX)
 	r.Post("/htmx/provider/remove", h.RemoveCustomProviderHTMX)
+
+	r.Get("/htmx/genre-map", h.GetGenreMapHTMX)
+	r.Post("/htmx/genre-map", h.SetGenreMapHTMX)
+	r.Post("/htmx/genre-map/reset", h.ResetGenreMapHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {

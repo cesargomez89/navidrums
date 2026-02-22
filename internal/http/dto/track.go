@@ -12,6 +12,7 @@ type TrackUpdateRequest struct {
 	Album         *string `form:"album"`
 	AlbumArtist   *string `form:"album_artist"`
 	Genre         *string `form:"genre"`
+	SubGenre      *string `form:"sub_genre"`
 	Label         *string `form:"label"`
 	Composer      *string `form:"composer"`
 	Copyright     *string `form:"copyright"`
@@ -78,6 +79,9 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	}
 	if r.Genre != nil && *r.Genre != "" {
 		updates["genre"] = *r.Genre
+	}
+	if r.SubGenre != nil && *r.SubGenre != "" {
+		updates["sub_genre"] = *r.SubGenre
 	}
 	if r.Label != nil && *r.Label != "" {
 		updates["label"] = *r.Label
@@ -193,6 +197,7 @@ type TrackResponse struct {
 	Error          string     `json:"error,omitempty"`
 	Subtitles      string     `json:"subtitles"`
 	Genre          string     `json:"genre"`
+	SubGenre       string     `json:"sub_genre"`
 	Barcode        string     `json:"barcode"`
 	Copyright      string     `json:"copyright"`
 	ReleaseDate    string     `json:"release_date"`
@@ -225,6 +230,7 @@ func NewTrackResponse(t *domain.Track) TrackResponse {
 		Album:          t.Album,
 		AlbumArtist:    t.AlbumArtist,
 		Genre:          t.Genre,
+		SubGenre:       t.SubGenre,
 		Label:          t.Label,
 		TrackNumber:    t.TrackNumber,
 		DiscNumber:     t.DiscNumber,

@@ -1,13 +1,11 @@
 package musicbrainz
 
 import (
-	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
-	"slices"
 	"strings"
 	"time"
 )
@@ -18,9 +16,122 @@ const (
 	minRequestInterval = 1050 * time.Millisecond
 )
 
+var DefaultGenreMap = map[string]string{
+	"rock":                "Rock",
+	"alternative rock":    "Rock",
+	"indie rock":          "Rock",
+	"hard rock":           "Rock",
+	"punk":                "Rock",
+	"punk rock":           "Rock",
+	"post-punk":           "Rock",
+	"garage rock":         "Rock",
+	"grunge":              "Rock",
+	"emo":                 "Rock",
+	"soft rock":           "Rock",
+	"industrial rock":     "Rock",
+	"metal":               "Metal",
+	"heavy metal":         "Metal",
+	"nu metal":            "Metal",
+	"death metal":         "Metal",
+	"black metal":         "Metal",
+	"thrash metal":        "Metal",
+	"metalcore":           "Metal",
+	"progressive metal":   "Metal",
+	"rap metal":           "Metal",
+	"alternative metal":   "Metal",
+	"industrial metal":    "Metal",
+	"neue deutsche härte": "Metal",
+	"funk metal":          "Metal",
+	"pop":                 "Pop",
+	"indie pop":           "Pop",
+	"synthpop":            "Pop",
+	"dance pop":           "Pop",
+	"electropop":          "Pop",
+	"latin pop":           "Pop",
+	"art pop":             "Pop",
+	"noise pop":           "Pop",
+	"synth-pop":           "Pop",
+	"dance-pop":           "Pop",
+	"hip hop":             "Hip-Hop",
+	"rap":                 "Hip-Hop",
+	"trap":                "Hip-Hop",
+	"drill":               "Hip-Hop",
+	"boom bap":            "Hip-Hop",
+	"latin trap":          "Hip-Hop",
+	"abstract hip hop":    "Hip-Hop",
+	"hardcore rap":        "Hip-Hop",
+	"r&b":                 "R&B",
+	"rnb":                 "R&B",
+	"contemporary r&b":    "R&B",
+	"soul":                "R&B",
+	"neo soul":            "R&B",
+	"funk":                "R&B",
+	"rhythm and blues":    "R&B",
+	"electronic":          "Electronic",
+	"edm":                 "Electronic",
+	"house":               "Electronic",
+	"techno":              "Electronic",
+	"trance":              "Electronic",
+	"dubstep":             "Electronic",
+	"drum and bass":       "Electronic",
+	"dnb":                 "Electronic",
+	"trip hop":            "Electronic",
+	"alternative dance":   "Electronic",
+	"chillwave":           "Electronic",
+	"industrial":          "Electronic",
+	"club/dance":          "Electronic",
+	"disco":               "Electronic",
+	"folktronica":         "Electronic",
+	"microhouse":          "Electronic",
+	"ambient house":       "Electronic",
+	"electronica":         "Electronic",
+	"dub":                 "Electronic",
+	"latin":               "Latin",
+	"reggaeton":           "Latin",
+	"dembow":              "Latin",
+	"salsa":               "Latin",
+	"bachata":             "Latin",
+	"merengue":            "Latin",
+	"cumbia":              "Latin",
+	"bomba":               "Latin",
+	"bossa nova":          "Latin",
+	"regional mexican":    "Regional Mexican",
+	"banda":               "Regional Mexican",
+	"norteño":             "Regional Mexican",
+	"norteno":             "Regional Mexican",
+	"corridos":            "Regional Mexican",
+	"corridos tumbados":   "Regional Mexican",
+	"mariachi":            "Regional Mexican",
+	"grupero":             "Regional Mexican",
+	"sierreño":            "Regional Mexican",
+	"sierreño urbano":     "Regional Mexican",
+	"country":             "Country",
+	"americana":           "Country",
+	"alt-country":         "Country",
+	"jazz":                "Jazz",
+	"smooth jazz":         "Jazz",
+	"bebop":               "Jazz",
+	"classical":           "Classical",
+	"opera":               "Classical",
+	"baroque":             "Classical",
+	"romantic":            "Classical",
+	"orchestral":          "Classical",
+	"classical crossover": "Classical",
+	"folk":                "Folk",
+	"indie folk":          "Folk",
+	"acoustic":            "Folk",
+	"reggae":              "Reggae",
+	"dancehall":           "Reggae",
+	"ska":                 "Reggae",
+	"blues":               "Blues",
+	"soundtrack":          "Soundtrack",
+	"film score":          "Soundtrack",
+}
+
 type Client struct {
-	lastRequest time.Time
 	httpClient  *http.Client
+	genreMap    map[string]string
+	lastRequest time.Time
 	baseURL     string
 	userAgent   string
 }
@@ -32,12 +143,28 @@ func NewClient(baseURL string) *Client {
 		httpClient: &http.Client{
 			Timeout: requestTimeout,
 		},
+		genreMap: DefaultGenreMap,
 	}
 }
 
-func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) ([]string, error) {
+func (c *Client) SetGenreMap(m map[string]string) {
+	if m != nil {
+		c.genreMap = m
+	}
+}
+
+func (c *Client) GetGenreMap() map[string]string {
+	return c.genreMap
+}
+
+type GenreResult struct {
+	MainGenre string
+	SubGenre  string
+}
+
+func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult, error) {
 	if isrc == "" {
-		return nil, nil
+		return GenreResult{}, nil
 	}
 
 	c.throttle()
@@ -46,7 +173,7 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) ([]string, er
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return GenreResult{}, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("User-Agent", c.userAgent)
@@ -54,27 +181,23 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) ([]string, er
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
+		return GenreResult{}, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
+		return GenreResult{}, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
 	}
 
 	var result searchResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+		return GenreResult{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	genres := extractGenres(result.Recordings)
-	if len(genres) == 0 {
-		return nil, nil
-	}
-
-	return genres, nil
+	mainGenre, subGenre := extractMainGenre(result.Recordings, c.genreMap)
+	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
 }
 
 func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName string) (*RecordingMetadata, error) {
@@ -202,27 +325,49 @@ func selectBestRelease(releases []release, albumName string) *release {
 	return &releases[0]
 }
 
-func extractGenres(recordings []recording) []string {
+func extractMainGenre(recordings []recording, genreMap map[string]string) (mainGenre string, subGenre string) {
+	genreCounts := make(map[string]int)
+	var highestOriginalTag string
+	var highestOriginalCount int
+
 	for _, rec := range recordings {
-		if len(rec.Tags) > 0 {
-			slices.SortFunc(rec.Tags, func(a, b tag) int {
-				return cmp.Compare(b.Count, a.Count)
-			})
-			genres := make([]string, 0, 3)
-			for _, tag := range rec.Tags {
-				if tag.Count > 0 {
-					genres = append(genres, tag.Name)
-					if len(genres) >= 3 {
-						break
-					}
-				}
+		for _, t := range rec.Tags {
+			if t.Count <= 0 {
+				continue
 			}
-			if len(genres) > 0 {
-				return genres
+
+			normalized := strings.ToLower(strings.TrimSpace(t.Name))
+			if normalized == "" {
+				continue
+			}
+
+			if mapped, ok := genreMap[normalized]; ok {
+				genreCounts[mapped] += t.Count
+			} else {
+				genreCounts[t.Name] += t.Count
+			}
+
+			if t.Count > highestOriginalCount {
+				highestOriginalCount = t.Count
+				highestOriginalTag = t.Name
 			}
 		}
 	}
-	return nil
+
+	if len(genreCounts) == 0 {
+		return "", ""
+	}
+
+	var maxGenre string
+	var maxCount int
+	for genre, count := range genreCounts {
+		if count > maxCount {
+			maxCount = count
+			maxGenre = genre
+		}
+	}
+
+	return maxGenre, highestOriginalTag
 }
 
 type searchResponse struct {

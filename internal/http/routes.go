@@ -11,6 +11,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/http/dto"
+	"github.com/cesargomez89/navidrums/internal/musicbrainz"
 	"github.com/cesargomez89/navidrums/internal/store"
 )
 
@@ -289,6 +290,71 @@ func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Reques
 	}
 	if err := h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON)); err != nil {
 		h.Logger.Error("Failed to save custom providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) GetGenreMapHTMX(w http.ResponseWriter, r *http.Request) {
+	customMapJSON, err := h.SettingsRepo.Get(store.SettingGenreMap)
+	if err != nil {
+		h.Logger.Error("Failed to get genre map", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"default": musicbrainz.DefaultGenreMap,
+		"custom":  nil,
+	}
+
+	if customMapJSON != "" {
+		var customMap map[string]string
+		if unmarshalErr := json.Unmarshal([]byte(customMapJSON), &customMap); unmarshalErr != nil {
+			h.Logger.Error("Failed to unmarshal custom genre map", "error", unmarshalErr)
+		} else {
+			response["custom"] = customMap
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		h.Logger.Error("Failed to encode genre map response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetGenreMapHTMX(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		GenreMap map[string]string `json:"genreMap"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	genreMapJSON, err := json.Marshal(req.GenreMap)
+	if err != nil {
+		h.Logger.Error("Failed to marshal genre map", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingGenreMap, string(genreMapJSON)); err != nil {
+		h.Logger.Error("Failed to save genre map", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) ResetGenreMapHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingGenreMap); err != nil {
+		h.Logger.Error("Failed to reset genre map", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

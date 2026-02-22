@@ -40,6 +40,9 @@ All routes are server-rendered HTML endpoints using HTMX for partial updates.
 | POST | `/htmx/provider/set?url={url}` | Set active provider |
 | POST | `/htmx/provider/add?name={name}&url={url}` | Add custom provider |
 | POST | `/htmx/provider/remove?url={url}` | Remove custom provider |
+| GET | `/htmx/genre-map` | Get genre map configuration (JSON) |
+| POST | `/htmx/genre-map` | Save custom genre map |
+| POST | `/htmx/genre-map/reset` | Reset genre map to default |
 
 ### Track Pages
 
@@ -78,3 +81,13 @@ Provider configuration endpoints return JSON:
   "default": "http://..."
 }
 ```
+
+### JSON (Genre Map)
+Genre map endpoints return JSON:
+```json
+{
+  "default": {"death metal": "Metal", "indie pop": "Pop", ...},
+  "custom": {"ambient techno": "Electronic", ...}
+}
+```
+`custom` is `null` if no custom map is set.

@@ -67,6 +67,7 @@ type Track struct {
 	ProviderID     string      `json:"provider_id"`
 	FileExtension  string      `json:"file_extension"`
 	Genre          string      `json:"genre"`
+	SubGenre       string      `json:"sub_genre"`
 	Label          string      `json:"label"`
 	ISRC           string      `json:"isrc"`
 	Copyright      string      `json:"copyright"`

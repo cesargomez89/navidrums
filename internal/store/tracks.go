@@ -26,6 +26,7 @@ type dbTrack struct {
 	Title          string         `db:"title"`
 	Artist         string         `db:"artist"`
 	Genre          string         `db:"genre"`
+	SubGenre       sql.NullString `db:"sub_genre"`
 	Label          string         `db:"label"`
 	KeyScale       string         `db:"key_scale"`
 	Copyright      string         `db:"copyright"`
@@ -74,6 +75,7 @@ func (d *dbTrack) toDomain() *domain.Track {
 		AlbumID:       d.AlbumID,
 		AlbumArtist:   d.AlbumArtist,
 		Genre:         d.Genre,
+		SubGenre:      d.SubGenre.String,
 		Label:         d.Label,
 		ISRC:          d.ISRC,
 		Copyright:     d.Copyright,
@@ -144,18 +146,18 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	query := `INSERT INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, label, isrc, copyright, composer,
+		year, genre, sub_genre, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := db.Exec(query,
 		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
 		track.TrackNumber, track.DiscNumber, track.TotalTracks, track.TotalDiscs,
-		track.Year, track.Genre, track.Label, track.ISRC, track.Copyright, track.Composer,
+		track.Year, track.Genre, track.SubGenre, track.Label, track.ISRC, track.Copyright, track.Composer,
 		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
 		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
@@ -210,7 +212,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 	query := `UPDATE tracks SET
 		provider_id = ?, title = ?, artist = ?, artists = ?, album = ?, album_id = ?, album_artist = ?, album_artists = ?,
 		track_number = ?, disc_number = ?, total_tracks = ?, total_discs = ?,
-		year = ?, genre = ?, label = ?, isrc = ?, copyright = ?, composer = ?,
+		year = ?, genre = ?, sub_genre = ?, label = ?, isrc = ?, copyright = ?, composer = ?,
 		duration = ?, explicit = ?, compilation = ?, album_art_url = ?, lyrics = ?, subtitles = ?,
 		bpm = ?, key_name = ?, key_scale = ?, replay_gain = ?, peak = ?, version = ?, description = ?, url = ?, audio_quality = ?, audio_modes = ?, release_date = ?,
 		barcode = ?, catalog_number = ?, release_type = ?, release_id = ?,
@@ -229,7 +231,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 	result, err := db.Exec(query,
 		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
 		track.TrackNumber, track.DiscNumber, track.TotalTracks, track.TotalDiscs,
-		track.Year, track.Genre, track.Label, track.ISRC, track.Copyright, track.Composer,
+		track.Year, track.Genre, track.SubGenre, track.Label, track.ISRC, track.Copyright, track.Composer,
 		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
 		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
 		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID,
@@ -277,6 +279,7 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"album":          true,
 		"album_artist":   true,
 		"genre":          true,
+		"sub_genre":      true,
 		"label":          true,
 		"composer":       true,
 		"copyright":      true,

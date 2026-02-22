@@ -62,6 +62,14 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     4,
+		description: "Add sub_genre for original MusicBrainz tag",
+		up: func(db *sqlx.DB) error {
+			_, err := db.Exec("ALTER TABLE tracks ADD COLUMN sub_genre TEXT")
+			return err
+		},
+	},
 }
 
 type DB struct {

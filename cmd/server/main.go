@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// Initialize Worker
-	w := downloader.NewWorker(db, providerManager, cfg, appLogger)
+	w := downloader.NewWorker(db, settingsRepo, providerManager, cfg, appLogger)
 	w.Start()
 	defer w.Stop()
 
