@@ -462,9 +462,9 @@ func (h *Handler) SaveTrackHTMX(w http.ResponseWriter, r *http.Request) {
 type enrichAction string
 
 const (
-	enrichActionSyncFile enrichAction = "sync_file"
-	enrichActionSync     enrichAction = "sync"
-	enrichActionSyncHiFi enrichAction = "sync_hifi"
+	enrichActionSyncFile        enrichAction = "sync_file"
+	enrichActionSyncMusicBrainz enrichAction = "sync_musicbrainz"
+	enrichActionSyncHiFi        enrichAction = "sync_hifi"
 )
 
 func (h *Handler) handleTrackEnrich(w http.ResponseWriter, r *http.Request) (*domain.Track, bool) {
@@ -552,7 +552,7 @@ func (h *Handler) EnrichTrackHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.renderEnrichResponse(w, track, enrichActionSync)
+	h.renderEnrichResponse(w, track, enrichActionSyncMusicBrainz)
 }
 
 func (h *Handler) EnrichHiFiHTMX(w http.ResponseWriter, r *http.Request) {

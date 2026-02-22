@@ -188,7 +188,7 @@ MusicBrainz enrichment only triggers when `track.ISRC != ""`.
 | Job Type | Hi-Fi API | MusicBrainz | Behavior |
 |----------|-----------|-------------|----------|
 | `JobTypeSyncFile` | No | No | Re-tags file with existing DB metadata only |
-| `JobTypeSync` | No | Yes (fill gaps) | MusicBrainz enrichment → update DB → re-tag |
+| `JobTypeSyncMusicBrainz` | No | Yes (fill gaps) | MusicBrainz enrichment → update DB → re-tag |
 | `JobTypeSyncHiFi` | Yes (overwrite) | Yes (fill gaps) | Hi-Fi refresh → MusicBrainz enrichment → update DB → re-tag |
 
 ### Sync Scenarios
@@ -196,7 +196,7 @@ MusicBrainz enrichment only triggers when `track.ISRC != ""`.
 | Action | Job Type | Description |
 |--------|----------|-------------|
 | Per-track "Sync to File" button | `JobTypeSyncFile` | Re-tags with current DB metadata |
-| Per-track "Enrich from MusicBrainz" button | `JobTypeSync` | Fetches MusicBrainz, fills gaps, re-tags |
+| Per-track "Enrich from MusicBrainz" button | `JobTypeSyncMusicBrainz` | Fetches MusicBrainz, fills gaps, re-tags |
 | Per-track "Enrich from Hi-Fi" button | `JobTypeSyncHiFi` | Fetches fresh Hi-Fi data, then MusicBrainz fills gaps, re-tags |
 | "Sync All" | `JobTypeSyncHiFi` | Batch refresh from Hi-Fi + MusicBrainz enrichment for all completed tracks |
 

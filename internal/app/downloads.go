@@ -55,7 +55,7 @@ func (s *DownloadsService) EnqueueSyncFileJob(providerID string) error {
 func (s *DownloadsService) EnqueueSyncMetadataJob(providerID string) error {
 	job := &domain.Job{
 		ID:        uuid.New().String(),
-		Type:      domain.JobTypeSync,
+		Type:      domain.JobTypeSyncMusicBrainz,
 		Status:    domain.JobStatusQueued,
 		SourceID:  providerID,
 		CreatedAt: time.Now(),

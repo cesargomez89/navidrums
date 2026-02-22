@@ -7,13 +7,13 @@ import (
 type JobType string
 
 const (
-	JobTypeTrack    JobType = "track"
-	JobTypeAlbum    JobType = "album"
-	JobTypePlaylist JobType = "playlist"
-	JobTypeArtist   JobType = "artist"
-	JobTypeSyncFile JobType = "sync_file"
-	JobTypeSync     JobType = "sync"
-	JobTypeSyncHiFi JobType = "sync_hifi"
+	JobTypeTrack           JobType = "track"
+	JobTypeAlbum           JobType = "album"
+	JobTypePlaylist        JobType = "playlist"
+	JobTypeArtist          JobType = "artist"
+	JobTypeSyncFile        JobType = "sync_file"
+	JobTypeSyncMusicBrainz JobType = "sync_musicbrainz"
+	JobTypeSyncHiFi        JobType = "sync_hifi"
 )
 
 type JobStatus string

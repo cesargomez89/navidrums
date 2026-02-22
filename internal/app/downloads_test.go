@@ -78,15 +78,15 @@ func TestDownloadsService_EnqueueSyncMetadataJob(t *testing.T) {
 		t.Fatalf("EnqueueSyncMetadataJob failed: %v", err)
 	}
 
-	job, err := db.GetActiveJobBySourceID("sync_metadata_test", domain.JobTypeSync)
+	job, err := db.GetActiveJobBySourceID("sync_metadata_test", domain.JobTypeSyncMusicBrainz)
 	if err != nil {
 		t.Fatalf("GetActiveJobBySourceID failed: %v", err)
 	}
 	if job == nil {
 		t.Fatal("Expected job to be created")
 	}
-	if job.Type != domain.JobTypeSync {
-		t.Errorf("Expected job type %s, got %s", domain.JobTypeSync, job.Type)
+	if job.Type != domain.JobTypeSyncMusicBrainz {
+		t.Errorf("Expected job type %s, got %s", domain.JobTypeSyncMusicBrainz, job.Type)
 	}
 	if job.Status != domain.JobStatusQueued {
 		t.Errorf("Expected status %s, got %s", domain.JobStatusQueued, job.Status)

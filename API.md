@@ -29,10 +29,23 @@ All routes are server-rendered HTML endpoints using HTMX for partial updates.
 | POST | `/htmx/retry/{id}` | Retry a failed job |
 | POST | `/htmx/history/clear` | Clear finished jobs |
 | GET | `/htmx/downloads?q={query}` | Downloads browser fragment |
+| POST | `/htmx/downloads/sync` | Sync all completed tracks (enrich from Hi-Fi) |
+| DELETE | `/htmx/download/{id}` | Delete a downloaded track |
+| GET | `/htmx/track/{id}` | Track form fragment |
+| POST | `/htmx/track/{id}/save` | Save track metadata |
+| POST | `/htmx/track/{id}/sync` | Re-tag file with existing metadata |
+| POST | `/htmx/track/{id}/enrich` | Enrich track from MusicBrainz |
+| POST | `/htmx/track/{id}/enrich-hifi` | Enrich track from Hi-Fi + MusicBrainz |
 | GET | `/htmx/providers` | Get provider configuration |
 | POST | `/htmx/provider/set?url={url}` | Set active provider |
 | POST | `/htmx/provider/add?name={name}&url={url}` | Add custom provider |
 | POST | `/htmx/provider/remove?url={url}` | Remove custom provider |
+
+### Track Pages
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/track/{id}` | Track detail/edit page |
 
 ---
 

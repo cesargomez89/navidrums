@@ -236,8 +236,8 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 		w.processArtistJob(ctx, job)
 	case domain.JobTypeSyncFile:
 		w.processSyncFileJob(ctx, job)
-	case domain.JobTypeSync:
-		w.processSyncJob(ctx, job)
+	case domain.JobTypeSyncMusicBrainz:
+		w.processSyncMusicBrainzJob(ctx, job)
 	case domain.JobTypeSyncHiFi:
 		w.processSyncHiFiJob(ctx, job)
 	default:
@@ -869,7 +869,7 @@ func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
 	w.finalizeSyncJob(ctx, job, track, logger, "Sync Hi-Fi job completed")
 }
 
-func (w *Worker) processSyncJob(ctx context.Context, job *domain.Job) {
+func (w *Worker) processSyncMusicBrainzJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
 	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
