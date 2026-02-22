@@ -1,150 +1,16 @@
 package store
 
 import (
-	"database/sql"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
-type dbTrack struct {
-	CreatedAt      time.Time      `db:"created_at"`
-	UpdatedAt      time.Time      `db:"updated_at"`
-	LastVerifiedAt *time.Time     `db:"last_verified_at"`
-	CompletedAt    *time.Time     `db:"completed_at"`
-	Barcode        sql.NullString `db:"barcode"`
-	ISRC           string         `db:"isrc"`
-	AlbumID        string         `db:"album_id"`
-	AlbumArtist    string         `db:"album_artist"`
-	AlbumArtists   string         `db:"album_artists"`
-	ProviderID     string         `db:"provider_id"`
-	FileHash       string         `db:"file_hash"`
-	ETag           string         `db:"etag"`
-	Title          string         `db:"title"`
-	Artist         string         `db:"artist"`
-	Genre          string         `db:"genre"`
-	SubGenre       sql.NullString `db:"sub_genre"`
-	Label          string         `db:"label"`
-	KeyScale       string         `db:"key_scale"`
-	Copyright      string         `db:"copyright"`
-	Composer       string         `db:"composer"`
-	Artists        string         `db:"artists"`
-	FileExtension  string         `db:"file_extension"`
-	FilePath       string         `db:"file_path"`
-	AlbumArtURL    string         `db:"album_art_url"`
-	Lyrics         string         `db:"lyrics"`
-	Subtitles      string         `db:"subtitles"`
-	ParentJobID    string         `db:"parent_job_id"`
-	Album          string         `db:"album"`
-	KeyName        string         `db:"key_name"`
-	ReleaseDate    string         `db:"release_date"`
-	Error          string         `db:"error"`
-	Version        string         `db:"version"`
-	Description    string         `db:"description"`
-	URL            string         `db:"url"`
-	AudioQuality   string         `db:"audio_quality"`
-	AudioModes     string         `db:"audio_modes"`
-	Status         string         `db:"status"`
-	RecordingID    sql.NullString `db:"recording_id"`
-	ReleaseID      sql.NullString `db:"release_id"`
-	CatalogNumber  sql.NullString `db:"catalog_number"`
-	ReleaseType    sql.NullString `db:"release_type"`
-	ID             int            `db:"id"`
-	ReplayGain     float64        `db:"replay_gain"`
-	Peak           float64        `db:"peak"`
-	BPM            int            `db:"bpm"`
-	Duration       int            `db:"duration"`
-	Year           int            `db:"year"`
-	TotalDiscs     int            `db:"total_discs"`
-	TotalTracks    int            `db:"total_tracks"`
-	DiscNumber     int            `db:"disc_number"`
-	TrackNumber    int            `db:"track_number"`
-	Compilation    bool           `db:"compilation"`
-	Explicit       bool           `db:"explicit"`
-}
-
-func (d *dbTrack) toDomain() *domain.Track {
-	track := &domain.Track{
-		ID:            d.ID,
-		ProviderID:    d.ProviderID,
-		Title:         d.Title,
-		Artist:        d.Artist,
-		Album:         d.Album,
-		AlbumID:       d.AlbumID,
-		AlbumArtist:   d.AlbumArtist,
-		Genre:         d.Genre,
-		SubGenre:      d.SubGenre.String,
-		Label:         d.Label,
-		ISRC:          d.ISRC,
-		Copyright:     d.Copyright,
-		Composer:      d.Composer,
-		AlbumArtURL:   d.AlbumArtURL,
-		Status:        domain.TrackStatus(d.Status),
-		CreatedAt:     d.CreatedAt,
-		UpdatedAt:     d.UpdatedAt,
-		TrackNumber:   d.TrackNumber,
-		DiscNumber:    d.DiscNumber,
-		TotalTracks:   d.TotalTracks,
-		TotalDiscs:    d.TotalDiscs,
-		Year:          d.Year,
-		Duration:      d.Duration,
-		Explicit:      d.Explicit,
-		Compilation:   d.Compilation,
-		BPM:           d.BPM,
-		ReplayGain:    d.ReplayGain,
-		Peak:          d.Peak,
-		Key:           d.KeyName,
-		KeyScale:      d.KeyScale,
-		Version:       d.Version,
-		Description:   d.Description,
-		URL:           d.URL,
-		AudioQuality:  d.AudioQuality,
-		AudioModes:    d.AudioModes,
-		ReleaseDate:   d.ReleaseDate,
-		Barcode:       d.Barcode.String,
-		CatalogNumber: d.CatalogNumber.String,
-		ReleaseType:   d.ReleaseType.String,
-		RecordingID:   d.RecordingID.String,
-		ReleaseID:     d.ReleaseID.String,
-		Error:         d.Error,
-		ParentJobID:   d.ParentJobID,
-		FilePath:      d.FilePath,
-		FileExtension: d.FileExtension,
-		Lyrics:        d.Lyrics,
-		Subtitles:     d.Subtitles,
-		ETag:          d.ETag,
-		FileHash:      d.FileHash,
-	}
-
-	if d.Artists != "" {
-		_ = json.Unmarshal([]byte(d.Artists), &track.Artists)
-	}
-	if d.AlbumArtists != "" {
-		_ = json.Unmarshal([]byte(d.AlbumArtists), &track.AlbumArtists)
-	}
-	if d.CompletedAt != nil {
-		track.CompletedAt = d.CompletedAt
-	}
-	if d.LastVerifiedAt != nil {
-		track.LastVerifiedAt = d.LastVerifiedAt
-	}
-
-	return track
-}
-
 func (db *DB) CreateTrack(track *domain.Track) error {
-	artistsJSON, err := json.Marshal(track.Artists)
-	if err != nil {
-		return fmt.Errorf("failed to marshal artists: %w", err)
-	}
-	albumArtistsJSON, err := json.Marshal(track.AlbumArtists)
-	if err != nil {
-		return fmt.Errorf("failed to marshal album artists: %w", err)
-	}
-
 	query := `INSERT INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists,
 		track_number, disc_number, total_tracks, total_discs,
@@ -154,18 +20,18 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		barcode, catalog_number, release_type, release_id, recording_id,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (
+		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists,
+		:track_number, :disc_number, :total_tracks, :total_discs,
+		:year, :genre, :sub_genre, :label, :isrc, :copyright, :composer,
+		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
+		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
+		:barcode, :catalog_number, :release_type, :release_id, :recording_id,
+		:status, :error, :parent_job_id, :file_path, :file_extension,
+		:created_at, :updated_at, :etag, :file_hash, :last_verified_at
+	)`
 
-	result, err := db.Exec(query,
-		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
-		track.TrackNumber, track.DiscNumber, track.TotalTracks, track.TotalDiscs,
-		track.Year, track.Genre, track.SubGenre, track.Label, track.ISRC, track.Copyright, track.Composer,
-		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
-		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
-		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID, track.RecordingID,
-		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
-		track.CreatedAt, track.UpdatedAt, track.ETag, track.FileHash, track.LastVerifiedAt,
-	)
+	result, err := db.NamedExec(query, track)
 	if err != nil {
 		return fmt.Errorf("failed to create track: %w", err)
 	}
@@ -182,64 +48,42 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 func (db *DB) GetTrackByID(id int) (*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE id = ?`
 
-	var t dbTrack
-	err := db.Get(&t, query, id)
+	var track domain.Track
+	err := db.Get(&track, query, id)
 	if err != nil {
 		return nil, err
 	}
-	return t.toDomain(), nil
+	return &track, nil
 }
 
 func (db *DB) GetTrackByProviderID(providerID string) (*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE provider_id = ?`
 
-	var t dbTrack
-	err := db.Get(&t, query, providerID)
+	var track domain.Track
+	err := db.Get(&track, query, providerID)
 	if err != nil {
 		return nil, err
 	}
-	return t.toDomain(), nil
+	return &track, nil
 }
 
 func (db *DB) UpdateTrack(track *domain.Track) error {
-	artistsJSON, err := json.Marshal(track.Artists)
-	if err != nil {
-		return fmt.Errorf("failed to marshal artists: %w", err)
-	}
-	albumArtistsJSON, err := json.Marshal(track.AlbumArtists)
-	if err != nil {
-		return fmt.Errorf("failed to marshal album artists: %w", err)
-	}
-
 	query := `UPDATE tracks SET
-		provider_id = ?, title = ?, artist = ?, artists = ?, album = ?, album_id = ?, album_artist = ?, album_artists = ?,
-		track_number = ?, disc_number = ?, total_tracks = ?, total_discs = ?,
-		year = ?, genre = ?, sub_genre = ?, label = ?, isrc = ?, copyright = ?, composer = ?,
-		duration = ?, explicit = ?, compilation = ?, album_art_url = ?, lyrics = ?, subtitles = ?,
-		bpm = ?, key_name = ?, key_scale = ?, replay_gain = ?, peak = ?, version = ?, description = ?, url = ?, audio_quality = ?, audio_modes = ?, release_date = ?,
-		barcode = ?, catalog_number = ?, release_type = ?, release_id = ?, recording_id = ?,
-		status = ?, error = ?, parent_job_id = ?, file_path = ?, file_extension = ?,
-		updated_at = ?, etag = ?, file_hash = ?, completed_at = ?, last_verified_at = ?
-	WHERE id = ?`
+		provider_id = :provider_id, title = :title, artist = :artist, artists = :artists,
+		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists,
+		track_number = :track_number, disc_number = :disc_number, total_tracks = :total_tracks, total_discs = :total_discs,
+		year = :year, genre = :genre, sub_genre = :sub_genre, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
+		duration = :duration, explicit = :explicit, compilation = :compilation, album_art_url = :album_art_url, lyrics = :lyrics, subtitles = :subtitles,
+		bpm = :bpm, key_name = :key_name, key_scale = :key_scale, replay_gain = :replay_gain, peak = :peak,
+		version = :version, description = :description, url = :url, audio_quality = :audio_quality, audio_modes = :audio_modes, release_date = :release_date,
+		barcode = :barcode, catalog_number = :catalog_number, release_type = :release_type, release_id = :release_id, recording_id = :recording_id,
+		status = :status, error = :error, parent_job_id = :parent_job_id, file_path = :file_path, file_extension = :file_extension,
+		updated_at = :updated_at, etag = :etag, file_hash = :file_hash, completed_at = :completed_at, last_verified_at = :last_verified_at
+	WHERE id = :id`
 
-	var completedAt, lastVerifiedAt interface{}
-	if track.CompletedAt != nil {
-		completedAt = *track.CompletedAt
-	}
-	if track.LastVerifiedAt != nil {
-		lastVerifiedAt = *track.LastVerifiedAt
-	}
+	track.UpdatedAt = time.Now()
 
-	result, err := db.Exec(query,
-		track.ProviderID, track.Title, track.Artist, string(artistsJSON), track.Album, track.AlbumID, track.AlbumArtist, string(albumArtistsJSON),
-		track.TrackNumber, track.DiscNumber, track.TotalTracks, track.TotalDiscs,
-		track.Year, track.Genre, track.SubGenre, track.Label, track.ISRC, track.Copyright, track.Composer,
-		track.Duration, track.Explicit, track.Compilation, track.AlbumArtURL, track.Lyrics, track.Subtitles,
-		track.BPM, track.Key, track.KeyScale, track.ReplayGain, track.Peak, track.Version, track.Description, track.URL, track.AudioQuality, track.AudioModes, track.ReleaseDate,
-		track.Barcode, track.CatalogNumber, track.ReleaseType, track.ReleaseID, track.RecordingID,
-		track.Status, track.Error, track.ParentJobID, track.FilePath, track.FileExtension,
-		time.Now(), track.ETag, track.FileHash, completedAt, lastVerifiedAt, track.ID,
-	)
+	result, err := db.NamedExec(query, track)
 	if err != nil {
 		return fmt.Errorf("failed to update track: %w", err)
 	}
@@ -343,7 +187,8 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 
 func (db *DB) MarkTrackCompleted(id int, filePath, fileHash string) error {
 	query := `UPDATE tracks SET status = ?, file_path = ?, completed_at = ?, file_hash = ?, last_verified_at = ?, updated_at = ? WHERE id = ?`
-	result, err := db.Exec(query, domain.TrackStatusCompleted, filePath, time.Now(), fileHash, time.Now(), time.Now(), id)
+	now := time.Now()
+	result, err := db.Exec(query, domain.TrackStatusCompleted, filePath, now, fileHash, now, now, id)
 	if err != nil {
 		return err
 	}
@@ -375,47 +220,17 @@ func (db *DB) MarkTrackFailed(id int, errorMsg string) error {
 
 func (db *DB) ListTracks(limit int) ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks ORDER BY created_at DESC LIMIT ?`
-
-	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query, limit)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	return selectTracks(db, query, limit)
 }
 
 func (db *DB) ListTracksByStatus(status domain.TrackStatus, limit int) ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE status = ? ORDER BY created_at DESC LIMIT ?`
-
-	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query, status, limit)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	return selectTracks(db, query, status, limit)
 }
 
 func (db *DB) ListTracksByParentJobID(parentJobID string) ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE parent_job_id = ? ORDER BY track_number ASC`
-
-	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query, parentJobID)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	return selectTracks(db, query, parentJobID)
 }
 
 func (db *DB) ListCompletedTracks(limit int) ([]*domain.Track, error) {
@@ -425,17 +240,7 @@ func (db *DB) ListCompletedTracks(limit int) ([]*domain.Track, error) {
 func (db *DB) SearchTracks(q string, limit int) ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? ORDER BY created_at DESC LIMIT ?`
 	searchTerm := "%" + q + "%"
-
-	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query, searchTerm, searchTerm, searchTerm, limit)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	return selectTracks(db, query, searchTerm, searchTerm, searchTerm, limit)
 }
 
 func (db *DB) DeleteTrack(id int) error {
@@ -453,12 +258,12 @@ func (db *DB) IsTrackDownloaded(providerID string) (bool, error) {
 func (db *DB) GetDownloadedTrack(providerID string) (*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE provider_id = ? AND status = 'completed' AND file_path IS NOT NULL LIMIT 1`
 
-	var t dbTrack
-	err := db.Get(&t, query, providerID)
+	var track domain.Track
+	err := db.Get(&track, query, providerID)
 	if err != nil {
 		return nil, err
 	}
-	return t.toDomain(), nil
+	return &track, nil
 }
 
 func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
@@ -487,45 +292,21 @@ func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
 
 func (db *DB) FindInterruptedTracks() ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE status IN ('downloading', 'processing')`
-
-	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	return selectTracks(db, query)
 }
 
 func (db *DB) ListCompletedTracksWithISRC() ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE status = 'completed' AND isrc != '' ORDER BY created_at DESC`
-
-	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	return selectTracks(db, query)
 }
 
 func (db *DB) ListAllCompletedTracks() ([]*domain.Track, error) {
 	query := `SELECT * FROM tracks WHERE status = ? ORDER BY created_at DESC`
+	return selectTracks(db, query, domain.TrackStatusCompleted)
+}
 
+func selectTracks(q sqlx.Queryer, query string, args ...interface{}) ([]*domain.Track, error) {
 	var tracks []*domain.Track
-	var rows []dbTrack
-	err := db.Select(&rows, query, domain.TrackStatusCompleted)
-	if err != nil {
-		return nil, err
-	}
-	for i := range rows {
-		tracks = append(tracks, rows[i].toDomain())
-	}
-	return tracks, nil
+	err := sqlx.Select(q, &tracks, query, args...)
+	return tracks, err
 }
