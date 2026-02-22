@@ -723,11 +723,15 @@ func (w *Worker) createTracksAndJobs(parentJobID string, catalogTracks []domain.
 }
 
 func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track, logger *slog.Logger) error {
-	if track.ISRC == "" && track.RecordingID == "" {
+	recordingID := ""
+	if track.RecordingID != nil {
+		recordingID = *track.RecordingID
+	}
+	if track.ISRC == "" && recordingID == "" {
 		return nil
 	}
 
-	meta, mbErr := w.musicBrainzClient.GetRecording(ctx, track.RecordingID, track.ISRC, track.Album)
+	meta, mbErr := w.musicBrainzClient.GetRecording(ctx, recordingID, track.ISRC, track.Album)
 	if mbErr != nil {
 		return mbErr
 	}
@@ -735,8 +739,8 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 		return nil
 	}
 
-	if meta.RecordingID != "" && track.RecordingID == "" {
-		track.RecordingID = meta.RecordingID
+	if meta.RecordingID != "" && (track.RecordingID == nil || *track.RecordingID == "") {
+		track.RecordingID = &meta.RecordingID
 	}
 	if track.Artist == "" && meta.Artist != "" {
 		track.Artist = meta.Artist
@@ -779,7 +783,7 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	}
 
 	if track.Genre == "" {
-		result, genreErr := w.musicBrainzClient.GetGenres(ctx, track.RecordingID, track.ISRC)
+		result, genreErr := w.musicBrainzClient.GetGenres(ctx, recordingID, track.ISRC)
 		if genreErr != nil {
 			logger.Warn("Failed to fetch genre from MusicBrainz", "isrc", track.ISRC, "error", genreErr)
 		} else {
