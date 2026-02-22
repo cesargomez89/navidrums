@@ -136,9 +136,6 @@ func (r APIAlbumTrackItem) ToDomain(album *domain.Album) domain.CatalogTrack {
 		Genre:          album.Genre,
 		Label:          album.Label,
 	}
-	if r.Version != nil {
-		track.Version = *r.Version
-	}
 	return track
 }
 
@@ -252,9 +249,6 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 		AudioModes:     audioModes,
 		Label:          data.Album.Label,
 		Genre:          data.Album.Genre,
-	}
-	if data.Version != nil {
-		track.Version = *data.Version
 	}
 
 	return track

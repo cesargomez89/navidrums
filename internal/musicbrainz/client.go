@@ -75,7 +75,7 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) ([]string, er
 	return genres, nil
 }
 
-func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*RecordingMetadata, error) {
+func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName string) (*RecordingMetadata, error) {
 	if isrc == "" {
 		return nil, nil
 	}
@@ -132,7 +132,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string) (*Recordin
 		}
 	}
 
-	rel := selectBestRelease(rec.Releases)
+	rel := selectBestRelease(rec.Releases, albumName)
 	if rel == nil {
 		return meta, nil
 	}
@@ -170,33 +170,34 @@ func (c *Client) throttle() {
 	c.lastRequest = time.Now()
 }
 
-func selectBestRelease(releases []release) *release {
+func selectBestRelease(releases []release, albumName string) *release {
 	if len(releases) == 0 {
 		return nil
 	}
 
-	typeRank := map[string]int{
-		"Album":  3,
-		"EP":     2,
-		"Single": 1,
+	normalize := func(s string) string {
+		s = strings.ToLower(s)
+		s = strings.ReplaceAll(s, " ", "")
+		s = strings.ReplaceAll(s, "-", "")
+		s = strings.ReplaceAll(s, "_", "")
+		s = strings.ReplaceAll(s, ",", "")
+		s = strings.ReplaceAll(s, "(", "")
+		s = strings.ReplaceAll(s, ")", "")
+		return s
 	}
 
-	var best *release
-	var bestRank int
+	albumNorm := normalize(albumName)
 
 	for i := range releases {
 		r := &releases[i]
-		rank := typeRank[r.ReleaseGroup.PrimaryType]
-		if rank > bestRank {
-			bestRank = rank
-			best = r
+		releaseNorm := normalize(r.Title)
+		if albumNorm != "" && releaseNorm != "" &&
+			(strings.Contains(releaseNorm, albumNorm) || strings.Contains(albumNorm, releaseNorm)) {
+			return r
 		}
 	}
 
-	if best == nil {
-		best = &releases[0]
-	}
-	return best
+	return &releases[0]
 }
 
 func extractGenres(recordings []recording) []string {

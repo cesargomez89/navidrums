@@ -697,7 +697,7 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 		return
 	}
 
-	meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC)
+	meta, mbErr := w.musicBrainzClient.GetRecordingByISRC(ctx, track.ISRC, track.Album)
 	if mbErr != nil {
 		logger.Warn("Failed to fetch recording from MusicBrainz", "isrc", track.ISRC, "error", mbErr)
 		return
@@ -721,9 +721,6 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	if track.Year == 0 && meta.Year > 0 {
 		track.Year = meta.Year
 	}
-	if track.ReleaseDate == "" && meta.ReleaseDate != "" {
-		track.ReleaseDate = meta.ReleaseDate
-	}
 	if track.Barcode == "" && meta.Barcode != "" {
 		track.Barcode = meta.Barcode
 	}
@@ -733,7 +730,7 @@ func (w *Worker) enrichFromMusicBrainz(ctx context.Context, track *domain.Track,
 	if track.ReleaseType == "" && meta.ReleaseType != "" {
 		track.ReleaseType = meta.ReleaseType
 	}
-	if track.ReleaseID == "" && meta.ReleaseID != "" {
+	if meta.ReleaseID != "" {
 		track.ReleaseID = meta.ReleaseID
 	}
 	if len(track.ArtistIDs) == 0 && len(meta.ArtistIDs) > 0 {

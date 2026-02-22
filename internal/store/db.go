@@ -54,6 +54,14 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     3,
+		description: "Clear version field (no longer used)",
+		up: func(db *sqlx.DB) error {
+			_, err := db.Exec("UPDATE tracks SET version = ''")
+			return err
+		},
+	},
 }
 
 type DB struct {
