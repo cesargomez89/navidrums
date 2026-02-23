@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/musicbrainz"
@@ -83,6 +84,10 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 	}
 	if track.SubGenre == "" && meta.SubGenre != "" {
 		track.SubGenre = meta.SubGenre
+	}
+
+	if strings.EqualFold(track.Genre, track.SubGenre) {
+		track.SubGenre = ""
 	}
 
 	return nil

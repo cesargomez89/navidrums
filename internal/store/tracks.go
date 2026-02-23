@@ -11,6 +11,8 @@ import (
 )
 
 func (db *DB) CreateTrack(track *domain.Track) error {
+	track.Normalize()
+
 	query := `INSERT INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists,
 		track_number, disc_number, total_tracks, total_discs,
@@ -71,6 +73,8 @@ func (db *DB) GetTrackByProviderID(providerID string) (*domain.Track, error) {
 }
 
 func (db *DB) UpdateTrack(track *domain.Track) error {
+	track.Normalize()
+
 	query := `UPDATE tracks SET
 		provider_id = :provider_id, title = :title, artist = :artist, artists = :artists,
 		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists,
@@ -120,6 +124,14 @@ func (db *DB) UpdateTrackStatus(id int, status domain.TrackStatus, filePath stri
 func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 	if len(updates) == 0 {
 		return nil
+	}
+
+	if g, ok := updates["genre"].(string); ok {
+		if sg, ok := updates["sub_genre"].(string); ok {
+			if strings.EqualFold(g, sg) {
+				updates["sub_genre"] = ""
+			}
+		}
 	}
 
 	allowedColumns := map[string]bool{

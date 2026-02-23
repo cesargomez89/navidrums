@@ -65,6 +65,12 @@ func (r *TrackUpdateRequest) Validate() []ValidationError {
 func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	updates := make(map[string]interface{})
 
+	if r.Genre != nil && *r.Genre != "" {
+		updates["genre"] = *r.Genre
+	}
+	if r.SubGenre != nil && *r.SubGenre != "" {
+		updates["sub_genre"] = *r.SubGenre
+	}
 	if r.Title != nil && *r.Title != "" {
 		updates["title"] = *r.Title
 	}
@@ -76,12 +82,6 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	}
 	if r.AlbumArtist != nil && *r.AlbumArtist != "" {
 		updates["album_artist"] = *r.AlbumArtist
-	}
-	if r.Genre != nil && *r.Genre != "" {
-		updates["genre"] = *r.Genre
-	}
-	if r.SubGenre != nil && *r.SubGenre != "" {
-		updates["sub_genre"] = *r.SubGenre
 	}
 	if r.Label != nil && *r.Label != "" {
 		updates["label"] = *r.Label

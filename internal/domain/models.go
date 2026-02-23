@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"strings"
 	"time"
 )
 
@@ -108,6 +109,13 @@ type Track struct { //nolint:govet // field ordering prioritizes readability ove
 	LastVerifiedAt *time.Time  `json:"last_verified_at,omitempty" db:"last_verified_at"`
 	ArtistIDs      []string    `json:"artist_ids,omitempty" db:"-"`
 	AlbumArtistIDs []string    `json:"album_artist_ids,omitempty" db:"-"`
+}
+
+// Normalize ensures the track data is consistent (e.g., removing redundant subgenres)
+func (t *Track) Normalize() {
+	if strings.EqualFold(t.Genre, t.SubGenre) {
+		t.SubGenre = ""
+	}
 }
 
 // CatalogTrack represents a track from the provider/catalog
