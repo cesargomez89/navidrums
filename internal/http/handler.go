@@ -63,6 +63,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/downloads", h.DownloadsPage)
 	r.Get("/htmx/downloads", h.DownloadsHTMX)
 	r.Post("/htmx/downloads/sync", h.SyncAllHTMX)
+	r.Post("/htmx/downloads/bulk-delete", h.BulkDeleteHTMX)
+	r.Post("/htmx/downloads/bulk-sync", h.BulkSyncHTMX)
+	r.Post("/htmx/downloads/bulk-genre", h.BulkUpdateGenreHTMX)
 	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
 
 	r.Get("/track/{id}", h.TrackPage)

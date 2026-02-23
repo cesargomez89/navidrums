@@ -259,6 +259,11 @@ func (db *DB) SearchTracks(q string, limit int) ([]*domain.Track, error) {
 	return selectTracks(db, query, searchTerm, searchTerm, searchTerm, limit)
 }
 
+func (db *DB) ListCompletedTracksNoGenre(limit int) ([]*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = 'completed' AND (genre IS NULL OR TRIM(genre) = '') ORDER BY created_at DESC LIMIT ?`
+	return selectTracks(db, query, limit)
+}
+
 func (db *DB) DeleteTrack(id int) error {
 	_, err := db.Exec("DELETE FROM tracks WHERE id = ?", id)
 	return err

@@ -390,12 +390,16 @@ func (h *Handler) DownloadsPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
+	filter := r.URL.Query().Get("filter")
 	var tracks []*domain.Track
 	var err error
 
-	if query != "" {
+	switch {
+	case query != "":
 		tracks, err = h.DownloadsService.SearchDownloads(query)
-	} else {
+	case filter != "":
+		tracks, err = h.DownloadsService.FilterDownloads(filter)
+	default:
 		tracks, err = h.DownloadsService.ListDownloads()
 	}
 	if err != nil {
@@ -406,6 +410,7 @@ func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
 
 	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
 		"Downloads": tracks,
+		"Filter":    filter,
 	})
 }
 
@@ -415,6 +420,90 @@ func (h *Handler) DeleteDownloadHTMX(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to delete download", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	h.DownloadsHTMX(w, r)
+}
+
+func (h *Handler) BulkDeleteHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	ids := r.Form["ids[]"]
+	for _, id := range ids {
+		if err := h.DownloadsService.DeleteDownload(id); err != nil {
+			h.Logger.Error("Failed to delete download", "id", id, "error", err)
+		}
+	}
+
+	h.DownloadsHTMX(w, r)
+}
+
+func (h *Handler) BulkSyncHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	ids := r.Form["ids[]"]
+	count := 0
+	for _, id := range ids {
+		if err := h.DownloadsService.EnqueueSyncMetadataJob(id); err != nil {
+			h.Logger.Error("Failed to enqueue sync job", "id", id, "error", err)
+			continue
+		}
+		count++
+	}
+
+	var tracks []*domain.Track
+	query := r.URL.Query().Get("q")
+	if query != "" {
+		tracks, _ = h.DownloadsService.SearchDownloads(query)
+	} else {
+		tracks, _ = h.DownloadsService.ListDownloads()
+	}
+
+	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
+		"Downloads":    tracks,
+		"SyncEnqueued": count,
+	})
+}
+
+func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	ids := r.Form["ids[]"]
+	genre := r.FormValue("genre")
+	if genre == "" {
+		http.Error(w, "genre is required", http.StatusBadRequest)
+		return
+	}
+
+	for _, providerID := range ids {
+		track, err := h.DownloadsService.GetDownloadByProviderID(providerID)
+		if err != nil || track == nil {
+			h.Logger.Error("Failed to get track for genre update", "provider_id", providerID, "error", err)
+			continue
+		}
+
+		updates := map[string]interface{}{"genre": genre}
+		if domain.IsSameGenre(genre, track.SubGenre) {
+			updates["sub_genre"] = ""
+		}
+
+		if err := h.DownloadsService.UpdateTrackPartial(track.ID, updates); err != nil {
+			h.Logger.Error("Failed to update genre", "track_id", track.ID, "error", err)
+			continue
+		}
+
+		if err := h.DownloadsService.EnqueueSyncFileJob(providerID); err != nil {
+			h.Logger.Error("Failed to enqueue sync job", "provider_id", providerID, "error", err)
+		}
 	}
 
 	h.DownloadsHTMX(w, r)

@@ -32,12 +32,25 @@ func (s *DownloadsService) SearchDownloads(query string) ([]*domain.Track, error
 	return s.Repo.SearchTracks(query, defaultLimit)
 }
 
+func (s *DownloadsService) FilterDownloads(filter string) ([]*domain.Track, error) {
+	switch filter {
+	case "no_genre":
+		return s.Repo.ListCompletedTracksNoGenre(defaultLimit)
+	default:
+		return s.Repo.ListCompletedTracks(defaultLimit)
+	}
+}
+
 func (s *DownloadsService) GetTrackByID(id int) (*domain.Track, error) {
 	return s.Repo.GetTrackByID(id)
 }
 
 func (s *DownloadsService) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 	return s.Repo.UpdateTrackPartial(id, updates)
+}
+
+func (s *DownloadsService) GetDownloadByProviderID(providerID string) (*domain.Track, error) {
+	return s.Repo.GetDownloadedTrack(providerID)
 }
 
 func (s *DownloadsService) EnqueueSyncFileJob(providerID string) error {
