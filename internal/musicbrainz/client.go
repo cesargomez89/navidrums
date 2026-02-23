@@ -221,7 +221,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		return nil, nil
 	}
 
-	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists+tags+isrcs+labels&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists+tags+isrcs&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -318,7 +318,7 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 		return nil, nil
 	}
 
-	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags+isrcs+labels&fmt=json", c.baseURL, url.PathEscape(mbid))
+	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags+isrcs&fmt=json", c.baseURL, url.PathEscape(mbid))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
