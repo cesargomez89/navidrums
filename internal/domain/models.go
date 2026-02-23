@@ -96,6 +96,7 @@ type Track struct { //nolint:govet // field ordering prioritizes readability ove
 	ReleaseType    string      `json:"release_type,omitempty" db:"release_type"`
 	ReleaseID      string      `json:"release_id,omitempty" db:"release_id"`
 	RecordingID    *string     `json:"recording_id,omitempty" db:"recording_id"`
+	Tags           StringSlice `json:"tags,omitempty" db:"tags"`
 	Status         TrackStatus `json:"status" db:"status"`
 	Error          string      `json:"error,omitempty" db:"error"`
 	ParentJobID    string      `json:"parent_job_id" db:"parent_job_id"`

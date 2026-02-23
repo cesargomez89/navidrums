@@ -116,6 +116,20 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     8,
+		description: "Add tags column for MusicBrainz tags",
+		up: func(tx *sqlx.Tx) error {
+			if _, err := tx.Exec("ALTER TABLE tracks ADD COLUMN tags TEXT"); err != nil {
+				if !strings.Contains(err.Error(), "duplicate column name") {
+					return err
+				}
+			}
+			// Initialize with empty JSON array to avoid scanning NULLs
+			_, err := tx.Exec("UPDATE tracks SET tags = '[]' WHERE tags IS NULL")
+			return err
+		},
+	},
 }
 
 type dbOps interface {

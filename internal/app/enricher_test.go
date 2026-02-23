@@ -38,46 +38,129 @@ func (m *mockMBClient) GetGenreMap() map[string]string {
 func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	mockClient := &mockMBClient{
-		recording: &musicbrainz.RecordingMetadata{
-			Artist:   "MB Artist",
-			Title:    "MB Title",
-			Year:     2023,
-			Genre:    "Alternative Rock",
-			SubGenre: "Indie",
-		},
-		genres: &musicbrainz.GenreResult{
-			MainGenre: "Alternative Rock",
-			SubGenre:  "Indie",
-		},
-	}
+	t.Run("success_all_fields", func(t *testing.T) {
+		mbID := "mb-recording-124"
+		mockClient := &mockMBClient{
+			recording: &musicbrainz.RecordingMetadata{
+				RecordingID:    mbID,
+				Artist:         "MB Artist",
+				Artists:        []string{"MB Artist", "MB Featuring"},
+				ArtistIDs:      []string{"a1", "a2"},
+				Title:          "MB Title",
+				Duration:       180,
+				Year:           2023,
+				Genre:          "Alternative Rock",
+				SubGenre:       "Indie",
+				Barcode:        "1234567890",
+				CatalogNumber:  "CAT123",
+				ReleaseID:      "rel-123",
+				ReleaseType:    "album",
+				Label:          "MB Label",
+				AlbumArtists:   []string{"MB Album Artist"},
+				AlbumArtistIDs: []string{"aa1"},
+				Composer:       "MB Composer",
+				Tags:           []string{"tag1", "tag2"},
+			},
+		}
 
-	enricher := app.NewMetadataEnricher(mockClient)
+		enricher := app.NewMetadataEnricher(mockClient)
+		track := &domain.Track{
+			ISRC: "USABC1234567",
+		}
 
-	track := &domain.Track{
-		ISRC:   "USABC1234567",
-		Artist: "Original Artist", // Should not be overwritten
-		Title:  "",                // Should be filled
-	}
+		err := enricher.EnrichTrack(context.Background(), track, logger)
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
 
-	err := enricher.EnrichTrack(context.Background(), track, logger)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
+		// Verify fields
+		if *track.RecordingID != mbID {
+			t.Errorf("RecordingID mismatch")
+		}
+		if track.Artist != "MB Artist" {
+			t.Errorf("Artist mismatch")
+		}
+		if len(track.Artists) != 2 {
+			t.Errorf("Artists length mismatch")
+		}
+		if track.Title != "MB Title" {
+			t.Errorf("Title mismatch")
+		}
+		if track.Year != 2023 {
+			t.Errorf("Year mismatch")
+		}
+		if track.Genre != "Alternative Rock" {
+			t.Errorf("Genre mismatch")
+		}
+		if track.SubGenre != "Indie" {
+			t.Errorf("SubGenre mismatch")
+		}
+		if track.ReleaseID != "rel-123" {
+			t.Errorf("ReleaseID mismatch")
+		}
+	})
 
-	if track.Artist != "Original Artist" {
-		t.Errorf("Expected Artist to be Original Artist, got %s", track.Artist)
-	}
+	t.Run("no_id_isrc_skips", func(t *testing.T) {
+		mockClient := &mockMBClient{}
+		enricher := app.NewMetadataEnricher(mockClient)
+		track := &domain.Track{}
 
-	if track.Title != "MB Title" {
-		t.Errorf("Expected Title to be filled from MB, got %s", track.Title)
-	}
+		err := enricher.EnrichTrack(context.Background(), track, logger)
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+	})
 
-	if track.Year != 2023 {
-		t.Errorf("Expected Year to be filled from MB, got %d", track.Year)
-	}
+	t.Run("dont_overwrite_existing", func(t *testing.T) {
+		mockClient := &mockMBClient{
+			recording: &musicbrainz.RecordingMetadata{
+				Artist: "MB Artist",
+				Year:   2023,
+				Genre:  "Metal",
+			},
+		}
 
-	if track.Genre != "Alternative Rock" {
-		t.Errorf("Expected Genre to be filled from MB genres, got %s", track.Genre)
-	}
+		enricher := app.NewMetadataEnricher(mockClient)
+		track := &domain.Track{
+			ISRC:   "USABC1234567",
+			Artist: "Keep Me",
+			Year:   2000,
+			Genre:  "Keep Me Too",
+		}
+
+		_ = enricher.EnrichTrack(context.Background(), track, logger)
+
+		if track.Artist != "Keep Me" {
+			t.Errorf("Overwrote Artist")
+		}
+		if track.Year != 2000 {
+			t.Errorf("Overwrote Year")
+		}
+		if track.Genre != "Keep Me Too" {
+			t.Errorf("Overwrote Genre")
+		}
+	})
+
+	t.Run("subgenre_dedup", func(t *testing.T) {
+		mockClient := &mockMBClient{
+			recording: &musicbrainz.RecordingMetadata{
+				Genre:    "Alternative Rock",
+				SubGenre: "alternative-rock ", // same after normalization
+			},
+		}
+
+		enricher := app.NewMetadataEnricher(mockClient)
+		track := &domain.Track{
+			ISRC: "USABC1234567",
+		}
+
+		_ = enricher.EnrichTrack(context.Background(), track, logger)
+
+		if track.Genre != "Alternative Rock" {
+			t.Errorf("Genre mismatch")
+		}
+		if track.SubGenre != "" {
+			t.Errorf("Expected SubGenre to be cleared, got %q", track.SubGenre)
+		}
+	})
 }

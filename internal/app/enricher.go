@@ -62,6 +62,12 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 	if track.ReleaseType == "" && meta.ReleaseType != "" {
 		track.ReleaseType = meta.ReleaseType
 	}
+	if track.ISRC == "" && meta.ISRC != "" {
+		track.ISRC = meta.ISRC
+	}
+	if track.Label == "" && meta.Label != "" {
+		track.Label = meta.Label
+	}
 	if meta.ReleaseID != "" {
 		track.ReleaseID = meta.ReleaseID
 	}
@@ -83,6 +89,9 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 	}
 	if track.SubGenre == "" && meta.SubGenre != "" {
 		track.SubGenre = meta.SubGenre
+	}
+	if len(track.Tags) == 0 && len(meta.Tags) > 0 {
+		track.Tags = meta.Tags
 	}
 
 	if domain.IsSameGenre(track.Genre, track.SubGenre) {

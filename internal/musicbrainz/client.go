@@ -221,7 +221,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		return nil, nil
 	}
 
-	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists+tags&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists+tags+isrcs+labels&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -260,6 +260,12 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		Duration:    rec.Length,
 		Genre:       mainGenre,
 		SubGenre:    subGenre,
+		Tags:        extractTags(result.Recordings),
+		ISRC:        isrc,
+	}
+
+	if meta.ISRC == "" && len(rec.ISRCs) > 0 {
+		meta.ISRC = rec.ISRCs[0]
 	}
 
 	if len(rec.ArtistCredit) > 0 {
@@ -286,6 +292,9 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 	meta.Barcode = rel.Barcode
 	meta.CatalogNumber = rel.CatalogNumber
 	meta.ReleaseType = rel.ReleaseGroup.PrimaryType
+	if len(rel.LabelInfo) > 0 {
+		meta.Label = rel.LabelInfo[0].Label.Name
+	}
 	if rel.Date != "" && len(rel.Date) >= 4 {
 		_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
 	}
@@ -309,7 +318,7 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 		return nil, nil
 	}
 
-	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags&fmt=json", c.baseURL, url.PathEscape(mbid))
+	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags+isrcs+labels&fmt=json", c.baseURL, url.PathEscape(mbid))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -347,6 +356,11 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 		Duration:    rec.Length,
 		Genre:       mainGenre,
 		SubGenre:    subGenre,
+		Tags:        extractTags([]recording{rec}),
+	}
+
+	if len(rec.ISRCs) > 0 {
+		meta.ISRC = rec.ISRCs[0]
 	}
 
 	if len(rec.ArtistCredit) > 0 {
@@ -373,6 +387,9 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 	meta.Barcode = rel.Barcode
 	meta.CatalogNumber = rel.CatalogNumber
 	meta.ReleaseType = rel.ReleaseGroup.PrimaryType
+	if len(rel.LabelInfo) > 0 {
+		meta.Label = rel.LabelInfo[0].Label.Name
+	}
 	if rel.Date != "" && len(rel.Date) >= 4 {
 		_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
 	}
@@ -536,6 +553,28 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 	return maxGenre, ""
 }
 
+func extractTags(recordings []recording) []string {
+	tagsSet := make(map[string]struct{})
+	for _, rec := range recordings {
+		for _, t := range rec.Tags {
+			if t.Count > 0 {
+				name := strings.TrimSpace(t.Name)
+				if name != "" {
+					tagsSet[name] = struct{}{}
+				}
+			}
+		}
+	}
+	if len(tagsSet) == 0 {
+		return nil
+	}
+	tags := make([]string, 0, len(tagsSet))
+	for t := range tagsSet {
+		tags = append(tags, t)
+	}
+	return tags
+}
+
 type searchResponse struct {
 	Recordings []recording `json:"recordings"`
 }
@@ -546,6 +585,7 @@ type recording struct {
 	Tags         []tag          `json:"tags"`
 	Releases     []release      `json:"releases"`
 	ArtistCredit []artistCredit `json:"artist-credit"`
+	ISRCs        []string       `json:"isrcs"`
 	Length       int            `json:"length"`
 }
 
@@ -557,7 +597,7 @@ type release struct {
 	Country       string         `json:"country"`
 	Barcode       string         `json:"barcode"`
 	CatalogNumber string         `json:"catalognumber"`
-	Label         string         `json:"label"`
+	LabelInfo     []labelInfo    `json:"label-info"`
 	ReleaseGroup  releaseGroup   `json:"release-group"`
 	Media         []media        `json:"media"`
 	ArtistCredit  []artistCredit `json:"artist-credit"`
@@ -590,6 +630,14 @@ type tag struct {
 	Count int    `json:"count"`
 }
 
+type labelInfo struct {
+	Label label `json:"label"`
+}
+
+type label struct {
+	Name string `json:"name"`
+}
+
 type RecordingMetadata struct {
 	RecordingID    string
 	ReleaseID      string
@@ -604,6 +652,9 @@ type RecordingMetadata struct {
 	ReleaseType    string
 	Genre          string
 	SubGenre       string
+	Label          string
+	ISRC           string
+	Tags           []string
 	Artists        []string
 	ArtistIDs      []string
 	AlbumArtists   []string

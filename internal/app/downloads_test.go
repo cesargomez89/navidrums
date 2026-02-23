@@ -302,3 +302,76 @@ func TestDownloadsService_DeleteDownload_CascadeCleanup(t *testing.T) {
 		t.Error("Expected artist folder to be deleted")
 	}
 }
+
+func TestDownloadsService_EnqueueSyncHiFiJob(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	log := logger.Default()
+	svc := NewDownloadsService(db, log)
+
+	err := svc.EnqueueSyncHiFiJob("hifi_test")
+	if err != nil {
+		t.Fatalf("EnqueueSyncHiFiJob failed: %v", err)
+	}
+
+	job, err := db.GetActiveJobBySourceID("hifi_test", domain.JobTypeSyncHiFi)
+	if err != nil {
+		t.Fatalf("GetActiveJobBySourceID failed: %v", err)
+	}
+	if job == nil {
+		t.Fatal("Expected job to be created")
+	}
+	if job.Type != domain.JobTypeSyncHiFi {
+		t.Errorf("Expected job type %s, got %s", domain.JobTypeSyncHiFi, job.Type)
+	}
+}
+
+func TestDownloadsService_EnqueueSyncJobs(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	log := logger.Default()
+	svc := NewDownloadsService(db, log)
+
+	// Create some completed tracks
+	tracks := []*domain.Track{
+		{ProviderID: "t1", Title: "T1", Artist: "A", Album: "A", Status: domain.TrackStatusCompleted, FilePath: "/p/1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "t2", Title: "T2", Artist: "A", Album: "A", Status: domain.TrackStatusCompleted, FilePath: "/p/2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "t3", Title: "T3", Artist: "A", Album: "A", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()}, // Should be skipped
+	}
+
+	for _, tr := range tracks {
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
+	}
+
+	// Create an active job for t1 already
+	existingJob := &domain.Job{
+		ID:       "existing",
+		Type:     domain.JobTypeSyncHiFi,
+		Status:   domain.JobStatusRunning,
+		SourceID: "t1",
+	}
+	if err := db.CreateJob(existingJob); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	// Run EnqueueSyncJobs
+	count, err := svc.EnqueueSyncJobs()
+	if err != nil {
+		t.Fatalf("EnqueueSyncJobs failed: %v", err)
+	}
+
+	// Should only enqueue for t2 (t1 has active job, t3 is not completed)
+	if count != 1 {
+		t.Errorf("Expected 1 job enqueued, got %d", count)
+	}
+
+	// Verify t2 job exists
+	job, _ := db.GetActiveJobBySourceID("t2", domain.JobTypeSyncHiFi)
+	if job == nil {
+		t.Fatal("Expected sync job for t2")
+	}
+}

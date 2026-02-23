@@ -19,7 +19,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		year, genre, sub_genre, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
-		barcode, catalog_number, release_type, release_id, recording_id,
+		barcode, catalog_number, release_type, release_id, recording_id, tags,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
 	) VALUES (
@@ -28,7 +28,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		:year, :genre, :sub_genre, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
-		:barcode, :catalog_number, :release_type, :release_id, :recording_id,
+		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
 		:status, :error, :parent_job_id, :file_path, :file_extension,
 		:created_at, :updated_at, :etag, :file_hash, :last_verified_at
 	) RETURNING id`
@@ -83,7 +83,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		duration = :duration, explicit = :explicit, compilation = :compilation, album_art_url = :album_art_url, lyrics = :lyrics, subtitles = :subtitles,
 		bpm = :bpm, key_name = :key_name, key_scale = :key_scale, replay_gain = :replay_gain, peak = :peak,
 		version = :version, description = :description, url = :url, audio_quality = :audio_quality, audio_modes = :audio_modes, release_date = :release_date,
-		barcode = :barcode, catalog_number = :catalog_number, release_type = :release_type, release_id = :release_id, recording_id = :recording_id,
+		barcode = :barcode, catalog_number = :catalog_number, release_type = :release_type, release_id = :release_id, recording_id = :recording_id, tags = :tags,
 		status = :status, error = :error, parent_job_id = :parent_job_id, file_path = :file_path, file_extension = :file_extension,
 		updated_at = :updated_at, etag = :etag, file_hash = :file_hash, completed_at = :completed_at, last_verified_at = :last_verified_at
 	WHERE id = :id`
@@ -141,6 +141,7 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"album_artist":   true,
 		"genre":          true,
 		"sub_genre":      true,
+		"tags":           true,
 		"label":          true,
 		"composer":       true,
 		"copyright":      true,

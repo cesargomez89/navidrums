@@ -478,7 +478,34 @@ func (h *SyncJobHandler) processSyncHiFiJob(ctx context.Context, job *domain.Job
 	if err != nil {
 		logger.Warn("Failed to fetch Hi-Fi metadata, using existing data", "error", err)
 	} else {
+		oldTotalTracks := track.TotalTracks
+		oldTotalDiscs := track.TotalDiscs
+		oldReleaseDate := track.ReleaseDate
+		oldGenre := track.Genre
+		oldLabel := track.Label
+		oldBarcode := track.Barcode
+
 		updateTrackFromCatalog(track, catalogTrack)
+
+		if track.TotalTracks == 0 && oldTotalTracks > 0 {
+			track.TotalTracks = oldTotalTracks
+		}
+		if track.TotalDiscs == 0 && oldTotalDiscs > 0 {
+			track.TotalDiscs = oldTotalDiscs
+		}
+		if track.ReleaseDate == "" && oldReleaseDate != "" {
+			track.ReleaseDate = oldReleaseDate
+		}
+		if track.Genre == "" && oldGenre != "" {
+			track.Genre = oldGenre
+		}
+		if track.Label == "" && oldLabel != "" {
+			track.Label = oldLabel
+		}
+		if track.Barcode == "" && oldBarcode != "" {
+			track.Barcode = oldBarcode
+		}
+
 		enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, h.ProviderManager, logger)
 	}
 
@@ -656,6 +683,14 @@ func enrichWithAlbumMetadata(ctx context.Context, track *domain.Track, albumID s
 	if albumID == "" {
 		return
 	}
+
+	hasAlbumMetadata := track.TotalTracks > 0 && track.TotalDiscs > 0 &&
+		track.ReleaseDate != "" && track.Genre != "" && track.Label != ""
+	if hasAlbumMetadata {
+		logger.Debug("Track already has album metadata, skipping album fetch")
+		return
+	}
+
 	album, err := providerManager.GetProvider().GetAlbum(ctx, albumID)
 	if err != nil {
 		logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
@@ -673,7 +708,7 @@ func enrichWithAlbumMetadata(ctx context.Context, track *domain.Track, albumID s
 }
 
 func fetchLyrics(ctx context.Context, track *domain.Track, providerManager *catalog.ProviderManager, logger *slog.Logger) {
-	if track.Lyrics != "" && track.Subtitles != "" {
+	if track.Lyrics != "" || track.Subtitles != "" {
 		return
 	}
 	lyrics, subtitles, err := providerManager.GetProvider().GetLyrics(ctx, track.ProviderID)

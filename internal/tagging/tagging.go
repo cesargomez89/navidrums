@@ -237,6 +237,10 @@ func newVorbisComment(track *domain.Track) *flacvorbis.MetaDataBlockVorbisCommen
 	add("RELEASETYPE", track.ReleaseType)
 	add("MUSICBRAINZ_RELEASEGROUPID", track.ReleaseID)
 
+	for _, t := range track.Tags {
+		add("MUSICBRAINZ_TAG", t)
+	}
+
 	return vc
 }
 
@@ -419,6 +423,14 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 			Encoding:    id3v2.EncodingUTF8,
 			Description: "MUSICBRAINZ_RELEASEGROUPID",
 			Value:       track.ReleaseID,
+		})
+	}
+
+	for _, t := range track.Tags {
+		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			Description: "MUSICBRAINZ_TAG",
+			Value:       t,
 		})
 	}
 

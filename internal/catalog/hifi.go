@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -16,7 +17,10 @@ import (
 
 type HifiProvider struct {
 	Client  *http.Client
+	lastReq time.Time
 	BaseURL string
+
+	mu sync.Mutex
 }
 
 func NewHifiProvider(baseURL string) *HifiProvider {
@@ -24,6 +28,18 @@ func NewHifiProvider(baseURL string) *HifiProvider {
 		BaseURL: baseURL,
 		Client:  &http.Client{Timeout: 5 * time.Minute},
 	}
+}
+
+func (p *HifiProvider) throttle() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	delay := 800 * time.Millisecond // ~1.2 requests per second
+	elapsed := time.Since(p.lastReq)
+	if elapsed < delay {
+		time.Sleep(delay - elapsed)
+	}
+	p.lastReq = time.Now()
 }
 
 func (p *HifiProvider) ensureAbsoluteURL(urlOrID string, size ...string) string {
@@ -119,6 +135,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		}
 
 		streamUrl := manifest.Urls[0]
+		p.throttle()
 		sResp, err := p.Client.Get(streamUrl)
 		if err != nil {
 			return nil, "", err
@@ -148,6 +165,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 			return nil, "", fmt.Errorf("no BaseURL found in DASH manifest")
 		}
 
+		p.throttle()
 		sResp, err := p.Client.Get(streamUrl)
 		if err != nil {
 			return nil, "", err
@@ -232,6 +250,8 @@ func (p *HifiProvider) GetLyrics(ctx context.Context, trackID string) (string, s
 }
 
 func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) error {
+	p.throttle()
+
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return err

@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS tracks (
 	release_type TEXT,
 	release_id TEXT,
 	recording_id TEXT,
+	tags TEXT,  -- JSON array
 	
 	-- Processing
 	status TEXT NOT NULL DEFAULT 'missing',
