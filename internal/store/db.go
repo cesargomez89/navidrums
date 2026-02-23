@@ -90,6 +90,14 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     6,
+		description: "Backfill NULL sub_genre to empty string",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec("UPDATE tracks SET sub_genre = '' WHERE sub_genre IS NULL")
+			return err
+		},
+	},
 }
 
 type dbOps interface {
