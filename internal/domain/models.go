@@ -113,9 +113,26 @@ type Track struct { //nolint:govet // field ordering prioritizes readability ove
 
 // Normalize ensures the track data is consistent (e.g., removing redundant subgenres)
 func (t *Track) Normalize() {
-	if strings.EqualFold(t.Genre, t.SubGenre) {
+	if IsSameGenre(t.Genre, t.SubGenre) {
 		t.SubGenre = ""
 	}
+}
+
+// IsSameGenre checks if two genre strings are identical ignoring case, spaces, and hyphens.
+func IsSameGenre(g1, g2 string) bool {
+	if g1 == "" || g2 == "" {
+		return false
+	}
+
+	normalize := func(s string) string {
+		s = strings.ToLower(s)
+		s = strings.ReplaceAll(s, " ", "")
+		s = strings.ReplaceAll(s, "-", "")
+		s = strings.ReplaceAll(s, "_", "")
+		return s
+	}
+
+	return normalize(g1) == normalize(g2)
 }
 
 // CatalogTrack represents a track from the provider/catalog

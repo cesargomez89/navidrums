@@ -128,7 +128,7 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 
 	if g, ok := updates["genre"].(string); ok {
 		if sg, ok := updates["sub_genre"].(string); ok {
-			if strings.EqualFold(g, sg) {
+			if domain.IsSameGenre(g, sg) {
 				updates["sub_genre"] = ""
 			}
 		}
