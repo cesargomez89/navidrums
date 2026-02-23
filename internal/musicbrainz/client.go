@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -63,6 +64,9 @@ var DefaultGenreMap = map[string]string{
 	"latin trap":          "Hip-Hop",
 	"abstract hip hop":    "Hip-Hop",
 	"hardcore rap":        "Hip-Hop",
+	"hip-hop/rap":         "Hip-Hop",
+	"rap/hip hop":         "Hip-Hop",
+	"melodic rap":         "Hip-Hop",
 	"r&b":                 "R&B",
 	"rnb":                 "R&B",
 	"contemporary r&b":    "R&B",
@@ -521,52 +525,72 @@ func selectBestRelease(releases []release, albumName string) *release {
 	return &releases[0]
 }
 
-func extractMainGenre(recordings []recording, genreMap map[string]string) (mainGenre string, subGenre string) {
-	genreCounts := make(map[string]int)
-	var highestOriginalTag string
-	var highestOriginalCount int
+// normalizeGenreKey strips case, spaces, hyphens and underscores for fuzzy comparison.
+func normalizeGenreKey(s string) string {
+	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, " ", "")
+	s = strings.ReplaceAll(s, "-", "")
+	s = strings.ReplaceAll(s, "_", "")
+	return s
+}
 
+func extractMainGenre(recordings []recording, genreMap map[string]string) (mainGenre string, subGenre string) {
+	tagCounts := make(map[string]int)
 	for _, rec := range recordings {
 		for _, t := range rec.Tags {
 			if t.Count <= 0 {
 				continue
 			}
-
-			normalized := strings.ToLower(strings.TrimSpace(t.Name))
-			if normalized == "" {
+			name := strings.TrimSpace(t.Name)
+			if name == "" {
 				continue
 			}
-
-			if mapped, ok := genreMap[normalized]; ok {
-				genreCounts[mapped] += t.Count
-			} else {
-				genreCounts[t.Name] += t.Count
-			}
-
-			if t.Count > highestOriginalCount {
-				highestOriginalCount = t.Count
-				highestOriginalTag = t.Name
-			}
+			tagCounts[name] += t.Count
 		}
 	}
 
-	if len(genreCounts) == 0 {
+	if len(tagCounts) == 0 {
 		return "", ""
 	}
 
+	type tagInfo struct {
+		name  string
+		count int
+	}
+	var tags []tagInfo
+	for name, count := range tagCounts {
+		tags = append(tags, tagInfo{name: name, count: count})
+	}
+
+	sort.SliceStable(tags, func(i, j int) bool {
+		if tags[i].count == tags[j].count {
+			return tags[i].name < tags[j].name
+		}
+		return tags[i].count > tags[j].count
+	})
+
+	highestTag := tags[0].name
 	var maxGenre string
-	var maxCount int
-	for genre, count := range genreCounts {
-		if count > maxCount {
-			maxCount = count
-			maxGenre = genre
+
+	for _, t := range tags {
+		normalized := strings.ToLower(t.name)
+		if mapped, ok := genreMap[normalized]; ok {
+			maxGenre = mapped
+			break
 		}
 	}
 
-	if highestOriginalTag != "" && !strings.EqualFold(highestOriginalTag, maxGenre) {
-		return maxGenre, highestOriginalTag
+	// Fallback if no tags map to a known genre
+	if maxGenre == "" {
+		maxGenre = highestTag
 	}
-	return maxGenre, ""
+
+	// Suppress sub_genre when it's just a differently-formatted version of maxGenre
+	if normalizeGenreKey(highestTag) == normalizeGenreKey(maxGenre) {
+		return maxGenre, ""
+	}
+
+	return maxGenre, highestTag
 }
 
 func extractTags(recordings []recording) []string {

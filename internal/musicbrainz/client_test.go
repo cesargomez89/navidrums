@@ -42,7 +42,7 @@ func TestExtractMainGenre(t *testing.T) {
 			wantSubGenre:  "",
 		},
 		{
-			name: "aggregates counts for same main genre",
+			name: "selects highest tag ignoring category aggregation",
 			recordings: []recording{
 				{
 					Tags: []tag{
@@ -53,8 +53,8 @@ func TestExtractMainGenre(t *testing.T) {
 				},
 			},
 			genreMap:      DefaultGenreMap,
-			wantMainGenre: "Metal",
-			wantSubGenre:  "pop",
+			wantMainGenre: "Pop",
+			wantSubGenre:  "",
 		},
 		{
 			name: "returns empty when no tags",
@@ -129,6 +129,24 @@ func TestExtractMainGenre(t *testing.T) {
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "Rock",
 			wantSubGenre:  "alternative rock",
+		},
+		{
+			// Regression: "hip hop" (highest raw count) is equivalent to "Hip-Hop" after
+			// normalisation — it must NOT leak through as sub_genre.
+			name: "suppresses sub_genre when highest tag is same as canonical after normalisation",
+			recordings: []recording{
+				{
+					Tags: []tag{
+						{Name: "hip hop", Count: 10},
+						{Name: "hip-hop/rap", Count: 8},
+						{Name: "rap/hip hop", Count: 6},
+						{Name: "melodic rap", Count: 4},
+					},
+				},
+			},
+			genreMap:      DefaultGenreMap,
+			wantMainGenre: "Hip-Hop",
+			wantSubGenre:  "",
 		},
 	}
 
