@@ -16,7 +16,7 @@ import (
 const (
 	DefaultUserAgent   = "navidrums/1.0 (https://github.com/cesargomez89/navidrums)"
 	requestTimeout     = 10 * time.Second
-	minRequestInterval = 1050 * time.Millisecond
+	minRequestInterval = 1550 * time.Millisecond
 )
 
 var DefaultGenreMap = map[string]string{
@@ -203,6 +203,9 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult,
 		_ = resp.Body.Close()
 	}()
 
+	if resp.StatusCode == http.StatusBadRequest {
+		return GenreResult{}, nil
+	}
 	if resp.StatusCode != http.StatusOK {
 		return GenreResult{}, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
 	}
@@ -239,6 +242,9 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		_ = resp.Body.Close()
 	}()
 
+	if resp.StatusCode == http.StatusBadRequest {
+		return nil, nil
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
 	}
@@ -336,7 +342,7 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode == http.StatusNotFound {
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadRequest {
 		return nil, nil
 	}
 
@@ -431,7 +437,7 @@ func (c *Client) GetGenresByMBID(ctx context.Context, mbid string) (GenreResult,
 		_ = resp.Body.Close()
 	}()
 
-	if resp.StatusCode == http.StatusNotFound {
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadRequest {
 		return GenreResult{}, nil
 	}
 
@@ -449,6 +455,8 @@ func (c *Client) GetGenresByMBID(ctx context.Context, mbid string) (GenreResult,
 }
 
 func (c *Client) doWithRetry(ctx context.Context, req *http.Request) (*http.Response, error) {
+	req.Close = true // prevent EOF errors from generic keep-alive timeouts
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -467,9 +475,17 @@ func (c *Client) doWithRetry(ctx context.Context, req *http.Request) (*http.Resp
 
 		resp, err := c.httpClient.Do(req)
 		if err == nil {
-			return resp, nil
+			// MusicBrainz rate limits occasionally return 503 Service Unavailable or 429 Too Many Requests.
+			if resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusTooManyRequests {
+				_ = resp.Body.Close()
+				lastErr = fmt.Errorf("rate limited (status %d)", resp.StatusCode)
+				// Sleep and retry within the loop
+			} else {
+				return resp, nil
+			}
+		} else {
+			lastErr = err
 		}
-		lastErr = err
 		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 	}
 	return nil, lastErr
