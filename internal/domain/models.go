@@ -45,6 +45,7 @@ const (
 	TrackStatusMissing     TrackStatus = "missing"
 	TrackStatusQueued      TrackStatus = "queued"
 	TrackStatusDownloading TrackStatus = "downloading"
+	TrackStatusDownloaded  TrackStatus = "downloaded"
 	TrackStatusProcessing  TrackStatus = "processing"
 	TrackStatusCompleted   TrackStatus = "completed"
 	TrackStatusFailed      TrackStatus = "failed"

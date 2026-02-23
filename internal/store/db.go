@@ -10,7 +10,7 @@ import (
 )
 
 type migration struct {
-	up          func(*sqlx.DB) error
+	up          func(*sqlx.Tx) error
 	description string
 	version     int
 }
@@ -21,7 +21,7 @@ var migrations = []migration{
 	{
 		version:     1,
 		description: "Add track lifecycle fields",
-		up: func(db *sqlx.DB) error {
+		up: func(tx *sqlx.Tx) error {
 			columns := []string{
 				"ALTER TABLE tracks ADD COLUMN file_hash TEXT",
 				"ALTER TABLE tracks ADD COLUMN etag TEXT",
@@ -29,8 +29,10 @@ var migrations = []migration{
 				"ALTER TABLE tracks ADD COLUMN album_id TEXT",
 			}
 			for _, q := range columns {
-				if _, err := db.Exec(q); err != nil {
-					continue
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
 				}
 			}
 			return nil
@@ -39,7 +41,7 @@ var migrations = []migration{
 	{
 		version:     2,
 		description: "Add MusicBrainz metadata fields",
-		up: func(db *sqlx.DB) error {
+		up: func(tx *sqlx.Tx) error {
 			columns := []string{
 				"ALTER TABLE tracks ADD COLUMN barcode TEXT",
 				"ALTER TABLE tracks ADD COLUMN catalog_number TEXT",
@@ -47,8 +49,10 @@ var migrations = []migration{
 				"ALTER TABLE tracks ADD COLUMN release_id TEXT",
 			}
 			for _, q := range columns {
-				if _, err := db.Exec(q); err != nil {
-					continue
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
 				}
 			}
 			return nil
@@ -57,31 +61,54 @@ var migrations = []migration{
 	{
 		version:     3,
 		description: "Clear version field (no longer used)",
-		up: func(db *sqlx.DB) error {
-			_, err := db.Exec("UPDATE tracks SET version = ''")
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec("UPDATE tracks SET version = ''")
 			return err
 		},
 	},
 	{
 		version:     4,
 		description: "Add sub_genre for original MusicBrainz tag",
-		up: func(db *sqlx.DB) error {
-			_, err := db.Exec("ALTER TABLE tracks ADD COLUMN sub_genre TEXT")
-			return err
+		up: func(tx *sqlx.Tx) error {
+			if _, err := tx.Exec("ALTER TABLE tracks ADD COLUMN sub_genre TEXT"); err != nil {
+				if !strings.Contains(err.Error(), "duplicate column name") {
+					return err
+				}
+			}
+			return nil
 		},
 	},
 	{
 		version:     5,
 		description: "Add recording_id for MusicBrainz caching",
-		up: func(db *sqlx.DB) error {
-			_, err := db.Exec("ALTER TABLE tracks ADD COLUMN recording_id TEXT")
-			return err
+		up: func(tx *sqlx.Tx) error {
+			if _, err := tx.Exec("ALTER TABLE tracks ADD COLUMN recording_id TEXT"); err != nil {
+				if !strings.Contains(err.Error(), "duplicate column name") {
+					return err
+				}
+			}
+			return nil
 		},
 	},
 }
 
+type dbOps interface {
+	Rebind(query string) string
+	BindNamed(query string, arg interface{}) (string, []interface{}, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	QueryRowx(query string, args ...interface{}) *sqlx.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Get(dest interface{}, query string, args ...interface{}) error
+	Select(dest interface{}, query string, args ...interface{}) error
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+}
+
 type DB struct {
-	*sqlx.DB
+	dbOps
+	root *sqlx.DB
 }
 
 func NewSQLiteDB(dsn string) (*DB, error) {
@@ -90,12 +117,17 @@ func NewSQLiteDB(dsn string) (*DB, error) {
 	} else {
 		dsn += "&"
 	}
-	dsn += "_pragma=busy_timeout(30000)&_pragma=journal_mode(WAL)"
+	// Increase busy_timeout significantly and enable WAL mode for better concurrency
+	dsn += "_pragma=busy_timeout(60000)&_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)"
 
 	db, err := sqlx.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open db: %w", err)
 	}
+
+	// SQLite only supports one concurrent writer. Setting MaxOpenConns to 1
+	// ensures writers queue inside Go rather than failing at the SQLite level with SQLITE_BUSY.
+	db.SetMaxOpenConns(1)
 
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping db: %w", err)
@@ -109,7 +141,38 @@ func NewSQLiteDB(dsn string) (*DB, error) {
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	return &DB{db}, nil
+	return &DB{dbOps: db, root: db}, nil
+}
+
+// RunInTx runs the given function within a transaction.
+// It yields a *DB instance that transparently executes operations
+// over the active transaction instead of the connection pool.
+func (db *DB) RunInTx(fn func(txDB *DB) error) error {
+	if db.root == nil {
+		// Already in a transaction, just run the function
+		return fn(db)
+	}
+
+	tx, err := db.root.Beginx()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	txDB := &DB{
+		dbOps: tx,
+		root:  nil, // txDB is a transaction unit, cannot spawn nested tx
+	}
+
+	if err := fn(txDB); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func runMigrations(db *sqlx.DB) error {
@@ -123,12 +186,23 @@ func runMigrations(db *sqlx.DB) error {
 			continue
 		}
 
-		if err := m.up(db); err != nil {
+		tx, err := db.Beginx()
+		if err != nil {
+			return fmt.Errorf("failed to begin transaction for migration %d: %w", m.version, err)
+		}
+
+		if err := m.up(tx); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("failed to apply migration %d (%s): %w", m.version, m.description, err)
 		}
 
-		if err := recordMigration(db, m.version, m.description); err != nil {
+		if err := recordMigration(tx, m.version, m.description); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("failed to record migration %d: %w", m.version, err)
+		}
+
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("failed to commit migration %d: %w", m.version, err)
 		}
 	}
 
@@ -147,11 +221,14 @@ func isMigrationApplied(db *sqlx.DB, version int) (bool, error) {
 	return count > 0, nil
 }
 
-func recordMigration(db *sqlx.DB, version int, description string) error {
-	_, err := db.Exec("INSERT INTO schema_migrations (version, description) VALUES (?, ?)", version, description)
+func recordMigration(tx *sqlx.Tx, version int, description string) error {
+	_, err := tx.Exec("INSERT INTO schema_migrations (version, description) VALUES (?, ?)", version, description)
 	return err
 }
 
 func (db *DB) Close() error {
-	return db.DB.Close()
+	if db.root != nil {
+		return db.root.Close()
+	}
+	return nil
 }

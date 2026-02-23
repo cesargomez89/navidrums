@@ -221,7 +221,7 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		return nil, nil
 	}
 
-	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
+	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists+tags&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -253,10 +253,13 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 	}
 
 	rec := result.Recordings[0]
+	mainGenre, subGenre := extractMainGenre(result.Recordings, c.genreMap)
 	meta := &RecordingMetadata{
 		RecordingID: rec.ID,
 		Title:       rec.Title,
 		Duration:    rec.Length,
+		Genre:       mainGenre,
+		SubGenre:    subGenre,
 	}
 
 	if len(rec.ArtistCredit) > 0 {
@@ -306,7 +309,7 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 		return nil, nil
 	}
 
-	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits&fmt=json", c.baseURL, url.PathEscape(mbid))
+	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags&fmt=json", c.baseURL, url.PathEscape(mbid))
 
 	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 	if err != nil {
@@ -337,10 +340,13 @@ func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName 
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
+	mainGenre, subGenre := extractMainGenre([]recording{rec}, c.genreMap)
 	meta := &RecordingMetadata{
 		RecordingID: rec.ID,
 		Title:       rec.Title,
 		Duration:    rec.Length,
+		Genre:       mainGenre,
+		SubGenre:    subGenre,
 	}
 
 	if len(rec.ArtistCredit) > 0 {
@@ -596,6 +602,8 @@ type RecordingMetadata struct {
 	CatalogNumber  string
 	Title          string
 	ReleaseType    string
+	Genre          string
+	SubGenre       string
 	Artists        []string
 	ArtistIDs      []string
 	AlbumArtists   []string

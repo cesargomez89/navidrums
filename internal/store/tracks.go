@@ -29,18 +29,21 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id,
 		:status, :error, :parent_job_id, :file_path, :file_extension,
 		:created_at, :updated_at, :etag, :file_hash, :last_verified_at
-	)`
+	) RETURNING id`
 
-	result, err := db.NamedExec(query, track)
+	rows, err := db.NamedQuery(query, track)
 	if err != nil {
-		return fmt.Errorf("failed to create track: %w", err)
+		return fmt.Errorf("failed to create track (named query): %w", err)
 	}
+	defer rows.Close()
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return fmt.Errorf("failed to get last insert id: %w", err)
+	if rows.Next() {
+		if err := rows.Scan(&track.ID); err != nil {
+			return fmt.Errorf("failed to scan track id: %w", err)
+		}
+	} else if err := rows.Err(); err != nil {
+		return fmt.Errorf("error iterating returning rows: %w", err)
 	}
-	track.ID = int(id)
 
 	return nil
 }

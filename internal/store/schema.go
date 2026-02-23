@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS tracks (
 	total_discs INTEGER,
 	year INTEGER,
 	genre TEXT,
+	sub_genre TEXT,
 	label TEXT,
 	isrc TEXT,
 	copyright TEXT,
@@ -57,6 +58,11 @@ CREATE TABLE IF NOT EXISTS tracks (
 	audio_quality TEXT,
 	audio_modes TEXT,
 	release_date TEXT,
+	barcode TEXT,
+	catalog_number TEXT,
+	release_type TEXT,
+	release_id TEXT,
+	recording_id TEXT,
 	
 	-- Processing
 	status TEXT NOT NULL DEFAULT 'missing',
@@ -75,7 +81,7 @@ CREATE TABLE IF NOT EXISTS tracks (
 	completed_at DATETIME,
 	last_verified_at DATETIME,
 	
-	FOREIGN KEY (parent_job_id) REFERENCES jobs(id)
+	FOREIGN KEY (parent_job_id) REFERENCES jobs(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_tracks_provider_id ON tracks(provider_id);
