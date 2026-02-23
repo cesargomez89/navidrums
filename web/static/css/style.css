@@ -923,6 +923,83 @@ textarea {
 }
 
 
+/* Track Actions (button row in track form) */
+.track-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin: 24px 0;
+}
+
+/* Track info text (read-only info sections) */
+.track-info-text {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+.track-info-text p {
+    margin: 0 0 8px;
+}
+
+.track-info-text p:last-child {
+    margin-bottom: 0;
+}
+
+/* Track warning banner */
+.track-warning-banner {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.track-warning-banner-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--warning);
+}
+
+.track-warning-banner-inner p {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+/* MusicBrainz readonly section */
+.mb-data-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+.mb-data-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mb-data-item span:first-child {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    opacity: 0.7;
+}
+
+.mb-data-item span:last-child {
+    color: var(--text);
+    font-family: 'ui-monospace', 'SFMono-Regular', 'Menlo', monospace;
+    font-size: 0.85rem;
+    word-break: break-all;
+}
+
+.mb-data-item--full {
+    grid-column: 1 / -1;
+}
+
 /* Downloads Toolbar */
 .downloads-toolbar {
     margin-bottom: 20px;
@@ -1149,5 +1226,32 @@ textarea {
 
     .downloads-toolbar input[type="text"] {
         max-width: none;
+    }
+
+    /* Track form actions mobile */
+    .track-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .track-actions .btn,
+    .track-actions a.btn,
+    .track-actions button {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* MusicBrainz data grid mobile */
+    .mb-data-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mb-data-item--full {
+        grid-column: 1;
+    }
+
+    /* Form grid mobile */
+    .form-grid {
+        grid-template-columns: 1fr;
     }
 }

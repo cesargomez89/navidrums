@@ -65,7 +65,8 @@
             </div>
             <div class="form-group">
                 <label for="release_date">Release Date</label>
-                <input type="text" id="release_date" name="release_date" value="{{.Track.ReleaseDate}}" placeholder="YYYY-MM-DD">
+                <input type="text" id="release_date" name="release_date" value="{{.Track.ReleaseDate}}"
+                    placeholder="YYYY-MM-DD">
             </div>
             <div class="form-group">
                 <label for="barcode">Barcode</label>
@@ -115,16 +116,19 @@
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
                 <label for="subtitles">Subtitles (LRC format)</label>
-                <textarea id="subtitles" name="subtitles" rows="4" placeholder="[00:12.00] Lyrics line...">{{.Track.Subtitles}}</textarea>
+                <textarea id="subtitles" name="subtitles" rows="4"
+                    placeholder="[00:12.00] Lyrics line...">{{.Track.Subtitles}}</textarea>
             </div>
         </div>
     </div>
 
-    <div style="display: flex; gap: 12px; margin: 24px 0px;">
+    <div class="track-actions">
         <button type="submit" class="btn btn-primary">Save to Database</button>
-        <button type="submit" class="btn" style="background: var(--warning); color: #0d0b00;" formaction="/htmx/track/{{.Track.ID}}/sync">Sync to File</button>
-        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich">Enrich from MusicBrainz</button>
-        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich-hifi">Enrich from Hi-Fi</button>
+        <button type="submit" class="btn btn-warning" formaction="/htmx/track/{{.Track.ID}}/sync">Sync to File</button>
+        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich">Enrich from
+            MusicBrainz</button>
+        <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich-hifi">Enrich from
+            Hi-Fi</button>
         <a href="/downloads" class="btn btn-outline">Cancel</a>
     </div>
 </form>
