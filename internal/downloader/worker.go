@@ -321,22 +321,7 @@ func (w *Worker) prepareTrackDownload(ctx context.Context, job *domain.Job, logg
 
 		track = w.catalogTrackToDomainTrack(catalogTrack)
 
-		if catalogTrack.AlbumID != "" {
-			album, albumErr := w.ProviderManager.GetProvider().GetAlbum(ctx, catalogTrack.AlbumID)
-			if albumErr != nil {
-				logger.Debug("Failed to fetch album metadata", "album_id", catalogTrack.AlbumID, "error", albumErr)
-			} else {
-				track.ReleaseDate = album.ReleaseDate
-				track.Label = album.Label
-				track.Genre = album.Genre
-				track.TotalTracks = album.TotalTracks
-				track.TotalDiscs = album.TotalDiscs
-				track.Barcode = album.UPC
-				if album.AlbumArtURL != "" {
-					track.AlbumArtURL = album.AlbumArtURL
-				}
-			}
-		}
+		w.enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, logger)
 
 		track.Status = domain.TrackStatusMissing
 		track.ParentJobID = job.ID
@@ -462,17 +447,7 @@ func (w *Worker) postProcessTrack(ctx context.Context, track *domain.Track, fina
 	}
 
 	if track.Lyrics == "" || track.Subtitles == "" {
-		lyrics, subtitles, lyricsErr := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
-		if lyricsErr != nil {
-			logger.Debug("Failed to fetch lyrics", "error", lyricsErr)
-		} else {
-			if track.Lyrics == "" && lyrics != "" {
-				track.Lyrics = lyrics
-			}
-			if track.Subtitles == "" && subtitles != "" {
-				track.Subtitles = subtitles
-			}
-		}
+		w.fetchLyrics(ctx, track, logger)
 	}
 
 	if err := w.enrichFromMusicBrainz(ctx, track, logger); err != nil {
@@ -854,103 +829,72 @@ func (w *Worker) updateTrackFromCatalog(track *domain.Track, ct *domain.CatalogT
 	track.AudioModes = ct.AudioModes
 }
 
-func (w *Worker) reTagTrack(track *domain.Track, logger *slog.Logger) {
-	if track.FilePath == "" {
-		return
-	}
-
-	var albumArtData []byte
-	if track.AlbumArtURL != "" {
-		albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
-	}
-	if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
-		logger.Error("Failed to tag file", "error", tagErr)
-	}
-}
-
-func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
-	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
-
+func (w *Worker) getTrackForSync(job *domain.Job, logger *slog.Logger) (*domain.Track, bool) {
 	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
 	if err != nil {
 		logger.Error("Failed to get track", "error", err)
 		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
-		return
+		return nil, false
 	}
 	if track == nil {
 		logger.Error("Track not found")
 		_ = w.Repo.UpdateJobError(job.ID, "Track not found")
-		return
+		return nil, false
 	}
-
 	if w.isCancelled(job.ID) {
 		logger.Info("Job cancelled")
-		return
+		return nil, false
 	}
-
-	catalogTrack, err := w.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
-	if err != nil {
-		logger.Warn("Failed to fetch Hi-Fi metadata, using existing data", "error", err)
-	} else {
-		w.updateTrackFromCatalog(track, catalogTrack)
-
-		if catalogTrack.AlbumID != "" {
-			album, albumErr := w.ProviderManager.GetProvider().GetAlbum(ctx, catalogTrack.AlbumID)
-			if albumErr != nil {
-				logger.Debug("Failed to fetch album metadata", "album_id", catalogTrack.AlbumID, "error", albumErr)
-			} else {
-				track.ReleaseDate = album.ReleaseDate
-				track.Label = album.Label
-				track.Genre = album.Genre
-				track.TotalTracks = album.TotalTracks
-				track.TotalDiscs = album.TotalDiscs
-				track.Barcode = album.UPC
-				if album.AlbumArtURL != "" {
-					track.AlbumArtURL = album.AlbumArtURL
-				}
-			}
-		}
-	}
-
-	lyrics, subtitles, lyricsErr := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
-	if lyricsErr != nil {
-		logger.Debug("Failed to fetch lyrics", "error", lyricsErr)
-	} else {
-		if lyrics != "" {
-			track.Lyrics = lyrics
-		}
-		if subtitles != "" {
-			track.Subtitles = subtitles
-		}
-	}
-
-	w.finalizeSyncJob(ctx, job, track, logger, "Sync Hi-Fi job completed")
+	return track, true
 }
 
-func (w *Worker) processSyncMusicBrainzJob(ctx context.Context, job *domain.Job) {
-	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
-
-	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
+func (w *Worker) enrichWithAlbumMetadata(ctx context.Context, track *domain.Track, albumID string, logger *slog.Logger) {
+	if albumID == "" {
+		return
+	}
+	album, err := w.ProviderManager.GetProvider().GetAlbum(ctx, albumID)
 	if err != nil {
-		logger.Error("Failed to get track", "error", err)
-		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
+		logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
 		return
 	}
-	if track == nil {
-		logger.Error("Track not found")
-		_ = w.Repo.UpdateJobError(job.ID, "Track not found")
-		return
+	track.ReleaseDate = album.ReleaseDate
+	track.Label = album.Label
+	track.Genre = album.Genre
+	track.TotalTracks = album.TotalTracks
+	track.TotalDiscs = album.TotalDiscs
+	track.Barcode = album.UPC
+	if album.AlbumArtURL != "" {
+		track.AlbumArtURL = album.AlbumArtURL
 	}
-
-	if w.isCancelled(job.ID) {
-		logger.Info("Job cancelled")
-		return
-	}
-
-	w.finalizeSyncJob(ctx, job, track, logger, "Sync job completed")
 }
 
-func (w *Worker) finalizeSyncJob(ctx context.Context, job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
+func (w *Worker) fetchLyrics(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+	lyrics, subtitles, err := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
+	if err != nil {
+		logger.Debug("Failed to fetch lyrics", "error", err)
+		return
+	}
+	if track.Lyrics == "" && lyrics != "" {
+		track.Lyrics = lyrics
+	}
+	if track.Subtitles == "" && subtitles != "" {
+		track.Subtitles = subtitles
+	}
+}
+
+func (w *Worker) completeSyncBasic(job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
+	track.UpdatedAt = time.Now()
+	if err := w.Repo.UpdateTrack(track); err != nil {
+		logger.Error("Failed to update track", "error", err)
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
+		return
+	}
+	w.reTagTrack(track, logger)
+	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
+	logger.Info(successMsg)
+}
+
+func (w *Worker) completeSyncWithEnrichment(ctx context.Context, job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
 	if err := w.enrichFromMusicBrainz(ctx, track, logger); err != nil {
 		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("MusicBrainz enrichment failed: %v", err))
 		return
@@ -969,35 +913,54 @@ func (w *Worker) finalizeSyncJob(ctx context.Context, job *domain.Job, track *do
 	logger.Info(successMsg)
 }
 
+func (w *Worker) reTagTrack(track *domain.Track, logger *slog.Logger) {
+	var albumArtData []byte
+	if track.AlbumArtURL != "" {
+		albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
+	}
+	if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
+		logger.Error("Failed to tag file", "error", tagErr)
+	}
+}
+
+func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	track, ok := w.getTrackForSync(job, logger)
+	if !ok {
+		return
+	}
+
+	catalogTrack, err := w.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
+	if err != nil {
+		logger.Warn("Failed to fetch Hi-Fi metadata, using existing data", "error", err)
+	} else {
+		w.updateTrackFromCatalog(track, catalogTrack)
+		w.enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, logger)
+	}
+
+	w.fetchLyrics(ctx, track, logger)
+
+	w.completeSyncWithEnrichment(ctx, job, track, logger, "Sync Hi-Fi job completed")
+}
+
+func (w *Worker) processSyncMusicBrainzJob(ctx context.Context, job *domain.Job) {
+	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
+
+	track, ok := w.getTrackForSync(job, logger)
+	if !ok {
+		return
+	}
+
+	w.completeSyncWithEnrichment(ctx, job, track, logger, "Sync job completed")
+}
+
 func (w *Worker) processSyncFileJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With("job_id", job.ID, "source_id", job.SourceID)
 
-	track, err := w.Repo.GetTrackByProviderID(job.SourceID)
-	if err != nil {
-		logger.Error("Failed to get track", "error", err)
-		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
+	track, ok := w.getTrackForSync(job, logger)
+	if !ok {
 		return
 	}
-	if track == nil {
-		logger.Error("Track not found")
-		_ = w.Repo.UpdateJobError(job.ID, "Track not found")
-		return
-	}
-
-	if w.isCancelled(job.ID) {
-		logger.Info("Job cancelled")
-		return
-	}
-
-	track.UpdatedAt = time.Now()
-	if err := w.Repo.UpdateTrack(track); err != nil {
-		logger.Error("Failed to update track", "error", err)
-		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
-		return
-	}
-
-	w.reTagTrack(track, logger)
-
-	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-	logger.Info("Sync file job completed")
+	w.completeSyncBasic(job, track, logger, "Sync file job completed")
 }

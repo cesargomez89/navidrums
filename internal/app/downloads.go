@@ -41,33 +41,21 @@ func (s *DownloadsService) UpdateTrackPartial(id int, updates map[string]interfa
 }
 
 func (s *DownloadsService) EnqueueSyncFileJob(providerID string) error {
-	job := &domain.Job{
-		ID:        uuid.New().String(),
-		Type:      domain.JobTypeSyncFile,
-		Status:    domain.JobStatusQueued,
-		SourceID:  providerID,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	return s.Repo.CreateJob(job)
+	return s.enqueueSyncJob(providerID, domain.JobTypeSyncFile)
 }
 
 func (s *DownloadsService) EnqueueSyncMetadataJob(providerID string) error {
-	job := &domain.Job{
-		ID:        uuid.New().String(),
-		Type:      domain.JobTypeSyncMusicBrainz,
-		Status:    domain.JobStatusQueued,
-		SourceID:  providerID,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	return s.Repo.CreateJob(job)
+	return s.enqueueSyncJob(providerID, domain.JobTypeSyncMusicBrainz)
 }
 
 func (s *DownloadsService) EnqueueSyncHiFiJob(providerID string) error {
+	return s.enqueueSyncJob(providerID, domain.JobTypeSyncHiFi)
+}
+
+func (s *DownloadsService) enqueueSyncJob(providerID string, jobType domain.JobType) error {
 	job := &domain.Job{
 		ID:        uuid.New().String(),
-		Type:      domain.JobTypeSyncHiFi,
+		Type:      jobType,
 		Status:    domain.JobStatusQueued,
 		SourceID:  providerID,
 		CreatedAt: time.Now(),
