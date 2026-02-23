@@ -37,7 +37,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	if err != nil {
 		return fmt.Errorf("failed to create track (named query): %w", err)
 	}
-	defer rows.Close()
+	defer rows.Close() //nolint:errcheck // deferred cleanup
 
 	if rows.Next() {
 		if err := rows.Scan(&track.ID); err != nil {

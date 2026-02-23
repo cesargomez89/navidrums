@@ -1,6 +1,6 @@
 module github.com/cesargomez89/navidrums
 
-go 1.25.5
+go 1.25.6
 
 require (
 	github.com/bogem/id3v2/v2 v2.1.4

@@ -5,7 +5,7 @@ run:
   go: "1.25"
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - staticcheck
     - govet
@@ -15,8 +15,6 @@ linters:
   settings:
     govet:
       enable-all: true
-
-linters-settings:
   exclusions:
     rules:
       - path: '(.+)_test\.go'
@@ -33,6 +31,7 @@ formatters:
     - gofmt
   settings:
     goimports:
-      local-prefixes: github.com/cesargomez89/navidrums
+      local-prefixes:
+        - github.com/cesargomez89/navidrums
     gofmt:
       simplify: true

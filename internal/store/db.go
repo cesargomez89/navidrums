@@ -98,6 +98,24 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     7,
+		description: "Backfill NULL TEXT columns (added via ALTER TABLE) to empty string",
+		up: func(tx *sqlx.Tx) error {
+			// All columns below were added via ALTER TABLE with no DEFAULT,
+			// leaving existing rows as NULL which cannot be scanned into Go string.
+			_, err := tx.Exec(`UPDATE tracks SET
+				album_id        = COALESCE(album_id, ''),
+				file_hash       = COALESCE(file_hash, ''),
+				etag            = COALESCE(etag, ''),
+				barcode         = COALESCE(barcode, ''),
+				catalog_number  = COALESCE(catalog_number, ''),
+				release_type    = COALESCE(release_type, ''),
+				release_id      = COALESCE(release_id, '')
+			`)
+			return err
+		},
+	},
 }
 
 type dbOps interface {
@@ -165,7 +183,7 @@ func (db *DB) RunInTx(fn func(txDB *DB) error) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() //nolint:errcheck // rollback is best-effort; commit result is what matters
 
 	txDB := &DB{
 		dbOps: tx,
@@ -200,12 +218,12 @@ func runMigrations(db *sqlx.DB) error {
 		}
 
 		if err := m.up(tx); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("failed to apply migration %d (%s): %w", m.version, m.description, err)
 		}
 
 		if err := recordMigration(tx, m.version, m.description); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("failed to record migration %d: %w", m.version, err)
 		}
 
