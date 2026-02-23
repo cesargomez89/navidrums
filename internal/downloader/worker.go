@@ -438,7 +438,12 @@ func (w *Worker) executeDownload(ctx context.Context, job *domain.Job, track *do
 
 func (w *Worker) postProcessTrack(ctx context.Context, track *domain.Track, finalPath string, logger *slog.Logger) error {
 	var albumArtData []byte
-	if track.AlbumArtURL != "" {
+	finalDir := filepath.Dir(finalPath)
+	artPath := filepath.Join(finalDir, "cover.jpg")
+
+	if data, err := os.ReadFile(artPath); err == nil && len(data) > 0 {
+		albumArtData = data
+	} else if track.AlbumArtURL != "" {
 		var err error
 		albumArtData, err = w.albumArtService.DownloadImage(track.AlbumArtURL)
 		if err != nil {
@@ -459,8 +464,6 @@ func (w *Worker) postProcessTrack(ctx context.Context, track *domain.Track, fina
 	}
 
 	if len(albumArtData) > 0 {
-		finalDir := filepath.Dir(finalPath)
-		artPath := filepath.Join(finalDir, "cover.jpg")
 		if _, artStatErr := os.Stat(artPath); os.IsNotExist(artStatErr) {
 			if writeErr := storage.WriteFile(artPath, albumArtData); writeErr != nil {
 				logger.Error("Failed to save album art", "path", artPath, "error", writeErr)
@@ -869,6 +872,9 @@ func (w *Worker) enrichWithAlbumMetadata(ctx context.Context, track *domain.Trac
 }
 
 func (w *Worker) fetchLyrics(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+	if track.Lyrics != "" && track.Subtitles != "" {
+		return
+	}
 	lyrics, subtitles, err := w.ProviderManager.GetProvider().GetLyrics(ctx, track.ProviderID)
 	if err != nil {
 		logger.Debug("Failed to fetch lyrics", "error", err)
@@ -883,13 +889,18 @@ func (w *Worker) fetchLyrics(ctx context.Context, track *domain.Track, logger *s
 }
 
 func (w *Worker) completeSyncBasic(job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
+	if err := w.reTagTrack(track, logger); err != nil {
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to tag file: %v", err))
+		return
+	}
+
 	track.UpdatedAt = time.Now()
 	if err := w.Repo.UpdateTrack(track); err != nil {
 		logger.Error("Failed to update track", "error", err)
 		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to update track: %v", err))
 		return
 	}
-	w.reTagTrack(track, logger)
+
 	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 	logger.Info(successMsg)
 }
@@ -900,6 +911,16 @@ func (w *Worker) completeSyncWithEnrichment(ctx context.Context, job *domain.Job
 		return
 	}
 
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled")
+		return
+	}
+
+	if err := w.reTagTrack(track, logger); err != nil {
+		_ = w.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to tag file: %v", err))
+		return
+	}
+
 	track.UpdatedAt = time.Now()
 	if err := w.Repo.UpdateTrack(track); err != nil {
 		logger.Error("Failed to update track", "error", err)
@@ -907,20 +928,34 @@ func (w *Worker) completeSyncWithEnrichment(ctx context.Context, job *domain.Job
 		return
 	}
 
-	w.reTagTrack(track, logger)
-
 	_ = w.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 	logger.Info(successMsg)
 }
 
-func (w *Worker) reTagTrack(track *domain.Track, logger *slog.Logger) {
+func (w *Worker) reTagTrack(track *domain.Track, logger *slog.Logger) error {
 	var albumArtData []byte
-	if track.AlbumArtURL != "" {
-		albumArtData, _ = w.albumArtService.DownloadImage(track.AlbumArtURL)
+
+	if track.FilePath != "" {
+		albumDir := filepath.Dir(track.FilePath)
+		coverPath := filepath.Join(albumDir, "cover.jpg")
+		if data, err := os.ReadFile(coverPath); err == nil && len(data) > 0 {
+			albumArtData = data
+		}
 	}
+
+	if len(albumArtData) == 0 && track.AlbumArtURL != "" {
+		var err error
+		albumArtData, err = w.albumArtService.DownloadImage(track.AlbumArtURL)
+		if err != nil {
+			logger.Error("Failed to download album art for tagging", "error", err)
+		}
+	}
+
 	if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
 		logger.Error("Failed to tag file", "error", tagErr)
+		return tagErr
 	}
+	return nil
 }
 
 func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
@@ -937,6 +972,11 @@ func (w *Worker) processSyncHiFiJob(ctx context.Context, job *domain.Job) {
 	} else {
 		w.updateTrackFromCatalog(track, catalogTrack)
 		w.enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, logger)
+	}
+
+	if w.isCancelled(job.ID) {
+		logger.Info("Job cancelled")
+		return
 	}
 
 	w.fetchLyrics(ctx, track, logger)

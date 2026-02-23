@@ -1,13 +1,17 @@
 package app
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"path/filepath"
 
 	"github.com/cesargomez89/navidrums/internal/config"
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/storage"
-	"github.com/cesargomez89/navidrums/internal/tagging"
 )
 
 type AlbumArtService interface {
@@ -74,8 +78,13 @@ func (s *albumArtService) DownloadAndSaveAlbumArt(album *domain.Album, imageURL 
 	}
 
 	imagePath := filepath.Join(albumDir, "cover.jpg")
-	if err := tagging.SaveImageToFile(imageData, imagePath); err != nil {
-		return fmt.Errorf("failed to save album art: %w", err)
+	if len(imageData) > 0 {
+		if err := storage.EnsureDir(filepath.Dir(imagePath)); err != nil {
+			return fmt.Errorf("failed to create directory: %w", err)
+		}
+		if err := storage.WriteFile(imagePath, imageData); err != nil {
+			return fmt.Errorf("failed to save album art: %w", err)
+		}
 	}
 
 	return nil
@@ -98,13 +107,49 @@ func (s *albumArtService) DownloadAndSavePlaylistImage(pl *domain.Playlist, imag
 	}
 
 	imagePath := filepath.Join(playlistsDir, storage.Sanitize(pl.Title)+".jpg")
-	if err := tagging.SaveImageToFile(imageData, imagePath); err != nil {
-		return fmt.Errorf("failed to save playlist image: %w", err)
+	if len(imageData) > 0 {
+		if err := storage.WriteFile(imagePath, imageData); err != nil {
+			return fmt.Errorf("failed to save playlist image: %w", err)
+		}
 	}
 
 	return nil
 }
 
-func (s *albumArtService) DownloadImage(url string) ([]byte, error) {
-	return tagging.DownloadImage(url)
+func (s *albumArtService) DownloadImage(urlStr string) ([]byte, error) {
+	if urlStr == "" {
+		return nil, nil
+	}
+
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid image URL: %w", err)
+	}
+
+	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+		return nil, fmt.Errorf("invalid URL scheme: %s (only http/https allowed)", parsedURL.Scheme)
+	}
+
+	client := &http.Client{Timeout: constants.ImageHTTPTimeout}
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download image: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to download image: status %d (URL: %s)", resp.StatusCode, urlStr)
+	}
+
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, resp.Body); err != nil {
+		return nil, fmt.Errorf("failed to read image data: %w", err)
+	}
+	return buf.Bytes(), nil
 }

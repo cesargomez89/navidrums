@@ -3,9 +3,7 @@ package tagging
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,9 +14,7 @@ import (
 	"github.com/go-flac/flacvorbis"
 	"github.com/go-flac/go-flac"
 
-	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
-	"github.com/cesargomez89/navidrums/internal/storage"
 )
 
 // TagFile writes metadata tags to the audio file at filePath.
@@ -48,29 +44,15 @@ func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
 //  4. Atomic write: temp file → rename.
 
 func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
-	changed, err := metadataChanged(filePath, track, albumArtData)
-	if err != nil {
-		return err
-	}
-	if !changed {
-		return nil
-	}
-
 	f, err := flac.ParseFile(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to parse FLAC file: %w", err)
 	}
 
 	vc := newVorbisComment(track)
+	newVCMeta := vc.Marshal()
 
-	var pictureIdx = -1
-	for i, meta := range f.Meta {
-		if meta.Type == flac.Picture {
-			pictureIdx = i
-			break
-		}
-	}
-
+	var newPicMeta *flac.MetaDataBlock
 	if len(albumArtData) > 0 {
 		pic, err := flacpicture.NewFromImageData(
 			flacpicture.PictureTypeFrontCover,
@@ -81,33 +63,70 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 		if err != nil {
 			return fmt.Errorf("failed to create picture: %w", err)
 		}
-		picMeta := pic.Marshal()
-		if pictureIdx >= 0 {
-			f.Meta[pictureIdx] = &picMeta
-		} else {
-			f.Meta = append(f.Meta, &picMeta)
-		}
-	} else if pictureIdx >= 0 {
-		f.Meta = append(f.Meta[:pictureIdx], f.Meta[pictureIdx+1:]...)
+		pm := pic.Marshal()
+		newPicMeta = &pm
 	}
+
+	var currentVC []byte
+	var currentPic []byte
 
 	var vorbisIdx = -1
-	for i, meta := range f.Meta {
-		if meta.Type == flac.VorbisComment {
+	var pictureIdx = -1
+
+	for i, b := range f.Meta {
+		switch b.Type {
+		case flac.VorbisComment:
 			vorbisIdx = i
-			break
+			vcBlock, err := flacvorbis.ParseFromMetaDataBlock(*b)
+			if err == nil {
+				currentVC = vcBlock.Marshal().Data
+			}
+		case flac.Picture:
+			pictureIdx = i
+			picBlock, err := flacpicture.ParseFromMetaDataBlock(*b)
+			if err == nil {
+				currentPic = picBlock.ImageData
+			}
 		}
 	}
 
-	vcMeta := vc.Marshal()
-	if vorbisIdx >= 0 {
-		f.Meta[vorbisIdx] = &vcMeta
-	} else {
-		f.Meta = append(f.Meta, &vcMeta)
+	changed := !bytes.Equal(currentVC, newVCMeta.Data)
+	if newPicMeta != nil && !bytes.Equal(currentPic, newPicMeta.Data) {
+		changed = true
+	} else if len(albumArtData) == 0 && pictureIdx >= 0 {
+		changed = true
 	}
 
-	if err := f.Save(filePath); err != nil {
-		return fmt.Errorf("failed to save FLAC file: %w", err)
+	if !changed {
+		return nil
+	}
+
+	if pictureIdx >= 0 {
+		f.Meta = append(f.Meta[:pictureIdx], f.Meta[pictureIdx+1:]...)
+		if vorbisIdx > pictureIdx {
+			vorbisIdx--
+		}
+	}
+
+	if newPicMeta != nil {
+		f.Meta = append(f.Meta, newPicMeta)
+	}
+
+	if vorbisIdx >= 0 {
+		f.Meta[vorbisIdx] = &newVCMeta
+	} else {
+		f.Meta = append(f.Meta, &newVCMeta)
+	}
+
+	tempFile := filePath + ".tmp"
+	if err := f.Save(tempFile); err != nil {
+		_ = os.Remove(tempFile)
+		return fmt.Errorf("failed to save temp FLAC file: %w", err)
+	}
+
+	if err := os.Rename(tempFile, filePath); err != nil {
+		_ = os.Remove(tempFile)
+		return fmt.Errorf("failed to rename temp file: %w", err)
 	}
 
 	now := time.Now()
@@ -122,61 +141,6 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	}
 
 	return nil
-}
-
-func metadataChanged(filePath string, track *domain.Track, albumArtData []byte) (bool, error) {
-	f, err := flac.ParseFile(filePath)
-	if err != nil {
-		return false, err
-	}
-
-	vc := newVorbisComment(track)
-	newVCMeta := vc.Marshal()
-	newVC := newVCMeta.Data
-
-	var newPic []byte
-	if len(albumArtData) > 0 {
-		pic, err := flacpicture.NewFromImageData(
-			flacpicture.PictureTypeFrontCover,
-			"Front Cover",
-			albumArtData,
-			http.DetectContentType(albumArtData),
-		)
-		if err != nil {
-			return false, err
-		}
-		newPic = pic.Marshal().Data
-	}
-
-	var currentVC []byte
-	var currentPic []byte
-
-	for _, b := range f.Meta {
-		switch b.Type {
-		case flac.VorbisComment:
-			vcBlock, err := flacvorbis.ParseFromMetaDataBlock(*b)
-			if err != nil {
-				return false, err
-			}
-			currentVC = vcBlock.Marshal().Data
-		case flac.Picture:
-			picBlock, err := flacpicture.ParseFromMetaDataBlock(*b)
-			if err != nil {
-				return false, err
-			}
-			currentPic = picBlock.ImageData
-		}
-	}
-
-	if !bytes.Equal(currentVC, newVC) {
-		return true, nil
-	}
-
-	if len(newPic) > 0 && !bytes.Equal(currentPic, newPic) {
-		return true, nil
-	}
-
-	return false, nil
 }
 
 // newVorbisComment builds a populated VorbisComment from a Track.
@@ -483,56 +447,3 @@ func tagMP4(_ string, _ *domain.Track, _ []byte) error {
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
-
-// DownloadImage fetches raw image bytes from a URL.
-func DownloadImage(urlStr string) ([]byte, error) {
-	if urlStr == "" {
-		return nil, nil
-	}
-
-	parsedURL, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid image URL: %w", err)
-	}
-
-	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
-		return nil, fmt.Errorf("invalid URL scheme: %s (only http/https allowed)", parsedURL.Scheme)
-	}
-
-	client := &http.Client{Timeout: constants.ImageHTTPTimeout}
-	req, err := http.NewRequest("GET", urlStr, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to download image: %w", err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to download image: status %d (URL: %s)", resp.StatusCode, urlStr)
-	}
-
-	var buf bytes.Buffer
-	if _, err := io.Copy(&buf, resp.Body); err != nil {
-		return nil, fmt.Errorf("failed to read image data: %w", err)
-	}
-	return buf.Bytes(), nil
-}
-
-// SaveImageToFile persists image bytes to filePath, creating directories as needed.
-func SaveImageToFile(imageData []byte, filePath string) error {
-	if len(imageData) == 0 {
-		return nil
-	}
-	if err := storage.EnsureDir(filepath.Dir(filePath)); err != nil {
-		return fmt.Errorf("failed to create directory: %w", err)
-	}
-	if err := storage.WriteFile(filePath, imageData); err != nil {
-		return fmt.Errorf("failed to write image file: %w", err)
-	}
-	return nil
-}
