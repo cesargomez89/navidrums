@@ -286,6 +286,11 @@ volumes:
   <img src="screenshots/settings.png" width="300" />
 </p>
 
+<p align="center">
+  <img src="screenshots/track_details.png" width="300" />
+  <img src="screenshots/track_options.png" width="300" />
+</p>
+
 ## Development
 
 Run tests:
