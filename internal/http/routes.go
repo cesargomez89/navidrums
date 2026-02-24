@@ -492,9 +492,6 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 		}
 
 		updates := map[string]interface{}{"genre": genre}
-		if domain.IsSameGenre(genre, track.SubGenre) {
-			updates["sub_genre"] = ""
-		}
 
 		if err := h.DownloadsService.UpdateTrackPartial(track.ID, updates); err != nil {
 			h.Logger.Error("Failed to update genre", "track_id", track.ID, "error", err)

@@ -89,11 +89,9 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 		if track.Year != 2023 {
 			t.Errorf("Year mismatch")
 		}
-		if track.Genre != "Alternative Rock" {
-			t.Errorf("Genre mismatch")
-		}
-		if track.SubGenre != "Indie" {
-			t.Errorf("SubGenre mismatch")
+		// SubGenre is now embedded in Genre as "Genre; subgenre"
+		if track.Genre != "Alternative Rock; Indie" {
+			t.Errorf("Genre mismatch, got %q, want %q", track.Genre, "Alternative Rock; Indie")
 		}
 		if track.ReleaseID != "rel-123" {
 			t.Errorf("ReleaseID mismatch")
@@ -141,11 +139,11 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 		}
 	})
 
-	t.Run("subgenre_dedup", func(t *testing.T) {
+	t.Run("genre_no_subgenre_no_semicolon", func(t *testing.T) {
 		mockClient := &mockMBClient{
 			recording: &musicbrainz.RecordingMetadata{
 				Genre:    "Alternative Rock",
-				SubGenre: "alternative-rock ", // same after normalization
+				SubGenre: "", // no sub-genre
 			},
 		}
 
@@ -157,10 +155,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 		_ = enricher.EnrichTrack(context.Background(), track, logger)
 
 		if track.Genre != "Alternative Rock" {
-			t.Errorf("Genre mismatch")
-		}
-		if track.SubGenre != "" {
-			t.Errorf("Expected SubGenre to be cleared, got %q", track.SubGenre)
+			t.Errorf("Genre mismatch, got %q, want %q", track.Genre, "Alternative Rock")
 		}
 	})
 }

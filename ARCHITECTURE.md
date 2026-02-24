@@ -212,21 +212,22 @@ MusicBrainz enrichment only triggers when `track.ISRC != ""`.
 
 ### Genre Extraction & Normalization
 
-MusicBrainz genre tags are processed to extract both a main genre and a sub-genre:
+MusicBrainz genre tags are processed to extract a main genre and optional sub-genre, which are combined into the `Genre` field as `"MainGenre; subgenre"`:
 
 1. **Fetch tags** from MusicBrainz (with vote counts)
 2. **Aggregate counts** by raw tag name
 3. **Sort tags** by count (descending)
 4. **Determine Main Genre**: Find the first tag (highest count) that maps to a canonical genre via the genre map. If none map, use the raw tag with the highest overall count.
 5. **Determine Sub-Genre**: Use the raw tag with the highest overall count.
-6. **Suppress Sub-Genre**: If the sub-genre is functionally equivalent to the main genre (ignoring case, spaces, hyphens, and underscores), the sub-genre is set to an empty string to avoid redundancy.
+6. **Suppress Sub-Genre**: If the sub-genre is functionally equivalent to the main genre (ignoring case, spaces, hyphens, and underscores), no sub-genre suffix is added.
+7. **Combine**: If a distinct sub-genre exists, the final genre is written as `"MainGenre; subgenre"` into the single `Genre` field.
 
 **Example:**
 - MusicBrainz returns: `["death metal": 5, "thrash metal": 3, "rock": 2]`
 - Highest count tag: `death metal`
 - `death metal` maps to: `Metal`
-- Main Genre: `Metal`
-- Sub-Genre: `death metal`
+- Main Genre: `Metal`, Sub-Genre: `death metal`
+- Stored as: `"Metal; death metal"`
 
 **Configuration:**
 - Default genre map in `internal/musicbrainz/client.go` (`DefaultGenreMap`)

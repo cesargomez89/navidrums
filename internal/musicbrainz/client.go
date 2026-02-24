@@ -8,10 +8,9 @@ import (
 	"net/url"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/cesargomez89/navidrums/internal/constants"
+	"github.com/cesargomez89/navidrums/internal/httpclient"
 )
 
 const (
@@ -20,137 +19,30 @@ const (
 	minRequestInterval = 1550 * time.Millisecond
 )
 
-var DefaultGenreMap = map[string]string{
-	"rock":                "Rock",
-	"alternative rock":    "Rock",
-	"indie rock":          "Rock",
-	"hard rock":           "Rock",
-	"punk":                "Rock",
-	"punk rock":           "Rock",
-	"post-punk":           "Rock",
-	"garage rock":         "Rock",
-	"grunge":              "Rock",
-	"emo":                 "Rock",
-	"soft rock":           "Rock",
-	"industrial rock":     "Rock",
-	"metal":               "Metal",
-	"heavy metal":         "Metal",
-	"nu metal":            "Metal",
-	"death metal":         "Metal",
-	"black metal":         "Metal",
-	"thrash metal":        "Metal",
-	"metalcore":           "Metal",
-	"progressive metal":   "Metal",
-	"rap metal":           "Metal",
-	"alternative metal":   "Metal",
-	"industrial metal":    "Metal",
-	"neue deutsche härte": "Metal",
-	"funk metal":          "Metal",
-	"pop":                 "Pop",
-	"indie pop":           "Pop",
-	"synthpop":            "Pop",
-	"dance pop":           "Pop",
-	"electropop":          "Pop",
-	"latin pop":           "Pop",
-	"art pop":             "Pop",
-	"noise pop":           "Pop",
-	"synth-pop":           "Pop",
-	"dance-pop":           "Pop",
-	"hip hop":             "Hip-Hop",
-	"rap":                 "Hip-Hop",
-	"trap":                "Hip-Hop",
-	"drill":               "Hip-Hop",
-	"boom bap":            "Hip-Hop",
-	"latin trap":          "Hip-Hop",
-	"abstract hip hop":    "Hip-Hop",
-	"hardcore rap":        "Hip-Hop",
-	"hip-hop/rap":         "Hip-Hop",
-	"rap/hip hop":         "Hip-Hop",
-	"melodic rap":         "Hip-Hop",
-	"r&b":                 "R&B",
-	"rnb":                 "R&B",
-	"contemporary r&b":    "R&B",
-	"soul":                "R&B",
-	"neo soul":            "R&B",
-	"funk":                "R&B",
-	"rhythm and blues":    "R&B",
-	"electronic":          "Electronic",
-	"edm":                 "Electronic",
-	"house":               "Electronic",
-	"techno":              "Electronic",
-	"trance":              "Electronic",
-	"dubstep":             "Electronic",
-	"drum and bass":       "Electronic",
-	"dnb":                 "Electronic",
-	"trip hop":            "Electronic",
-	"alternative dance":   "Electronic",
-	"chillwave":           "Electronic",
-	"industrial":          "Electronic",
-	"club/dance":          "Electronic",
-	"disco":               "Electronic",
-	"folktronica":         "Electronic",
-	"microhouse":          "Electronic",
-	"ambient house":       "Electronic",
-	"electronica":         "Electronic",
-	"dub":                 "Electronic",
-	"latin":               "Latin",
-	"reggaeton":           "Latin",
-	"dembow":              "Latin",
-	"salsa":               "Latin",
-	"bachata":             "Latin",
-	"merengue":            "Latin",
-	"cumbia":              "Latin",
-	"bomba":               "Latin",
-	"bossa nova":          "Latin",
-	"regional mexican":    "Regional Mexican",
-	"banda":               "Regional Mexican",
-	"norteño":             "Regional Mexican",
-	"norteno":             "Regional Mexican",
-	"corridos":            "Regional Mexican",
-	"corridos tumbados":   "Regional Mexican",
-	"mariachi":            "Regional Mexican",
-	"grupero":             "Regional Mexican",
-	"sierreño":            "Regional Mexican",
-	"sierreño urbano":     "Regional Mexican",
-	"country":             "Country",
-	"americana":           "Country",
-	"alt-country":         "Country",
-	"jazz":                "Jazz",
-	"smooth jazz":         "Jazz",
-	"bebop":               "Jazz",
-	"classical":           "Classical",
-	"opera":               "Classical",
-	"baroque":             "Classical",
-	"romantic":            "Classical",
-	"orchestral":          "Classical",
-	"classical crossover": "Classical",
-	"folk":                "Folk",
-	"indie folk":          "Folk",
-	"acoustic":            "Folk",
-	"reggae":              "Reggae",
-	"dancehall":           "Reggae",
-	"ska":                 "Reggae",
-	"blues":               "Blues",
-	"soundtrack":          "Soundtrack",
-	"film score":          "Soundtrack",
-}
+// --------------------------------------------------------------------------
+// Client
+// --------------------------------------------------------------------------
 
 type Client struct {
-	httpClient  *http.Client
-	genreMap    map[string]string
-	lastRequest time.Time
-	baseURL     string
-	userAgent   string
-	mu          sync.Mutex
+	httpClient *httpclient.Client
+	genreMap   map[string]string
+	baseURL    string
+	userAgent  string
 }
 
 func NewClient(baseURL string) *Client {
 	return &Client{
 		baseURL:   strings.TrimSuffix(baseURL, "/"),
 		userAgent: DefaultUserAgent,
-		httpClient: &http.Client{
+		httpClient: httpclient.NewClient(&http.Client{
 			Timeout: requestTimeout,
-		},
+			Transport: &http.Transport{
+				MaxIdleConns:        10,
+				MaxIdleConnsPerHost: 2,
+				IdleConnTimeout:     30 * time.Second,
+				TLSHandshakeTimeout: 5 * time.Second,
+			},
+		}, minRequestInterval),
 		genreMap: DefaultGenreMap,
 	}
 }
@@ -165,6 +57,11 @@ func (c *Client) GetGenreMap() map[string]string {
 	return c.genreMap
 }
 
+// --------------------------------------------------------------------------
+// Public API
+// --------------------------------------------------------------------------
+
+// GetRecording fetches full recording metadata, preferring lookup by MBID.
 func (c *Client) GetRecording(ctx context.Context, recordingID, isrc, albumName string) (*RecordingMetadata, error) {
 	if recordingID != "" {
 		return c.GetRecordingByMBID(ctx, recordingID, albumName)
@@ -172,6 +69,7 @@ func (c *Client) GetRecording(ctx context.Context, recordingID, isrc, albumName 
 	return c.GetRecordingByISRC(ctx, isrc, albumName)
 }
 
+// GetGenres fetches genre information only, preferring lookup by MBID.
 func (c *Client) GetGenres(ctx context.Context, recordingID, isrc string) (GenreResult, error) {
 	if recordingID != "" {
 		return c.GetGenresByMBID(ctx, recordingID)
@@ -184,28 +82,17 @@ type GenreResult struct {
 	SubGenre  string
 }
 
+// GetGenresByISRC fetches genre data for a recording identified by ISRC.
 func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult, error) {
 	if isrc == "" {
 		return GenreResult{}, nil
 	}
-
 	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=tags&fmt=json", c.baseURL, url.QueryEscape(isrc))
-
-	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
+	resp, err := c.doGet(ctx, u)
 	if err != nil {
-		return GenreResult{}, fmt.Errorf("failed to create request: %w", err)
+		return GenreResult{}, err
 	}
-
-	req.Header.Set("User-Agent", c.userAgent)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.doWithRetry(ctx, req)
-	if err != nil {
-		return GenreResult{}, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusBadRequest {
 		return GenreResult{}, nil
@@ -223,28 +110,45 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult,
 	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
 }
 
+// GetGenresByMBID fetches genre data for a recording identified by MusicBrainz ID.
+func (c *Client) GetGenresByMBID(ctx context.Context, mbid string) (GenreResult, error) {
+	if mbid == "" {
+		return GenreResult{}, nil
+	}
+	u := fmt.Sprintf("%s/recording/%s?inc=tags&fmt=json", c.baseURL, url.PathEscape(mbid))
+	resp, err := c.doGet(ctx, u)
+	if err != nil {
+		return GenreResult{}, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadRequest {
+		return GenreResult{}, nil
+	}
+	if resp.StatusCode != http.StatusOK {
+		return GenreResult{}, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
+	}
+
+	var rec recording
+	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
+		return GenreResult{}, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	mainGenre, subGenre := extractMainGenre([]recording{rec}, c.genreMap)
+	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
+}
+
+// GetRecordingByISRC fetches full metadata for a recording identified by ISRC.
 func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName string) (*RecordingMetadata, error) {
 	if isrc == "" {
 		return nil, nil
 	}
-
 	u := fmt.Sprintf("%s/recording?query=isrc:%s&inc=artists+releases+release-artists+tags+isrcs&fmt=json&limit=1", c.baseURL, url.QueryEscape(isrc))
-
-	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
+	resp, err := c.doGet(ctx, u)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, err
 	}
-
-	req.Header.Set("User-Agent", c.userAgent)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.doWithRetry(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusBadRequest {
 		return nil, nil
@@ -257,20 +161,71 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
-
 	if len(result.Recordings) == 0 {
 		return nil, nil
 	}
 
-	rec := result.Recordings[0]
-	mainGenre, subGenre := extractMainGenre(result.Recordings, c.genreMap)
+	return buildMetadata(result.Recordings[0], result.Recordings, c.genreMap, albumName, isrc), nil
+}
+
+// GetRecordingByMBID fetches full metadata for a recording identified by MusicBrainz ID.
+func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName string) (*RecordingMetadata, error) {
+	if mbid == "" {
+		return nil, nil
+	}
+	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags+isrcs&fmt=json", c.baseURL, url.PathEscape(mbid))
+	resp, err := c.doGet(ctx, u)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadRequest {
+		return nil, nil
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
+	}
+
+	var rec recording
+	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return buildMetadata(rec, []recording{rec}, c.genreMap, albumName, ""), nil
+}
+
+// --------------------------------------------------------------------------
+// HTTP helpers
+// --------------------------------------------------------------------------
+
+// doGet creates a GET request with standard headers and executes it with retry/rate-limit logic.
+func (c *Client) doGet(ctx context.Context, rawURL string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Accept", "application/json")
+	return c.httpClient.Do(ctx, req)
+}
+
+// --------------------------------------------------------------------------
+// Metadata builders
+// --------------------------------------------------------------------------
+
+// buildMetadata constructs a RecordingMetadata from a decoded recording and its sibling
+// recordings (used for tag aggregation). Pass the known ISRC when available (ISRC search);
+// leave empty when doing an MBID lookup (it will be read from the recording itself).
+func buildMetadata(rec recording, recordings []recording, genreMap map[string]string, albumName, isrc string) *RecordingMetadata {
+	mainGenre, subGenre := extractMainGenre(recordings, genreMap)
 	meta := &RecordingMetadata{
 		RecordingID: rec.ID,
 		Title:       rec.Title,
 		Duration:    rec.Length,
 		Genre:       mainGenre,
 		SubGenre:    subGenre,
-		Tags:        extractTags(result.Recordings),
+		Tags:        extractTags(recordings),
 		ISRC:        isrc,
 	}
 
@@ -278,24 +233,33 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 		meta.ISRC = rec.ISRCs[0]
 	}
 
-	if len(rec.ArtistCredit) > 0 {
-		meta.Artist = rec.ArtistCredit[0].Artist.Name
-		meta.Artists = make([]string, len(rec.ArtistCredit))
-		meta.ArtistIDs = make([]string, len(rec.ArtistCredit))
-		for i, ac := range rec.ArtistCredit {
-			meta.Artists[i] = ac.Artist.Name
-			meta.ArtistIDs[i] = ac.Artist.ID
-			if ac.Type == "composer" && meta.Composer == "" {
-				meta.Composer = ac.Artist.Name
-			}
+	populateArtists(meta, rec.ArtistCredit)
+	populateRelease(meta, selectBestRelease(rec.Releases, albumName))
+	return meta
+}
+
+// populateArtists fills artist-related fields on meta from a list of artist credits.
+func populateArtists(meta *RecordingMetadata, credits []artistCredit) {
+	if len(credits) == 0 {
+		return
+	}
+	meta.Artist = credits[0].Artist.Name
+	meta.Artists = make([]string, len(credits))
+	meta.ArtistIDs = make([]string, len(credits))
+	for i, ac := range credits {
+		meta.Artists[i] = ac.Artist.Name
+		meta.ArtistIDs[i] = ac.Artist.ID
+		if ac.Type == "composer" && meta.Composer == "" {
+			meta.Composer = ac.Artist.Name
 		}
 	}
+}
 
-	rel := selectBestRelease(rec.Releases, albumName)
+// populateRelease fills release-related fields on meta. No-ops when rel is nil.
+func populateRelease(meta *RecordingMetadata, rel *release) {
 	if rel == nil {
-		return meta, nil
+		return
 	}
-
 	meta.Album = rel.Title
 	meta.ReleaseDate = rel.Date
 	meta.ReleaseID = rel.ReleaseGroup.ID
@@ -315,224 +279,56 @@ func (c *Client) GetRecordingByISRC(ctx context.Context, isrc string, albumName 
 			meta.AlbumArtists[i] = ac.Artist.Name
 			meta.AlbumArtistIDs[i] = ac.Artist.ID
 		}
-		if len(meta.AlbumArtists) > 0 {
-			meta.AlbumArtist = meta.AlbumArtists[0]
-		}
+		meta.AlbumArtist = meta.AlbumArtists[0]
 	}
-
-	return meta, nil
 }
 
-func (c *Client) GetRecordingByMBID(ctx context.Context, mbid string, albumName string) (*RecordingMetadata, error) {
-	if mbid == "" {
-		return nil, nil
-	}
-
-	u := fmt.Sprintf("%s/recording/%s?inc=artists+releases+release-groups+artist-credits+tags+isrcs&fmt=json", c.baseURL, url.PathEscape(mbid))
-
-	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("User-Agent", c.userAgent)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.doWithRetry(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadRequest {
-		return nil, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
-	}
-
-	var rec recording
-	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	mainGenre, subGenre := extractMainGenre([]recording{rec}, c.genreMap)
-	meta := &RecordingMetadata{
-		RecordingID: rec.ID,
-		Title:       rec.Title,
-		Duration:    rec.Length,
-		Genre:       mainGenre,
-		SubGenre:    subGenre,
-		Tags:        extractTags([]recording{rec}),
-	}
-
-	if len(rec.ISRCs) > 0 {
-		meta.ISRC = rec.ISRCs[0]
-	}
-
-	if len(rec.ArtistCredit) > 0 {
-		meta.Artist = rec.ArtistCredit[0].Artist.Name
-		meta.Artists = make([]string, len(rec.ArtistCredit))
-		meta.ArtistIDs = make([]string, len(rec.ArtistCredit))
-		for i, ac := range rec.ArtistCredit {
-			meta.Artists[i] = ac.Artist.Name
-			meta.ArtistIDs[i] = ac.Artist.ID
-			if ac.Type == "composer" && meta.Composer == "" {
-				meta.Composer = ac.Artist.Name
-			}
-		}
-	}
-
-	rel := selectBestRelease(rec.Releases, albumName)
-	if rel == nil {
-		return meta, nil
-	}
-
-	meta.Album = rel.Title
-	meta.ReleaseDate = rel.Date
-	meta.ReleaseID = rel.ReleaseGroup.ID
-	meta.Barcode = rel.Barcode
-	meta.CatalogNumber = rel.CatalogNumber
-	meta.ReleaseType = rel.ReleaseGroup.PrimaryType
-	if len(rel.LabelInfo) > 0 {
-		meta.Label = rel.LabelInfo[0].Label.Name
-	}
-	if rel.Date != "" && len(rel.Date) >= 4 {
-		_, _ = fmt.Sscanf(rel.Date, "%d", &meta.Year)
-	}
-	if len(rel.ArtistCredit) > 0 {
-		meta.AlbumArtists = make([]string, len(rel.ArtistCredit))
-		meta.AlbumArtistIDs = make([]string, len(rel.ArtistCredit))
-		for i, ac := range rel.ArtistCredit {
-			meta.AlbumArtists[i] = ac.Artist.Name
-			meta.AlbumArtistIDs[i] = ac.Artist.ID
-		}
-		if len(meta.AlbumArtists) > 0 {
-			meta.AlbumArtist = meta.AlbumArtists[0]
-		}
-	}
-
-	return meta, nil
-}
-
-func (c *Client) GetGenresByMBID(ctx context.Context, mbid string) (GenreResult, error) {
-	if mbid == "" {
-		return GenreResult{}, nil
-	}
-
-	u := fmt.Sprintf("%s/recording/%s?inc=tags&fmt=json", c.baseURL, url.PathEscape(mbid))
-
-	req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
-	if err != nil {
-		return GenreResult{}, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("User-Agent", c.userAgent)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.doWithRetry(ctx, req)
-	if err != nil {
-		return GenreResult{}, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusBadRequest {
-		return GenreResult{}, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return GenreResult{}, fmt.Errorf("musicbrainz returned status %d", resp.StatusCode)
-	}
-
-	var rec recording
-	if err := json.NewDecoder(resp.Body).Decode(&rec); err != nil {
-		return GenreResult{}, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	mainGenre, subGenre := extractMainGenre([]recording{rec}, c.genreMap)
-	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
-}
-
-func (c *Client) doWithRetry(ctx context.Context, req *http.Request) (*http.Response, error) {
-	req.Close = true // prevent EOF errors from generic keep-alive timeouts
-
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	var lastErr error
-	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
-
-		if elapsed := time.Since(c.lastRequest); elapsed < minRequestInterval {
-			time.Sleep(minRequestInterval - elapsed)
-		}
-		c.lastRequest = time.Now()
-
-		resp, err := c.httpClient.Do(req)
-		if err == nil {
-			// MusicBrainz rate limits occasionally return 503 Service Unavailable or 429 Too Many Requests.
-			if resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusTooManyRequests {
-				_ = resp.Body.Close()
-				lastErr = fmt.Errorf("rate limited (status %d)", resp.StatusCode)
-				// Sleep and retry within the loop
-			} else {
-				return resp, nil
-			}
-		} else {
-			lastErr = err
-		}
-		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
-	}
-	return nil, lastErr
-}
+// --------------------------------------------------------------------------
+// Release selection
+// --------------------------------------------------------------------------
 
 func selectBestRelease(releases []release, albumName string) *release {
 	if len(releases) == 0 {
 		return nil
 	}
-
-	normalize := func(s string) string {
-		s = strings.ToLower(s)
-		s = strings.ReplaceAll(s, " ", "")
-		s = strings.ReplaceAll(s, "-", "")
-		s = strings.ReplaceAll(s, "_", "")
-		s = strings.ReplaceAll(s, ",", "")
-		s = strings.ReplaceAll(s, "(", "")
-		s = strings.ReplaceAll(s, ")", "")
-		return s
-	}
-
-	albumNorm := normalize(albumName)
-
+	albumNorm := normalizeString(albumName)
 	for i := range releases {
 		r := &releases[i]
-		releaseNorm := normalize(r.Title)
+		releaseNorm := normalizeString(r.Title)
 		if albumNorm != "" && releaseNorm != "" &&
 			(strings.Contains(releaseNorm, albumNorm) || strings.Contains(albumNorm, releaseNorm)) {
 			return r
 		}
 	}
-
 	return &releases[0]
 }
 
-// normalizeGenreKey strips case, spaces, hyphens and underscores for fuzzy comparison.
-func normalizeGenreKey(s string) string {
+// --------------------------------------------------------------------------
+// String normalization
+// --------------------------------------------------------------------------
+
+// normalizeString lowercases and strips spaces, hyphens, underscores, and common punctuation.
+// Used for fuzzy release and genre matching.
+func normalizeString(s string) string {
 	s = strings.ToLower(s)
-	s = strings.ReplaceAll(s, " ", "")
-	s = strings.ReplaceAll(s, "-", "")
-	s = strings.ReplaceAll(s, "_", "")
+	for _, ch := range []string{" ", "-", "_", ",", "(", ")"} {
+		s = strings.ReplaceAll(s, ch, "")
+	}
 	return s
 }
+
+// normalizeGenreKey is a lighter variant that only strips spaces, hyphens, and underscores.
+func normalizeGenreKey(s string) string {
+	s = strings.ToLower(s)
+	for _, ch := range []string{" ", "-", "_"} {
+		s = strings.ReplaceAll(s, ch, "")
+	}
+	return s
+}
+
+// --------------------------------------------------------------------------
+// Genre / tag extraction
+// --------------------------------------------------------------------------
 
 func extractMainGenre(recordings []recording, genreMap map[string]string) (mainGenre string, subGenre string) {
 	tagCounts := make(map[string]int)
@@ -542,13 +338,11 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 				continue
 			}
 			name := strings.TrimSpace(t.Name)
-			if name == "" {
-				continue
+			if name != "" {
+				tagCounts[name] += t.Count
 			}
-			tagCounts[name] += t.Count
 		}
 	}
-
 	if len(tagCounts) == 0 {
 		return "", ""
 	}
@@ -557,11 +351,10 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 		name  string
 		count int
 	}
-	var tags []tagInfo
+	tags := make([]tagInfo, 0, len(tagCounts))
 	for name, count := range tagCounts {
 		tags = append(tags, tagInfo{name: name, count: count})
 	}
-
 	sort.SliceStable(tags, func(i, j int) bool {
 		if tags[i].count == tags[j].count {
 			return tags[i].name < tags[j].name
@@ -571,25 +364,20 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 
 	highestTag := tags[0].name
 	var maxGenre string
-
 	for _, t := range tags {
-		normalized := strings.ToLower(t.name)
-		if mapped, ok := genreMap[normalized]; ok {
+		if mapped, ok := genreMap[strings.ToLower(t.name)]; ok {
 			maxGenre = mapped
 			break
 		}
 	}
-
-	// Fallback if no tags map to a known genre
 	if maxGenre == "" {
 		maxGenre = highestTag
 	}
 
-	// Suppress sub_genre when it's just a differently-formatted version of maxGenre
+	// Suppress sub_genre when it's just a differently-formatted version of maxGenre.
 	if normalizeGenreKey(highestTag) == normalizeGenreKey(maxGenre) {
 		return maxGenre, ""
 	}
-
 	return maxGenre, highestTag
 }
 
@@ -598,8 +386,7 @@ func extractTags(recordings []recording) []string {
 	for _, rec := range recordings {
 		for _, t := range rec.Tags {
 			if t.Count > 0 {
-				name := strings.TrimSpace(t.Name)
-				if name != "" {
+				if name := strings.TrimSpace(t.Name); name != "" {
 					tagsSet[name] = struct{}{}
 				}
 			}
@@ -614,6 +401,10 @@ func extractTags(recordings []recording) []string {
 	}
 	return tags
 }
+
+// --------------------------------------------------------------------------
+// API response types
+// --------------------------------------------------------------------------
 
 type searchResponse struct {
 	Recordings []recording `json:"recordings"`
@@ -678,27 +469,40 @@ type label struct {
 	Name string `json:"name"`
 }
 
+// --------------------------------------------------------------------------
+// Public output type
+// --------------------------------------------------------------------------
+
 type RecordingMetadata struct {
-	RecordingID    string
-	ReleaseID      string
-	Composer       string
+	// Identifiers
+	RecordingID string
+	ReleaseID   string
+	ISRC        string
+
+	// Track info
+	Title    string
+	Duration int
+	Year     int
+
+	// Artist info
+	Artist    string
+	Artists   []string
+	ArtistIDs []string
+	Composer  string
+
+	// Release / album info
 	Album          string
 	AlbumArtist    string
-	ReleaseDate    string
-	Barcode        string
-	Artist         string
-	CatalogNumber  string
-	Title          string
-	ReleaseType    string
-	Genre          string
-	SubGenre       string
-	Label          string
-	ISRC           string
-	Tags           []string
-	Artists        []string
-	ArtistIDs      []string
 	AlbumArtists   []string
 	AlbumArtistIDs []string
-	Year           int
-	Duration       int
+	ReleaseDate    string
+	ReleaseType    string
+	Label          string
+	Barcode        string
+	CatalogNumber  string
+
+	// Genre / tags
+	Genre    string
+	SubGenre string
+	Tags     []string
 }

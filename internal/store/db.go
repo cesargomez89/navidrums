@@ -40,13 +40,18 @@ var migrations = []migration{
 	},
 	{
 		version:     2,
-		description: "Add MusicBrainz metadata fields",
+		description: "Consolidated beta schema updates and full backfill",
 		up: func(tx *sqlx.Tx) error {
 			columns := []string{
 				"ALTER TABLE tracks ADD COLUMN barcode TEXT",
 				"ALTER TABLE tracks ADD COLUMN catalog_number TEXT",
 				"ALTER TABLE tracks ADD COLUMN release_type TEXT",
 				"ALTER TABLE tracks ADD COLUMN release_id TEXT",
+				"ALTER TABLE tracks ADD COLUMN sub_genre TEXT",
+				"ALTER TABLE tracks ADD COLUMN recording_id TEXT",
+				"ALTER TABLE tracks ADD COLUMN tags TEXT",
+				"ALTER TABLE tracks ADD COLUMN artist_ids TEXT",
+				"ALTER TABLE tracks ADD COLUMN album_artist_ids TEXT",
 			}
 			for _, q := range columns {
 				if _, err := tx.Exec(q); err != nil {
@@ -55,78 +60,79 @@ var migrations = []migration{
 					}
 				}
 			}
-			return nil
-		},
-	},
-	{
-		version:     3,
-		description: "Clear version field (no longer used)",
-		up: func(tx *sqlx.Tx) error {
-			_, err := tx.Exec("UPDATE tracks SET version = ''")
-			return err
-		},
-	},
-	{
-		version:     4,
-		description: "Add sub_genre for original MusicBrainz tag",
-		up: func(tx *sqlx.Tx) error {
-			if _, err := tx.Exec("ALTER TABLE tracks ADD COLUMN sub_genre TEXT"); err != nil {
-				if !strings.Contains(err.Error(), "duplicate column name") {
-					return err
-				}
+
+			// Clear version field (no longer used)
+			if _, err := tx.Exec("UPDATE tracks SET version = ''"); err != nil {
+				return err
 			}
-			return nil
-		},
-	},
-	{
-		version:     5,
-		description: "Add recording_id for MusicBrainz caching",
-		up: func(tx *sqlx.Tx) error {
-			if _, err := tx.Exec("ALTER TABLE tracks ADD COLUMN recording_id TEXT"); err != nil {
-				if !strings.Contains(err.Error(), "duplicate column name") {
-					return err
-				}
-			}
-			return nil
-		},
-	},
-	{
-		version:     6,
-		description: "Backfill NULL sub_genre to empty string",
-		up: func(tx *sqlx.Tx) error {
-			_, err := tx.Exec("UPDATE tracks SET sub_genre = '' WHERE sub_genre IS NULL")
-			return err
-		},
-	},
-	{
-		version:     7,
-		description: "Backfill NULL TEXT columns (added via ALTER TABLE) to empty string",
-		up: func(tx *sqlx.Tx) error {
-			// All columns below were added via ALTER TABLE with no DEFAULT,
-			// leaving existing rows as NULL which cannot be scanned into Go string.
+
+			// Comprehensive backfill to avoid NULL scan panics
 			_, err := tx.Exec(`UPDATE tracks SET
-				album_id        = COALESCE(album_id, ''),
-				file_hash       = COALESCE(file_hash, ''),
-				etag            = COALESCE(etag, ''),
-				barcode         = COALESCE(barcode, ''),
-				catalog_number  = COALESCE(catalog_number, ''),
-				release_type    = COALESCE(release_type, ''),
-				release_id      = COALESCE(release_id, '')
+				artist = COALESCE(artist, ''),
+				album = COALESCE(album, ''),
+				album_id = COALESCE(album_id, ''),
+				album_artist = COALESCE(album_artist, ''),
+				genre = COALESCE(genre, ''),
+				sub_genre = COALESCE(sub_genre, ''),
+				label = COALESCE(label, ''),
+				isrc = COALESCE(isrc, ''),
+				copyright = COALESCE(copyright, ''),
+				composer = COALESCE(composer, ''),
+				album_art_url = COALESCE(album_art_url, ''),
+				lyrics = COALESCE(lyrics, ''),
+				subtitles = COALESCE(subtitles, ''),
+				key_name = COALESCE(key_name, ''),
+				key_scale = COALESCE(key_scale, ''),
+				version = COALESCE(version, ''),
+				description = COALESCE(description, ''),
+				url = COALESCE(url, ''),
+				audio_quality = COALESCE(audio_quality, ''),
+				audio_modes = COALESCE(audio_modes, ''),
+				release_date = COALESCE(release_date, ''),
+				barcode = COALESCE(barcode, ''),
+				catalog_number = COALESCE(catalog_number, ''),
+				release_type = COALESCE(release_type, ''),
+				release_id = COALESCE(release_id, ''),
+				recording_id = COALESCE(recording_id, ''),
+				tags = COALESCE(tags, '[]'),
+				artist_ids = COALESCE(artist_ids, '[]'),
+				album_artist_ids = COALESCE(album_artist_ids, '[]'),
+				error = COALESCE(error, ''),
+				parent_job_id = COALESCE(parent_job_id, ''),
+				file_path = COALESCE(file_path, ''),
+				file_extension = COALESCE(file_extension, ''),
+				file_hash = COALESCE(file_hash, ''),
+				etag = COALESCE(etag, ''),
+				track_number = COALESCE(track_number, 0),
+				disc_number = COALESCE(disc_number, 0),
+				total_tracks = COALESCE(total_tracks, 0),
+				total_discs = COALESCE(total_discs, 0),
+				year = COALESCE(year, 0),
+				duration = COALESCE(duration, 0),
+				bpm = COALESCE(bpm, 0),
+				replay_gain = COALESCE(replay_gain, 0.0),
+				peak = COALESCE(peak, 0.0),
+				explicit = COALESCE(explicit, 0),
+				compilation = COALESCE(compilation, 0)
 			`)
 			return err
 		},
 	},
 	{
-		version:     8,
-		description: "Add tags column for MusicBrainz tags",
+		version:     3,
+		description: "Merge sub_genre into genre as 'genre; subgenre'",
 		up: func(tx *sqlx.Tx) error {
-			if _, err := tx.Exec("ALTER TABLE tracks ADD COLUMN tags TEXT"); err != nil {
-				if !strings.Contains(err.Error(), "duplicate column name") {
-					return err
-				}
-			}
-			// Initialize with empty JSON array to avoid scanning NULLs
-			_, err := tx.Exec("UPDATE tracks SET tags = '[]' WHERE tags IS NULL")
+			// Merge sub_genre into genre for tracks that have a non-empty sub_genre
+			// that is different from the genre (avoid "Genre; Genre" duplication).
+			// The sub_genre column is kept in the DB but no longer used by the app.
+			_, err := tx.Exec(`
+				UPDATE tracks
+				SET genre = genre || '; ' || sub_genre
+				WHERE sub_genre IS NOT NULL
+				  AND TRIM(sub_genre) != ''
+				  AND LOWER(REPLACE(REPLACE(REPLACE(genre, ' ', ''), '-', ''), '_', ''))
+				    != LOWER(REPLACE(REPLACE(REPLACE(sub_genre, ' ', ''), '-', ''), '_', ''))
+			`)
 			return err
 		},
 	},

@@ -220,59 +220,12 @@ func TestSearchResult_Fields(t *testing.T) {
 	}
 }
 
-func TestIsSameGenre(t *testing.T) {
-	tests := []struct {
-		name     string
-		g1       string
-		g2       string
-		expected bool
-	}{
-		{"exact match", "Rock", "Rock", true},
-		{"case insensitive", "Rock", "rock", true},
-		{"ignore spaces", "Hip Hop", "hiphop", true},
-		{"ignore hyphens", "Hip-Hop", "hiphop", true},
-		{"ignore underscores", "Hip_Hop", "hiphop", true},
-		{"complex mismatch", "Rock", "Pop", false},
-		{"empty string first", "", "Rock", false},
-		{"empty string second", "Rock", "", false},
-		{"both empty", "", "", false},
-		{"different words", "Alternative Rock", "Indie Rock", false},
-		{"messy match", "  Hip-Hop  ", "hip_hop", true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if result := IsSameGenre(tt.g1, tt.g2); result != tt.expected {
-				t.Errorf("IsSameGenre(%q, %q) = %v, want %v", tt.g1, tt.g2, result, tt.expected)
-			}
-		})
-	}
-}
-
 func TestTrack_Normalize(t *testing.T) {
-	tests := []struct {
-		name        string
-		genre       string
-		subGenre    string
-		expectedSub string
-	}{
-		{"distinct genres", "Rock", "Indie", "Indie"},
-		{"same genre", "Rock", "Rock", ""},
-		{"same genre ignored case", "Rock", "rock", ""},
-		{"same genre ignored hyphen", "Hip-Hop", "HipHop", ""},
-		{"empty subgenre", "Rock", "", ""},
+	tr := &Track{
+		Genre: "Metal",
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tr := &Track{
-				Genre:    tt.genre,
-				SubGenre: tt.subGenre,
-			}
-			tr.Normalize()
-			if tr.SubGenre != tt.expectedSub {
-				t.Errorf("After Normalize(), SubGenre = %q, want %q", tr.SubGenre, tt.expectedSub)
-			}
-		})
+	tr.Normalize() // should be a no-op
+	if tr.Genre != "Metal" {
+		t.Errorf("Normalize() changed Genre to %q, want %q", tr.Genre, "Metal")
 	}
 }
