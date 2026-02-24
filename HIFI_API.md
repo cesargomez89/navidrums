@@ -56,7 +56,7 @@ Override via `PROVIDER_URL` environment variable.
 ### Design Notes
 - Uses `COUNTRY_CODE` (default `US`) for all requests.
 - Artist view uses a capped concurrency (6) for track aggregation when `skip_tracks=false`.
-- API requests are throttled to ~1.2 requests per second (800ms intervals) to prevent rate limiting.
+- API requests are throttled to ~1.2 requests per second (1100ms intervals) to prevent rate limiting.
 
 ### JSON Examples
 See the `api-examples/hifi-api/` directory for example responses from all endpoints.
