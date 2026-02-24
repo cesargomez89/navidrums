@@ -44,7 +44,11 @@ func main() {
 		appLogger.Error("Failed to init DB", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			appLogger.Error("Failed to close DB", "error", closeErr)
+		}
+	}()
 
 	// Initialize Provider Manager
 	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
@@ -56,7 +60,7 @@ func main() {
 	}
 
 	// Initialize Worker
-	w := downloader.NewWorker(db, providerManager, cfg, appLogger)
+	w := downloader.NewWorker(db, settingsRepo, providerManager, cfg, appLogger)
 	w.Start()
 	defer w.Stop()
 
@@ -88,6 +92,8 @@ func main() {
 			contentType = "text/css"
 		case strings.HasSuffix(path, ".js"):
 			contentType = "application/javascript"
+		case strings.HasSuffix(path, ".ico"):
+			contentType = "image/x-icon"
 		case strings.HasSuffix(path, ".png"):
 			contentType = "image/png"
 		case strings.HasSuffix(path, ".jpg"), strings.HasSuffix(path, ".jpeg"):
@@ -96,8 +102,12 @@ func main() {
 			contentType = "image/svg+xml"
 		}
 		w.Header().Set("Content-Type", contentType)
-		w.Write(data)
+		_, _ = w.Write(data)
 	}))
+
+	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/static/favicon.ico", http.StatusMovedPermanently)
+	})
 
 	// Routes
 	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo)

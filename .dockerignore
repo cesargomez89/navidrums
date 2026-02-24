@@ -1,0 +1,13 @@
+.git
+downloads/
+*.db
+*.log
+Dockerfile*
+docker-compose*
+.env
+.env.sample
+screenshots/
+prompts/
+AGENTS.md
+ARCHITECTURE.md
+DOMAIN.md
