@@ -28,13 +28,14 @@ CREATE TABLE IF NOT EXISTS tracks (
 	album_id TEXT,
 	album_artist TEXT,
 	album_artists TEXT,  -- JSON array
+	artist_ids TEXT,     -- JSON array
+	album_artist_ids TEXT, -- JSON array
 	track_number INTEGER,
 	disc_number INTEGER,
 	total_tracks INTEGER,
 	total_discs INTEGER,
 	year INTEGER,
 	genre TEXT,
-	sub_genre TEXT,
 	label TEXT,
 	isrc TEXT,
 	copyright TEXT,

@@ -86,16 +86,12 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 
 	if track.Genre == "" && meta.Genre != "" {
 		track.Genre = meta.Genre
-	}
-	if track.SubGenre == "" && meta.SubGenre != "" {
-		track.SubGenre = meta.SubGenre
+		if meta.SubGenre != "" {
+			track.Genre = meta.Genre + "; " + meta.SubGenre
+		}
 	}
 	if len(track.Tags) == 0 && len(meta.Tags) > 0 {
 		track.Tags = meta.Tags
-	}
-
-	if domain.IsSameGenre(track.Genre, track.SubGenre) {
-		track.SubGenre = ""
 	}
 
 	return nil

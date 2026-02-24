@@ -14,18 +14,18 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	track.Normalize()
 
 	query := `INSERT INTO tracks (
-		provider_id, title, artist, artists, album, album_id, album_artist, album_artists,
+		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, sub_genre, label, isrc, copyright, composer,
+		year, genre, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id, recording_id, tags,
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
 	) VALUES (
-		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists,
+		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
-		:year, :genre, :sub_genre, :label, :isrc, :copyright, :composer,
+		:year, :genre, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
@@ -78,8 +78,9 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 	query := `UPDATE tracks SET
 		provider_id = :provider_id, title = :title, artist = :artist, artists = :artists,
 		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists,
+		artist_ids = :artist_ids, album_artist_ids = :album_artist_ids,
 		track_number = :track_number, disc_number = :disc_number, total_tracks = :total_tracks, total_discs = :total_discs,
-		year = :year, genre = :genre, sub_genre = :sub_genre, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
+		year = :year, genre = :genre, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
 		duration = :duration, explicit = :explicit, compilation = :compilation, album_art_url = :album_art_url, lyrics = :lyrics, subtitles = :subtitles,
 		bpm = :bpm, key_name = :key_name, key_scale = :key_scale, replay_gain = :replay_gain, peak = :peak,
 		version = :version, description = :description, url = :url, audio_quality = :audio_quality, audio_modes = :audio_modes, release_date = :release_date,
@@ -126,49 +127,42 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		return nil
 	}
 
-	if g, ok := updates["genre"].(string); ok {
-		if sg, ok := updates["sub_genre"].(string); ok {
-			if domain.IsSameGenre(g, sg) {
-				updates["sub_genre"] = ""
-			}
-		}
-	}
-
 	allowedColumns := map[string]bool{
-		"title":          true,
-		"artist":         true,
-		"album":          true,
-		"album_artist":   true,
-		"genre":          true,
-		"sub_genre":      true,
-		"tags":           true,
-		"label":          true,
-		"composer":       true,
-		"copyright":      true,
-		"isrc":           true,
-		"version":        true,
-		"description":    true,
-		"url":            true,
-		"audio_quality":  true,
-		"audio_modes":    true,
-		"lyrics":         true,
-		"subtitles":      true,
-		"barcode":        true,
-		"catalog_number": true,
-		"release_type":   true,
-		"release_date":   true,
-		"key_name":       true,
-		"key_scale":      true,
-		"track_number":   true,
-		"disc_number":    true,
-		"total_tracks":   true,
-		"total_discs":    true,
-		"year":           true,
-		"bpm":            true,
-		"replay_gain":    true,
-		"peak":           true,
-		"compilation":    true,
-		"explicit":       true,
+		"title":            true,
+		"artist":           true,
+		"album":            true,
+		"album_artist":     true,
+		"artist_ids":       true,
+		"album_artist_ids": true,
+		"genre":            true,
+		"tags":             true,
+		"label":            true,
+		"composer":         true,
+		"copyright":        true,
+		"isrc":             true,
+		"version":          true,
+		"description":      true,
+		"url":              true,
+		"audio_quality":    true,
+		"audio_modes":      true,
+		"lyrics":           true,
+		"subtitles":        true,
+		"barcode":          true,
+		"catalog_number":   true,
+		"release_type":     true,
+		"release_date":     true,
+		"key_name":         true,
+		"key_scale":        true,
+		"track_number":     true,
+		"disc_number":      true,
+		"total_tracks":     true,
+		"total_discs":      true,
+		"year":             true,
+		"bpm":              true,
+		"replay_gain":      true,
+		"peak":             true,
+		"compilation":      true,
+		"explicit":         true,
 	}
 
 	setClauses := make([]string, 0, len(updates))
