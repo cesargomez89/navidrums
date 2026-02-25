@@ -290,6 +290,7 @@ type ContainerJobHandler struct {
 	ProviderManager   *catalog.ProviderManager
 	AlbumArtService   app.AlbumArtService
 	PlaylistGenerator app.PlaylistGenerator
+	Enricher          *app.MetadataEnricher
 }
 
 func (h *ContainerJobHandler) Handle(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
@@ -422,7 +423,10 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 			continue
 		}
 
-		track := catalogTrackToDomainTrack(&catalogTrack)
+		track := &domain.Track{
+			ProviderID: catalogTrack.ID,
+		}
+		h.Enricher.UpdateTrackFromCatalog(track, &catalogTrack)
 		track.Status = domain.TrackStatusQueued
 		track.ParentJobID = parentJobID
 		track.CreatedAt = time.Now()
@@ -607,48 +611,4 @@ func (h *SyncJobHandler) reTagTrack(track *domain.Track, logger *slog.Logger) er
 		return tagErr
 	}
 	return nil
-}
-
-// Global helpers
-
-func catalogTrackToDomainTrack(ct *domain.CatalogTrack) *domain.Track {
-	return &domain.Track{
-		ProviderID:     ct.ID,
-		Title:          ct.Title,
-		Artist:         ct.Artist,
-		Artists:        ct.Artists,
-		ArtistIDs:      ct.ArtistIDs,
-		Album:          ct.Album,
-		AlbumArtist:    ct.AlbumArtist,
-		AlbumArtists:   ct.AlbumArtists,
-		AlbumArtistIDs: ct.AlbumArtistIDs,
-		AlbumID:        ct.AlbumID,
-		TrackNumber:    ct.TrackNumber,
-		DiscNumber:     ct.DiscNumber,
-		TotalTracks:    ct.TotalTracks,
-		TotalDiscs:     ct.TotalDiscs,
-		Year:           ct.Year,
-		ReleaseDate:    ct.ReleaseDate,
-		Genre:          ct.Genre,
-		Label:          ct.Label,
-		ISRC:           ct.ISRC,
-		Copyright:      ct.Copyright,
-		Composer:       ct.Composer,
-		Duration:       ct.Duration,
-		Explicit:       ct.ExplicitLyrics,
-		Compilation:    ct.Compilation,
-		AlbumArtURL:    ct.AlbumArtURL,
-		Lyrics:         ct.Lyrics,
-		Subtitles:      ct.Subtitles,
-		BPM:            ct.BPM,
-		Key:            ct.Key,
-		KeyScale:       ct.KeyScale,
-		ReplayGain:     ct.ReplayGain,
-		Peak:           ct.Peak,
-		Version:        ct.Version,
-		Description:    ct.Description,
-		URL:            ct.URL,
-		AudioQuality:   ct.AudioQuality,
-		AudioModes:     ct.AudioModes,
-	}
 }

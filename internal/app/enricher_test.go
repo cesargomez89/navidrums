@@ -13,12 +13,14 @@ import (
 
 // mockMBClient is a simple mock for musicbrainz.ClientInterface
 type mockMBClient struct {
-	recording *musicbrainz.RecordingMetadata
-	genres    *musicbrainz.GenreResult
-	err       error
+	recording          *musicbrainz.RecordingMetadata
+	genres             *musicbrainz.GenreResult
+	err                error
+	getRecordingCalled bool
 }
 
 func (m *mockMBClient) GetRecording(ctx context.Context, recordingID, isrc, fallbackTitle string) (*musicbrainz.RecordingMetadata, error) {
+	m.getRecordingCalled = true
 	return m.recording, m.err
 }
 
@@ -96,6 +98,9 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 		if track.ReleaseID != "rel-123" {
 			t.Errorf("ReleaseID mismatch")
 		}
+		if !mockClient.getRecordingCalled {
+			t.Errorf("Expected GetRecording to be called")
+		}
 	})
 
 	t.Run("no_id_isrc_skips", func(t *testing.T) {
@@ -156,6 +161,41 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 
 		if track.Genre != "Alternative Rock" {
 			t.Errorf("Genre mismatch, got %q, want %q", track.Genre, "Alternative Rock")
+		}
+	})
+
+	t.Run("skips_api_if_fully_populated", func(t *testing.T) {
+		mockClient := &mockMBClient{}
+		enricher := app.NewMetadataEnricher(mockClient, nil)
+
+		id := "mb-rec-1"
+		track := &domain.Track{
+			RecordingID:    &id,
+			Artist:         "A",
+			Artists:        []string{"A"},
+			Title:          "T",
+			Duration:       120,
+			Year:           2000,
+			Barcode:        "B",
+			CatalogNumber:  "C",
+			ReleaseType:    "R",
+			ISRC:           "I",
+			Label:          "L",
+			ReleaseID:      "Rel",
+			ArtistIDs:      []string{"A-1"},
+			AlbumArtistIDs: []string{"AA-1"},
+			AlbumArtists:   []string{"AA"},
+			Composer:       "C",
+			Genre:          "G",
+			Tags:           []string{"T"},
+		}
+
+		err := enricher.EnrichTrack(context.Background(), track, logger)
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+		}
+		if mockClient.getRecordingCalled {
+			t.Errorf("Expected GetRecording to NOT be called for a fully populated track")
 		}
 	})
 }

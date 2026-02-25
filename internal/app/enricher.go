@@ -30,6 +30,11 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 		return nil
 	}
 
+	if !e.needsMusicBrainzEnrichment(track) {
+		logger.Debug("Track already has all MusicBrainz fields, skipping enrichment", "isrc", track.ISRC)
+		return nil
+	}
+
 	meta, mbErr := e.mbClient.GetRecording(ctx, recordingID, track.ISRC, track.Album)
 	if mbErr != nil {
 		return mbErr
@@ -38,6 +43,63 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 		return nil
 	}
 
+	e.fillTrackFromMusicBrainz(track, meta)
+
+	return nil
+}
+
+func (e *MetadataEnricher) FetchLyrics(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+	if track.Lyrics != "" || track.Subtitles != "" {
+		return
+	}
+	lyrics, subtitles, err := e.providerManager.GetProvider().GetLyrics(ctx, track.ProviderID)
+	if err != nil {
+		logger.Debug("Failed to fetch lyrics", "error", err)
+		return
+	}
+	if track.Lyrics == "" && lyrics != "" {
+		track.Lyrics = lyrics
+	}
+	if track.Subtitles == "" && subtitles != "" {
+		track.Subtitles = subtitles
+	}
+}
+
+func (e *MetadataEnricher) EnrichFromHiFi(ctx context.Context, track *domain.Track, logger *slog.Logger) error {
+	if !e.needsHiFiEnrichment(track) {
+		logger.Debug("Track already has all Hi-Fi fields, skipping enrichment", "provider_id", track.ProviderID)
+		e.enrichWithAlbumMetadata(ctx, track, track.AlbumID, logger)
+		return nil
+	}
+
+	catalogTrack, err := e.providerManager.GetProvider().GetTrack(ctx, track.ProviderID)
+	if err != nil {
+		logger.Warn("Failed to fetch Hi-Fi metadata for enrichment", "error", err)
+		return err
+	}
+
+	e.UpdateTrackFromCatalog(track, catalogTrack)
+
+	e.enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, logger)
+	return nil
+}
+
+func (e *MetadataEnricher) EnrichComplete(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+	// 1. Hi-Fi metadata refresh
+	if err := e.EnrichFromHiFi(ctx, track, logger); err != nil {
+		logger.Warn("EnrichFromHiFi failed, proceeding with existing data", "error", err)
+	}
+
+	// 2. MusicBrainz Gap Fill
+	if err := e.EnrichTrack(ctx, track, logger); err != nil {
+		logger.Warn("MusicBrainz enrichment failed", "isrc", track.ISRC, "error", err)
+	}
+
+	// 3. Lyrics
+	e.FetchLyrics(ctx, track, logger)
+}
+
+func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *musicbrainz.RecordingMetadata) {
 	if meta.RecordingID != "" && (track.RecordingID == nil || *track.RecordingID == "") {
 		track.RecordingID = &meta.RecordingID
 	}
@@ -71,7 +133,7 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 	if track.Label == "" && meta.Label != "" {
 		track.Label = meta.Label
 	}
-	if meta.ReleaseID != "" {
+	if track.ReleaseID == "" && meta.ReleaseID != "" {
 		track.ReleaseID = meta.ReleaseID
 	}
 	if len(track.ArtistIDs) == 0 && len(meta.ArtistIDs) > 0 {
@@ -86,7 +148,6 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 	if track.Composer == "" && meta.Composer != "" {
 		track.Composer = meta.Composer
 	}
-
 	if track.Genre == "" && meta.Genre != "" {
 		track.Genre = meta.Genre
 		if meta.SubGenre != "" {
@@ -96,116 +157,111 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 	if len(track.Tags) == 0 && len(meta.Tags) > 0 {
 		track.Tags = meta.Tags
 	}
-
-	return nil
 }
 
-func (e *MetadataEnricher) FetchLyrics(ctx context.Context, track *domain.Track, logger *slog.Logger) {
-	if track.Lyrics != "" || track.Subtitles != "" {
-		return
+func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
+	if track.Title == "" && ct.Title != "" {
+		track.Title = ct.Title
 	}
-	lyrics, subtitles, err := e.providerManager.GetProvider().GetLyrics(ctx, track.ProviderID)
-	if err != nil {
-		logger.Debug("Failed to fetch lyrics", "error", err)
-		return
+	if track.Artist == "" && ct.Artist != "" {
+		track.Artist = ct.Artist
 	}
-	if track.Lyrics == "" && lyrics != "" {
-		track.Lyrics = lyrics
+	if len(track.Artists) == 0 && len(ct.Artists) > 0 {
+		track.Artists = ct.Artists
 	}
-	if track.Subtitles == "" && subtitles != "" {
-		track.Subtitles = subtitles
+	if len(track.ArtistIDs) == 0 && len(ct.ArtistIDs) > 0 {
+		track.ArtistIDs = ct.ArtistIDs
 	}
-}
-
-func (e *MetadataEnricher) EnrichFromHiFi(ctx context.Context, track *domain.Track, logger *slog.Logger) error {
-	catalogTrack, err := e.providerManager.GetProvider().GetTrack(ctx, track.ProviderID)
-	if err != nil {
-		logger.Warn("Failed to fetch Hi-Fi metadata for enrichment", "error", err)
-		return err
+	if track.Album == "" && ct.Album != "" {
+		track.Album = ct.Album
 	}
-
-	oldTotalTracks := track.TotalTracks
-	oldTotalDiscs := track.TotalDiscs
-	oldReleaseDate := track.ReleaseDate
-	oldGenre := track.Genre
-	oldLabel := track.Label
-	oldBarcode := track.Barcode
-
-	e.updateTrackFromCatalog(track, catalogTrack)
-
-	if track.TotalTracks == 0 && oldTotalTracks > 0 {
-		track.TotalTracks = oldTotalTracks
+	if track.AlbumArtist == "" && ct.AlbumArtist != "" {
+		track.AlbumArtist = ct.AlbumArtist
 	}
-	if track.TotalDiscs == 0 && oldTotalDiscs > 0 {
-		track.TotalDiscs = oldTotalDiscs
+	if len(track.AlbumArtists) == 0 && len(ct.AlbumArtists) > 0 {
+		track.AlbumArtists = ct.AlbumArtists
 	}
-	if track.ReleaseDate == "" && oldReleaseDate != "" {
-		track.ReleaseDate = oldReleaseDate
+	if len(track.AlbumArtistIDs) == 0 && len(ct.AlbumArtistIDs) > 0 {
+		track.AlbumArtistIDs = ct.AlbumArtistIDs
 	}
-	if track.Genre == "" && oldGenre != "" {
-		track.Genre = oldGenre
+	if track.AlbumID == "" && ct.AlbumID != "" {
+		track.AlbumID = ct.AlbumID
 	}
-	if track.Label == "" && oldLabel != "" {
-		track.Label = oldLabel
+	if track.TrackNumber == 0 && ct.TrackNumber > 0 {
+		track.TrackNumber = ct.TrackNumber
 	}
-	if track.Barcode == "" && oldBarcode != "" {
-		track.Barcode = oldBarcode
+	if track.DiscNumber == 0 && ct.DiscNumber > 0 {
+		track.DiscNumber = ct.DiscNumber
 	}
-
-	e.enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, logger)
-	return nil
-}
-
-func (e *MetadataEnricher) EnrichComplete(ctx context.Context, track *domain.Track, logger *slog.Logger) {
-	// 1. Hi-Fi metadata refresh
-	if err := e.EnrichFromHiFi(ctx, track, logger); err != nil {
-		logger.Warn("EnrichFromHiFi failed, proceeding with existing data", "error", err)
+	if track.TotalTracks == 0 && ct.TotalTracks > 0 {
+		track.TotalTracks = ct.TotalTracks
 	}
-
-	// 2. MusicBrainz Gap Fill
-	if err := e.EnrichTrack(ctx, track, logger); err != nil {
-		logger.Warn("MusicBrainz enrichment failed", "isrc", track.ISRC, "error", err)
+	if track.TotalDiscs == 0 && ct.TotalDiscs > 0 {
+		track.TotalDiscs = ct.TotalDiscs
 	}
-
-	// 3. Lyrics
-	e.FetchLyrics(ctx, track, logger)
-}
-
-func (e *MetadataEnricher) updateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
-	track.Title = ct.Title
-	track.Artist = ct.Artist
-	track.Artists = ct.Artists
-	track.ArtistIDs = ct.ArtistIDs
-	track.Album = ct.Album
-	track.AlbumArtist = ct.AlbumArtist
-	track.AlbumArtists = ct.AlbumArtists
-	track.AlbumArtistIDs = ct.AlbumArtistIDs
-	track.AlbumID = ct.AlbumID
-	track.TrackNumber = ct.TrackNumber
-	track.DiscNumber = ct.DiscNumber
-	track.TotalTracks = ct.TotalTracks
-	track.TotalDiscs = ct.TotalDiscs
-	track.Year = ct.Year
-	track.ReleaseDate = ct.ReleaseDate
-	track.Genre = ct.Genre
-	track.Label = ct.Label
-	track.ISRC = ct.ISRC
-	track.Copyright = ct.Copyright
-	track.Composer = ct.Composer
-	track.Duration = ct.Duration
-	track.Explicit = ct.ExplicitLyrics
-	track.Compilation = ct.Compilation
-	track.AlbumArtURL = ct.AlbumArtURL
-	track.BPM = ct.BPM
-	track.Key = ct.Key
-	track.KeyScale = ct.KeyScale
-	track.ReplayGain = ct.ReplayGain
-	track.Peak = ct.Peak
-	track.Version = ct.Version
-	track.Description = ct.Description
-	track.URL = ct.URL
-	track.AudioQuality = ct.AudioQuality
-	track.AudioModes = ct.AudioModes
+	if track.Year == 0 && ct.Year > 0 {
+		track.Year = ct.Year
+	}
+	if track.ReleaseDate == "" && ct.ReleaseDate != "" {
+		track.ReleaseDate = ct.ReleaseDate
+	}
+	if track.Genre == "" && ct.Genre != "" {
+		track.Genre = ct.Genre
+	}
+	if track.Label == "" && ct.Label != "" {
+		track.Label = ct.Label
+	}
+	if track.ISRC == "" && ct.ISRC != "" {
+		track.ISRC = ct.ISRC
+	}
+	if track.Copyright == "" && ct.Copyright != "" {
+		track.Copyright = ct.Copyright
+	}
+	if track.Composer == "" && ct.Composer != "" {
+		track.Composer = ct.Composer
+	}
+	if track.Duration == 0 && ct.Duration > 0 {
+		track.Duration = ct.Duration
+	}
+	if !track.Explicit && ct.ExplicitLyrics {
+		track.Explicit = ct.ExplicitLyrics
+	}
+	if !track.Compilation && ct.Compilation {
+		track.Compilation = ct.Compilation
+	}
+	if track.AlbumArtURL == "" && ct.AlbumArtURL != "" {
+		track.AlbumArtURL = ct.AlbumArtURL
+	}
+	if track.BPM == 0 && ct.BPM > 0 {
+		track.BPM = ct.BPM
+	}
+	if track.Key == "" && ct.Key != "" {
+		track.Key = ct.Key
+	}
+	if track.KeyScale == "" && ct.KeyScale != "" {
+		track.KeyScale = ct.KeyScale
+	}
+	if track.ReplayGain == 0 && ct.ReplayGain != 0 {
+		track.ReplayGain = ct.ReplayGain
+	}
+	if track.Peak == 0 && ct.Peak != 0 {
+		track.Peak = ct.Peak
+	}
+	if track.Version == "" && ct.Version != "" {
+		track.Version = ct.Version
+	}
+	if track.Description == "" && ct.Description != "" {
+		track.Description = ct.Description
+	}
+	if track.URL == "" && ct.URL != "" {
+		track.URL = ct.URL
+	}
+	if track.AudioQuality == "" && ct.AudioQuality != "" {
+		track.AudioQuality = ct.AudioQuality
+	}
+	if len(track.AudioModes) == 0 && len(ct.AudioModes) > 0 {
+		track.AudioModes = ct.AudioModes
+	}
 }
 
 func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *domain.Track, albumID string, logger *slog.Logger) {
@@ -225,12 +281,24 @@ func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *d
 		logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
 		return
 	}
-	track.ReleaseDate = album.ReleaseDate
-	track.Label = album.Label
-	track.Genre = album.Genre
-	track.TotalTracks = album.TotalTracks
-	track.TotalDiscs = album.TotalDiscs
-	track.Barcode = album.UPC
+	if track.ReleaseDate == "" && album.ReleaseDate != "" {
+		track.ReleaseDate = album.ReleaseDate
+	}
+	if track.Label == "" && album.Label != "" {
+		track.Label = album.Label
+	}
+	if track.Genre == "" && album.Genre != "" {
+		track.Genre = album.Genre
+	}
+	if track.TotalTracks == 0 && album.TotalTracks > 0 {
+		track.TotalTracks = album.TotalTracks
+	}
+	if track.TotalDiscs == 0 && album.TotalDiscs > 0 {
+		track.TotalDiscs = album.TotalDiscs
+	}
+	if track.Barcode == "" && album.UPC != "" {
+		track.Barcode = album.UPC
+	}
 	if track.AlbumArtist == "" && album.Artist != "" {
 		track.AlbumArtist = album.Artist
 	}
@@ -240,7 +308,30 @@ func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *d
 	if len(track.AlbumArtistIDs) == 0 && len(album.ArtistIDs) > 0 {
 		track.AlbumArtistIDs = album.ArtistIDs
 	}
-	if album.AlbumArtURL != "" {
+	if track.AlbumArtURL == "" && album.AlbumArtURL != "" {
 		track.AlbumArtURL = album.AlbumArtURL
 	}
+}
+
+func (e *MetadataEnricher) missingCommonMetadata(track *domain.Track) bool {
+	return track.Artist == "" || len(track.Artists) == 0 || track.Title == "" ||
+		track.Duration == 0 || track.Year == 0 || track.ISRC == "" || track.Label == "" ||
+		len(track.ArtistIDs) == 0 || len(track.AlbumArtistIDs) == 0 ||
+		len(track.AlbumArtists) == 0 || track.Composer == "" || track.Genre == ""
+}
+
+func (e *MetadataEnricher) needsMusicBrainzEnrichment(track *domain.Track) bool {
+	return track.RecordingID == nil || *track.RecordingID == "" ||
+		track.Barcode == "" || track.CatalogNumber == "" || track.ReleaseType == "" ||
+		track.ReleaseID == "" || len(track.Tags) == 0 || e.missingCommonMetadata(track)
+}
+
+func (e *MetadataEnricher) needsHiFiEnrichment(track *domain.Track) bool {
+	return track.Album == "" || track.AlbumArtist == "" ||
+		track.AlbumID == "" || track.TrackNumber == 0 || track.DiscNumber == 0 ||
+		track.TotalTracks == 0 || track.TotalDiscs == 0 || track.ReleaseDate == "" ||
+		track.Copyright == "" || track.AlbumArtURL == "" || track.BPM == 0 ||
+		track.Key == "" || track.KeyScale == "" || track.ReplayGain == 0 ||
+		track.Peak == 0 || track.Version == "" || track.Description == "" ||
+		track.URL == "" || track.AudioQuality == "" || len(track.AudioModes) == 0 || e.missingCommonMetadata(track)
 }

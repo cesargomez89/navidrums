@@ -162,53 +162,55 @@ All track metadata from the streaming service:
 - URLs: `URL`, `AlbumArtURL`
 
 **MusicBrainz (Secondary Enrichment)**
-Only fills empty fields - never overwrites existing Hi-Fi data:
+Only fills empty fields - never overwrites existing locally saved data:
 - `Artist`, `Artists`, `ArtistIDs`
 - `Title`, `Duration`, `Year`
 - `Barcode`, `CatalogNumber`, `ReleaseType`
 - `AlbumArtistIDs`, `AlbumArtists`
 - `Composer`, `Genre`
-- `ReleaseID` ← Exception: Always overwritten
+- `ReleaseID`
 
 *Note: MusicBrainz API requests are throttled strictly to ~0.6 requests per second (1100ms intervals) to prevent IP blocking.*
 
 ### Precedence Rule
 
-**Hi-Fi data > MusicBrainz data**
+**Local Edits > Hi-Fi data > MusicBrainz data**
 
-MusicBrainz uses a "fill-in-the-blanks" pattern (`worker.go:enrichFromMusicBrainz`):
+Both Hi-Fi and MusicBrainz use a "fill-in-the-blanks" pattern (`internal/app/enricher.go`). They will never overwrite fields that are already populated on the track record.
+If a track is already fully populated with all the fields an API can natively provide, the API request is skipped entirely to optimize performance and prevent rate limiting.
+
 ```go
 if track.Artist == "" && meta.Artist != "" {
     track.Artist = meta.Artist
 }
 ```
 
-MusicBrainz enrichment only triggers when `track.ISRC != ""`.
+MusicBrainz enrichment only triggers when `track.ISRC != ""` or `track.RecordingID != ""`.
 
 ### Sync Job Types
 
 | Job Type | Hi-Fi API | MusicBrainz | Behavior |
 |----------|-----------|-------------|----------|
 | `JobTypeSyncFile` | No | No | Re-tags file with existing DB metadata only |
-| `JobTypeSyncMusicBrainz` | No | Yes (fill gaps) | MusicBrainz enrichment → update DB → re-tag |
-| `JobTypeSyncHiFi` | Yes (overwrite) | Yes (fill gaps) | Hi-Fi refresh → MusicBrainz enrichment → update DB → re-tag |
+| `JobTypeSyncMusicBrainz` | No | Yes (fill gaps) | MusicBrainz API (if needed) → fill gaps → update DB → re-tag |
+| `JobTypeSyncHiFi` | Yes (fill gaps) | Yes (fill gaps) | Hi-Fi API (if needed) → fill gaps → MusicBrainz API (if needed) → fill gaps → update DB → re-tag |
 
 ### Sync Scenarios
 
 | Action | Job Type | Description |
 |--------|----------|-------------|
 | Per-track "Sync to File" button | `JobTypeSyncFile` | Re-tags with current DB metadata |
-| Per-track "Enrich from MusicBrainz" button | `JobTypeSyncMusicBrainz` | Fetches MusicBrainz, fills gaps, re-tags |
-| Per-track "Enrich from Hi-Fi" button | `JobTypeSyncHiFi` | Fetches fresh Hi-Fi data, then MusicBrainz fills gaps, re-tags |
-| "Sync All" | `JobTypeSyncHiFi` | Batch refresh from Hi-Fi + MusicBrainz enrichment for all completed tracks |
+| Per-track "Enrich from MusicBrainz" button | `JobTypeSyncMusicBrainz` | Fetches MusicBrainz, fills remaining gaps, re-tags |
+| Per-track "Enrich from Hi-Fi" button | `JobTypeSyncHiFi` | Fetches Hi-Fi data, fills gaps, then MusicBrainz fills remaining gaps, re-tags |
+| "Sync All" | `JobTypeSyncHiFi` | Batch enrichment from Hi-Fi + MusicBrainz for all completed tracks (filling missing gaps) |
 
 ### Key Points
 
-1. Initial download: Hi-Fi data written first, then MusicBrainz fills gaps
-2. Resyncing via "Enrich from MusicBrainz" only fetches MusicBrainz - never re-fetches Hi-Fi data
-3. "Enrich from Hi-Fi" and "Sync All" fetch fresh Hi-Fi data (overwrites all metadata), then MusicBrainz fills remaining gaps
-4. Manual edits via form are saved before sync jobs run, so they're preserved (unless overwritten by Hi-Fi enrichment)
-5. `ReleaseID` is the only field MusicBrainz can overwrite (for release grouping)
+1. API requests are skipped entirely if a track is already fully populated with the fields that API could potentially provide.
+2. Initial download: Hi-Fi data is fetched and applied, then MusicBrainz fills gaps.
+3. Resyncing via "Enrich from MusicBrainz" only fetches MusicBrainz - never re-fetches Hi-Fi data.
+4. "Enrich from Hi-Fi" and "Sync All" fetch Hi-Fi data (to fill gaps), then MusicBrainz fills remaining gaps.
+5. Manual edits via the web UI form are always preserved, because neither sync job will overwrite a populated field.
 
 ### Genre Extraction & Normalization
 
