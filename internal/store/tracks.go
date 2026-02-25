@@ -96,14 +96,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		return fmt.Errorf("failed to update track: %w", err)
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		return fmt.Errorf("track with id %d not found", track.ID)
-	}
-	return nil
+	return checkRowsAffected(result, "track", track.ID)
 }
 
 func (db *DB) UpdateTrackStatus(id int, status domain.TrackStatus, filePath string) error {
@@ -112,14 +105,7 @@ func (db *DB) UpdateTrackStatus(id int, status domain.TrackStatus, filePath stri
 	if err != nil {
 		return err
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		return fmt.Errorf("track with id %d not found", id)
-	}
-	return nil
+	return checkRowsAffected(result, "track", id)
 }
 
 func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
@@ -185,14 +171,7 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		return fmt.Errorf("failed to update track: %w", err)
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		return fmt.Errorf("track with id %d not found", id)
-	}
-	return nil
+	return checkRowsAffected(result, "track", id)
 }
 
 func (db *DB) MarkTrackCompleted(id int, filePath, fileHash string) error {
@@ -202,14 +181,7 @@ func (db *DB) MarkTrackCompleted(id int, filePath, fileHash string) error {
 	if err != nil {
 		return err
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		return fmt.Errorf("track with id %d not found", id)
-	}
-	return nil
+	return checkRowsAffected(result, "track", id)
 }
 
 func (db *DB) MarkTrackFailed(id int, errorMsg string) error {
@@ -218,14 +190,7 @@ func (db *DB) MarkTrackFailed(id int, errorMsg string) error {
 	if err != nil {
 		return err
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		return fmt.Errorf("track with id %d not found", id)
-	}
-	return nil
+	return checkRowsAffected(result, "track", id)
 }
 
 func (db *DB) ListTracks(limit int) ([]*domain.Track, error) {
@@ -254,8 +219,8 @@ func (db *DB) SearchTracks(q string, limit int) ([]*domain.Track, error) {
 }
 
 func (db *DB) ListCompletedTracksNoGenre(limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = 'completed' AND (genre IS NULL OR TRIM(genre) = '') ORDER BY created_at DESC LIMIT ?`
-	return selectTracks(db, query, limit)
+	query := `SELECT * FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '') ORDER BY created_at DESC LIMIT ?`
+	return selectTracks(db, query, domain.TrackStatusCompleted, limit)
 }
 
 func (db *DB) DeleteTrack(id int) error {
@@ -264,17 +229,17 @@ func (db *DB) DeleteTrack(id int) error {
 }
 
 func (db *DB) IsTrackDownloaded(providerID string) (bool, error) {
-	query := `SELECT COUNT(*) FROM tracks WHERE provider_id = ? AND status = 'completed' AND file_path IS NOT NULL`
+	query := `SELECT COUNT(*) FROM tracks WHERE provider_id = ? AND status = ? AND file_path IS NOT NULL`
 	var count int
-	err := db.Get(&count, query, providerID)
+	err := db.Get(&count, query, providerID, domain.TrackStatusCompleted)
 	return count > 0, err
 }
 
 func (db *DB) GetDownloadedTrack(providerID string) (*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE provider_id = ? AND status = 'completed' AND file_path IS NOT NULL LIMIT 1`
+	query := `SELECT * FROM tracks WHERE provider_id = ? AND status = ? AND file_path IS NOT NULL LIMIT 1`
 
 	var track domain.Track
-	err := db.Get(&track, query, providerID)
+	err := db.Get(&track, query, providerID, domain.TrackStatusCompleted)
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +249,7 @@ func (db *DB) GetDownloadedTrack(providerID string) (*domain.Track, error) {
 func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
 	query := `SELECT 
 		COUNT(*) as total, 
-		SUM(CASE WHEN status = 'completed' AND file_path IS NOT NULL THEN 1 ELSE 0 END) as completed 
+		SUM(CASE WHEN status = ? AND file_path IS NOT NULL THEN 1 ELSE 0 END) as completed 
 	FROM tracks WHERE album_id = ?`
 
 	type result struct {
@@ -292,7 +257,7 @@ func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
 		Completed int `db:"completed"`
 	}
 	var r result
-	if err := db.Get(&r, query, albumID); err != nil {
+	if err := db.Get(&r, query, domain.TrackStatusCompleted, albumID); err != nil {
 		return "", err
 	}
 
@@ -306,13 +271,13 @@ func (db *DB) RecomputeAlbumState(albumID string) (string, error) {
 }
 
 func (db *DB) FindInterruptedTracks() ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status IN ('downloading', 'processing')`
-	return selectTracks(db, query)
+	query := `SELECT * FROM tracks WHERE status IN (?, ?)`
+	return selectTracks(db, query, domain.TrackStatusDownloading, domain.TrackStatusProcessing)
 }
 
 func (db *DB) ListCompletedTracksWithISRC() ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = 'completed' AND isrc != '' ORDER BY created_at DESC`
-	return selectTracks(db, query)
+	query := `SELECT * FROM tracks WHERE status = ? AND isrc != '' ORDER BY created_at DESC`
+	return selectTracks(db, query, domain.TrackStatusCompleted)
 }
 
 func (db *DB) ListAllCompletedTracks() ([]*domain.Track, error) {

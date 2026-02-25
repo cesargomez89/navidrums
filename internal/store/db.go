@@ -167,6 +167,23 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     5,
+		description: "Add indexes for track album_id, track created_at, and job status",
+		up: func(tx *sqlx.Tx) error {
+			queries := []string{
+				"CREATE INDEX IF NOT EXISTS idx_tracks_album_id ON tracks(album_id);",
+				"CREATE INDEX IF NOT EXISTS idx_tracks_created_at ON tracks(created_at DESC);",
+				"CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);",
+			}
+			for _, q := range queries {
+				if _, err := tx.Exec(q); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	},
 }
 
 type dbOps interface {
@@ -186,6 +203,18 @@ type dbOps interface {
 type DB struct {
 	dbOps
 	root *sqlx.DB
+}
+
+// checkRowsAffected ensures that an UPDATE or DELETE affected at least one row
+func checkRowsAffected(result sql.Result, entity string, id interface{}) error {
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return fmt.Errorf("%s with id %v not found", entity, id)
+	}
+	return nil
 }
 
 func NewSQLiteDB(dsn string) (*DB, error) {

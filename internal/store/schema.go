@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS jobs (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_active_source ON jobs(source_id, type) 
 WHERE status IN ('queued', 'running');
 
+CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+
 CREATE TABLE IF NOT EXISTS tracks (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	provider_id TEXT UNIQUE NOT NULL,
@@ -89,6 +91,8 @@ CREATE TABLE IF NOT EXISTS tracks (
 CREATE INDEX IF NOT EXISTS idx_tracks_provider_id ON tracks(provider_id);
 CREATE INDEX IF NOT EXISTS idx_tracks_parent_job_id ON tracks(parent_job_id);
 CREATE INDEX IF NOT EXISTS idx_tracks_status ON tracks(status);
+CREATE INDEX IF NOT EXISTS idx_tracks_album_id ON tracks(album_id);
+CREATE INDEX IF NOT EXISTS idx_tracks_created_at ON tracks(created_at DESC);
 
 CREATE TABLE IF NOT EXISTS cache (
 	key TEXT PRIMARY KEY,
