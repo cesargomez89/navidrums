@@ -24,20 +24,38 @@ func NewDownloadsService(repo *store.DB, log *logger.Logger) *DownloadsService {
 	return &DownloadsService{Repo: repo, Logger: log}
 }
 
-func (s *DownloadsService) ListDownloads() ([]*domain.Track, error) {
-	return s.Repo.ListCompletedTracks(defaultLimit)
+func (s *DownloadsService) ListDownloads(page, pageSize int) ([]*domain.Track, int, error) {
+	offset := (page - 1) * pageSize
+	total, err := s.Repo.CountCompletedTracks()
+	if err != nil {
+		return nil, 0, err
+	}
+	tracks, err := s.Repo.ListCompletedTracks(offset, pageSize)
+	return tracks, total, err
 }
 
-func (s *DownloadsService) SearchDownloads(query string) ([]*domain.Track, error) {
-	return s.Repo.SearchTracks(query, defaultLimit)
+func (s *DownloadsService) SearchDownloads(query string, page, pageSize int) ([]*domain.Track, int, error) {
+	offset := (page - 1) * pageSize
+	total, err := s.Repo.CountSearchTracks(query)
+	if err != nil {
+		return nil, 0, err
+	}
+	tracks, err := s.Repo.SearchTracks(query, offset, pageSize)
+	return tracks, total, err
 }
 
-func (s *DownloadsService) FilterDownloads(filter string) ([]*domain.Track, error) {
+func (s *DownloadsService) FilterDownloads(filter string, page, pageSize int) ([]*domain.Track, int, error) {
+	offset := (page - 1) * pageSize
 	switch filter {
 	case "no_genre":
-		return s.Repo.ListCompletedTracksNoGenre(defaultLimit)
+		total, err := s.Repo.CountCompletedTracksNoGenre()
+		if err != nil {
+			return nil, 0, err
+		}
+		tracks, err := s.Repo.ListCompletedTracksNoGenre(offset, pageSize)
+		return tracks, total, err
 	default:
-		return s.Repo.ListCompletedTracks(defaultLimit)
+		return s.ListDownloads(page, pageSize)
 	}
 }
 

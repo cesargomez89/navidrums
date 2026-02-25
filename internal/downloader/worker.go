@@ -200,7 +200,7 @@ func (w *Worker) processJobs() {
 		case <-w.ctx.Done():
 			return
 		case <-ticker.C:
-			jobs, err := w.Repo.ListActiveJobs()
+			jobs, err := w.Repo.ListActiveJobs(0, 50)
 			if err != nil {
 				w.Logger.Error("Failed to list jobs", "error", err)
 				continue

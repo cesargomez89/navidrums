@@ -71,7 +71,7 @@ func TestDB_Jobs(t *testing.T) {
 	}
 
 	// Test ListActiveJobs
-	list, err := db.ListActiveJobs()
+	list, err := db.ListActiveJobs(0, 10)
 	if err != nil {
 		t.Errorf("ListActiveJobs failed: %v", err)
 	}
@@ -187,7 +187,7 @@ func TestDB_Tracks(t *testing.T) {
 	}
 
 	// Test SearchTracks
-	results, err := db.SearchTracks("Test", 10)
+	results, err := db.SearchTracks("Test", 0, 10)
 	if err != nil {
 		t.Errorf("SearchTracks failed: %v", err)
 	}
@@ -195,7 +195,7 @@ func TestDB_Tracks(t *testing.T) {
 		t.Errorf("Expected 1 result, got %d", len(results))
 	}
 
-	results, err = db.SearchTracks("Nonexistent", 10)
+	results, err = db.SearchTracks("Nonexistent", 0, 10)
 	if err != nil {
 		t.Errorf("SearchTracks failed: %v", err)
 	}
@@ -260,7 +260,7 @@ func TestDB_TrackListOperations(t *testing.T) {
 	}
 
 	// Test ListCompletedTracks
-	completed, err := db.ListCompletedTracks(10)
+	completed, err := db.ListCompletedTracks(0, 10)
 	if err != nil {
 		t.Errorf("ListCompletedTracks failed: %v", err)
 	}
@@ -269,7 +269,7 @@ func TestDB_TrackListOperations(t *testing.T) {
 	}
 
 	// Test ListTracksByStatus
-	queued, err := db.ListTracksByStatus(domain.TrackStatusQueued, 10)
+	queued, err := db.ListTracksByStatus(domain.TrackStatusQueued, 0, 10)
 	if err != nil {
 		t.Errorf("ListTracksByStatus failed: %v", err)
 	}
@@ -376,7 +376,7 @@ func TestDB_JobStats(t *testing.T) {
 		t.Errorf("ClearFinishedJobs failed: %v", err)
 	}
 
-	finished, err := db.ListFinishedJobs(10)
+	finished, err := db.ListFinishedJobs(0, 10)
 	if err != nil {
 		t.Errorf("ListFinishedJobs failed: %v", err)
 	}
@@ -843,7 +843,7 @@ func TestDB_ListFinishedJobs(t *testing.T) {
 		}
 	}
 
-	result, err := db.ListFinishedJobs(10)
+	result, err := db.ListFinishedJobs(0, 10)
 	if err != nil {
 		t.Fatalf("ListFinishedJobs failed: %v", err)
 	}
