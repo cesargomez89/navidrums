@@ -69,22 +69,29 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 	if existingTrack != nil {
 		track = existingTrack
 	} else {
-		catalogTrack, err := h.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
-		if err != nil {
-			logger.Error("Failed to fetch track metadata", "error", err)
-			_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch track: %v", err))
-			return nil, "", false, err
+		track = &domain.Track{
+			ProviderID:  job.SourceID,
+			Status:      domain.TrackStatusMissing,
+			ParentJobID: job.ID,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
+	}
 
-		track = catalogTrackToDomainTrack(catalogTrack)
+	h.Enricher.EnrichComplete(ctx, track, logger)
 
-		enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, h.ProviderManager, logger)
+	if track.Title == "" && track.Artist == "" {
+		err := fmt.Errorf("failed to fetch primary track metadata")
+		logger.Error(err.Error())
+		_ = h.Repo.UpdateJobError(job.ID, err.Error())
+		return nil, "", false, err
+	}
 
-		track.Status = domain.TrackStatusMissing
-		track.ParentJobID = job.ID
-		track.CreatedAt = time.Now()
-		track.UpdatedAt = time.Now()
-
+	if existingTrack != nil {
+		if err := h.Repo.UpdateTrack(track); err != nil {
+			logger.Warn("Failed to update track after enrichment", "error", err)
+		}
+	} else {
 		if err := h.Repo.CreateTrack(track); err != nil {
 			logger.Error("Failed to create track record", "error", err)
 			_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create track record: %v", err))
@@ -210,14 +217,6 @@ func (h *TrackJobHandler) postProcessTrack(ctx context.Context, track *domain.Tr
 		if err != nil {
 			logger.Error("Failed to download album art for tagging", "error", err)
 		}
-	}
-
-	if track.Lyrics == "" || track.Subtitles == "" {
-		fetchLyrics(ctx, track, h.ProviderManager, logger)
-	}
-
-	if err := h.Enricher.EnrichTrack(ctx, track, logger); err != nil {
-		logger.Warn("MusicBrainz enrichment failed", "isrc", track.ISRC, "error", err)
 	}
 
 	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
@@ -474,49 +473,14 @@ func (h *SyncJobHandler) processSyncHiFiJob(ctx context.Context, job *domain.Job
 		return nil
 	}
 
-	catalogTrack, err := h.ProviderManager.GetProvider().GetTrack(ctx, job.SourceID)
-	if err != nil {
-		logger.Warn("Failed to fetch Hi-Fi metadata, using existing data", "error", err)
-	} else {
-		oldTotalTracks := track.TotalTracks
-		oldTotalDiscs := track.TotalDiscs
-		oldReleaseDate := track.ReleaseDate
-		oldGenre := track.Genre
-		oldLabel := track.Label
-		oldBarcode := track.Barcode
-
-		updateTrackFromCatalog(track, catalogTrack)
-
-		if track.TotalTracks == 0 && oldTotalTracks > 0 {
-			track.TotalTracks = oldTotalTracks
-		}
-		if track.TotalDiscs == 0 && oldTotalDiscs > 0 {
-			track.TotalDiscs = oldTotalDiscs
-		}
-		if track.ReleaseDate == "" && oldReleaseDate != "" {
-			track.ReleaseDate = oldReleaseDate
-		}
-		if track.Genre == "" && oldGenre != "" {
-			track.Genre = oldGenre
-		}
-		if track.Label == "" && oldLabel != "" {
-			track.Label = oldLabel
-		}
-		if track.Barcode == "" && oldBarcode != "" {
-			track.Barcode = oldBarcode
-		}
-
-		enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, h.ProviderManager, logger)
-	}
+	h.Enricher.EnrichComplete(ctx, track, logger)
 
 	if h.isCancelled(job.ID) {
 		logger.Info("Job cancelled")
 		return nil
 	}
 
-	fetchLyrics(ctx, track, h.ProviderManager, logger)
-
-	h.completeSyncWithEnrichment(ctx, job, track, logger, "Sync Hi-Fi job completed")
+	h.completeSyncBasic(job, track, logger, "Sync Hi-Fi job completed")
 	return nil
 }
 
@@ -649,6 +613,7 @@ func catalogTrackToDomainTrack(ct *domain.CatalogTrack) *domain.Track {
 		AlbumArtist:    ct.AlbumArtist,
 		AlbumArtists:   ct.AlbumArtists,
 		AlbumArtistIDs: ct.AlbumArtistIDs,
+		AlbumID:        ct.AlbumID,
 		TrackNumber:    ct.TrackNumber,
 		DiscNumber:     ct.DiscNumber,
 		TotalTracks:    ct.TotalTracks,
@@ -677,86 +642,4 @@ func catalogTrackToDomainTrack(ct *domain.CatalogTrack) *domain.Track {
 		AudioQuality:   ct.AudioQuality,
 		AudioModes:     ct.AudioModes,
 	}
-}
-
-func enrichWithAlbumMetadata(ctx context.Context, track *domain.Track, albumID string, providerManager *catalog.ProviderManager, logger *slog.Logger) {
-	if albumID == "" {
-		return
-	}
-
-	hasAlbumMetadata := track.TotalTracks > 0 && track.TotalDiscs > 0 &&
-		track.ReleaseDate != "" && track.Genre != "" && track.Label != ""
-	if hasAlbumMetadata {
-		logger.Debug("Track already has album metadata, skipping album fetch")
-		return
-	}
-
-	album, err := providerManager.GetProvider().GetAlbum(ctx, albumID)
-	if err != nil {
-		logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
-		return
-	}
-	track.ReleaseDate = album.ReleaseDate
-	track.Label = album.Label
-	track.Genre = album.Genre
-	track.TotalTracks = album.TotalTracks
-	track.TotalDiscs = album.TotalDiscs
-	track.Barcode = album.UPC
-	if album.AlbumArtURL != "" {
-		track.AlbumArtURL = album.AlbumArtURL
-	}
-}
-
-func fetchLyrics(ctx context.Context, track *domain.Track, providerManager *catalog.ProviderManager, logger *slog.Logger) {
-	if track.Lyrics != "" || track.Subtitles != "" {
-		return
-	}
-	lyrics, subtitles, err := providerManager.GetProvider().GetLyrics(ctx, track.ProviderID)
-	if err != nil {
-		logger.Debug("Failed to fetch lyrics", "error", err)
-		return
-	}
-	if track.Lyrics == "" && lyrics != "" {
-		track.Lyrics = lyrics
-	}
-	if track.Subtitles == "" && subtitles != "" {
-		track.Subtitles = subtitles
-	}
-}
-
-func updateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
-	track.Title = ct.Title
-	track.Artist = ct.Artist
-	track.Artists = ct.Artists
-	track.ArtistIDs = ct.ArtistIDs
-	track.Album = ct.Album
-	track.AlbumArtist = ct.AlbumArtist
-	track.AlbumArtists = ct.AlbumArtists
-	track.AlbumArtistIDs = ct.AlbumArtistIDs
-	track.AlbumID = ct.AlbumID
-	track.TrackNumber = ct.TrackNumber
-	track.DiscNumber = ct.DiscNumber
-	track.TotalTracks = ct.TotalTracks
-	track.TotalDiscs = ct.TotalDiscs
-	track.Year = ct.Year
-	track.ReleaseDate = ct.ReleaseDate
-	track.Genre = ct.Genre
-	track.Label = ct.Label
-	track.ISRC = ct.ISRC
-	track.Copyright = ct.Copyright
-	track.Composer = ct.Composer
-	track.Duration = ct.Duration
-	track.Explicit = ct.ExplicitLyrics
-	track.Compilation = ct.Compilation
-	track.AlbumArtURL = ct.AlbumArtURL
-	track.BPM = ct.BPM
-	track.Key = ct.Key
-	track.KeyScale = ct.KeyScale
-	track.ReplayGain = ct.ReplayGain
-	track.Peak = ct.Peak
-	track.Version = ct.Version
-	track.Description = ct.Description
-	track.URL = ct.URL
-	track.AudioQuality = ct.AudioQuality
-	track.AudioModes = ct.AudioModes
 }
