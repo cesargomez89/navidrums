@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"strings"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -64,70 +65,70 @@ func (r *TrackUpdateRequest) Validate() []ValidationError {
 func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	updates := make(map[string]interface{})
 
-	if r.Genre != nil && *r.Genre != "" {
+	if r.Genre != nil {
 		updates["genre"] = *r.Genre
 	}
-	if r.Title != nil && *r.Title != "" {
+	if r.Title != nil {
 		updates["title"] = *r.Title
 	}
-	if r.Artist != nil && *r.Artist != "" {
+	if r.Artist != nil {
 		updates["artist"] = *r.Artist
 	}
-	if r.Album != nil && *r.Album != "" {
+	if r.Album != nil {
 		updates["album"] = *r.Album
 	}
-	if r.AlbumArtist != nil && *r.AlbumArtist != "" {
+	if r.AlbumArtist != nil {
 		updates["album_artist"] = *r.AlbumArtist
 	}
-	if r.Label != nil && *r.Label != "" {
+	if r.Label != nil {
 		updates["label"] = *r.Label
 	}
-	if r.Composer != nil && *r.Composer != "" {
+	if r.Composer != nil {
 		updates["composer"] = *r.Composer
 	}
-	if r.Copyright != nil && *r.Copyright != "" {
+	if r.Copyright != nil {
 		updates["copyright"] = *r.Copyright
 	}
-	if r.ISRC != nil && *r.ISRC != "" {
+	if r.ISRC != nil {
 		updates["isrc"] = *r.ISRC
 	}
-	if r.Version != nil && *r.Version != "" {
+	if r.Version != nil {
 		updates["version"] = *r.Version
 	}
-	if r.Description != nil && *r.Description != "" {
+	if r.Description != nil {
 		updates["description"] = *r.Description
 	}
-	if r.URL != nil && *r.URL != "" {
+	if r.URL != nil {
 		updates["url"] = *r.URL
 	}
-	if r.AudioQuality != nil && *r.AudioQuality != "" {
+	if r.AudioQuality != nil {
 		updates["audio_quality"] = *r.AudioQuality
 	}
-	if r.AudioModes != nil && *r.AudioModes != "" {
+	if r.AudioModes != nil {
 		updates["audio_modes"] = *r.AudioModes
 	}
-	if r.Lyrics != nil && *r.Lyrics != "" {
-		updates["lyrics"] = *r.Lyrics
+	if r.Lyrics != nil {
+		updates["lyrics"] = strings.ReplaceAll(*r.Lyrics, "\r", "")
 	}
-	if r.Subtitles != nil && *r.Subtitles != "" {
-		updates["subtitles"] = *r.Subtitles
+	if r.Subtitles != nil {
+		updates["subtitles"] = strings.ReplaceAll(*r.Subtitles, "\r", "")
 	}
-	if r.Barcode != nil && *r.Barcode != "" {
+	if r.Barcode != nil {
 		updates["barcode"] = *r.Barcode
 	}
-	if r.CatalogNumber != nil && *r.CatalogNumber != "" {
+	if r.CatalogNumber != nil {
 		updates["catalog_number"] = *r.CatalogNumber
 	}
-	if r.ReleaseType != nil && *r.ReleaseType != "" {
+	if r.ReleaseType != nil {
 		updates["release_type"] = *r.ReleaseType
 	}
-	if r.ReleaseDate != nil && *r.ReleaseDate != "" {
+	if r.ReleaseDate != nil {
 		updates["release_date"] = *r.ReleaseDate
 	}
-	if r.Key != nil && *r.Key != "" {
+	if r.Key != nil {
 		updates["key_name"] = *r.Key
 	}
-	if r.KeyScale != nil && *r.KeyScale != "" {
+	if r.KeyScale != nil {
 		updates["key_scale"] = *r.KeyScale
 	}
 
