@@ -398,12 +398,14 @@ func TestTrackUpdateRequest_ToUpdates(t *testing.T) {
 		Year:        intPtr(2023),
 		BPM:         intPtr(120),
 		Compilation: boolPtr(true),
+		Lyrics:      strPtr("Line 1\r\nLine 2"),
+		Subtitles:   strPtr("[00:12.00] Line 1\r\n[00:15.00] Line 2"),
 	}
 
 	updates := req.ToUpdates()
 
-	if len(updates) != 4 {
-		t.Errorf("ToUpdates() returned %d items, want 4", len(updates))
+	if len(updates) != 7 {
+		t.Errorf("ToUpdates() returned %d items, want 7", len(updates))
 	}
 	if updates["title"] != "New Title" {
 		t.Errorf("ToUpdates()[title] = %v, want 'New Title'", updates["title"])
@@ -417,9 +419,15 @@ func TestTrackUpdateRequest_ToUpdates(t *testing.T) {
 	if updates["compilation"] != true {
 		t.Errorf("ToUpdates()[compilation] = %v, want true", updates["compilation"])
 	}
+	if updates["lyrics"] != "Line 1\nLine 2" {
+		t.Errorf("ToUpdates()[lyrics] = %q, want %q", updates["lyrics"], "Line 1\nLine 2")
+	}
+	if updates["subtitles"] != "[00:12.00] Line 1\n[00:15.00] Line 2" {
+		t.Errorf("ToUpdates()[subtitles] = %q, want %q", updates["subtitles"], "[00:12.00] Line 1\n[00:15.00] Line 2")
+	}
 
-	if _, ok := updates["artist"]; ok {
-		t.Error("ToUpdates() should not include empty string fields")
+	if _, ok := updates["artist"]; !ok {
+		t.Error("ToUpdates() should include empty string fields")
 	}
 }
 
