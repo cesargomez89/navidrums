@@ -71,7 +71,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 			}
 		}
 
-		resp, err := c.httpClient.Do(req)
+		reqClone := req.Clone(ctx)
+		resp, err := c.httpClient.Do(reqClone)
 		if err != nil {
 			lastErr = err
 		} else if resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusTooManyRequests {
@@ -79,7 +80,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 			_ = resp.Body.Close()
 			lastErr = fmt.Errorf("rate limited (status %d)", resp.StatusCode)
 
-			backoffWait := time.Duration(attempt+1) * constants.DefaultRetryBase
+			backoffWait := time.Duration(1<<attempt) * constants.DefaultRetryBase
+			if backoffWait > 60*time.Second {
+				backoffWait = 60 * time.Second
+			}
 			if retryAfter > backoffWait {
 				backoffWait = retryAfter
 			}
@@ -104,7 +108,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 			return resp, nil
 		}
 
-		backoffWait := time.Duration(attempt+1) * constants.DefaultRetryBase
+		backoffWait := time.Duration(1<<attempt) * constants.DefaultRetryBase
+		if backoffWait > 60*time.Second {
+			backoffWait = 60 * time.Second
+		}
 		backoffTimer := time.NewTimer(backoffWait)
 		select {
 		case <-ctx.Done():

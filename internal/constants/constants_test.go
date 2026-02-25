@@ -68,8 +68,8 @@ func TestTimeouts(t *testing.T) {
 }
 
 func TestRetryCount(t *testing.T) {
-	if DefaultRetryCount != 3 {
-		t.Errorf("Expected DefaultRetryCount to be 3, got %d", DefaultRetryCount)
+	if DefaultRetryCount != 8 {
+		t.Errorf("Expected DefaultRetryCount to be 8, got %d", DefaultRetryCount)
 	}
 }
 

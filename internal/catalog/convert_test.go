@@ -31,10 +31,11 @@ func TestAPIArtistAggregationResponse_ToAlbums(t *testing.T) {
 	p := &HifiProvider{}
 	resp := APIArtistAggregationResponse{}
 	resp.Albums.Items = []struct {
-		ID           json.Number "json:\"id\""
-		Title        string      "json:\"title\""
-		Cover        string      "json:\"cover\""
-		AudioQuality string      "json:\"audioQuality\""
+		ID            json.Number      "json:\"id\""
+		Title         string           "json:\"title\""
+		Cover         string           "json:\"cover\""
+		AudioQuality  string           "json:\"audioQuality\""
+		MediaMetadata APIMediaMetadata "json:\"mediaMetadata\""
 	}{
 		{ID: json.Number("1"), Title: "Album 1", Cover: "cover-1", AudioQuality: "LOSSLESS"},
 	}
@@ -65,11 +66,12 @@ func TestAPIArtistAggregationResponse_ToTopTracks(t *testing.T) {
 			ID   json.Number "json:\"id\""
 			Name string      "json:\"name\""
 		} "json:\"artist\""
-		ID           json.Number "json:\"id\""
-		Title        string      "json:\"title\""
-		AudioQuality string      "json:\"audioQuality\""
-		TrackNumber  int         "json:\"trackNumber\""
-		Duration     int         "json:\"duration\""
+		ID            json.Number      "json:\"id\""
+		Title         string           "json:\"title\""
+		AudioQuality  string           "json:\"audioQuality\""
+		MediaMetadata APIMediaMetadata "json:\"mediaMetadata\""
+		TrackNumber   int              "json:\"trackNumber\""
+		Duration      int              "json:\"duration\""
 	}{
 		{
 			ID:           json.Number("101"),

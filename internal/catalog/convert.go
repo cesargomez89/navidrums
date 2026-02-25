@@ -26,7 +26,7 @@ func (r APIArtistAggregationResponse) ToAlbums(artistName string, p *HifiProvide
 			Title:        item.Title,
 			Artist:       artistName,
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Cover, "640x640"),
-			AudioQuality: item.AudioQuality,
+			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 		})
 	}
 	return albums
@@ -44,7 +44,7 @@ func (r APIArtistAggregationResponse) ToTopTracks(p *HifiProvider) []domain.Cata
 			Album:        item.Album.Title,
 			TrackNumber:  item.TrackNumber,
 			Duration:     item.Duration,
-			AudioQuality: item.AudioQuality,
+			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 		})
 	}
@@ -77,7 +77,7 @@ func (r APIAlbumResponse) ToDomain(p *HifiProvider) *domain.Album {
 		AlbumType:    data.Type,
 		URL:          data.URL,
 		Explicit:     data.Explicit,
-		AudioQuality: data.AudioQuality,
+		AudioQuality: resolveAudioQuality(data.AudioQuality, data.MediaMetadata.Tags),
 		Genre:        data.Genre,
 		Label:        data.Label,
 	}
@@ -135,7 +135,7 @@ func (r APIAlbumTrackItem) ToDomain(album *domain.Album) domain.CatalogTrack {
 		ReplayGain:     r.ReplayGain,
 		Peak:           r.Peak,
 		URL:            r.URL,
-		AudioQuality:   r.AudioQuality,
+		AudioQuality:   resolveAudioQuality(r.AudioQuality, r.MediaMetadata.Tags),
 		Genre:          album.Genre,
 		Label:          album.Label,
 	}
@@ -248,7 +248,7 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 		ReplayGain:     data.ReplayGain,
 		Peak:           data.Peak,
 		URL:            data.URL,
-		AudioQuality:   data.AudioQuality,
+		AudioQuality:   resolveAudioQuality(data.AudioQuality, data.MediaMetadata.Tags),
 		AudioModes:     audioModes,
 		Label:          data.Album.Label,
 		Genre:          data.Album.Genre,
@@ -266,10 +266,11 @@ func (r APISimilarAlbumsResponse) ToDomain(p *HifiProvider) []domain.Album {
 		}
 
 		albums = append(albums, domain.Album{
-			ID:          formatID(item.ID),
-			Title:       item.Title,
-			Artist:      artistName,
-			AlbumArtURL: p.ensureAbsoluteURL(item.Cover, "640x640"),
+			ID:           formatID(item.ID),
+			Title:        item.Title,
+			Artist:       artistName,
+			AudioQuality: resolveAudioQuality("", item.MediaTags),
+			AlbumArtURL:  p.ensureAbsoluteURL(item.Cover, "640x640"),
 		})
 	}
 	return albums
@@ -298,7 +299,7 @@ func (r APIAlbumsSearchResponse) ToDomain(p *HifiProvider) []domain.Album {
 			ID:           formatID(item.ID),
 			Title:        item.Title,
 			Artist:       artist,
-			AudioQuality: item.AudioQuality,
+			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Cover, "640x640"),
 		})
 	}
@@ -329,7 +330,7 @@ func (r APITracksSearchResponse) ToDomain(p *HifiProvider) []domain.CatalogTrack
 			Album:        item.Album.Title,
 			TrackNumber:  item.TrackNumber,
 			Duration:     item.Duration,
-			AudioQuality: item.AudioQuality,
+			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 		})
 	}
