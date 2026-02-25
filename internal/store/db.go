@@ -141,9 +141,10 @@ var migrations = []migration{
 		description: "Clean up carriage returns and duplicate newlines in lyrics and subtitles",
 		up: func(tx *sqlx.Tx) error {
 			// Subtitles should not have any empty lines, collapse \n\n to \n
+			// Subtitles should not have any empty lines, collapse \n\n to \n
 			_, err := tx.Exec(`
 				UPDATE tracks 
-				SET subtitles = REPLACE(REPLACE(subtitles, CHAR(13), ''), CHAR(10) || CHAR(10), CHAR(10))
+				SET subtitles = REPLACE(REPLACE(REPLACE(subtitles, '\n', CHAR(10)), CHAR(13), ''), CHAR(10) || CHAR(10), CHAR(10))
 				WHERE subtitles IS NOT NULL AND subtitles != ''
 			`)
 			if err != nil {
@@ -151,12 +152,14 @@ var migrations = []migration{
 			}
 
 			// Lyrics can have paragraphs, but we should clean up double carriage returns which resulted in \n\n\n\n
-			// We'll just replace \r first, then compress > 2 newlines into 2.
+			// We'll replace literal \n first, then \r, then compress > 2 newlines into 2.
 			_, err = tx.Exec(`
 				UPDATE tracks 
 				SET lyrics = REPLACE(
 								REPLACE(
-									REPLACE(lyrics, CHAR(13), ''), 
+									REPLACE(
+										REPLACE(lyrics, '\n', CHAR(10)),
+									CHAR(13), ''), 
 								CHAR(10) || CHAR(10) || CHAR(10) || CHAR(10), CHAR(10) || CHAR(10)),
 							 CHAR(10) || CHAR(10) || CHAR(10), CHAR(10) || CHAR(10))
 				WHERE lyrics IS NOT NULL AND lyrics != ''
