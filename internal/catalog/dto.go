@@ -4,6 +4,19 @@ import (
 	"encoding/json"
 )
 
+type APIMediaMetadata struct {
+	Tags []string `json:"tags"`
+}
+
+func resolveAudioQuality(audioQuality string, tags []string) string {
+	for _, tag := range tags {
+		if tag == "HIRES_LOSSLESS" || tag == "HI_RES_LOSSLESS" {
+			return "HI_RES_LOSSLESS"
+		}
+	}
+	return audioQuality
+}
+
 type APIArtist struct {
 	ID   json.Number `json:"id"`
 	Name string      `json:"name"`
@@ -32,19 +45,20 @@ type APITrackItem struct {
 }
 
 type APIAlbumWithTracks struct {
-	Artist       APIArtist   `json:"artist"`
-	Copyright    string      `json:"copyright"`
-	UPC          string      `json:"upc"`
-	ID           json.Number `json:"id"`
-	Title        string      `json:"title"`
-	ReleaseDate  string      `json:"releaseDate"`
-	Label        string      `json:"label"`
-	Type         string      `json:"type"`
-	Genre        string      `json:"genre"`
-	URL          string      `json:"url"`
-	AudioQuality string      `json:"audioQuality"`
-	Cover        FlexCover   `json:"cover"`
-	Items        []struct {
+	Artist        APIArtist        `json:"artist"`
+	Copyright     string           `json:"copyright"`
+	UPC           string           `json:"upc"`
+	ID            json.Number      `json:"id"`
+	Title         string           `json:"title"`
+	ReleaseDate   string           `json:"releaseDate"`
+	Label         string           `json:"label"`
+	Type          string           `json:"type"`
+	Genre         string           `json:"genre"`
+	URL           string           `json:"url"`
+	AudioQuality  string           `json:"audioQuality"`
+	MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+	Cover         FlexCover        `json:"cover"`
+	Items         []struct {
 		Item APIAlbumTrackItem `json:"item"`
 	} `json:"items"`
 	NumberOfTracks  int  `json:"numberOfTracks"`
@@ -53,22 +67,23 @@ type APIAlbumWithTracks struct {
 }
 
 type APIAlbumTrackItem struct {
-	Version      *string     `json:"version"`
-	URL          string      `json:"url"`
-	Title        string      `json:"title"`
-	AudioQuality string      `json:"audioQuality"`
-	ISRC         string      `json:"isrc"`
-	Key          string      `json:"key"`
-	ID           json.Number `json:"id"`
-	KeyScale     string      `json:"keyScale"`
-	Artists      []APIArtist `json:"artists"`
-	VolumeNumber int         `json:"volumeNumber"`
-	Peak         float64     `json:"peak"`
-	ReplayGain   float64     `json:"replayGain"`
-	Duration     int         `json:"duration"`
-	BPM          int         `json:"bpm"`
-	TrackNumber  int         `json:"trackNumber"`
-	Explicit     bool        `json:"explicit"`
+	Version       *string          `json:"version"`
+	URL           string           `json:"url"`
+	Title         string           `json:"title"`
+	AudioQuality  string           `json:"audioQuality"`
+	MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+	ISRC          string           `json:"isrc"`
+	Key           string           `json:"key"`
+	ID            json.Number      `json:"id"`
+	KeyScale      string           `json:"keyScale"`
+	Artists       []APIArtist      `json:"artists"`
+	VolumeNumber  int              `json:"volumeNumber"`
+	Peak          float64          `json:"peak"`
+	ReplayGain    float64          `json:"replayGain"`
+	Duration      int              `json:"duration"`
+	BPM           int              `json:"bpm"`
+	TrackNumber   int              `json:"trackNumber"`
+	Explicit      bool             `json:"explicit"`
 }
 
 type APIPlaylistItem struct {
@@ -111,10 +126,11 @@ type APIArtistResponse struct {
 type APIArtistAggregationResponse struct {
 	Albums struct {
 		Items []struct {
-			ID           json.Number `json:"id"`
-			Title        string      `json:"title"`
-			Cover        string      `json:"cover"`
-			AudioQuality string      `json:"audioQuality"`
+			ID            json.Number      `json:"id"`
+			Title         string           `json:"title"`
+			Cover         string           `json:"cover"`
+			AudioQuality  string           `json:"audioQuality"`
+			MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
 		} `json:"items"`
 	} `json:"albums"`
 	Tracks []struct {
@@ -127,11 +143,12 @@ type APIArtistAggregationResponse struct {
 			ID   json.Number `json:"id"`
 			Name string      `json:"name"`
 		} `json:"artist"`
-		ID           json.Number `json:"id"`
-		Title        string      `json:"title"`
-		AudioQuality string      `json:"audioQuality"`
-		TrackNumber  int         `json:"trackNumber"`
-		Duration     int         `json:"duration"`
+		ID            json.Number      `json:"id"`
+		Title         string           `json:"title"`
+		AudioQuality  string           `json:"audioQuality"`
+		MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+		TrackNumber   int              `json:"trackNumber"`
+		Duration      int              `json:"duration"`
 	} `json:"tracks"`
 }
 
@@ -140,19 +157,20 @@ type APITrackInfoResponse struct {
 }
 
 type APITrackInfoData struct {
-	Version         *string     `json:"version"`
-	Artist          APIArtist   `json:"artist"`
-	Copyright       string      `json:"copyright"`
-	StreamStartDate string      `json:"streamStartDate"`
-	URL             string      `json:"url"`
-	KeyScale        string      `json:"keyScale"`
-	ID              json.Number `json:"id"`
-	Title           string      `json:"title"`
-	ISRC            string      `json:"isrc"`
-	AudioQuality    string      `json:"audioQuality"`
-	Key             string      `json:"key"`
-	Artists         []APIArtist `json:"artists"`
-	AudioModes      []string    `json:"audioModes"`
+	Version         *string          `json:"version"`
+	Artist          APIArtist        `json:"artist"`
+	Copyright       string           `json:"copyright"`
+	StreamStartDate string           `json:"streamStartDate"`
+	URL             string           `json:"url"`
+	KeyScale        string           `json:"keyScale"`
+	ID              json.Number      `json:"id"`
+	Title           string           `json:"title"`
+	ISRC            string           `json:"isrc"`
+	AudioQuality    string           `json:"audioQuality"`
+	MediaMetadata   APIMediaMetadata `json:"mediaMetadata"`
+	Key             string           `json:"key"`
+	Artists         []APIArtist      `json:"artists"`
+	AudioModes      []string         `json:"audioModes"`
 	Album           struct {
 		ID              json.Number `json:"id"`
 		Title           string      `json:"title"`
@@ -174,9 +192,10 @@ type APITrackInfoData struct {
 }
 
 type APISimilarAlbum struct {
-	Cover   string `json:"cover"`
-	Title   string `json:"title"`
-	Artists []struct {
+	Cover     string   `json:"cover"`
+	Title     string   `json:"title"`
+	MediaTags []string `json:"mediaTags"`
+	Artists   []struct {
 		Name string `json:"name"`
 		ID   int    `json:"id"`
 	} `json:"artists"`
@@ -210,11 +229,12 @@ type APISearchArtistItem struct {
 }
 
 type APISearchAlbumItem struct {
-	ID           json.Number `json:"id"`
-	Title        string      `json:"title"`
-	Cover        string      `json:"cover"`
-	AudioQuality string      `json:"audioQuality"`
-	Artists      []struct {
+	ID            json.Number      `json:"id"`
+	Title         string           `json:"title"`
+	Cover         string           `json:"cover"`
+	AudioQuality  string           `json:"audioQuality"`
+	MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+	Artists       []struct {
 		Name string `json:"name"`
 	} `json:"artists"`
 }
@@ -225,12 +245,13 @@ type APISearchTrackItem struct {
 		Title string      `json:"title"`
 		Cover string      `json:"cover"`
 	} `json:"album"`
-	ID           json.Number `json:"id"`
-	Title        string      `json:"title"`
-	AudioQuality string      `json:"audioQuality"`
-	Artists      []APIArtist `json:"artists"`
-	Duration     int         `json:"duration"`
-	TrackNumber  int         `json:"trackNumber"`
+	ID            json.Number      `json:"id"`
+	Title         string           `json:"title"`
+	AudioQuality  string           `json:"audioQuality"`
+	MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+	Artists       []APIArtist      `json:"artists"`
+	Duration      int              `json:"duration"`
+	TrackNumber   int              `json:"trackNumber"`
 }
 
 type APISearchPlaylistItem struct {

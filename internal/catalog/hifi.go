@@ -112,7 +112,8 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 
 	if resp.Data.ManifestMimeType == "application/vnd.tidal.bts" {
 		var manifest struct {
-			Urls []string `json:"urls"`
+			MimeType string   `json:"mimeType"`
+			Urls     []string `json:"urls"`
 		}
 		if err := json.Unmarshal(decoded, &manifest); err != nil {
 			return nil, "", err
@@ -134,7 +135,12 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 			_ = sResp.Body.Close()
 			return nil, "", fmt.Errorf("stream fetch failed: %s", sResp.Status)
 		}
-		return sResp.Body, "audio/flac", nil
+
+		mimeType := "audio/flac"
+		if manifest.MimeType != "" {
+			mimeType = manifest.MimeType
+		}
+		return sResp.Body, mimeType, nil
 	}
 
 	if resp.Data.ManifestMimeType == "application/dash+xml" {
@@ -167,7 +173,12 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 			_ = sResp.Body.Close()
 			return nil, "", fmt.Errorf("stream fetch failed: %s", sResp.Status)
 		}
-		return sResp.Body, "audio/flac", nil
+		mimeType := "audio/flac"
+		contentType := sResp.Header.Get("Content-Type")
+		if strings.Contains(contentType, "mp4") {
+			mimeType = "audio/mp4"
+		}
+		return sResp.Body, mimeType, nil
 	}
 
 	return nil, "", fmt.Errorf("unsupported manifest type: %s", resp.Data.ManifestMimeType)

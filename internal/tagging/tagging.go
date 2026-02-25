@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,6 +18,8 @@ import (
 	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
+var ErrUnsupportedFormat = errors.New("unsupported file format")
+
 // TagFile writes metadata tags to the audio file at filePath.
 func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
 	ext := strings.ToLower(filepath.Ext(filePath))
@@ -28,7 +31,7 @@ func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
 	case ".mp4", ".m4a":
 		return tagMP4(filePath, track, albumArtData)
 	default:
-		return fmt.Errorf("unsupported file format: %s", ext)
+		return fmt.Errorf("%w: %s", ErrUnsupportedFormat, ext)
 	}
 }
 
@@ -452,7 +455,7 @@ func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
 
 // tagMP4 is not yet implemented.
 func tagMP4(_ string, _ *domain.Track, _ []byte) error {
-	return fmt.Errorf("MP4 tagging not yet implemented")
+	return fmt.Errorf("%w: MP4 tagging not yet implemented", ErrUnsupportedFormat)
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────

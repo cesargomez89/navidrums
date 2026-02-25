@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -220,7 +221,11 @@ func (h *TrackJobHandler) postProcessTrack(ctx context.Context, track *domain.Tr
 	}
 
 	if tagErr := tagging.TagFile(finalPath, track, albumArtData); tagErr != nil {
-		logger.Error("Failed to tag file", "file_path", finalPath, "error", tagErr)
+		if errors.Is(tagErr, tagging.ErrUnsupportedFormat) {
+			logger.Warn("Tagging skipped: unsupported format", "file_path", finalPath, "error", tagErr)
+		} else {
+			logger.Error("Failed to tag file", "file_path", finalPath, "error", tagErr)
+		}
 	}
 
 	if len(albumArtData) > 0 {
@@ -594,6 +599,10 @@ func (h *SyncJobHandler) reTagTrack(track *domain.Track, logger *slog.Logger) er
 	}
 
 	if tagErr := tagging.TagFile(track.FilePath, track, albumArtData); tagErr != nil {
+		if errors.Is(tagErr, tagging.ErrUnsupportedFormat) {
+			logger.Warn("Tagging skipped: unsupported format", "file_path", track.FilePath, "error", tagErr)
+			return nil
+		}
 		logger.Error("Failed to tag file", "error", tagErr)
 		return tagErr
 	}
