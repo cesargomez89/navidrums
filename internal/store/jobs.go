@@ -53,29 +53,29 @@ func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 }
 
 func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN ('queued', 'running') ORDER BY created_at ASC`
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN (?, ?) ORDER BY created_at ASC`
 
 	var jobs []*domain.Job
-	err := db.Select(&jobs, query)
+	err := db.Select(&jobs, query, domain.JobStatusQueued, domain.JobStatusRunning)
 	return jobs, err
 }
 
 func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN ('completed', 'failed', 'cancelled') ORDER BY updated_at DESC LIMIT ?`
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN (?, ?, ?) ORDER BY updated_at DESC LIMIT ?`
 
 	var jobs []*domain.Job
-	err := db.Select(&jobs, query, limit)
+	err := db.Select(&jobs, query, domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled, limit)
 	return jobs, err
 }
 
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*domain.Job, error) {
 	query := `SELECT id, type, status, progress, source_id, created_at, updated_at 
 		FROM jobs 
-		WHERE source_id = ? AND type = ? AND status IN ('queued', 'running')
+		WHERE source_id = ? AND type = ? AND status IN (?, ?)
 		LIMIT 1`
 
 	job := &domain.Job{}
-	err := db.Get(job, query, sourceID, jobType)
+	err := db.Get(job, query, sourceID, jobType, domain.JobStatusQueued, domain.JobStatusRunning)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -86,21 +86,21 @@ func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*
 }
 
 func (db *DB) IsTrackActive(providerID string) (bool, error) {
-	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = 'track' AND status IN ('queued', 'running')`
+	query := `SELECT COUNT(*) FROM jobs WHERE source_id = ? AND type = ? AND status IN (?, ?)`
 	var count int
-	err := db.Get(&count, query, providerID)
+	err := db.Get(&count, query, providerID, domain.JobTypeTrack, domain.JobStatusQueued, domain.JobStatusRunning)
 	return count > 0, err
 }
 
 func (db *DB) ResetStuckJobs() error {
-	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status = 'running'`
-	_, err := db.Exec(query, domain.JobStatusQueued, time.Now())
+	query := `UPDATE jobs SET status = ?, updated_at = ? WHERE status = ?`
+	_, err := db.Exec(query, domain.JobStatusQueued, time.Now(), domain.JobStatusRunning)
 	return err
 }
 
 func (db *DB) ClearFinishedJobs() error {
-	query := `DELETE FROM jobs WHERE status IN ('completed', 'failed', 'cancelled')`
-	_, err := db.Exec(query)
+	query := `DELETE FROM jobs WHERE status IN (?, ?, ?)`
+	_, err := db.Exec(query, domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled)
 	return err
 }
 
@@ -114,13 +114,15 @@ type JobStats struct {
 func (db *DB) GetJobStats() (*JobStats, error) {
 	query := `SELECT 
 		COUNT(*) as total,
-		SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-		SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-		SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled
+		SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as completed,
+		SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed,
+		SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as cancelled
 	FROM jobs 
-	WHERE status IN ('completed', 'failed', 'cancelled')`
+	WHERE status IN (?, ?, ?)`
 
 	stats := &JobStats{}
-	err := db.Get(stats, query)
+	err := db.Get(stats, query,
+		domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled,
+		domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled)
 	return stats, err
 }
