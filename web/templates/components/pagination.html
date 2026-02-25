@@ -1,0 +1,15 @@
+{{define "pagination"}}
+{{if gt .TotalPages 1}}
+<div style="display: flex; justify-content: center; margin-top: 16px;">
+    <div class="join pagination">
+        {{if .HasPrev}}
+            <button class="join-item btn btn-sm" hx-get="{{.BaseURL}}?page={{.PrevPage}}{{if .ExtraParams}}&{{.ExtraParams}}{{end}}" hx-target="{{.Target}}" hx-swap="innerHTML">«</button>
+        {{end}}
+        <span class="join-item btn btn-sm btn-disabled">Page {{.CurrentPage}} of {{.TotalPages}}</span>
+        {{if .HasNext}}
+            <button class="join-item btn btn-sm" hx-get="{{.BaseURL}}?page={{.NextPage}}{{if .ExtraParams}}&{{.ExtraParams}}{{end}}" hx-target="{{.Target}}" hx-swap="innerHTML">»</button>
+        {{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

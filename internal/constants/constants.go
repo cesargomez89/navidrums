@@ -91,7 +91,7 @@ const (
 // UI/UX
 const (
 	MaxHistoryItems     = 20
-	MaxSearchResults    = 50
+	MaxSearchResults    = 30
 	ProgressUpdateFreq  = 2 * time.Second
 	ProgressUpdateBytes = 1024 * 1024 // 1MB
 )

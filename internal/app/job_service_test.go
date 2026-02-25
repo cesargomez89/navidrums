@@ -217,7 +217,7 @@ func TestJobService_ListJobs(t *testing.T) {
 	}
 
 	// Test ListActiveJobs
-	active, err := svc.ListActiveJobs()
+	active, _, err := svc.ListActiveJobs(1, 10)
 	if err != nil {
 		t.Errorf("ListActiveJobs failed: %v", err)
 	}
@@ -226,7 +226,7 @@ func TestJobService_ListJobs(t *testing.T) {
 	}
 
 	// Test ListFinishedJobs
-	finished, err := svc.ListFinishedJobs(10)
+	finished, _, err := svc.ListFinishedJobs(1, 10)
 	if err != nil {
 		t.Errorf("ListFinishedJobs failed: %v", err)
 	}

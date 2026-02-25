@@ -52,20 +52,34 @@ func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 	return jobs, err
 }
 
-func (db *DB) ListActiveJobs() ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN (?, ?) ORDER BY created_at ASC`
+func (db *DB) ListActiveJobs(offset, limit int) ([]*domain.Job, error) {
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN (?, ?) ORDER BY created_at ASC LIMIT ? OFFSET ?`
 
 	var jobs []*domain.Job
-	err := db.Select(&jobs, query, domain.JobStatusQueued, domain.JobStatusRunning)
+	err := db.Select(&jobs, query, domain.JobStatusQueued, domain.JobStatusRunning, limit, offset)
 	return jobs, err
 }
 
-func (db *DB) ListFinishedJobs(limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN (?, ?, ?) ORDER BY updated_at DESC LIMIT ?`
+func (db *DB) CountActiveJobs() (int, error) {
+	query := `SELECT COUNT(*) FROM jobs WHERE status IN (?, ?)`
+	var count int
+	err := db.Get(&count, query, domain.JobStatusQueued, domain.JobStatusRunning)
+	return count, err
+}
+
+func (db *DB) ListFinishedJobs(offset, limit int) ([]*domain.Job, error) {
+	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN (?, ?, ?) ORDER BY updated_at DESC LIMIT ? OFFSET ?`
 
 	var jobs []*domain.Job
-	err := db.Select(&jobs, query, domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled, limit)
+	err := db.Select(&jobs, query, domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled, limit, offset)
 	return jobs, err
+}
+
+func (db *DB) CountFinishedJobs() (int, error) {
+	query := `SELECT COUNT(*) FROM jobs WHERE status IN (?, ?, ?)`
+	var count int
+	err := db.Get(&count, query, domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled)
+	return count, err
 }
 
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*domain.Job, error) {

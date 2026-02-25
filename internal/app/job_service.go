@@ -56,8 +56,17 @@ func (s *JobService) GetJob(id string) (*domain.Job, error) {
 	return s.Repo.GetJob(id)
 }
 
-func (s *JobService) ListActiveJobs() ([]*domain.Job, error) {
-	return s.Repo.ListActiveJobs()
+func (s *JobService) ListActiveJobs(page, pageSize int) ([]*domain.Job, int, error) {
+	offset := (page - 1) * pageSize
+	total, err := s.Repo.CountActiveJobs()
+	if err != nil {
+		return nil, 0, err
+	}
+	jobs, err := s.Repo.ListActiveJobs(offset, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	return jobs, total, nil
 }
 
 func (s *JobService) CancelJob(id string) error {
@@ -85,8 +94,17 @@ func (s *JobService) RetryJob(id string) error {
 	return nil
 }
 
-func (s *JobService) ListFinishedJobs(limit int) ([]*domain.Job, error) {
-	return s.Repo.ListFinishedJobs(limit)
+func (s *JobService) ListFinishedJobs(page, pageSize int) ([]*domain.Job, int, error) {
+	offset := (page - 1) * pageSize
+	total, err := s.Repo.CountFinishedJobs()
+	if err != nil {
+		return nil, 0, err
+	}
+	jobs, err := s.Repo.ListFinishedJobs(offset, pageSize)
+	if err != nil {
+		return nil, 0, err
+	}
+	return jobs, total, nil
 }
 
 func (s *JobService) GetJobStats() (*store.JobStats, error) {

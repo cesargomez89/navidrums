@@ -11,11 +11,9 @@
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
     <h3 style="margin: 0;">Recent Downloads</h3>
     {{if .HistoryJobs}}
-    <button class="btn btn-danger btn-sm"
-            hx-post="/htmx/history/clear"
-            hx-confirm="Are you sure you want to clear all download history? This cannot be undone."
-            hx-target="#tab-content"
-            hx-swap="innerHTML">
+    <button class="btn btn-danger btn-sm" hx-post="/htmx/history/clear"
+        hx-confirm="Are you sure you want to clear all download history? This cannot be undone."
+        hx-target="#tab-content" hx-swap="innerHTML">
         Clear All History
     </button>
     {{end}}
@@ -33,12 +31,12 @@
             <span class="job-status status-{{.Status}}">{{.Status}}</span>
             {{if .Error}}<div style="color: #ef4444; font-size: 0.75rem;">{{.Error}}</div>{{end}}
             {{if or (eq .Status "failed") (eq .Status "cancelled")}}
-            <button hx-post="/htmx/retry/{{.ID}}" 
-                    hx-target="#tab-content" 
-                    hx-swap="innerHTML"
-                    class="btn btn-outline btn-sm" style="margin-top: 8px;">Retry</button>
+            <button hx-post="/htmx/retry/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML"
+                class="btn btn-outline btn-sm" style="margin-top: 8px;">Retry</button>
             {{end}}
-            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">{{.UpdatedAt.Format "Jan 02, 15:04"}}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
+                {{.UpdatedAt.Format "Jan 02, 15:04"}}
+            </div>
         </div>
     </div>
     {{end}}
@@ -46,4 +44,5 @@
 {{else}}
 <div class="empty">No download history yet.</div>
 {{end}}
+{{template "pagination" .Pagination}}
 {{end}}
