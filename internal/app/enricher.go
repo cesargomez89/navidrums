@@ -150,9 +150,6 @@ func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *m
 	}
 	if track.Genre == "" && meta.Genre != "" {
 		track.Genre = meta.Genre
-		if meta.SubGenre != "" {
-			track.Genre = meta.Genre + "; " + meta.SubGenre
-		}
 	}
 	if len(track.Tags) == 0 && len(meta.Tags) > 0 {
 		track.Tags = meta.Tags

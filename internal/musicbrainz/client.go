@@ -79,7 +79,6 @@ func (c *Client) GetGenres(ctx context.Context, recordingID, isrc string) (Genre
 
 type GenreResult struct {
 	MainGenre string
-	SubGenre  string
 }
 
 // GetGenresByISRC fetches genre data for a recording identified by ISRC.
@@ -106,8 +105,8 @@ func (c *Client) GetGenresByISRC(ctx context.Context, isrc string) (GenreResult,
 		return GenreResult{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	mainGenre, subGenre := extractMainGenre(result.Recordings, c.genreMap)
-	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
+	mainGenre := extractMainGenre(result.Recordings, c.genreMap)
+	return GenreResult{MainGenre: mainGenre}, nil
 }
 
 // GetGenresByMBID fetches genre data for a recording identified by MusicBrainz ID.
@@ -134,8 +133,8 @@ func (c *Client) GetGenresByMBID(ctx context.Context, mbid string) (GenreResult,
 		return GenreResult{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	mainGenre, subGenre := extractMainGenre([]recording{rec}, c.genreMap)
-	return GenreResult{MainGenre: mainGenre, SubGenre: subGenre}, nil
+	mainGenre := extractMainGenre([]recording{rec}, c.genreMap)
+	return GenreResult{MainGenre: mainGenre}, nil
 }
 
 // GetRecordingByISRC fetches full metadata for a recording identified by ISRC.
@@ -218,13 +217,12 @@ func (c *Client) doGet(ctx context.Context, rawURL string) (*http.Response, erro
 // recordings (used for tag aggregation). Pass the known ISRC when available (ISRC search);
 // leave empty when doing an MBID lookup (it will be read from the recording itself).
 func buildMetadata(rec recording, recordings []recording, genreMap map[string]string, albumName, isrc string) *RecordingMetadata {
-	mainGenre, subGenre := extractMainGenre(recordings, genreMap)
+	mainGenre := extractMainGenre(recordings, genreMap)
 	meta := &RecordingMetadata{
 		RecordingID: rec.ID,
 		Title:       rec.Title,
 		Duration:    rec.Length,
 		Genre:       mainGenre,
-		SubGenre:    subGenre,
 		Tags:        extractTags(recordings),
 		ISRC:        isrc,
 	}
@@ -317,20 +315,11 @@ func normalizeString(s string) string {
 	return s
 }
 
-// normalizeGenreKey is a lighter variant that only strips spaces, hyphens, and underscores.
-func normalizeGenreKey(s string) string {
-	s = strings.ToLower(s)
-	for _, ch := range []string{" ", "-", "_"} {
-		s = strings.ReplaceAll(s, ch, "")
-	}
-	return s
-}
-
 // --------------------------------------------------------------------------
 // Genre / tag extraction
 // --------------------------------------------------------------------------
 
-func extractMainGenre(recordings []recording, genreMap map[string]string) (mainGenre string, subGenre string) {
+func extractMainGenre(recordings []recording, genreMap map[string]string) string {
 	tagCounts := make(map[string]int)
 	for _, rec := range recordings {
 		for _, t := range rec.Tags {
@@ -344,7 +333,7 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 		}
 	}
 	if len(tagCounts) == 0 {
-		return "", ""
+		return ""
 	}
 
 	type tagInfo struct {
@@ -374,11 +363,7 @@ func extractMainGenre(recordings []recording, genreMap map[string]string) (mainG
 		maxGenre = highestTag
 	}
 
-	// Suppress sub_genre when it's just a differently-formatted version of maxGenre.
-	if normalizeGenreKey(highestTag) == normalizeGenreKey(maxGenre) {
-		return maxGenre, ""
-	}
-	return maxGenre, highestTag
+	return maxGenre
 }
 
 func extractTags(recordings []recording) []string {
@@ -478,7 +463,6 @@ type RecordingMetadata struct {
 	AlbumArtist    string
 	ISRC           string
 	Title          string
-	SubGenre       string
 	Genre          string
 	Artist         string
 	CatalogNumber  string
