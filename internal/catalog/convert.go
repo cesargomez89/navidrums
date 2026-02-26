@@ -192,9 +192,6 @@ func (r APIPlaylistResponse) ToDomain(p *HifiProvider) *domain.Playlist {
 func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 	data := r.Data
 	year := parseYear(data.Album.ReleaseDate)
-	if year == 0 {
-		year = parseYear(data.StreamStartDate)
-	}
 
 	albumArtURL := ""
 	if len(data.Album.Cover) > 0 {

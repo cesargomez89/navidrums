@@ -157,21 +157,20 @@ type APITrackInfoResponse struct {
 }
 
 type APITrackInfoData struct {
-	Version         *string          `json:"version"`
-	Artist          APIArtist        `json:"artist"`
-	Copyright       string           `json:"copyright"`
-	StreamStartDate string           `json:"streamStartDate"`
-	URL             string           `json:"url"`
-	KeyScale        string           `json:"keyScale"`
-	ID              json.Number      `json:"id"`
-	Title           string           `json:"title"`
-	ISRC            string           `json:"isrc"`
-	AudioQuality    string           `json:"audioQuality"`
-	MediaMetadata   APIMediaMetadata `json:"mediaMetadata"`
-	Key             string           `json:"key"`
-	Artists         []APIArtist      `json:"artists"`
-	AudioModes      []string         `json:"audioModes"`
-	Album           struct {
+	Version       *string          `json:"version"`
+	Artist        APIArtist        `json:"artist"`
+	Copyright     string           `json:"copyright"`
+	URL           string           `json:"url"`
+	KeyScale      string           `json:"keyScale"`
+	ID            json.Number      `json:"id"`
+	Title         string           `json:"title"`
+	ISRC          string           `json:"isrc"`
+	AudioQuality  string           `json:"audioQuality"`
+	MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+	Key           string           `json:"key"`
+	Artists       []APIArtist      `json:"artists"`
+	AudioModes    []string         `json:"audioModes"`
+	Album         struct {
 		ID              json.Number `json:"id"`
 		Title           string      `json:"title"`
 		ReleaseDate     string      `json:"releaseDate"`
