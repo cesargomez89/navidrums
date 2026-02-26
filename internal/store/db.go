@@ -198,6 +198,25 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     7,
+		description: "Remove subgenre: extract genre from 'genre; subgenre' and drop column",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec(`
+				UPDATE tracks
+				SET genre = TRIM(SUBSTR(genre, 1, INSTR(genre || ';', ';') - 1))
+				WHERE genre LIKE '%;%'
+			`)
+			if err != nil {
+				return err
+			}
+			_, err = tx.Exec("ALTER TABLE tracks DROP COLUMN sub_genre")
+			if err != nil && !strings.Contains(err.Error(), "no such column") {
+				return err
+			}
+			return nil
+		},
+	},
 }
 
 type dbOps interface {
