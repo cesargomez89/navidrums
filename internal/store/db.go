@@ -184,6 +184,20 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     6,
+		description: "Fill year field from release_date",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec(`
+				UPDATE tracks
+				SET year = CAST(SUBSTR(release_date, 1, 4) AS INTEGER)
+				WHERE release_date IS NOT NULL
+				  AND LENGTH(release_date) >= 4
+				  AND SUBSTR(release_date, 1, 4) GLOB '[0-9][0-9][0-9][0-9]'
+			`)
+			return err
+		},
+	},
 }
 
 type dbOps interface {

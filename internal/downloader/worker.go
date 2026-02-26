@@ -90,6 +90,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 
 	syncHandler := &SyncJobHandler{
 		Repo:            repo,
+		Config:          cfg,
 		ProviderManager: pm,
 		AlbumArtService: worker.albumArtService,
 		Enricher:        worker.enricher,
