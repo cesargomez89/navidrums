@@ -114,7 +114,7 @@ func TestDownloadsService_ListDownloads(t *testing.T) {
 	}
 
 	// Test ListDownloads - should only return completed
-	downloads, err := svc.ListDownloads()
+	downloads, _, err := svc.ListDownloads(1, 10)
 	if err != nil {
 		t.Fatalf("ListDownloads failed: %v", err)
 	}
@@ -144,7 +144,7 @@ func TestDownloadsService_SearchDownloads(t *testing.T) {
 	}
 
 	// Search by title
-	results, err := svc.SearchDownloads("Hello")
+	results, _, err := svc.SearchDownloads("Hello", 1, 10)
 	if err != nil {
 		t.Fatalf("SearchDownloads failed: %v", err)
 	}
@@ -153,7 +153,7 @@ func TestDownloadsService_SearchDownloads(t *testing.T) {
 	}
 
 	// Search by artist
-	results, err = svc.SearchDownloads("Artist B")
+	results, _, err = svc.SearchDownloads("Artist B", 1, 10)
 	if err != nil {
 		t.Fatalf("SearchDownloads failed: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestDownloadsService_SearchDownloads(t *testing.T) {
 	}
 
 	// Search by album
-	results, err = svc.SearchDownloads("Album Two")
+	results, _, err = svc.SearchDownloads("Album Two", 1, 10)
 	if err != nil {
 		t.Fatalf("SearchDownloads failed: %v", err)
 	}
@@ -171,7 +171,7 @@ func TestDownloadsService_SearchDownloads(t *testing.T) {
 	}
 
 	// No results
-	results, err = svc.SearchDownloads("Nonexistent")
+	results, _, err = svc.SearchDownloads("Nonexistent", 1, 10)
 	if err != nil {
 		t.Fatalf("SearchDownloads failed: %v", err)
 	}

@@ -23,7 +23,7 @@ document.addEventListener('htmx:afterSwap', function(event) {
                         return;
                     }
                     htmx.ajax('GET', '/htmx/queue/active', {target: '#tab-content', swap: 'innerHTML'});
-                }, 2000);
+                }, 2500);
             }
         }
     }

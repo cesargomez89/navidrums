@@ -11,7 +11,8 @@
             <span class="job-status status-{{.Status}}">{{.Status}}</span>
             {{if .Error}}<div style="color: #ef4444; font-size: 0.75rem;">{{.Error}}</div>{{end}}
             {{if or (eq .Status "queued") (eq .Status "running")}}
-            <button hx-post="/htmx/cancel/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML" class="btn btn-outline btn-sm" style="margin-top: 8px;">Cancel</button>
+            <button hx-post="/htmx/cancel/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML"
+                class="btn btn-outline btn-sm" style="margin-top: 8px;">Cancel</button>
             {{end}}
         </div>
     </div>
@@ -20,4 +21,5 @@
 {{else}}
 <div class="empty">Your download queue is empty.</div>
 {{end}}
+{{template "pagination" .Pagination}}
 {{end}}

@@ -3,6 +3,7 @@ module github.com/cesargomez89/navidrums
 go 1.25.6
 
 require (
+	github.com/Sorrow446/go-mp4tag v0.0.0-20240130220823-68ce31d53e37
 	github.com/bogem/id3v2/v2 v2.1.4
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-flac/flacpicture v0.2.0

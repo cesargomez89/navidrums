@@ -29,7 +29,9 @@ func TestNewVorbisComment(t *testing.T) {
 		ArtistIDs:   []string{"id1", "id2"},
 	}
 
-	vc := newVorbisComment(track)
+	tags := buildTagMap(track, nil)
+	tagger := &FLACTagger{}
+	vc := tagger.newVorbisComment(tags)
 
 	check := func(name, expected string) {
 		t.Helper()
@@ -54,8 +56,7 @@ func TestNewVorbisComment(t *testing.T) {
 	check("GENRE", "Rock")
 	check("BPM", "120")
 	check("COMPILATION", "1")
-	check("MUSICBRAINZ_ARTISTID", "id1")
-	check("MUSICBRAINZ_ARTISTID", "id2")
+	check("MUSICBRAINZ_ARTISTID", "id1; id2")
 }
 
 func TestNewVorbisComment_MultiArtist(t *testing.T) {
@@ -64,7 +65,9 @@ func TestNewVorbisComment_MultiArtist(t *testing.T) {
 		AlbumArtists: []string{"Album Artist 1"},
 	}
 
-	vc := newVorbisComment(track)
+	tags := buildTagMap(track, nil)
+	tagger := &FLACTagger{}
+	vc := tagger.newVorbisComment(tags)
 
 	artists := 0
 	albumArtists := 0

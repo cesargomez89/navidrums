@@ -117,17 +117,31 @@ func (h *Handler) QueuePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) QueueActiveHTMX(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.ListActiveJobs()
+	page := 1
+	if p := r.URL.Query().Get("page"); p != "" {
+		_, _ = fmt.Sscanf(p, "%d", &page)
+	}
+
+	jobs, total, err := h.JobService.ListActiveJobs(page, constants.MaxSearchResults)
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
+
+	pagination := dto.NewPagination(page, constants.MaxSearchResults, total, "/htmx/queue/active", "#tab-content", "")
+
 	h.RenderFragment(w, "components/active_tab.html", map[string]interface{}{
 		"ActiveJobs": jobs,
+		"Pagination": pagination,
 	})
 }
 
 func (h *Handler) QueueHistoryHTMX(w http.ResponseWriter, r *http.Request) {
-	jobs, err := h.JobService.ListFinishedJobs(constants.MaxHistoryItems)
+	page := 1
+	if p := r.URL.Query().Get("page"); p != "" {
+		_, _ = fmt.Sscanf(p, "%d", &page)
+	}
+
+	jobs, total, err := h.JobService.ListFinishedJobs(page, constants.MaxHistoryItems)
 	if err != nil {
 		h.Logger.Error("Failed to list finished jobs", "error", err)
 		return
@@ -138,9 +152,12 @@ func (h *Handler) QueueHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to get job stats", "error", err)
 	}
 
+	pagination := dto.NewPagination(page, constants.MaxHistoryItems, total, "/htmx/queue/history", "#tab-content", "")
+
 	h.RenderFragment(w, "components/history_tab.html", map[string]interface{}{
 		"HistoryJobs": jobs,
 		"Stats":       stats,
+		"Pagination":  pagination,
 	})
 }
 
@@ -151,7 +168,7 @@ func (h *Handler) CancelJobHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jobs, err := h.JobService.ListActiveJobs()
+	jobs, _, err := h.JobService.ListActiveJobs(1, constants.MaxSearchResults)
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
@@ -167,7 +184,7 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jobs, err := h.JobService.ListActiveJobs()
+	jobs, _, err := h.JobService.ListActiveJobs(1, constants.MaxSearchResults)
 	if err != nil {
 		h.Logger.Error("Failed to list active jobs", "error", err)
 	}
@@ -391,16 +408,27 @@ func (h *Handler) DownloadsPage(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
 	filter := r.URL.Query().Get("filter")
+
+	page := 1
+	if p := r.URL.Query().Get("page"); p != "" {
+		_, _ = fmt.Sscanf(p, "%d", &page)
+	}
+
 	var tracks []*domain.Track
+	var total int
 	var err error
+
+	extraParams := ""
 
 	switch {
 	case query != "":
-		tracks, err = h.DownloadsService.SearchDownloads(query)
+		tracks, total, err = h.DownloadsService.SearchDownloads(query, page, constants.MaxSearchResults)
+		extraParams = "q=" + query
 	case filter != "":
-		tracks, err = h.DownloadsService.FilterDownloads(filter)
+		tracks, total, err = h.DownloadsService.FilterDownloads(filter, page, constants.MaxSearchResults)
+		extraParams = "filter=" + filter
 	default:
-		tracks, err = h.DownloadsService.ListDownloads()
+		tracks, total, err = h.DownloadsService.ListDownloads(page, constants.MaxSearchResults)
 	}
 	if err != nil {
 		h.Logger.Error("Failed to list downloads", "error", err)
@@ -408,9 +436,12 @@ func (h *Handler) DownloadsHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pagination := dto.NewPagination(page, constants.MaxSearchResults, total, "/htmx/downloads", "#downloads-list", extraParams)
+
 	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
-		"Downloads": tracks,
-		"Filter":    filter,
+		"Downloads":  tracks,
+		"Filter":     filter,
+		"Pagination": pagination,
 	})
 }
 
@@ -460,9 +491,9 @@ func (h *Handler) BulkSyncHTMX(w http.ResponseWriter, r *http.Request) {
 	var tracks []*domain.Track
 	query := r.URL.Query().Get("q")
 	if query != "" {
-		tracks, _ = h.DownloadsService.SearchDownloads(query)
+		tracks, _, _ = h.DownloadsService.SearchDownloads(query, 1, constants.MaxSearchResults)
 	} else {
-		tracks, _ = h.DownloadsService.ListDownloads()
+		tracks, _, _ = h.DownloadsService.ListDownloads(1, constants.MaxSearchResults)
 	}
 
 	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
@@ -730,7 +761,7 @@ func (h *Handler) SyncAllHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tracks, _ := h.DownloadsService.ListDownloads()
+	tracks, _, _ := h.DownloadsService.ListDownloads(1, constants.MaxSearchResults)
 	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
 		"Downloads":    tracks,
 		"SyncEnqueued": count,
