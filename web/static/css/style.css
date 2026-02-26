@@ -663,6 +663,9 @@ textarea {
     background: rgba(245, 196, 0, 0.12);
     border: 1px solid rgba(245, 196, 0, 0.35);
     color: var(--accent);
+    /* reset gradient */
+    -webkit-text-fill-color: initial;
+    background-clip: initial;
 }
 
 .quality-badge--hires {
