@@ -15,7 +15,6 @@ func TestExtractMainGenre(t *testing.T) {
 		genreMap      map[string]string
 		name          string
 		wantMainGenre string
-		wantSubGenre  string
 		recordings    []recording
 	}{
 		{
@@ -31,7 +30,6 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "metal",
-			wantSubGenre:  "death metal",
 		},
 		{
 			name: "uses original tag when no match",
@@ -45,7 +43,6 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "obscure genre",
-			wantSubGenre:  "",
 		},
 		{
 			name: "selects highest tag ignoring category aggregation",
@@ -60,7 +57,6 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "pop",
-			wantSubGenre:  "",
 		},
 		{
 			name: "returns empty when no tags",
@@ -71,7 +67,6 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "",
-			wantSubGenre:  "",
 		},
 		{
 			name: "ignores tags with zero count",
@@ -85,7 +80,6 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "metal",
-			wantSubGenre:  "",
 		},
 		{
 			name: "handles case-insensitive matching",
@@ -99,7 +93,6 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "metal",
-			wantSubGenre:  "death metal",
 		},
 		{
 			name: "custom genre map overrides default",
@@ -116,7 +109,6 @@ func TestExtractMainGenre(t *testing.T) {
 				"vaporwave": "electronic",
 			},
 			wantMainGenre: "electronic",
-			wantSubGenre:  "synthwave",
 		},
 		{
 			name: "multiple recordings aggregate",
@@ -134,12 +126,9 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "rock",
-			wantSubGenre:  "alternative rock",
 		},
 		{
-			// Regression: "hip hop" (highest raw count) is equivalent to "Hip-Hop" after
-			// normalisation — it must NOT leak through as sub_genre.
-			name: "suppresses sub_genre when highest tag is same as canonical after normalisation",
+			name: "uses highest count tag after genre mapping",
 			recordings: []recording{
 				{
 					Tags: []tag{
@@ -152,18 +141,14 @@ func TestExtractMainGenre(t *testing.T) {
 			},
 			genreMap:      DefaultGenreMap,
 			wantMainGenre: "hip-hop",
-			wantSubGenre:  "",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mainGenre, subGenre := extractMainGenre(tt.recordings, tt.genreMap)
+			mainGenre := extractMainGenre(tt.recordings, tt.genreMap)
 			if mainGenre != tt.wantMainGenre {
 				t.Errorf("mainGenre = %q, want %q", mainGenre, tt.wantMainGenre)
-			}
-			if subGenre != tt.wantSubGenre {
-				t.Errorf("subGenre = %q, want %q", subGenre, tt.wantSubGenre)
 			}
 		})
 	}

@@ -184,6 +184,39 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     6,
+		description: "Fill year field from release_date",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec(`
+				UPDATE tracks
+				SET year = CAST(SUBSTR(release_date, 1, 4) AS INTEGER)
+				WHERE release_date IS NOT NULL
+				  AND LENGTH(release_date) >= 4
+				  AND SUBSTR(release_date, 1, 4) GLOB '[0-9][0-9][0-9][0-9]'
+			`)
+			return err
+		},
+	},
+	{
+		version:     7,
+		description: "Remove subgenre: extract genre from 'genre; subgenre' and drop column",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec(`
+				UPDATE tracks
+				SET genre = TRIM(SUBSTR(genre, 1, INSTR(genre || ';', ';') - 1))
+				WHERE genre LIKE '%;%'
+			`)
+			if err != nil {
+				return err
+			}
+			_, err = tx.Exec("ALTER TABLE tracks DROP COLUMN sub_genre")
+			if err != nil && !strings.Contains(err.Error(), "no such column") {
+				return err
+			}
+			return nil
+		},
+	},
 }
 
 type dbOps interface {

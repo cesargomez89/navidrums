@@ -52,7 +52,6 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 				Duration:       180,
 				Year:           2023,
 				Genre:          "Alternative Rock",
-				SubGenre:       "Indie",
 				Barcode:        "1234567890",
 				CatalogNumber:  "CAT123",
 				ReleaseID:      "rel-123",
@@ -91,9 +90,8 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 		if track.Year != 2023 {
 			t.Errorf("Year mismatch")
 		}
-		// SubGenre is now embedded in Genre as "Genre; subgenre"
-		if track.Genre != "Alternative Rock; Indie" {
-			t.Errorf("Genre mismatch, got %q, want %q", track.Genre, "Alternative Rock; Indie")
+		if track.Genre != "Alternative Rock" {
+			t.Errorf("Genre mismatch, got %q, want %q", track.Genre, "Alternative Rock")
 		}
 		if track.ReleaseID != "rel-123" {
 			t.Errorf("ReleaseID mismatch")
@@ -147,8 +145,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 	t.Run("genre_no_subgenre_no_semicolon", func(t *testing.T) {
 		mockClient := &mockMBClient{
 			recording: &musicbrainz.RecordingMetadata{
-				Genre:    "Alternative Rock",
-				SubGenre: "", // no sub-genre
+				Genre: "Alternative Rock",
 			},
 		}
 
