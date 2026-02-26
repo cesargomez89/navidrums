@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Sorrow446/go-mp4tag"
 	"github.com/bogem/id3v2/v2"
 	"github.com/go-flac/flacpicture"
 	"github.com/go-flac/flacvorbis"
@@ -20,48 +21,324 @@ import (
 
 var ErrUnsupportedFormat = errors.New("unsupported file format")
 
-// TagFile writes metadata tags to the audio file at filePath.
+// ── Models & Interfaces ──────────────────────────────────────────────────────
+
+// TagMap represents the normalized metadata payload for all audio formats.
+type TagMap struct {
+	Custom       map[string]string
+	Lyrics       string
+	Title        string
+	Album        string
+	Genre        string
+	Composer     string
+	Copyright    string
+	CoverMime    string
+	AlbumArtists []string
+	CoverArt     []byte
+	Artists      []string
+	Year         int
+	TrackTotal   int
+	DiscNum      int
+	DiscTotal    int
+	BPM          int
+	TrackNum     int
+}
+
+// AudioTagger defines the Strategy interface for our format adapters.
+type AudioTagger interface {
+	WriteTags(filePath string, tags *TagMap) error
+}
+
+// ── Factory & Normalizer ─────────────────────────────────────────────────────
+
+// TagFile writes metadata tags to the audio file using the Strategy pattern.
 func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
+	// 1. Normalize the data ONCE
+	tags := buildTagMap(track, albumArtData)
+
+	// 2. Select the strategy based on extension
+	var tagger AudioTagger
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
 	case ".flac":
-		return tagFLAC(filePath, track, albumArtData)
+		tagger = &FLACTagger{}
 	case ".mp3":
-		return tagMP3(filePath, track, albumArtData)
+		tagger = &MP3Tagger{}
 	case ".mp4", ".m4a":
-		return tagMP4(filePath, track, albumArtData)
+		tagger = &MP4Tagger{}
 	default:
 		return fmt.Errorf("%w: %s", ErrUnsupportedFormat, ext)
 	}
+
+	// 3. Execute
+	return tagger.WriteTags(filePath, tags)
 }
 
-// tagFLAC rewrites a FLAC file with new metadata while preserving audio frames
-// verbatim. Strategy:
-//  1. Open the file raw to copy the original STREAMINFO bytes exactly (never
-//     re-encode STREAMINFO — any bit-packing mistake will make Navidrome reject
-//     the file silently).
-//  2. Parse metadata with flac.ParseFile to enumerate all existing blocks and
-//     find where audio starts.
-//  3. Build new metadata: verbatim STREAMINFO + optional SeekTable + fresh
-//     VorbisComment + optional Picture.
-//  4. Atomic write: temp file → rename.
+// buildTagMap normalizes the domain.Track into a standard map, resolving fallbacks.
+func buildTagMap(track *domain.Track, art []byte) *TagMap {
+	tm := &TagMap{
+		Title:        track.Title,
+		Artists:      track.Artists,
+		Album:        track.Album,
+		AlbumArtists: track.AlbumArtists,
+		Genre:        track.Genre,
+		Year:         track.Year,
+		TrackNum:     track.TrackNumber,
+		TrackTotal:   track.TotalTracks,
+		DiscNum:      track.DiscNumber,
+		DiscTotal:    track.TotalDiscs,
+		BPM:          track.BPM,
+		Composer:     track.Composer,
+		Copyright:    track.Copyright,
+		Lyrics:       track.Lyrics,
+		CoverArt:     art,
+		Custom:       make(map[string]string),
+	}
 
-func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
+	// Array Fallbacks
+	if len(tm.Artists) == 0 && track.Artist != "" {
+		tm.Artists = []string{track.Artist}
+	}
+	if len(tm.AlbumArtists) == 0 && track.AlbumArtist != "" {
+		tm.AlbumArtists = []string{track.AlbumArtist}
+	}
+
+	// Description/Lyrics Fallback
+	if track.Description != "" && tm.Lyrics == "" {
+		tm.Lyrics = track.Description
+	}
+
+	// Subtitles -> LRC
+	if track.Subtitles != "" {
+		tm.Custom["LYRICS"] = formatToLRC(track.Subtitles)
+	}
+
+	// Advanced Parity Tags Helper
+	addCustom := func(k, v string) {
+		if v != "" {
+			tm.Custom[k] = v
+		}
+	}
+
+	addCustom("ISRC", track.ISRC)
+	addCustom("LABEL", track.Label)
+	addCustom("GENRE", track.Genre)
+	addCustom("BARCODE", track.Barcode)
+	addCustom("CATALOGNUMBER", track.CatalogNumber)
+	addCustom("RELEASETYPE", track.ReleaseType)
+	addCustom("MUSICBRAINZ_RELEASEGROUPID", track.ReleaseID)
+	addCustom("AUDIO_QUALITY", track.AudioQuality)
+	addCustom("AUDIO_MODE", track.AudioModes)
+	addCustom("KEY", track.Key)
+	addCustom("KEY_SCALE", track.KeyScale)
+	addCustom("VERSION", track.Version)
+	addCustom("URL", track.URL)
+
+	if track.ReplayGain != 0 {
+		addCustom("REPLAYGAIN_TRACK_GAIN", fmt.Sprintf("%.2f dB", track.ReplayGain))
+	}
+	if track.Peak != 0 {
+		addCustom("REPLAYGAIN_TRACK_PEAK", fmt.Sprintf("%.6f", track.Peak))
+	}
+	if track.Compilation {
+		addCustom("COMPILATION", "1")
+	}
+
+	// Mime Type Detection
+	if len(art) > 0 {
+		mime := http.DetectContentType(art)
+		if idx := strings.Index(mime, ";"); idx != -1 {
+			mime = strings.TrimSpace(mime[:idx])
+		}
+		tm.CoverMime = mime
+	}
+
+	// Array Joins for Custom Maps
+	if len(track.ArtistIDs) > 0 {
+		addCustom("MUSICBRAINZ_ARTISTID", strings.Join(track.ArtistIDs, "; "))
+	}
+	if len(track.AlbumArtistIDs) > 0 {
+		addCustom("MUSICBRAINZ_ALBUMARTISTID", strings.Join(track.AlbumArtistIDs, "; "))
+	}
+	for _, t := range track.Tags {
+		addCustom("MUSICBRAINZ_TAG", t)
+	}
+
+	return tm
+}
+
+// ── MP4 Strategy ─────────────────────────────────────────────────────────────
+
+type MP4Tagger struct{}
+
+func (t *MP4Tagger) WriteTags(filePath string, tags *TagMap) error {
+	mp4, err := mp4tag.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open MP4 file: %w", err)
+	}
+	defer func() { _ = mp4.Close() }()
+
+	mp4Tags := &mp4tag.MP4Tags{
+		Title:       tags.Title,
+		Album:       tags.Album,
+		TrackNumber: int16(tags.TrackNum),
+		TrackTotal:  int16(tags.TrackTotal),
+		DiscNumber:  int16(tags.DiscNum),
+		DiscTotal:   int16(tags.DiscTotal),
+		BPM:         int16(tags.BPM),
+		Composer:    tags.Composer,
+		Copyright:   tags.Copyright,
+		Lyrics:      tags.Lyrics,
+	}
+
+	if len(tags.Artists) > 0 {
+		mp4Tags.Artist = strings.Join(tags.Artists, ", ")
+	}
+	if len(tags.AlbumArtists) > 0 {
+		mp4Tags.AlbumArtist = strings.Join(tags.AlbumArtists, ", ")
+	}
+
+	if len(tags.CoverArt) > 0 {
+		mp4Tags.Pictures = []*mp4tag.MP4Picture{
+			{Data: tags.CoverArt},
+		}
+	}
+
+	// Apply all advanced parity tags to iTunes freeform atoms
+	mp4Tags.Custom = tags.Custom
+
+	return mp4.Write(mp4Tags, []string{})
+}
+
+// ── MP3 Strategy ─────────────────────────────────────────────────────────────
+
+type MP3Tagger struct{}
+
+func (t *MP3Tagger) WriteTags(filePath string, tags *TagMap) error {
+	tag, err := id3v2.Open(filePath, id3v2.Options{Parse: true})
+	if err != nil {
+		return fmt.Errorf("failed to open MP3 file: %w", err)
+	}
+	defer func() { _ = tag.Close() }()
+
+	tag.SetVersion(4)
+
+	if tags.Title != "" {
+		tag.SetTitle(tags.Title)
+	}
+	if len(tags.Artists) > 0 {
+		tag.AddTextFrame("TPE1", tag.DefaultEncoding(), strings.Join(tags.Artists, "\x00"))
+	}
+	if tags.Album != "" {
+		tag.SetAlbum(tags.Album)
+	}
+	if tags.Year > 0 {
+		tag.SetYear(fmt.Sprintf("%d", tags.Year))
+	}
+	if tags.Genre != "" {
+		tag.SetGenre(tags.Genre)
+	}
+	tag.DeleteFrames("TIT3")
+
+	if len(tags.AlbumArtists) > 0 {
+		tag.AddTextFrame("TPE2", tag.DefaultEncoding(), strings.Join(tags.AlbumArtists, "\x00"))
+	}
+
+	if tags.TrackNum > 0 {
+		trackStr := fmt.Sprintf("%d", tags.TrackNum)
+		if tags.TrackTotal > 0 {
+			trackStr = fmt.Sprintf("%d/%d", tags.TrackNum, tags.TrackTotal)
+		}
+		tag.AddTextFrame(tag.CommonID("Track number/Position in set"), tag.DefaultEncoding(), trackStr)
+	}
+	if tags.DiscNum > 0 {
+		discStr := fmt.Sprintf("%d", tags.DiscNum)
+		if tags.DiscTotal > 0 {
+			discStr = fmt.Sprintf("%d/%d", tags.DiscNum, tags.DiscTotal)
+		}
+		tag.AddTextFrame(tag.CommonID("Part of a set"), tag.DefaultEncoding(), discStr)
+	}
+
+	if tags.Composer != "" {
+		tag.AddTextFrame(tag.CommonID("Composer"), tag.DefaultEncoding(), tags.Composer)
+	}
+	if tags.Copyright != "" {
+		tag.AddTextFrame(tag.CommonID("Copyright message"), tag.DefaultEncoding(), tags.Copyright)
+	}
+	if tags.BPM > 0 {
+		tag.AddTextFrame(tag.CommonID("BPM"), tag.DefaultEncoding(), fmt.Sprintf("%d", tags.BPM))
+	}
+	if tags.Lyrics != "" {
+		tag.AddTextFrame(tag.CommonID("Lyrics"), tag.DefaultEncoding(), tags.Lyrics)
+	}
+
+	// Apply Custom Metadata Mapping
+	for k, v := range tags.Custom {
+		if k == "LYRICS" {
+			tag.AddUnsynchronisedLyricsFrame(id3v2.UnsynchronisedLyricsFrame{
+				Encoding:          id3v2.EncodingUTF8,
+				Language:          "eng",
+				ContentDescriptor: "LRC",
+				Lyrics:            v,
+			})
+			continue
+		}
+		// Map known custom fields to common IDs if applicable, else UserDefined
+		switch k {
+		case "LABEL":
+			tag.AddTextFrame(tag.CommonID("Publisher"), tag.DefaultEncoding(), v)
+		case "ISRC":
+			tag.AddTextFrame(tag.CommonID("ISRC"), tag.DefaultEncoding(), v)
+		case "KEY":
+			tag.AddTextFrame(tag.CommonID("Key"), tag.DefaultEncoding(), v)
+		case "VERSION":
+			tag.AddTextFrame(tag.CommonID("Version"), tag.DefaultEncoding(), v)
+		case "URL":
+			tag.AddTextFrame(tag.CommonID("WWWAudioSource"), tag.DefaultEncoding(), v)
+		case "COMPILATION":
+			tag.AddTextFrame("TCMP", tag.DefaultEncoding(), v)
+		default:
+			tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+				Encoding:    id3v2.EncodingUTF8,
+				Description: k,
+				Value:       v,
+			})
+		}
+	}
+
+	if len(tags.CoverArt) > 0 {
+		tag.AddAttachedPicture(id3v2.PictureFrame{
+			Encoding:    id3v2.EncodingUTF8,
+			MimeType:    tags.CoverMime,
+			PictureType: id3v2.PTFrontCover,
+			Description: "Front Cover",
+			Picture:     tags.CoverArt,
+		})
+	}
+
+	return tag.Save()
+}
+
+// ── FLAC Strategy ────────────────────────────────────────────────────────────
+
+type FLACTagger struct{}
+
+func (t *FLACTagger) WriteTags(filePath string, tags *TagMap) error {
 	f, err := flac.ParseFile(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to parse FLAC file: %w", err)
 	}
 
-	vc := newVorbisComment(track)
+	vc := t.newVorbisComment(tags)
 	newVCMeta := vc.Marshal()
 
 	var newPicMeta *flac.MetaDataBlock
-	if len(albumArtData) > 0 {
+	if len(tags.CoverArt) > 0 {
 		pic, err := flacpicture.NewFromImageData(
 			flacpicture.PictureTypeFrontCover,
 			"Front Cover",
-			albumArtData,
-			http.DetectContentType(albumArtData),
+			tags.CoverArt,
+			tags.CoverMime,
 		)
 		if err != nil {
 			return fmt.Errorf("failed to create picture: %w", err)
@@ -72,7 +349,6 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 
 	var currentVC []byte
 	var currentPic []byte
-
 	var vorbisIdx = -1
 	var pictureIdx = -1
 
@@ -96,7 +372,7 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	changed := !bytes.Equal(currentVC, newVCMeta.Data)
 	if newPicMeta != nil && !bytes.Equal(currentPic, newPicMeta.Data) {
 		changed = true
-	} else if len(albumArtData) == 0 && pictureIdx >= 0 {
+	} else if len(tags.CoverArt) == 0 && pictureIdx >= 0 {
 		changed = true
 	}
 
@@ -146,8 +422,7 @@ func tagFLAC(filePath string, track *domain.Track, albumArtData []byte) error {
 	return nil
 }
 
-// newVorbisComment builds a populated VorbisComment from a Track.
-func newVorbisComment(track *domain.Track) *flacvorbis.MetaDataBlockVorbisComment {
+func (t *FLACTagger) newVorbisComment(tags *TagMap) *flacvorbis.MetaDataBlockVorbisComment {
 	vc := flacvorbis.New()
 
 	add := func(name, value string) {
@@ -156,98 +431,52 @@ func newVorbisComment(track *domain.Track) *flacvorbis.MetaDataBlockVorbisCommen
 		}
 	}
 
-	add("TITLE", track.Title)
+	add("TITLE", tags.Title)
+	for _, a := range tags.Artists {
+		add("ARTIST", a)
+	}
+	for _, a := range tags.AlbumArtists {
+		add("ALBUMARTIST", a)
+	}
+	add("ALBUM", tags.Album)
 
-	if len(track.Artists) > 0 {
-		for _, a := range track.Artists {
-			add("ARTIST", a)
-		}
-	} else {
-		add("ARTIST", track.Artist)
+	if tags.TrackNum > 0 {
+		add("TRACKNUMBER", fmt.Sprintf("%d", tags.TrackNum))
 	}
-
-	if len(track.AlbumArtists) > 0 {
-		for _, a := range track.AlbumArtists {
-			add("ALBUMARTIST", a)
-		}
-	} else {
-		add("ALBUMARTIST", track.AlbumArtist)
+	if tags.TrackTotal > 0 {
+		add("TRACKTOTAL", fmt.Sprintf("%d", tags.TrackTotal))
 	}
-
-	add("ALBUM", track.Album)
-
-	if track.TrackNumber > 0 {
-		add("TRACKNUMBER", fmt.Sprintf("%d", track.TrackNumber))
+	if tags.DiscNum > 0 {
+		add("DISCNUMBER", fmt.Sprintf("%d", tags.DiscNum))
 	}
-	if track.TotalTracks > 0 {
-		add("TRACKTOTAL", fmt.Sprintf("%d", track.TotalTracks))
+	if tags.DiscTotal > 0 {
+		add("DISCTOTAL", fmt.Sprintf("%d", tags.DiscTotal))
 	}
-	if track.DiscNumber > 0 {
-		add("DISCNUMBER", fmt.Sprintf("%d", track.DiscNumber))
-	}
-	if track.TotalDiscs > 0 {
-		add("DISCTOTAL", fmt.Sprintf("%d", track.TotalDiscs))
-	}
-	if track.Year > 0 {
-		add("DATE", fmt.Sprintf("%d", track.Year))
+	if tags.Year > 0 {
+		add("DATE", fmt.Sprintf("%d", tags.Year))
 	}
 
-	add("RELEASEDATE", track.ReleaseDate)
-	add("GENRE", track.Genre)
-	add("LABEL", track.Label)
-	add("ISRC", track.ISRC)
-	add("COPYRIGHT", track.Copyright)
-	add("COMPOSER", track.Composer)
+	add("GENRE", tags.Genre)
+	add("COPYRIGHT", tags.Copyright)
+	add("COMPOSER", tags.Composer)
 
-	if track.BPM > 0 {
-		add("BPM", fmt.Sprintf("%d", track.BPM))
-	}
-	add("KEY", track.Key)
-	add("KEY_SCALE", track.KeyScale)
-
-	if track.ReplayGain != 0 {
-		add("REPLAYGAIN_TRACK_GAIN", fmt.Sprintf("%.2f dB", track.ReplayGain))
-	}
-	if track.Peak != 0 {
-		add("REPLAYGAIN_TRACK_PEAK", fmt.Sprintf("%.6f", track.Peak))
+	if tags.BPM > 0 {
+		add("BPM", fmt.Sprintf("%d", tags.BPM))
 	}
 
-	add("VERSION", track.Version)
-	add("DESCRIPTION", track.Description)
-	add("URL", track.URL)
-	add("AUDIO_QUALITY", track.AudioQuality)
-	add("AUDIO_MODE", track.AudioModes)
-	add("UNSYNCEDLYRICS", track.Lyrics)
+	add("UNSYNCEDLYRICS", tags.Lyrics)
 
-	if track.Subtitles != "" {
-		add("LYRICS", formatToLRC(track.Subtitles))
-	}
-
-	if track.Compilation {
-		add("COMPILATION", "1")
-	}
-
-	for _, id := range track.ArtistIDs {
-		add("MUSICBRAINZ_ARTISTID", id)
-	}
-	for _, id := range track.AlbumArtistIDs {
-		add("MUSICBRAINZ_ALBUMARTISTID", id)
-	}
-
-	add("BARCODE", track.Barcode)
-	add("CATALOGNUMBER", track.CatalogNumber)
-	add("RELEASETYPE", track.ReleaseType)
-	add("MUSICBRAINZ_RELEASEGROUPID", track.ReleaseID)
-
-	for _, t := range track.Tags {
-		add("MUSICBRAINZ_TAG", t)
+	// Dump all custom normalized tags
+	for k, v := range tags.Custom {
+		add(k, v)
 	}
 
 	return vc
 }
 
+// ── Utilities ────────────────────────────────────────────────────────────────
+
 // formatToLRC converts subtitle lines to LRC format.
-// Input lines are expected to look like "[MM:SS.mm] Lyrics text".
 func formatToLRC(subtitles string) string {
 	var sb strings.Builder
 	for _, line := range strings.Split(subtitles, "\n") {
@@ -260,202 +489,3 @@ func formatToLRC(subtitles string) string {
 	}
 	return sb.String()
 }
-
-// ── MP3 ──────────────────────────────────────────────────────────────────────
-
-// tagMP3 writes ID3v2.4 tags to an MP3 file.
-func tagMP3(filePath string, track *domain.Track, albumArtData []byte) error {
-	tag, err := id3v2.Open(filePath, id3v2.Options{Parse: true})
-	if err != nil {
-		return fmt.Errorf("failed to open MP3 file: %w", err)
-	}
-	defer func() { _ = tag.Close() }()
-
-	tag.SetVersion(4)
-
-	if track.Title != "" {
-		tag.SetTitle(track.Title)
-	}
-	if len(track.Artists) > 0 {
-		tag.AddTextFrame("TPE1", tag.DefaultEncoding(), strings.Join(track.Artists, "\x00"))
-	} else if track.Artist != "" {
-		tag.SetArtist(track.Artist)
-	}
-	if track.Album != "" {
-		tag.SetAlbum(track.Album)
-	}
-	if track.Year > 0 {
-		tag.SetYear(fmt.Sprintf("%d", track.Year))
-	}
-	if track.Genre != "" {
-		tag.SetGenre(track.Genre)
-	}
-	tag.DeleteFrames("TIT3") // Remove legacy SUBGENRE frame
-
-	if len(track.AlbumArtists) > 0 {
-		tag.AddTextFrame("TPE2", tag.DefaultEncoding(), strings.Join(track.AlbumArtists, "\x00"))
-	} else if track.AlbumArtist != "" {
-		tag.AddTextFrame(tag.CommonID("Band/Orchestra/Accompaniment"), tag.DefaultEncoding(), track.AlbumArtist)
-	}
-
-	if track.TrackNumber > 0 {
-		trackStr := fmt.Sprintf("%d", track.TrackNumber)
-		if track.TotalTracks > 0 {
-			trackStr = fmt.Sprintf("%d/%d", track.TrackNumber, track.TotalTracks)
-		}
-		tag.AddTextFrame(tag.CommonID("Track number/Position in set"), tag.DefaultEncoding(), trackStr)
-	}
-	if track.DiscNumber > 0 {
-		discStr := fmt.Sprintf("%d", track.DiscNumber)
-		if track.TotalDiscs > 0 {
-			discStr = fmt.Sprintf("%d/%d", track.DiscNumber, track.TotalDiscs)
-		}
-		tag.AddTextFrame(tag.CommonID("Part of a set"), tag.DefaultEncoding(), discStr)
-	}
-
-	if track.Composer != "" {
-		tag.AddTextFrame(tag.CommonID("Composer"), tag.DefaultEncoding(), track.Composer)
-	}
-	if track.Label != "" {
-		tag.AddTextFrame(tag.CommonID("Publisher"), tag.DefaultEncoding(), track.Label)
-	}
-	if track.ISRC != "" {
-		tag.AddTextFrame(tag.CommonID("ISRC"), tag.DefaultEncoding(), track.ISRC)
-	}
-	if track.Copyright != "" {
-		tag.AddTextFrame(tag.CommonID("Copyright message"), tag.DefaultEncoding(), track.Copyright)
-	}
-	if track.BPM > 0 {
-		tag.AddTextFrame(tag.CommonID("BPM"), tag.DefaultEncoding(), fmt.Sprintf("%d", track.BPM))
-	}
-	if track.Key != "" {
-		tag.AddTextFrame(tag.CommonID("Key"), tag.DefaultEncoding(), track.Key)
-	}
-	if track.ReplayGain != 0 {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "REPLAYGAIN_TRACK_GAIN",
-			Value:       fmt.Sprintf("%.2f dB", track.ReplayGain),
-		})
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "REPLAYGAIN_TRACK_PEAK",
-			Value:       fmt.Sprintf("%.6f", track.Peak),
-		})
-	}
-	if track.Version != "" {
-		tag.AddTextFrame(tag.CommonID("Version"), tag.DefaultEncoding(), track.Version)
-	}
-	if track.Description != "" {
-		tag.AddTextFrame(tag.CommonID("Comments"), tag.DefaultEncoding(), track.Description)
-	}
-	if track.URL != "" {
-		tag.AddTextFrame(tag.CommonID("WWWAudioSource"), tag.DefaultEncoding(), track.URL)
-	}
-	if track.AudioQuality != "" {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "AUDIO_QUALITY",
-			Value:       track.AudioQuality,
-		})
-	}
-	if track.AudioModes != "" {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "AUDIO_MODE",
-			Value:       track.AudioModes,
-		})
-	}
-	if track.Lyrics != "" {
-		tag.AddTextFrame(tag.CommonID("Lyrics"), tag.DefaultEncoding(), track.Lyrics)
-	}
-	if track.Subtitles != "" {
-		tag.AddUnsynchronisedLyricsFrame(id3v2.UnsynchronisedLyricsFrame{
-			Encoding:          id3v2.EncodingUTF8,
-			Language:          "eng",
-			ContentDescriptor: "LRC",
-			Lyrics:            formatToLRC(track.Subtitles),
-		})
-	}
-	if track.ReleaseDate != "" {
-		tag.AddTextFrame(tag.CommonID("Release time"), tag.DefaultEncoding(), track.ReleaseDate)
-	}
-	if track.Compilation {
-		tag.AddTextFrame("TCMP", tag.DefaultEncoding(), "1")
-	}
-	for _, id := range track.ArtistIDs {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "MUSICBRAINZ_ARTISTID",
-			Value:       id,
-		})
-	}
-	for _, id := range track.AlbumArtistIDs {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "MUSICBRAINZ_ALBUMARTISTID",
-			Value:       id,
-		})
-	}
-	if track.Barcode != "" {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "BARCODE",
-			Value:       track.Barcode,
-		})
-	}
-	if track.CatalogNumber != "" {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "CATALOGNUMBER",
-			Value:       track.CatalogNumber,
-		})
-	}
-	if track.ReleaseType != "" {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "RELEASETYPE",
-			Value:       track.ReleaseType,
-		})
-	}
-	if track.ReleaseID != "" {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "MUSICBRAINZ_RELEASEGROUPID",
-			Value:       track.ReleaseID,
-		})
-	}
-
-	for _, t := range track.Tags {
-		tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			Description: "MUSICBRAINZ_TAG",
-			Value:       t,
-		})
-	}
-
-	if len(albumArtData) > 0 {
-		mime := http.DetectContentType(albumArtData)
-		if idx := strings.Index(mime, ";"); idx != -1 {
-			mime = strings.TrimSpace(mime[:idx])
-		}
-		tag.AddAttachedPicture(id3v2.PictureFrame{
-			Encoding:    id3v2.EncodingUTF8,
-			MimeType:    mime,
-			PictureType: id3v2.PTFrontCover,
-			Description: "Front Cover",
-			Picture:     albumArtData,
-		})
-	}
-
-	return tag.Save()
-}
-
-// ── MP4 ──────────────────────────────────────────────────────────────────────
-
-// tagMP4 is not yet implemented.
-func tagMP4(_ string, _ *domain.Track, _ []byte) error {
-	return fmt.Errorf("%w: MP4 tagging not yet implemented", ErrUnsupportedFormat)
-}
-
-// ── Utilities ─────────────────────────────────────────────────────────────────

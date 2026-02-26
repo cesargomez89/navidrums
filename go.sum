@@ -1,5 +1,7 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
+github.com/Sorrow446/go-mp4tag v0.0.0-20240130220823-68ce31d53e37 h1:6X6U2D53ITfDGiyGN+sOVm/iFveFHrFRS7icGJ+u88M=
+github.com/Sorrow446/go-mp4tag v0.0.0-20240130220823-68ce31d53e37/go.mod h1:l5rVvaRUrCot83416D6xggKCeFZQAXcv02tnJslG26s=
 github.com/bogem/id3v2/v2 v2.1.4 h1:CEwe+lS2p6dd9UZRlPc1zbFNIha2mb2qzT1cCEoNWoI=
 github.com/bogem/id3v2/v2 v2.1.4/go.mod h1:l+gR8MZ6rc9ryPTPkX77smS5Me/36gxkMgDayZ9G1vY=
 github.com/ddliu/go-httpclient v0.7.1 h1:COWYBalfbaFNe6e0eQU38++vCD5kzLh1H1RFs3xcn9g=
