@@ -31,6 +31,7 @@ type Config struct {
 	RateLimitWindow   time.Duration
 	RateLimitBurst    int
 	SkipAuth          bool
+	DisableRateLimit  bool
 }
 
 // Load loads configuration from environment variables with defaults
@@ -55,6 +56,7 @@ func Load() *Config {
 		RateLimitWindow:   getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
 		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
 		SkipAuth:          getEnvBool("SKIP_AUTH", false),
+		DisableRateLimit:  getEnvBool("DISABLE_RATE_LIMIT", false),
 	}
 }
 

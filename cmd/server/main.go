@@ -81,8 +81,10 @@ func main() {
 		r.Use(basicAuthMiddleware(cfg.Username, cfg.Password))
 	}
 
-	// Rate Limiting Middleware (always applied for security)
-	r.Use(rateLimitMiddleware(cfg.RateLimitRequests, cfg.RateLimitWindow, cfg.RateLimitBurst))
+	// Rate Limiting Middleware (skip if DISABLE_RATE_LIMIT is set, useful when behind Cloudflare)
+	if !cfg.DisableRateLimit {
+		r.Use(rateLimitMiddleware(cfg.RateLimitRequests, cfg.RateLimitWindow, cfg.RateLimitBurst))
+	}
 
 	// Serve Static Files from embedded filesystem
 	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -199,7 +201,7 @@ func rateLimitMiddleware(requestsPerWindow int, window time.Duration, burst int)
 			l, exists := limiters.Load(ip)
 			if !exists {
 				l = &ipLimiter{
-					limiter:  rate.NewLimiter(rate.Limit(float64(requestsPerWindow))/rate.Limit(window.Seconds()), burst),
+					limiter:  rate.NewLimiter(rate.Limit(float64(requestsPerWindow)/window.Seconds()), burst),
 					lastSeen: time.Now(),
 				}
 				limiters.Store(ip, l)

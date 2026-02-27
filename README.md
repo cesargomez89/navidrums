@@ -117,6 +117,7 @@ Environment variables:
 | `RATE_LIMIT_REQUESTS` | `200` | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond the rate limit |
+| `DISABLE_RATE_LIMIT` | `false` | Disable rate limiting (use when behind Cloudflare) |
 
 **Template Variables:**
 

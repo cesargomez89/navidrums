@@ -43,6 +43,7 @@ go fmt ./...
 | `RATE_LIMIT_REQUESTS` | 60 | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |
 | `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
+| `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
 | `SKIP_AUTH` | false | Disable authentication entirely |
 
 **Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
