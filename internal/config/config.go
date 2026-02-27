@@ -51,7 +51,7 @@ func Load() *Config {
 		SubdirTemplate:    getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
 		CacheTTL:          getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
 		MusicBrainzURL:    getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
-		RateLimitRequests: getEnvInt("RATE_LIMIT_REQUESTS", 60),
+		RateLimitRequests: getEnvInt("RATE_LIMIT_REQUESTS", 200),
 		RateLimitWindow:   getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
 		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
 		SkipAuth:          getEnvBool("SKIP_AUTH", false),

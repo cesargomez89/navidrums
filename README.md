@@ -114,7 +114,7 @@ Environment variables:
 | `SKIP_AUTH` | `false` | Set to `true` to disable authentication entirely |
 | `CACHE_TTL` | `12h` | Provider response cache TTL (e.g., `1h`, `24h`, `7d`) |
 | `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | MusicBrainz API endpoint for metadata enrichment |
-| `RATE_LIMIT_REQUESTS` | `60` | Maximum requests per rate limit window |
+| `RATE_LIMIT_REQUESTS` | `200` | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond the rate limit |
 
