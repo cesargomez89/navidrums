@@ -400,8 +400,14 @@ func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DownloadsPage(w http.ResponseWriter, r *http.Request) {
+	genres, err := h.DownloadsService.GetAllGenres()
+	if err != nil {
+		h.Logger.Error("Failed to get genres", "error", err)
+		genres = []string{}
+	}
 	h.RenderPage(w, "downloads.html", map[string]interface{}{
 		"ActivePage": "downloads",
+		"Genres":     genres,
 	})
 }
 

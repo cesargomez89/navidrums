@@ -2,28 +2,34 @@
 <h1>Downloads</h1>
 
 <div class="downloads-toolbar">
-    <input type="text" id="downloads-search" name="q" placeholder="Search by track, album, artist..."
-        onkeydown="if(event.key==='Enter') searchDownloads()">
+    <div class="toolbar-row">
+        <div class="toolbar-search-group">
+            <input type="text" id="downloads-search" name="q" placeholder="Search by track, album, artist, genre..."
+                onkeydown="if(event.key==='Enter') searchDownloads()">
+            <button onclick="searchDownloads()" class="btn btn-outline btn-sm">Search</button>
+        </div>
+        <select id="downloads-filter" onchange="applyFilter()" class="form-select toolbar-filter">
+            <option value="">All downloads</option>
+            <option value="no_genre">No genre</option>
+            {{range .Genres}}
+            <option value="genre:{{.}}">{{.}}</option>
+            {{end}}
+        </select>
+    </div>
 
-    <button onclick="searchDownloads()" class="btn btn-outline btn-sm">Search</button>
-
-    <select id="downloads-filter" onchange="applyFilter()" class="form-select">
-        <option value="">All downloads</option>
-        <option value="no_genre">No genre</option>
-    </select>
-
-    <button id="btn-delete-selected" onclick="bulkDelete()" class="btn btn-outline btn-sm" disabled
-        style="color: var(--danger, #e05c5c); border-color: var(--danger, #e05c5c);">
-        Delete (<span id="selected-count">0</span>)
-    </button>
-
-    <button id="btn-genre-selected" onclick="openGenreModal()" class="btn btn-outline btn-sm" disabled>
-        Set Genre (<span id="genre-count">0</span>)
-    </button>
-
-    <button id="btn-sync" onclick="bulkSync()" class="btn btn-outline btn-sm">
-        Sync All
-    </button>
+    <div class="toolbar-row">
+        <div class="toolbar-actions">
+            <button id="btn-genre-selected" onclick="openGenreModal()" class="btn btn-outline btn-sm" disabled>
+                Set Genre (<span id="genre-count">0</span>)
+            </button>
+            <button id="btn-sync" onclick="bulkSync()" class="btn btn-outline btn-sm">
+                Sync All
+            </button>
+            <button id="btn-delete-selected" onclick="bulkDelete()" class="btn btn-outline-danger btn-sm" disabled>
+                Delete (<span id="selected-count">0</span>)
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Genre Modal -->
@@ -82,7 +88,7 @@
 
         if (btnDel) btnDel.disabled = (n === 0);
         if (btnGenre) btnGenre.disabled = (n === 0);
-        if (btnSync) btnSync.textContent = n === 0 ? 'Sync All' : 'Sync selected (' + n + ')';
+        if (btnSync) btnSync.textContent = n === 0 ? 'Sync All' : 'Sync (' + n + ')';
 
         var all = document.querySelectorAll('.download-cb');
         var selAll = document.getElementById('select-all-cb');

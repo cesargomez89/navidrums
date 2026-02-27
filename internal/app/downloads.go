@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -44,17 +45,29 @@ func (s *DownloadsService) SearchDownloads(query string, page, pageSize int) ([]
 
 func (s *DownloadsService) FilterDownloads(filter string, page, pageSize int) ([]*domain.Track, int, error) {
 	offset := (page - 1) * pageSize
-	switch filter {
-	case "no_genre":
+	switch {
+	case filter == "no_genre":
 		total, err := s.Repo.CountCompletedTracksNoGenre()
 		if err != nil {
 			return nil, 0, err
 		}
 		tracks, err := s.Repo.ListCompletedTracksNoGenre(offset, pageSize)
 		return tracks, total, err
+	case strings.HasPrefix(filter, "genre:"):
+		genre := strings.TrimPrefix(filter, "genre:")
+		total, err := s.Repo.CountCompletedTracksByGenre(genre)
+		if err != nil {
+			return nil, 0, err
+		}
+		tracks, err := s.Repo.ListCompletedTracksByGenre(genre, offset, pageSize)
+		return tracks, total, err
 	default:
 		return s.ListDownloads(page, pageSize)
 	}
+}
+
+func (s *DownloadsService) GetAllGenres() ([]string, error) {
+	return s.Repo.GetAllGenres()
 }
 
 func (s *DownloadsService) GetTrackByID(id int) (*domain.Track, error) {
