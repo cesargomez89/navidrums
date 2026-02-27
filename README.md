@@ -63,7 +63,7 @@ Optimized for low-end hardware.
 
 ### Security
 
-**Recommended: Use Cloudflare Tunnel or Zero Trust instead of basic auth**
+**Recommended: Use Cloudflare Tunnel and Zero Trust instead of basic auth**
 
 For production deployments exposed to the internet, we strongly recommend using a reverse proxy with built-in authentication instead of HTTP basic auth:
 
