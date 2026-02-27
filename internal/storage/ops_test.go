@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/cesargomez89/navidrums/internal/constants"
 )
 
 func TestSanitize(t *testing.T) {
@@ -31,7 +33,7 @@ func TestHashFile(t *testing.T) {
 	// Create a temp file with known content
 	tmpFile := filepath.Join(t.TempDir(), "testfile.txt")
 	content := []byte("hello world")
-	err := os.WriteFile(tmpFile, content, 0644)
+	err := os.WriteFile(tmpFile, content, constants.FilePermissions)
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -59,7 +61,7 @@ func TestVerifyFile(t *testing.T) {
 	// Create a temp file with known content
 	tmpFile := filepath.Join(t.TempDir(), "verify_test.txt")
 	content := []byte("test content for verification")
-	err := os.WriteFile(tmpFile, content, 0644)
+	err := os.WriteFile(tmpFile, content, constants.FilePermissions)
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
@@ -124,7 +126,7 @@ func TestDeleteFolderIfEmpty(t *testing.T) {
 
 	// Test deleting empty folder
 	emptyDir := filepath.Join(tmpDir, "empty")
-	if err := os.MkdirAll(emptyDir, 0755); err != nil {
+	if err := os.MkdirAll(emptyDir, constants.DirPermissions); err != nil {
 		t.Fatalf("MkdirAll failed: %v", err)
 	}
 
@@ -140,10 +142,10 @@ func TestDeleteFolderIfEmpty(t *testing.T) {
 
 	// Test keeping non-empty folder
 	nonEmptyDir := filepath.Join(tmpDir, "nonempty")
-	if mErr := os.MkdirAll(nonEmptyDir, 0755); mErr != nil {
+	if mErr := os.MkdirAll(nonEmptyDir, constants.DirPermissions); mErr != nil {
 		t.Fatalf("MkdirAll failed: %v", mErr)
 	}
-	if wErr := os.WriteFile(filepath.Join(nonEmptyDir, "file.txt"), []byte("content"), 0644); wErr != nil {
+	if wErr := os.WriteFile(filepath.Join(nonEmptyDir, "file.txt"), []byte("content"), constants.FilePermissions); wErr != nil {
 		t.Fatalf("WriteFile failed: %v", wErr)
 	}
 
@@ -169,7 +171,7 @@ func TestDeleteFolderWithCover(t *testing.T) {
 
 	// Test deleting empty folder
 	emptyDir := filepath.Join(tmpDir, "empty")
-	if mkdirErr := os.MkdirAll(emptyDir, 0755); mkdirErr != nil {
+	if mkdirErr := os.MkdirAll(emptyDir, constants.DirPermissions); mkdirErr != nil {
 		t.Fatalf("MkdirAll failed: %v", mkdirErr)
 	}
 
@@ -184,11 +186,11 @@ func TestDeleteFolderWithCover(t *testing.T) {
 
 	// Test deleting folder with only cover.jpg
 	coverOnlyDir := filepath.Join(tmpDir, "coveronly")
-	if mkdirErr := os.MkdirAll(coverOnlyDir, 0755); mkdirErr != nil {
+	if mkdirErr := os.MkdirAll(coverOnlyDir, constants.DirPermissions); mkdirErr != nil {
 		t.Fatalf("MkdirAll failed: %v", mkdirErr)
 	}
 	coverPath := filepath.Join(coverOnlyDir, "cover.jpg")
-	if writeErr := os.WriteFile(coverPath, []byte("fake image"), 0644); writeErr != nil {
+	if writeErr := os.WriteFile(coverPath, []byte("fake image"), constants.FilePermissions); writeErr != nil {
 		t.Fatalf("WriteFile failed: %v", writeErr)
 	}
 
@@ -203,13 +205,13 @@ func TestDeleteFolderWithCover(t *testing.T) {
 
 	// Test keeping folder with cover.jpg and other files
 	multiDir := filepath.Join(tmpDir, "multi")
-	if mkdirErr := os.MkdirAll(multiDir, 0755); mkdirErr != nil {
+	if mkdirErr := os.MkdirAll(multiDir, constants.DirPermissions); mkdirErr != nil {
 		t.Fatalf("MkdirAll failed: %v", mkdirErr)
 	}
-	if writeErr := os.WriteFile(filepath.Join(multiDir, "cover.jpg"), []byte("fake image"), 0644); writeErr != nil {
+	if writeErr := os.WriteFile(filepath.Join(multiDir, "cover.jpg"), []byte("fake image"), constants.FilePermissions); writeErr != nil {
 		t.Fatalf("WriteFile failed: %v", writeErr)
 	}
-	if writeErr := os.WriteFile(filepath.Join(multiDir, "track.flac"), []byte("audio"), 0644); writeErr != nil {
+	if writeErr := os.WriteFile(filepath.Join(multiDir, "track.flac"), []byte("audio"), constants.FilePermissions); writeErr != nil {
 		t.Fatalf("WriteFile failed: %v", writeErr)
 	}
 
@@ -232,7 +234,7 @@ func TestDeleteFolderWithCover(t *testing.T) {
 func TestIsNotExist(t *testing.T) {
 	// Test with existing file
 	tmpFile := filepath.Join(t.TempDir(), "exists.txt")
-	if err := os.WriteFile(tmpFile, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(tmpFile, []byte("test"), constants.FilePermissions); err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
 
@@ -249,7 +251,7 @@ func TestIsNotExist(t *testing.T) {
 
 	// Test IsNotExist with no error
 	existingFile := filepath.Join(t.TempDir(), "still_exists.txt")
-	if wErr := os.WriteFile(existingFile, []byte("test"), 0644); wErr != nil {
+	if wErr := os.WriteFile(existingFile, []byte("test"), constants.FilePermissions); wErr != nil {
 		t.Fatalf("WriteFile failed: %v", wErr)
 	}
 
@@ -266,7 +268,7 @@ func TestMoveFile(t *testing.T) {
 	dst := filepath.Join(tmpDir, "dest.txt")
 
 	// Create source file
-	err := os.WriteFile(src, []byte("move test"), 0644)
+	err := os.WriteFile(src, []byte("move test"), constants.FilePermissions)
 	if err != nil {
 		t.Fatalf("Failed to create source file: %v", err)
 	}
@@ -283,7 +285,7 @@ func TestMoveFile(t *testing.T) {
 	}
 
 	// Verify destination exists
-	content, err := os.ReadFile(dst)
+	content, err := os.ReadFile(dst) //nolint:gosec
 	if err != nil {
 		t.Fatalf("Failed to read destination: %v", err)
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/config"
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
@@ -210,7 +211,7 @@ func (h *TrackJobHandler) postProcessTrack(ctx context.Context, track *domain.Tr
 	finalDir := filepath.Dir(finalPath)
 	artPath := filepath.Join(finalDir, "cover.jpg")
 
-	if data, err := os.ReadFile(artPath); err == nil && len(data) > 0 {
+	if data, err := os.ReadFile(artPath); err == nil && len(data) > 0 { //nolint:gosec
 		albumArtData = data
 	} else if track.AlbumArtURL != "" {
 		var err error
@@ -604,7 +605,7 @@ func (h *SyncJobHandler) reTagTrack(track *domain.Track, logger *slog.Logger) er
 	if track.FilePath != "" {
 		albumDir := filepath.Dir(track.FilePath)
 		coverPath := filepath.Join(albumDir, "cover.jpg")
-		if data, err := os.ReadFile(coverPath); err == nil && len(data) > 0 {
+		if data, err := os.ReadFile(coverPath); err == nil && len(data) > 0 { //nolint:gosec
 			albumArtData = data
 		}
 	}
@@ -657,7 +658,7 @@ func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath str
 	track.FilePath = expectedPath
 	newDir := filepath.Dir(track.FilePath)
 
-	if err := os.MkdirAll(newDir, 0755); err != nil {
+	if err := os.MkdirAll(newDir, constants.DirPermissions); err != nil {
 		logger.Error("Failed to create new directory", "dir", newDir, "error", err)
 		return err
 	}

@@ -40,6 +40,11 @@ go fmt ./...
 | `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
 | `CACHE_TTL` | 12h | Provider response cache TTL |
 | `MUSICBRAINZ_URL` | https://musicbrainz.org/ws/2 | MusicBrainz API endpoint for metadata enrichment |
+| `RATE_LIMIT_REQUESTS` | 60 | Maximum requests per rate limit window |
+| `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |
+| `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
+| `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
+| `SKIP_AUTH` | false | Disable authentication entirely |
 
 **Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
 
@@ -127,10 +132,10 @@ Minimal state for work tracking:
 
 ### Track (Download Domain)
 Full metadata for downloaded/pending tracks:
-- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`, `RecordingID`
 - Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
 - Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
-- Genre/Label: `Genre`, `Label`, `Compilation`
+- Genre/Label: `Genre`, `Mood`, `Style`, `Tags`, `Label`, `Compilation`
 - Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
 - Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
 - Credit: `Credit`, `Composer`
@@ -141,7 +146,7 @@ Full metadata for downloaded/pending tracks:
 - Processing: `Status`, `Error`, `ParentJobID`
 - File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
 - Verification: `LastVerifiedAt`, `CompletedAt`
-- Status: missing | queued | downloading | processing | completed | failed
+- Status: missing | queued | downloading | downloaded | processing | completed | failed
 
 ### CatalogTrack (Provider Data)
 Used by catalog providers for search results:

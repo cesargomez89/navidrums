@@ -33,6 +33,16 @@
     </div>
 </div>
 
+<div class="section">
+    <h2>Genre Separator</h2>
+    <p class="hint">Separator used to split multiple genres when writing to audio file tags. Requires restart to take effect.</p>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="genre-separator-input" placeholder=";" style="width: 80px;" maxlength="5">
+        <button onclick="saveGenreSeparator()" class="btn btn-primary">Save</button>
+    </div>
+    <div id="genre-separator-status" style="margin-top: 8px;"></div>
+</div>
+
 <script>
 function loadProviders() {
     fetch('/htmx/providers', { cache: 'no-store' })
@@ -148,7 +158,34 @@ function resetGenreMap() {
         });
 }
 
+function loadGenreSeparator() {
+    fetch('/htmx/genre-separator', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('genre-separator-input').value = data.separator || ';';
+        });
+}
+
+function saveGenreSeparator() {
+    const separator = document.getElementById('genre-separator-input').value;
+    const statusDiv = document.getElementById('genre-separator-status');
+    
+    fetch('/htmx/genre-separator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ separator: separator })
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                statusDiv.innerHTML = '<span class="badge badge-success">Saved</span>';
+                setTimeout(() => statusDiv.innerHTML = '', 2000);
+            }
+        });
+}
+
 loadProviders();
 loadGenreMap();
+loadGenreSeparator();
 </script>
 {{end}}

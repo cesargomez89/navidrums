@@ -714,18 +714,53 @@ textarea {
 
 /* History */
 .history-stats {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-    padding: 12px;
-    border-radius: 8px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
 }
 
-.history-stats>div {
+.stat-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 4px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.stat-completed .stat-value { color: var(--success); }
+.stat-failed .stat-value { color: var(--danger); }
+.stat-cancelled .stat-value { color: var(--warning); }
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.history-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 /* Tabs */
@@ -818,9 +853,53 @@ textarea {
 }
 
 .job-status {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     padding: 4px 8px;
     border-radius: 4px;
+    text-transform: capitalize;
+}
+
+.job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.job-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+.job-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.job-error {
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-top: 6px;
+    word-break: break-word;
+}
+
+.job-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.job-date {
+    font-size: 0.75rem;
+    color: var(--text-dim);
 }
 
 .status-queued {
@@ -1333,14 +1412,46 @@ textarea {
     }
 
     .history-stats {
-        gap: 12px;
-        padding: 12px 0px;
+        gap: 8px;
+        padding: 12px;
     }
 
-    .history-stats>div {
-        flex: 1;
-        min-width: 45%;
-        justify-content: center;
+    .history-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .history-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .history-header .btn {
+        width: 100%;
+    }
+
+    .job {
+        padding: 14px;
+    }
+
+    .job-body {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .job-info {
+        width: 100%;
+    }
+
+    .job-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .job-error {
+        margin-top: 4px;
     }
 
     .downloads-toolbar {

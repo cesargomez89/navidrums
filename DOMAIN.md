@@ -7,7 +7,7 @@ Fields include:
 - Identity: `ID`, `ProviderID`, `AlbumID`, `ArtistID`
 - Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
 - Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
-- Genre/Label: `Genre`, `SubGenre`, `Label`, `Compilation`
+- Genre/Label: `Genre`, `Mood`, `Style`, `Tags`, `Label`, `Compilation`
 - Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
 - Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
 - Lyrics: `Lyrics`, `Subtitles`
@@ -23,10 +23,10 @@ Not guaranteed to exist locally. Used by providers for search results.
 Local download domain entity representing a track stored in the database.
 
 Metadata fields:
-- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`
+- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`, `RecordingID`
 - Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
 - Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
-- Genre/Label: `Genre`, `SubGenre`, `Label`, `Compilation`
+- Genre/Label: `Genre`, `Mood`, `Style`, `Tags`, `Label`, `Compilation`
 - Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
 - Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
 - Lyrics: `Lyrics`, `Subtitles`
@@ -36,7 +36,7 @@ Metadata fields:
 - Position: `TotalTracks`, `TotalDiscs`
 
 Processing:
-- `Status` - missing | queued | downloading | processing | completed | failed
+- `Status` - missing | queued | downloading | downloaded | processing | completed | failed
 - `ParentJobID` - Reference to the container job that created this track
 - `Error` - Error message if download failed
 
@@ -93,7 +93,7 @@ queued → running → completed | failed | cancelled
 
 Track status machine:
 ```
-missing → queued → downloading → processing → completed | failed
+missing → queued → downloading → downloaded → processing → completed | failed
 ```
 
 Structure:
@@ -155,7 +155,7 @@ Workers:
 - Handle job lifecycle: running → download → tagging → completion
 - Decompose container jobs (album/playlist/artist) into track records + child jobs
 - Look up Track metadata for downloads (no duplicate provider calls)
-- Update Track status throughout lifecycle (missing → queued → downloading → processing → completed)
+- Update Track status throughout lifecycle (missing → queued → downloading → downloaded → processing → completed)
 - Recover interrupted tracks on startup (reset downloading/processing to queued)
 - Verify file hash for idempotent downloads (skip if file exists and hash matches)
 - Recompute album state after track completion
