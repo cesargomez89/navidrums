@@ -217,6 +217,28 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     8,
+		description: "Add mood and style columns",
+		up: func(tx *sqlx.Tx) error {
+			columns := []string{
+				"ALTER TABLE tracks ADD COLUMN mood TEXT",
+				"ALTER TABLE tracks ADD COLUMN style TEXT",
+			}
+			for _, q := range columns {
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
+				}
+			}
+			// Backfill NULL values to empty strings to avoid scan errors
+			_, err := tx.Exec(`
+				UPDATE tracks SET mood = COALESCE(mood, ''), style = COALESCE(style, '')
+			`)
+			return err
+		},
+	},
 }
 
 type dbOps interface {

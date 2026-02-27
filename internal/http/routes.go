@@ -515,23 +515,47 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ids := r.Form["ids[]"]
+	year := r.FormValue("year")
 	genre := r.FormValue("genre")
-	if genre == "" {
-		http.Error(w, "genre is required", http.StatusBadRequest)
+	mood := r.FormValue("mood")
+	style := r.FormValue("style")
+
+	if year == "" && genre == "" && mood == "" && style == "" {
+		http.Error(w, "At least one field (year, genre, mood, or style) is required", http.StatusBadRequest)
 		return
 	}
 
 	for _, providerID := range ids {
 		track, err := h.DownloadsService.GetDownloadByProviderID(providerID)
 		if err != nil || track == nil {
-			h.Logger.Error("Failed to get track for genre update", "provider_id", providerID, "error", err)
+			h.Logger.Error("Failed to get track for metadata update", "provider_id", providerID, "error", err)
 			continue
 		}
 
-		updates := map[string]interface{}{"genre": genre}
+		updates := make(map[string]interface{})
+
+		if year != "" {
+			var yearInt int
+			if _, err := fmt.Sscanf(year, "%d", &yearInt); err == nil {
+				updates["year"] = yearInt
+			}
+		}
+		if genre != "" {
+			updates["genre"] = genre
+		}
+		if mood != "" {
+			updates["mood"] = mood
+		}
+		if style != "" {
+			updates["style"] = style
+		}
+
+		if len(updates) == 0 {
+			continue
+		}
 
 		if err := h.DownloadsService.UpdateTrackPartial(track.ID, updates); err != nil {
-			h.Logger.Error("Failed to update genre", "track_id", track.ID, "error", err)
+			h.Logger.Error("Failed to update metadata", "track_id", track.ID, "error", err)
 			continue
 		}
 

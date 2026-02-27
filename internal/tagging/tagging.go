@@ -30,6 +30,8 @@ type TagMap struct {
 	Title        string
 	Album        string
 	Genre        string
+	Mood         string
+	Style        string
 	Composer     string
 	Copyright    string
 	CoverMime    string
@@ -82,6 +84,8 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 		Album:        track.Album,
 		AlbumArtists: track.AlbumArtists,
 		Genre:        track.Genre,
+		Mood:         track.Mood,
+		Style:        track.Style,
 		Year:         track.Year,
 		TrackNum:     track.TrackNumber,
 		TrackTotal:   track.TotalTracks,
@@ -123,6 +127,8 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 	addCustom("ISRC", track.ISRC)
 	addCustom("LABEL", track.Label)
 	addCustom("GENRE", track.Genre)
+	addCustom("MOOD", track.Mood)
+	addCustom("STYLE", track.Style)
 	addCustom("BARCODE", track.Barcode)
 	addCustom("CATALOGNUMBER", track.CatalogNumber)
 	addCustom("RELEASETYPE", track.ReleaseType)

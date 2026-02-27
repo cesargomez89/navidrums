@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS tracks (
 	total_discs INTEGER,
 	year INTEGER,
 	genre TEXT,
+	mood TEXT,
+	style TEXT,
 	label TEXT,
 	isrc TEXT,
 	copyright TEXT,
