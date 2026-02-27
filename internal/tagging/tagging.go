@@ -21,6 +21,14 @@ import (
 
 var ErrUnsupportedFormat = errors.New("unsupported file format")
 
+var GenreSeparator = ";"
+
+func SetGenreSeparator(sep string) {
+	if sep != "" {
+		GenreSeparator = sep
+	}
+}
+
 // ── Models & Interfaces ──────────────────────────────────────────────────────
 
 // TagMap represents the normalized metadata payload for all audio formats.
@@ -126,7 +134,6 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 
 	addCustom("ISRC", track.ISRC)
 	addCustom("LABEL", track.Label)
-	addCustom("GENRE", track.Genre)
 	addCustom("MOOD", track.Mood)
 	addCustom("STYLE", track.Style)
 	addCustom("BARCODE", track.Barcode)
@@ -204,6 +211,23 @@ func (t *MP4Tagger) WriteTags(filePath string, tags *TagMap) error {
 		mp4Tags.AlbumArtist = strings.Join(tags.AlbumArtists, ", ")
 	}
 
+	if tags.Genre != "" {
+		genres := strings.Split(tags.Genre, GenreSeparator)
+		var genreStrs []string
+		for _, g := range genres {
+			g = strings.TrimSpace(g)
+			if g != "" {
+				genreStrs = append(genreStrs, g)
+			}
+		}
+		if len(genreStrs) > 0 {
+			if tags.Custom == nil {
+				tags.Custom = make(map[string]string)
+			}
+			tags.Custom["GENRE"] = strings.Join(genreStrs, ", ")
+		}
+	}
+
 	if len(tags.CoverArt) > 0 {
 		mp4Tags.Pictures = []*mp4tag.MP4Picture{
 			{Data: tags.CoverArt},
@@ -242,7 +266,13 @@ func (t *MP3Tagger) WriteTags(filePath string, tags *TagMap) error {
 		tag.SetYear(fmt.Sprintf("%d", tags.Year))
 	}
 	if tags.Genre != "" {
-		tag.SetGenre(tags.Genre)
+		genres := strings.Split(tags.Genre, GenreSeparator)
+		for _, g := range genres {
+			g = strings.TrimSpace(g)
+			if g != "" {
+				tag.AddTextFrame("TCON", tag.DefaultEncoding(), g)
+			}
+		}
 	}
 	tag.DeleteFrames("TIT3")
 
@@ -462,7 +492,15 @@ func (t *FLACTagger) newVorbisComment(tags *TagMap) *flacvorbis.MetaDataBlockVor
 		add("DATE", fmt.Sprintf("%d", tags.Year))
 	}
 
-	add("GENRE", tags.Genre)
+	if tags.Genre != "" {
+		genres := strings.Split(tags.Genre, GenreSeparator)
+		for _, g := range genres {
+			g = strings.TrimSpace(g)
+			if g != "" {
+				add("GENRE", g)
+			}
+		}
+	}
 	add("COPYRIGHT", tags.Copyright)
 	add("COMPOSER", tags.Composer)
 

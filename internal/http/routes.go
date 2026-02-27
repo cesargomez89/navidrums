@@ -379,6 +379,44 @@ func (h *Handler) ResetGenreMapHTMX(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
+func (h *Handler) GetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) {
+	sep, err := h.SettingsRepo.Get(store.SettingGenreSeparator)
+	if err != nil {
+		h.Logger.Error("Failed to get genre separator", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if sep == "" {
+		sep = ";"
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string]string{"separator": sep}); err != nil {
+		h.Logger.Error("Failed to encode genre separator response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Separator string `json:"separator"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingGenreSeparator, req.Separator); err != nil {
+		h.Logger.Error("Failed to save genre separator", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
 func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	albums, err := h.ProviderManager.GetProvider().GetSimilarAlbums(r.Context(), id)
