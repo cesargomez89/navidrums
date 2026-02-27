@@ -17,7 +17,7 @@
                 title="Select">
             <div class="download-info">
                 <a href="/track/{{.ID}}" class="download-title">{{.Title}}</a>
-                <div class="download-meta">{{.Artist}} - {{.Album}}</div>
+                <div class="download-meta">{{.Artist}} - {{.Album}}{{if .Genre}} - {{.Genre}}{{end}}</div>
             </div>
         </div>
         <div style="text-align: right; flex-shrink: 0;">

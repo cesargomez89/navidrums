@@ -272,6 +272,17 @@ button:active {
     border-color: var(--accent);
 }
 
+.btn-outline-danger {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--danger);
+}
+
 .btn-danger {
     background: var(--danger);
     color: var(--text);
@@ -1059,18 +1070,75 @@ textarea {
 /* Downloads Toolbar */
 .downloads-toolbar {
     margin-bottom: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.downloads-toolbar input[type="text"] {
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.toolbar-search-group {
+    display: flex;
+    flex: 1;
+    min-width: 280px;
+    gap: 8px;
+}
+
+.toolbar-search-group input {
     flex: 1;
     min-width: 180px;
-    max-width: 400px;
-    padding: 8px;
-    font-size: 14px;
+}
+
+.toolbar-search-group .btn {
+    flex-shrink: 0;
+}
+
+.toolbar-filter {
+    min-width: 160px;
+}
+
+.toolbar-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Mobile toolbar */
+@media (max-width: 600px) {
+    .downloads-toolbar {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .toolbar-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-search-group {
+        min-width: 100%;
+    }
+
+    .toolbar-filter {
+        width: 100%;
+    }
+
+    .toolbar-actions {
+        justify-content: stretch;
+    }
+
+    .toolbar-actions .btn {
+        flex: 1;
+    }
 }
 
 /* Similar Albums Animation */
@@ -1275,14 +1343,8 @@ textarea {
         justify-content: center;
     }
 
-    /* Downloads Toolbar mobile */
     .downloads-toolbar {
         flex-direction: column;
-        align-items: stretch;
-    }
-
-    .downloads-toolbar input[type="text"] {
-        max-width: none;
     }
 
     /* Track form actions mobile */

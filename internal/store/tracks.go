@@ -199,7 +199,7 @@ func (db *DB) ListTracks(limit int) ([]*domain.Track, error) {
 }
 
 func (db *DB) ListTracksByStatus(status domain.TrackStatus, offset, limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT * FROM tracks WHERE status = ? ORDER BY completed_at DESC LIMIT ? OFFSET ?`
 	return selectTracks(db, query, status, limit, offset)
 }
 
@@ -220,21 +220,21 @@ func (db *DB) CountCompletedTracks() (int, error) {
 }
 
 func (db *DB) SearchTracks(q string, offset, limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT * FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? OR genre LIKE ? ORDER BY completed_at DESC LIMIT ? OFFSET ?`
 	searchTerm := "%" + q + "%"
-	return selectTracks(db, query, searchTerm, searchTerm, searchTerm, limit, offset)
+	return selectTracks(db, query, searchTerm, searchTerm, searchTerm, searchTerm, limit, offset)
 }
 
 func (db *DB) CountSearchTracks(q string) (int, error) {
-	query := `SELECT COUNT(*) FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ?`
+	query := `SELECT COUNT(*) FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? OR genre LIKE ?`
 	searchTerm := "%" + q + "%"
 	var count int
-	err := db.Get(&count, query, searchTerm, searchTerm, searchTerm)
+	err := db.Get(&count, query, searchTerm, searchTerm, searchTerm, searchTerm)
 	return count, err
 }
 
 func (db *DB) ListCompletedTracksNoGenre(offset, limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '') ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT * FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '') ORDER BY completed_at DESC LIMIT ? OFFSET ?`
 	return selectTracks(db, query, domain.TrackStatusCompleted, limit, offset)
 }
 
@@ -242,6 +242,25 @@ func (db *DB) CountCompletedTracksNoGenre() (int, error) {
 	query := `SELECT COUNT(*) FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '')`
 	var count int
 	err := db.Get(&count, query, domain.TrackStatusCompleted)
+	return count, err
+}
+
+func (db *DB) GetAllGenres() ([]string, error) {
+	query := `SELECT DISTINCT genre FROM tracks WHERE status = ? AND genre IS NOT NULL AND TRIM(genre) != '' ORDER BY genre ASC`
+	var genres []string
+	err := db.Select(&genres, query, domain.TrackStatusCompleted)
+	return genres, err
+}
+
+func (db *DB) ListCompletedTracksByGenre(genre string, offset, limit int) ([]*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = ? AND LOWER(genre) = LOWER(?) ORDER BY completed_at DESC LIMIT ? OFFSET ?`
+	return selectTracks(db, query, domain.TrackStatusCompleted, genre, limit, offset)
+}
+
+func (db *DB) CountCompletedTracksByGenre(genre string) (int, error) {
+	query := `SELECT COUNT(*) FROM tracks WHERE status = ? AND LOWER(genre) = LOWER(?)`
+	var count int
+	err := db.Get(&count, query, domain.TrackStatusCompleted, genre)
 	return count, err
 }
 
