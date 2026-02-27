@@ -23,6 +23,16 @@ var ErrUnsupportedFormat = errors.New("unsupported file format")
 
 var GenreSeparator = ";"
 
+func clampInt16(v int) int16 {
+	if v < 0 {
+		return 0
+	}
+	if v > 32767 {
+		return 32767
+	}
+	return int16(v)
+}
+
 func SetGenreSeparator(sep string) {
 	if sep != "" {
 		GenreSeparator = sep
@@ -194,11 +204,11 @@ func (t *MP4Tagger) WriteTags(filePath string, tags *TagMap) error {
 	mp4Tags := &mp4tag.MP4Tags{
 		Title:       tags.Title,
 		Album:       tags.Album,
-		TrackNumber: int16(tags.TrackNum),
-		TrackTotal:  int16(tags.TrackTotal),
-		DiscNumber:  int16(tags.DiscNum),
-		DiscTotal:   int16(tags.DiscTotal),
-		BPM:         int16(tags.BPM),
+		TrackNumber: clampInt16(tags.TrackNum),
+		TrackTotal:  clampInt16(tags.TrackTotal),
+		DiscNumber:  clampInt16(tags.DiscNum),
+		DiscTotal:   clampInt16(tags.DiscTotal),
+		BPM:         clampInt16(tags.BPM),
 		Composer:    tags.Composer,
 		Copyright:   tags.Copyright,
 		Lyrics:      tags.Lyrics,
@@ -450,7 +460,7 @@ func (t *FLACTagger) WriteTags(filePath string, tags *TagMap) error {
 	}
 
 	dir := filepath.Dir(filePath)
-	if dirHandle, err := os.Open(dir); err == nil {
+	if dirHandle, err := os.Open(dir); err == nil { //nolint:gosec
 		_ = dirHandle.Sync()
 		_ = dirHandle.Close()
 	}

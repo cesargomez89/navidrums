@@ -11,10 +11,10 @@ const (
 	DefaultProviderURL    = "http://127.0.0.1:8000"
 	DefaultConcurrency    = 2
 	DefaultPollInterval   = 2 * time.Second
-	DefaultHTTPTimeout    = 30 * time.Second
+	DefaultHTTPTimeout    = 5 * time.Minute
 	ImageHTTPTimeout      = 30 * time.Second
-	DefaultRetryCount     = 5
-	DefaultRetryBase      = 500 * time.Millisecond
+	DefaultRetryCount     = 8
+	DefaultRetryBase      = 1 * time.Second
 	DefaultUsername       = "navidrums"
 	DefaultSubdirTemplate = "{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}"
 	DefaultCacheTTL       = 12 * time.Hour
@@ -75,8 +75,8 @@ const (
 
 // File Permissions
 const (
-	DirPermissions  = 0755
-	FilePermissions = 0644
+	DirPermissions  = 0750
+	FilePermissions = 0600
 )
 
 // HTTP Status Codes
