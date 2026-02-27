@@ -15,18 +15,22 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Port           string
-	DBPath         string
-	DownloadsDir   string
-	ProviderURL    string
-	Quality        string
-	LogLevel       string
-	LogFormat      string
-	Username       string
-	Password       string
-	SubdirTemplate string
-	MusicBrainzURL string
-	CacheTTL       time.Duration
+	Port              string
+	DBPath            string
+	DownloadsDir      string
+	ProviderURL       string
+	Quality           string
+	LogLevel          string
+	LogFormat         string
+	Username          string
+	Password          string
+	SubdirTemplate    string
+	MusicBrainzURL    string
+	CacheTTL          time.Duration
+	RateLimitRequests int
+	RateLimitWindow   time.Duration
+	RateLimitBurst    int
+	SkipAuth          bool
 }
 
 // Load loads configuration from environment variables with defaults
@@ -35,18 +39,22 @@ func Load() *Config {
 	defaultDownload := filepath.Join(home, "Downloads/navidrums")
 
 	return &Config{
-		Port:           getEnv("PORT", constants.DefaultPort),
-		DBPath:         getEnv("DB_PATH", constants.DefaultDBPath),
-		DownloadsDir:   getEnv("DOWNLOADS_DIR", defaultDownload),
-		ProviderURL:    getEnv("PROVIDER_URL", constants.DefaultProviderURL),
-		Quality:        getEnv("QUALITY", constants.DefaultQuality),
-		LogLevel:       getEnv("LOG_LEVEL", "info"),
-		LogFormat:      getEnv("LOG_FORMAT", "text"),
-		Username:       getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
-		Password:       getEnv("NAVIDRUMS_PASSWORD", ""),
-		SubdirTemplate: getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
-		CacheTTL:       getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
-		MusicBrainzURL: getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+		Port:              getEnv("PORT", constants.DefaultPort),
+		DBPath:            getEnv("DB_PATH", constants.DefaultDBPath),
+		DownloadsDir:      getEnv("DOWNLOADS_DIR", defaultDownload),
+		ProviderURL:       getEnv("PROVIDER_URL", constants.DefaultProviderURL),
+		Quality:           getEnv("QUALITY", constants.DefaultQuality),
+		LogLevel:          getEnv("LOG_LEVEL", "info"),
+		LogFormat:         getEnv("LOG_FORMAT", "text"),
+		Username:          getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
+		Password:          getEnv("NAVIDRUMS_PASSWORD", ""),
+		SubdirTemplate:    getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
+		CacheTTL:          getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
+		MusicBrainzURL:    getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+		RateLimitRequests: getEnvInt("RATE_LIMIT_REQUESTS", 60),
+		RateLimitWindow:   getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
+		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
+		SkipAuth:          getEnvBool("SKIP_AUTH", false),
 	}
 }
 
@@ -137,6 +145,21 @@ func (c *Config) Validate() error {
 		errors = append(errors, "CACHE_TTL must be greater than 0")
 	}
 
+	// Validate RateLimitRequests
+	if c.RateLimitRequests <= 0 {
+		errors = append(errors, "RATE_LIMIT_REQUESTS must be greater than 0")
+	}
+
+	// Validate RateLimitWindow
+	if c.RateLimitWindow <= 0 {
+		errors = append(errors, "RATE_LIMIT_WINDOW must be greater than 0")
+	}
+
+	// Validate RateLimitBurst
+	if c.RateLimitBurst <= 0 {
+		errors = append(errors, "RATE_LIMIT_BURST must be greater than 0")
+	}
+
 	if len(errors) > 0 {
 		return fmt.Errorf("configuration validation failed:\n  - %s", strings.Join(errors, "\n  - "))
 	}
@@ -148,6 +171,24 @@ func (c *Config) Validate() error {
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
+	}
+	return fallback
+}
+
+// getEnvInt retrieves an environment variable as int with a fallback default
+func getEnvInt(key string, fallback int) int {
+	if value, ok := os.LookupEnv(key); ok {
+		if v, err := strconv.Atoi(value); err == nil {
+			return v
+		}
+	}
+	return fallback
+}
+
+// getEnvBool retrieves an environment variable as bool with a fallback default
+func getEnvBool(key string, fallback bool) bool {
+	if value, ok := os.LookupEnv(key); ok {
+		return strings.ToLower(value) == "true" || value == "1"
 	}
 	return fallback
 }

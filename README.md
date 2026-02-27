@@ -51,6 +51,29 @@ Optimized for low-end hardware.
 - **Component-based**: Modular templates for maintainable UI code
 - **Basic Authentication**: Optional HTTP basic auth protection
 
+### Security
+
+**Recommended: Use Cloudflare Tunnel or Zero Trust instead of basic auth**
+
+For production deployments exposed to the internet, we strongly recommend using a reverse proxy with built-in authentication instead of HTTP basic auth:
+
+- **Cloudflare Tunnel (Zero Trust)**: Tunnel your service through Cloudflare withAccess policies, SSO integration, and built-in DDoS protection
+- **Traefik**: Configure OAuth2 or ForwardAuth middleware
+- **Nginx**: Use Auth_request module with external auth service
+- **Caddy**: Built-in OAuth2 or Cloudflare API key support
+
+Basic auth has limitations:
+- Credentials sent with every request (even if over HTTPS)
+- No MFA/SSO support
+- Hard to revoke without changing passwords
+
+When using a proxy with authentication, set `SKIP_AUTH=true` to disable built-in auth:
+```bash
+SKIP_AUTH=true ./navidrums
+```
+
+Rate limiting is still applied as a second layer of protection.
+
 ### Data Architecture
 - **Two-Table Design**: Jobs (work queue) + Tracks (full metadata) separation
 - **SQLite Database**: Efficient embedded database with WAL mode for concurrency
@@ -78,8 +101,12 @@ Environment variables:
 | `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
 | `NAVIDRUMS_USERNAME` | `navidrums` | Username for HTTP basic authentication |
 | `NAVIDRUMS_PASSWORD` | (empty) | Password for HTTP basic authentication (empty disables auth) |
+| `SKIP_AUTH` | `false` | Set to `true` to disable authentication entirely |
 | `CACHE_TTL` | `12h` | Provider response cache TTL (e.g., `1h`, `24h`, `7d`) |
 | `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | MusicBrainz API endpoint for metadata enrichment |
+| `RATE_LIMIT_REQUESTS` | `60` | Maximum requests per rate limit window |
+| `RATE_LIMIT_WINDOW` | `1m` | Rate limit time window (e.g., `30s`, `1m`) |
+| `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond the rate limit |
 
 **Template Variables:**
 

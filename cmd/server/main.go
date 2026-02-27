@@ -7,11 +7,14 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"golang.org/x/time/rate"
 
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -73,10 +76,13 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	// Basic Auth Middleware
-	if cfg.Password != "" {
+	// Basic Auth Middleware (skip if SKIP_AUTH is set)
+	if cfg.Password != "" && !cfg.SkipAuth {
 		r.Use(basicAuthMiddleware(cfg.Username, cfg.Password))
 	}
+
+	// Rate Limiting Middleware (always applied for security)
+	r.Use(rateLimitMiddleware(cfg.RateLimitRequests, cfg.RateLimitWindow, cfg.RateLimitBurst))
 
 	// Serve Static Files from embedded filesystem
 	r.Handle("/static/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -157,4 +163,68 @@ func basicAuthMiddleware(username, password string) func(http.Handler) http.Hand
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+type ipLimiter struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+func (i *ipLimiter) Allow() bool {
+	return i.limiter.Allow()
+}
+
+func rateLimitMiddleware(requestsPerWindow int, window time.Duration, burst int) func(http.Handler) http.Handler {
+	limiters := &sync.Map{}
+	cleanupInterval := 5 * time.Minute
+
+	go func() {
+		ticker := time.NewTicker(cleanupInterval)
+		for range ticker.C {
+			now := time.Now()
+			limiters.Range(func(key, value any) bool {
+				ip := key.(string)
+				limiter := value.(*ipLimiter)
+				if now.Sub(limiter.lastSeen) > window*2 {
+					limiters.Delete(ip)
+				}
+				return true
+			})
+		}
+	}()
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ip := getIP(r)
+			l, exists := limiters.Load(ip)
+			if !exists {
+				l = &ipLimiter{
+					limiter:  rate.NewLimiter(rate.Limit(float64(requestsPerWindow))/rate.Limit(window.Seconds()), burst),
+					lastSeen: time.Now(),
+				}
+				limiters.Store(ip, l)
+			}
+			limiter := l.(*ipLimiter)
+			limiter.lastSeen = time.Now()
+
+			if !limiter.Allow() {
+				http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func getIP(r *http.Request) string {
+	xff := r.Header.Get("X-Forwarded-For")
+	if xff != "" {
+		ips := strings.Split(xff, ",")
+		return strings.TrimSpace(ips[0])
+	}
+	xri := r.Header.Get("X-Real-IP")
+	if xri != "" {
+		return xri
+	}
+	return r.RemoteAddr
 }
