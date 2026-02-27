@@ -114,6 +114,14 @@
                     placeholder="Description...">{{.Track.Description}}</textarea>
             </div>
             <div class="form-group">
+                <label for="mood">Mood</label>
+                <input type="text" id="mood" name="mood" value="{{.Track.Mood}}" placeholder="e.g. Energetic, Chill, Melancholic">
+            </div>
+            <div class="form-group">
+                <label for="style">Style</label>
+                <input type="text" id="style" name="style" value="{{.Track.Style}}" placeholder="e.g. Ambient, Techno, House">
+            </div>
+            <div class="form-group">
                 <label for="version">Version</label>
                 <input type="text" id="version" name="version" value="{{.Track.Version}}">
             </div>

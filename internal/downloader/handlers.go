@@ -629,12 +629,11 @@ func (h *SyncJobHandler) reTagTrack(track *domain.Track, logger *slog.Logger) er
 }
 
 func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath string, logger *slog.Logger) error {
-	if oldFilePath == "" || track.FilePath == oldFilePath {
+	if oldFilePath == "" {
 		return nil
 	}
 
 	oldDir := filepath.Dir(oldFilePath)
-	newDir := filepath.Dir(track.FilePath)
 
 	templateData := storage.BuildPathTemplateData(
 		track.AlbumArtist,
@@ -651,14 +650,12 @@ func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath str
 		return err
 	}
 
-	if track.FilePath != expectedPath {
-		track.FilePath = expectedPath
-		newDir = filepath.Dir(track.FilePath)
-	}
-
-	if oldFilePath == track.FilePath {
+	if oldFilePath == expectedPath {
 		return nil
 	}
+
+	track.FilePath = expectedPath
+	newDir := filepath.Dir(track.FilePath)
 
 	if err := os.MkdirAll(newDir, 0755); err != nil {
 		logger.Error("Failed to create new directory", "dir", newDir, "error", err)

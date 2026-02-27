@@ -68,8 +68,10 @@ type Track struct { //nolint:govet // field ordering prioritizes readability ove
 	TotalTracks    int         `json:"total_tracks" db:"total_tracks"`
 	TotalDiscs     int         `json:"total_discs" db:"total_discs"`
 	Year           int         `json:"year" db:"year"`
-	Duration       int         `json:"duration" db:"duration"`
 	Genre          string      `json:"genre" db:"genre"`
+	Mood           string      `json:"mood,omitempty" db:"mood"`
+	Style          string      `json:"style,omitempty" db:"style"`
+	Duration       int         `json:"duration" db:"duration"`
 	Label          string      `json:"label" db:"label"`
 	ISRC           string      `json:"isrc" db:"isrc"`
 	Copyright      string      `json:"copyright" db:"copyright"`
