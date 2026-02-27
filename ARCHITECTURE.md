@@ -129,7 +129,7 @@ Full metadata and download state for all tracks:
 - Processing: `Status`, `Error`, `ParentJobID`
 - File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
 - Verification: `LastVerifiedAt`
-- Status: `missing → queued → downloading → processing → completed | failed`
+- Status: `missing → queued → downloading → downloaded → processing → completed | failed`
 
 ### Key Data Invariants
 1. Track file must exist before tagging
