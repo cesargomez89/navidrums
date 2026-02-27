@@ -11,10 +11,10 @@ const (
 	DefaultProviderURL    = "http://127.0.0.1:8000"
 	DefaultConcurrency    = 2
 	DefaultPollInterval   = 2 * time.Second
-	DefaultHTTPTimeout    = 5 * time.Minute
+	DefaultHTTPTimeout    = 30 * time.Second
 	ImageHTTPTimeout      = 30 * time.Second
-	DefaultRetryCount     = 8
-	DefaultRetryBase      = 1 * time.Second
+	DefaultRetryCount     = 5
+	DefaultRetryBase      = 500 * time.Millisecond
 	DefaultUsername       = "navidrums"
 	DefaultSubdirTemplate = "{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}"
 	DefaultCacheTTL       = 12 * time.Hour
