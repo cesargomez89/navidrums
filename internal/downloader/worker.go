@@ -99,6 +99,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	worker.dispatcher.Register(domain.JobTypeAlbum, containerHandler)
 	worker.dispatcher.Register(domain.JobTypePlaylist, containerHandler)
 	worker.dispatcher.Register(domain.JobTypeArtist, containerHandler)
+	worker.dispatcher.Register(domain.JobTypeDiscography, containerHandler)
 	worker.dispatcher.Register(domain.JobTypeSyncFile, syncHandler)
 	worker.dispatcher.Register(domain.JobTypeSyncMusicBrainz, syncHandler)
 	worker.dispatcher.Register(domain.JobTypeSyncHiFi, syncHandler)

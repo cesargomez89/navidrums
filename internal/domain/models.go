@@ -13,6 +13,7 @@ const (
 	JobTypeAlbum           JobType = "album"
 	JobTypePlaylist        JobType = "playlist"
 	JobTypeArtist          JobType = "artist"
+	JobTypeDiscography     JobType = "discography"
 	JobTypeSyncFile        JobType = "sync_file"
 	JobTypeSyncMusicBrainz JobType = "sync_musicbrainz"
 	JobTypeSyncHiFi        JobType = "sync_hifi"
