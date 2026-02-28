@@ -13,6 +13,8 @@ type TrackUpdateRequest struct {
 	Album         *string `form:"album"`
 	AlbumArtist   *string `form:"album_artist"`
 	Genre         *string `form:"genre"`
+	Mood          *string `form:"mood"`
+	Style         *string `form:"style"`
 	Label         *string `form:"label"`
 	Composer      *string `form:"composer"`
 	Copyright     *string `form:"copyright"`
@@ -67,6 +69,12 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 
 	if r.Genre != nil {
 		updates["genre"] = *r.Genre
+	}
+	if r.Mood != nil {
+		updates["mood"] = *r.Mood
+	}
+	if r.Style != nil {
+		updates["style"] = *r.Style
 	}
 	if r.Title != nil {
 		updates["title"] = *r.Title

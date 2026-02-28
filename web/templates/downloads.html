@@ -2,42 +2,57 @@
 <h1>Downloads</h1>
 
 <div class="downloads-toolbar">
-    <input type="text" id="downloads-search" name="q" placeholder="Search by track, album, artist..."
-        onkeydown="if(event.key==='Enter') searchDownloads()">
+    <div class="toolbar-row">
+        <div class="toolbar-search-group">
+            <input type="text" id="downloads-search" name="q" placeholder="Search by track, album, artist, genre..."
+                onkeydown="if(event.key==='Enter') searchDownloads()">
+            <button onclick="searchDownloads()" class="btn btn-outline btn-sm">Search</button>
+        </div>
+        <select id="downloads-filter" onchange="applyFilter()" class="form-select toolbar-filter">
+            <option value="">All downloads</option>
+            <option value="no_genre">No genre</option>
+            {{range .Genres}}
+            <option value="genre:{{.}}">{{.}}</option>
+            {{end}}
+        </select>
+    </div>
 
-    <button onclick="searchDownloads()" class="btn btn-outline btn-sm">Search</button>
-
-    <select id="downloads-filter" onchange="applyFilter()" class="form-select">
-        <option value="">All downloads</option>
-        <option value="no_genre">No genre</option>
-    </select>
-
-    <button id="btn-delete-selected" onclick="bulkDelete()" class="btn btn-outline btn-sm" disabled
-        style="color: var(--danger, #e05c5c); border-color: var(--danger, #e05c5c);">
-        Delete (<span id="selected-count">0</span>)
-    </button>
-
-    <button id="btn-genre-selected" onclick="openGenreModal()" class="btn btn-outline btn-sm" disabled>
-        Set Genre (<span id="genre-count">0</span>)
-    </button>
-
-    <button id="btn-sync" onclick="bulkSync()" class="btn btn-outline btn-sm">
-        Sync All
-    </button>
+    <div class="toolbar-row">
+        <div class="toolbar-actions">
+            <button id="btn-genre-selected" onclick="openGenreModal()" class="btn btn-outline btn-sm" disabled>
+                Set Metadata (<span id="genre-count">0</span>)
+            </button>
+            <button id="btn-sync" onclick="bulkSync()" class="btn btn-outline btn-sm">
+                Sync All
+            </button>
+            <button id="btn-delete-selected" onclick="bulkDelete()" class="btn btn-outline-danger btn-sm" disabled>
+                Delete (<span id="selected-count">0</span>)
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Genre Modal -->
 <div id="genre-modal-overlay" class="modal-overlay" style="display:none;" onclick="closeGenreModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
-        <h2 style="margin: 0 0 16px;">Set Genre</h2>
+        <h2 style="margin: 0 0 16px;">Set Metadata</h2>
         <p style="font-size: 0.85rem; color: var(--text-dim); margin: 0 0 16px;">
-            Updates the genre for all selected tracks in the database and re-tags the audio files.
+            Updates metadata for all selected tracks in the database and re-tags the audio files.
+            Empty fields will be ignored.
         </p>
-        <input type="text" id="genre-input" placeholder="e.g. Electronic, Jazz, Rock..."
-            onkeydown="if(event.key==='Enter') applyGenre()" style="margin-bottom: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
+            <input type="text" id="genre-input" placeholder="Genre (e.g. Electronic, Jazz, Rock...)"
+                onkeydown="if(event.key==='Enter') applyMetadata()">
+            <input type="number" id="year-input" placeholder="Year (e.g. 2024)" min="1900" max="2100"
+                onkeydown="if(event.key==='Enter') applyMetadata()">
+            <input type="text" id="mood-input" placeholder="Mood (e.g. Energetic, Chill, Melancholic...)"
+                onkeydown="if(event.key==='Enter') applyMetadata()">
+            <input type="text" id="style-input" placeholder="Style (e.g. Ambient, Techno, House...)"
+                onkeydown="if(event.key==='Enter') applyMetadata()">
+        </div>
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
             <button onclick="closeGenreModal()" class="btn btn-outline btn-sm">Cancel</button>
-            <button onclick="applyGenre()" class="btn btn-sm">Apply &amp; Sync to File</button>
+            <button onclick="applyMetadata()" class="btn btn-sm">Apply &amp; Sync to File</button>
         </div>
     </div>
 </div>
@@ -82,7 +97,7 @@
 
         if (btnDel) btnDel.disabled = (n === 0);
         if (btnGenre) btnGenre.disabled = (n === 0);
-        if (btnSync) btnSync.textContent = n === 0 ? 'Sync All' : 'Sync selected (' + n + ')';
+        if (btnSync) btnSync.textContent = n === 0 ? 'Sync All' : 'Sync (' + n + ')';
 
         var all = document.querySelectorAll('.download-cb');
         var selAll = document.getElementById('select-all-cb');
@@ -154,7 +169,10 @@
 
     // ─── genre modal ───────────────────────────────────────────────────
     function openGenreModal() {
+        document.getElementById('year-input').value = '';
         document.getElementById('genre-input').value = '';
+        document.getElementById('mood-input').value = '';
+        document.getElementById('style-input').value = '';
         document.getElementById('genre-modal-overlay').style.display = 'flex';
         setTimeout(() => document.getElementById('genre-input').focus(), 50);
     }
@@ -165,15 +183,24 @@
         }
     }
 
-    function applyGenre() {
+    function applyMetadata() {
         var genre = document.getElementById('genre-input').value.trim();
-        if (!genre) { alert('Please enter a genre.'); return; }
+        var year = document.getElementById('year-input').value.trim();
+        var mood = document.getElementById('mood-input').value.trim();
+        var style = document.getElementById('style-input').value.trim();
+
+        if (!year && !genre && !mood && !style) {
+            alert('Please enter at least one field.'); return;
+        }
         var ids = getSelectedIDs();
         if (ids.length === 0) return;
         document.getElementById('genre-modal-overlay').style.display = 'none';
         var params = new URLSearchParams();
         ids.forEach(id => params.append('ids[]', id));
-        params.set('genre', genre);
+        if (year) params.set('year', year);
+        if (genre) params.set('genre', genre);
+        if (mood) params.set('mood', mood);
+        if (style) params.set('style', style);
         fetch('/htmx/downloads/bulk-genre' + listParams(), { method: 'POST', body: params })
             .then(r => r.text())
             .then(html => {

@@ -70,7 +70,7 @@ func TestCachedClient_GetGenres_MBIDCacheHit(t *testing.T) {
 
 	mbid := "test-mbid"
 	cacheKey := "mb:genre:" + mbid
-	cache.data[cacheKey] = []byte(`{"genre":{"MainGenre":"Rock","SubGenre":"Indie"},"not_found":false}`)
+	cache.data[cacheKey] = []byte(`{"genre":{"MainGenre":"Rock"},"not_found":false}`)
 
 	res, err := cc.GetGenres(context.Background(), mbid, "")
 	if err != nil {

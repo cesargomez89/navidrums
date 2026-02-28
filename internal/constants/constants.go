@@ -75,8 +75,8 @@ const (
 
 // File Permissions
 const (
-	DirPermissions  = 0755
-	FilePermissions = 0644
+	DirPermissions  = 0750
+	FilePermissions = 0600
 )
 
 // HTTP Status Codes

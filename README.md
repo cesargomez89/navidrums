@@ -13,7 +13,10 @@ Optimized for low-end hardware.
 
 ### Download Management
 - **Queue Page**: Monitor active downloads with real-time progress updates
-- **Downloads Browser**: Browse, search, filter, and manage downloaded tracks with bulk actions (delete, sync, update genre)
+- **Downloads Browser**: Browse, search (by track, album, artist, genre), filter (by genre including "no_genre"), and manage downloaded tracks with bulk actions (delete, sync, set metadata)
+- **Bulk Metadata**: Set genre, year, mood, and style for multiple tracks at once
+- **Sync to File**: Re-tag audio files with updated metadata from Database
+- **Sync All**: Fetch missing metadata from Hifi API and MusicBrainz, update Database and sync to files
 - **History Tracking**: View last 20 completed/failed/cancelled downloads
 - **Job Management**: Cancel active jobs, retry failed downloads, clear history
 - **Stuck Job Recovery**: Automatic reset of interrupted downloads on startup
@@ -22,7 +25,8 @@ Optimized for low-end hardware.
 - **Comprehensive Tagging**: Automatically embeds metadata in audio files:
   - **Basic**: Title, Artist(s), Album Artist(s), Album, Track/Disc Numbers
   - **Release Details**: Year, Release Date, Genre, Label, ISRC, Copyright, Composer
-  - **Extended**: BPM, Key, ReplayGain, Peak levels, MusicBrainz IDs
+  - **Extended**: BPM, Key, KeyScale, ReplayGain, Peak levels, MusicBrainz IDs
+  - **Mood/Style**: Custom mood and style tags for personal organization (manual addition by track or bulk action)
   - **Commercial**: Barcode, Catalog Number, Release Type
   - **Lyrics**: Unsynchronized lyrics (LYRICS) and subtitles (LRC format)
 - **Album Art Handling**: Embedded cover art + saved as `cover.jpg` in album folders
@@ -50,6 +54,35 @@ Optimized for low-end hardware.
 - **Real-time Updates**: Live progress updates without page reloads
 - **Component-based**: Modular templates for maintainable UI code
 - **Basic Authentication**: Optional HTTP basic auth protection
+- **Track Details View**: Comprehensive file, audio, and MusicBrainz metadata display
+
+### Settings
+- **Provider Management**: Add, switch, and remove custom Hifi API providers
+- **Genre Mapping**: Customize how MusicBrainz genres are normalized (maps sub-genres to main genres)
+- **Genre Separator**: Configure the separator used when writing multiple genres to audio tags
+
+### Security
+
+**Recommended: Use Cloudflare Tunnel and Zero Trust instead of basic auth**
+
+For production deployments exposed to the internet, we strongly recommend using a reverse proxy with built-in authentication instead of HTTP basic auth:
+
+- **Cloudflare Tunnel (Zero Trust)**: Tunnel your service through Cloudflare withAccess policies, SSO integration, and built-in DDoS protection
+- **Traefik**: Configure OAuth2 or ForwardAuth middleware
+- **Nginx**: Use Auth_request module with external auth service
+- **Caddy**: Built-in OAuth2 or Cloudflare API key support
+
+Basic auth has limitations:
+- Credentials sent with every request (even if over HTTPS)
+- No MFA/SSO support
+- Hard to revoke without changing passwords
+
+When using a proxy with authentication, set `SKIP_AUTH=true` to disable built-in auth:
+```bash
+SKIP_AUTH=true ./navidrums
+```
+
+Rate limiting is still applied as a second layer of protection.
 
 ### Data Architecture
 - **Two-Table Design**: Jobs (work queue) + Tracks (full metadata) separation
@@ -78,8 +111,13 @@ Environment variables:
 | `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
 | `NAVIDRUMS_USERNAME` | `navidrums` | Username for HTTP basic authentication |
 | `NAVIDRUMS_PASSWORD` | (empty) | Password for HTTP basic authentication (empty disables auth) |
+| `SKIP_AUTH` | `false` | Set to `true` to disable authentication entirely |
 | `CACHE_TTL` | `12h` | Provider response cache TTL (e.g., `1h`, `24h`, `7d`) |
 | `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | MusicBrainz API endpoint for metadata enrichment |
+| `RATE_LIMIT_REQUESTS` | `200` | Maximum requests per rate limit window |
+| `RATE_LIMIT_WINDOW` | `1m` | Rate limit time window (e.g., `30s`, `1m`) |
+| `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond the rate limit |
+| `DISABLE_RATE_LIMIT` | `false` | Disable rate limiting (use when behind Cloudflare) |
 
 **Template Variables:**
 
@@ -317,7 +355,7 @@ Navidrums follows a clean layered architecture with clear separation of concerns
 ### Data Architecture
 - **Two-Table Design**: Jobs (minimal work queue) + Tracks (full metadata and download state)
 - **Job Lifecycle**: `queued → running → completed | failed | cancelled`
-- **Track Lifecycle**: `missing → queued → downloading → processing → completed | failed`
+- **Track Lifecycle**: `missing → queued → downloading → downloaded → processing → completed | failed`
 - **Duplicate Prevention**: Unique `provider_id` constraint prevents duplicate downloads
 
 ### Layer Separation

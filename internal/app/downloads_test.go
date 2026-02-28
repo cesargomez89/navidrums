@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/logger"
 )
@@ -192,7 +193,7 @@ func TestDownloadsService_DeleteDownload(t *testing.T) {
 
 	// Create a test file
 	testFile := filepath.Join(tmpDir, "test.flac")
-	if err := os.WriteFile(testFile, []byte("test content"), 0644); err != nil {
+	if err := os.WriteFile(testFile, []byte("test content"), constants.FilePermissions); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
 	}
 
@@ -213,11 +214,11 @@ func TestDownloadsService_DeleteDownload(t *testing.T) {
 
 	// Create a folder with a file in it (to test empty folder deletion)
 	folderPath := filepath.Join(tmpDir, "Album Artist", "2020 - Album")
-	if err := os.MkdirAll(folderPath, 0755); err != nil {
+	if err := os.MkdirAll(folderPath, constants.DirPermissions); err != nil {
 		t.Fatalf("MkdirAll failed: %v", err)
 	}
 	folderFile := filepath.Join(folderPath, "track.flac")
-	if err := os.WriteFile(folderFile, []byte("test"), 0644); err != nil {
+	if err := os.WriteFile(folderFile, []byte("test"), constants.FilePermissions); err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
 
@@ -255,17 +256,17 @@ func TestDownloadsService_DeleteDownload_CascadeCleanup(t *testing.T) {
 	svc := NewDownloadsService(db, log)
 
 	artistDir := filepath.Join(tmpDir, "Artist", "2020 - Album")
-	if err := os.MkdirAll(artistDir, 0755); err != nil {
+	if err := os.MkdirAll(artistDir, constants.DirPermissions); err != nil {
 		t.Fatalf("MkdirAll failed: %v", err)
 	}
 
 	trackFile := filepath.Join(artistDir, "1-01 Track.flac")
 	coverFile := filepath.Join(artistDir, "cover.jpg")
 
-	if err := os.WriteFile(trackFile, []byte("audio"), 0644); err != nil {
+	if err := os.WriteFile(trackFile, []byte("audio"), constants.FilePermissions); err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
-	if err := os.WriteFile(coverFile, []byte("image"), 0644); err != nil {
+	if err := os.WriteFile(coverFile, []byte("image"), constants.FilePermissions); err != nil {
 		t.Fatalf("WriteFile failed: %v", err)
 	}
 

@@ -16,7 +16,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	query := `INSERT INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, label, isrc, copyright, composer,
+		year, genre, mood, style, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id, recording_id, tags,
@@ -25,7 +25,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	) VALUES (
 		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
-		:year, :genre, :label, :isrc, :copyright, :composer,
+		:year, :genre, :mood, :style, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
@@ -80,7 +80,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists,
 		artist_ids = :artist_ids, album_artist_ids = :album_artist_ids,
 		track_number = :track_number, disc_number = :disc_number, total_tracks = :total_tracks, total_discs = :total_discs,
-		year = :year, genre = :genre, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
+		year = :year, genre = :genre, mood = :mood, style = :style, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
 		duration = :duration, explicit = :explicit, compilation = :compilation, album_art_url = :album_art_url, lyrics = :lyrics, subtitles = :subtitles,
 		bpm = :bpm, key_name = :key_name, key_scale = :key_scale, replay_gain = :replay_gain, peak = :peak,
 		version = :version, description = :description, url = :url, audio_quality = :audio_quality, audio_modes = :audio_modes, release_date = :release_date,
@@ -121,6 +121,8 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"artist_ids":       true,
 		"album_artist_ids": true,
 		"genre":            true,
+		"mood":             true,
+		"style":            true,
 		"tags":             true,
 		"label":            true,
 		"composer":         true,
@@ -199,7 +201,7 @@ func (db *DB) ListTracks(limit int) ([]*domain.Track, error) {
 }
 
 func (db *DB) ListTracksByStatus(status domain.TrackStatus, offset, limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT * FROM tracks WHERE status = ? ORDER BY completed_at DESC LIMIT ? OFFSET ?`
 	return selectTracks(db, query, status, limit, offset)
 }
 
@@ -220,21 +222,21 @@ func (db *DB) CountCompletedTracks() (int, error) {
 }
 
 func (db *DB) SearchTracks(q string, offset, limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT * FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? OR genre LIKE ? ORDER BY completed_at DESC LIMIT ? OFFSET ?`
 	searchTerm := "%" + q + "%"
-	return selectTracks(db, query, searchTerm, searchTerm, searchTerm, limit, offset)
+	return selectTracks(db, query, searchTerm, searchTerm, searchTerm, searchTerm, limit, offset)
 }
 
 func (db *DB) CountSearchTracks(q string) (int, error) {
-	query := `SELECT COUNT(*) FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ?`
+	query := `SELECT COUNT(*) FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? OR genre LIKE ?`
 	searchTerm := "%" + q + "%"
 	var count int
-	err := db.Get(&count, query, searchTerm, searchTerm, searchTerm)
+	err := db.Get(&count, query, searchTerm, searchTerm, searchTerm, searchTerm)
 	return count, err
 }
 
 func (db *DB) ListCompletedTracksNoGenre(offset, limit int) ([]*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '') ORDER BY created_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT * FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '') ORDER BY completed_at DESC LIMIT ? OFFSET ?`
 	return selectTracks(db, query, domain.TrackStatusCompleted, limit, offset)
 }
 
@@ -242,6 +244,25 @@ func (db *DB) CountCompletedTracksNoGenre() (int, error) {
 	query := `SELECT COUNT(*) FROM tracks WHERE status = ? AND (genre IS NULL OR TRIM(genre) = '')`
 	var count int
 	err := db.Get(&count, query, domain.TrackStatusCompleted)
+	return count, err
+}
+
+func (db *DB) GetAllGenres() ([]string, error) {
+	query := `SELECT DISTINCT genre FROM tracks WHERE status = ? AND genre IS NOT NULL AND TRIM(genre) != '' ORDER BY genre ASC`
+	var genres []string
+	err := db.Select(&genres, query, domain.TrackStatusCompleted)
+	return genres, err
+}
+
+func (db *DB) ListCompletedTracksByGenre(genre string, offset, limit int) ([]*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = ? AND LOWER(genre) = LOWER(?) ORDER BY completed_at DESC LIMIT ? OFFSET ?`
+	return selectTracks(db, query, domain.TrackStatusCompleted, genre, limit, offset)
+}
+
+func (db *DB) CountCompletedTracksByGenre(genre string) (int, error) {
+	query := `SELECT COUNT(*) FROM tracks WHERE status = ? AND LOWER(genre) = LOWER(?)`
+	var count int
+	err := db.Get(&count, query, domain.TrackStatusCompleted, genre)
 	return count, err
 }
 

@@ -379,6 +379,44 @@ func (h *Handler) ResetGenreMapHTMX(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
+func (h *Handler) GetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) {
+	sep, err := h.SettingsRepo.Get(store.SettingGenreSeparator)
+	if err != nil {
+		h.Logger.Error("Failed to get genre separator", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if sep == "" {
+		sep = ";"
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string]string{"separator": sep}); err != nil {
+		h.Logger.Error("Failed to encode genre separator response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Separator string `json:"separator"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingGenreSeparator, req.Separator); err != nil {
+		h.Logger.Error("Failed to save genre separator", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
 func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	albums, err := h.ProviderManager.GetProvider().GetSimilarAlbums(r.Context(), id)
@@ -400,8 +438,14 @@ func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DownloadsPage(w http.ResponseWriter, r *http.Request) {
+	genres, err := h.DownloadsService.GetAllGenres()
+	if err != nil {
+		h.Logger.Error("Failed to get genres", "error", err)
+		genres = []string{}
+	}
 	h.RenderPage(w, "downloads.html", map[string]interface{}{
 		"ActivePage": "downloads",
+		"Genres":     genres,
 	})
 }
 
@@ -509,23 +553,47 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ids := r.Form["ids[]"]
+	year := r.FormValue("year")
 	genre := r.FormValue("genre")
-	if genre == "" {
-		http.Error(w, "genre is required", http.StatusBadRequest)
+	mood := r.FormValue("mood")
+	style := r.FormValue("style")
+
+	if year == "" && genre == "" && mood == "" && style == "" {
+		http.Error(w, "At least one field (year, genre, mood, or style) is required", http.StatusBadRequest)
 		return
 	}
 
 	for _, providerID := range ids {
 		track, err := h.DownloadsService.GetDownloadByProviderID(providerID)
 		if err != nil || track == nil {
-			h.Logger.Error("Failed to get track for genre update", "provider_id", providerID, "error", err)
+			h.Logger.Error("Failed to get track for metadata update", "provider_id", providerID, "error", err)
 			continue
 		}
 
-		updates := map[string]interface{}{"genre": genre}
+		updates := make(map[string]interface{})
+
+		if year != "" {
+			var yearInt int
+			if _, err := fmt.Sscanf(year, "%d", &yearInt); err == nil {
+				updates["year"] = yearInt
+			}
+		}
+		if genre != "" {
+			updates["genre"] = genre
+		}
+		if mood != "" {
+			updates["mood"] = mood
+		}
+		if style != "" {
+			updates["style"] = style
+		}
+
+		if len(updates) == 0 {
+			continue
+		}
 
 		if err := h.DownloadsService.UpdateTrackPartial(track.ID, updates); err != nil {
-			h.Logger.Error("Failed to update genre", "track_id", track.ID, "error", err)
+			h.Logger.Error("Failed to update metadata", "track_id", track.ID, "error", err)
 			continue
 		}
 

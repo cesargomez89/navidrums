@@ -14,6 +14,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/config"
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
@@ -210,7 +211,7 @@ func (h *TrackJobHandler) postProcessTrack(ctx context.Context, track *domain.Tr
 	finalDir := filepath.Dir(finalPath)
 	artPath := filepath.Join(finalDir, "cover.jpg")
 
-	if data, err := os.ReadFile(artPath); err == nil && len(data) > 0 {
+	if data, err := os.ReadFile(artPath); err == nil && len(data) > 0 { //nolint:gosec
 		albumArtData = data
 	} else if track.AlbumArtURL != "" {
 		var err error
@@ -492,6 +493,7 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 // SyncJobHandler handles all metadata resyncs (Hi-Fi, MusicBrainz, File).
 type SyncJobHandler struct {
 	Repo            *store.DB
+	Config          *config.Config
 	ProviderManager *catalog.ProviderManager
 	AlbumArtService app.AlbumArtService
 	Enricher        *app.MetadataEnricher
@@ -574,8 +576,15 @@ func (h *SyncJobHandler) isCancelled(id string) bool {
 }
 
 func (h *SyncJobHandler) completeSyncBasic(job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
+	oldFilePath := track.FilePath
+
 	if err := h.reTagTrack(track, logger); err != nil {
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to tag file: %v", err))
+		return
+	}
+
+	if err := h.maybeMoveTrackFile(track, oldFilePath, logger); err != nil {
+		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to move file: %v", err))
 		return
 	}
 
@@ -591,6 +600,8 @@ func (h *SyncJobHandler) completeSyncBasic(job *domain.Job, track *domain.Track,
 }
 
 func (h *SyncJobHandler) completeSyncWithEnrichment(ctx context.Context, job *domain.Job, track *domain.Track, logger *slog.Logger, successMsg string) {
+	oldFilePath := track.FilePath
+
 	if err := h.Enricher.EnrichTrack(ctx, track, logger); err != nil {
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("MusicBrainz enrichment failed: %v", err))
 		return
@@ -603,6 +614,11 @@ func (h *SyncJobHandler) completeSyncWithEnrichment(ctx context.Context, job *do
 
 	if err := h.reTagTrack(track, logger); err != nil {
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to tag file: %v", err))
+		return
+	}
+
+	if err := h.maybeMoveTrackFile(track, oldFilePath, logger); err != nil {
+		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to move file: %v", err))
 		return
 	}
 
@@ -623,7 +639,7 @@ func (h *SyncJobHandler) reTagTrack(track *domain.Track, logger *slog.Logger) er
 	if track.FilePath != "" {
 		albumDir := filepath.Dir(track.FilePath)
 		coverPath := filepath.Join(albumDir, "cover.jpg")
-		if data, err := os.ReadFile(coverPath); err == nil && len(data) > 0 {
+		if data, err := os.ReadFile(coverPath); err == nil && len(data) > 0 { //nolint:gosec
 			albumArtData = data
 		}
 	}
@@ -644,5 +660,60 @@ func (h *SyncJobHandler) reTagTrack(track *domain.Track, logger *slog.Logger) er
 		logger.Error("Failed to tag file", "error", tagErr)
 		return tagErr
 	}
+	return nil
+}
+
+func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath string, logger *slog.Logger) error {
+	if oldFilePath == "" {
+		return nil
+	}
+
+	oldDir := filepath.Dir(oldFilePath)
+
+	templateData := storage.BuildPathTemplateData(
+		track.AlbumArtist,
+		track.Year,
+		track.Album,
+		track.DiscNumber,
+		track.TrackNumber,
+		track.Title,
+	)
+
+	expectedPath, err := storage.BuildFullPath(h.Config.DownloadsDir, h.Config.SubdirTemplate, templateData, track.FileExtension)
+	if err != nil {
+		logger.Error("Failed to build expected path", "error", err)
+		return err
+	}
+
+	if oldFilePath == expectedPath {
+		return nil
+	}
+
+	track.FilePath = expectedPath
+	newDir := filepath.Dir(track.FilePath)
+
+	if err := os.MkdirAll(newDir, constants.DirPermissions); err != nil {
+		logger.Error("Failed to create new directory", "dir", newDir, "error", err)
+		return err
+	}
+
+	if err := storage.MoveFile(oldFilePath, track.FilePath); err != nil {
+		logger.Error("Failed to move audio file", "old", oldFilePath, "new", track.FilePath, "error", err)
+		return err
+	}
+
+	oldCoverPath := filepath.Join(oldDir, "cover.jpg")
+	newCoverPath := filepath.Join(newDir, "cover.jpg")
+	if _, err := os.Stat(oldCoverPath); err == nil {
+		if err := storage.MoveFile(oldCoverPath, newCoverPath); err != nil {
+			logger.Warn("Failed to move cover file", "old", oldCoverPath, "new", newCoverPath, "error", err)
+		}
+	}
+
+	if err := storage.DeleteFolderWithCover(oldDir); err != nil {
+		logger.Warn("Failed to clean up old directory", "dir", oldDir, "error", err)
+	}
+
+	logger.Info("Moved track file", "old", oldFilePath, "new", track.FilePath)
 	return nil
 }

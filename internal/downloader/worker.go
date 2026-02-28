@@ -18,6 +18,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/musicbrainz"
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
+	"github.com/cesargomez89/navidrums/internal/tagging"
 )
 
 var (
@@ -90,6 +91,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 
 	syncHandler := &SyncJobHandler{
 		Repo:            repo,
+		Config:          cfg,
 		ProviderManager: pm,
 		AlbumArtService: worker.albumArtService,
 		Enricher:        worker.enricher,
@@ -105,6 +107,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	worker.dispatcher.Register(domain.JobTypeSyncHiFi, syncHandler)
 
 	worker.loadGenreMap()
+	worker.loadGenreSeparator()
 
 	return worker
 }
@@ -139,6 +142,19 @@ func (w *Worker) loadGenreMap() {
 	}
 
 	w.musicBrainzClient.SetGenreMap(customMap)
+}
+
+func (w *Worker) loadGenreSeparator() {
+	if w.SettingsRepo == nil {
+		return
+	}
+
+	sep, err := w.SettingsRepo.Get(store.SettingGenreSeparator)
+	if err != nil || sep == "" {
+		return
+	}
+
+	tagging.SetGenreSeparator(sep)
 }
 
 func (w *Worker) recoverInterruptedTracks() {

@@ -40,7 +40,7 @@ func MoveFile(src, dst string) error {
 }
 
 func CreateFile(path string) (*os.File, error) {
-	return os.Create(path)
+	return os.Create(path) //nolint:gosec
 }
 
 func WriteFile(path string, data []byte) error {
@@ -93,7 +93,7 @@ func IsNotExist(err error) bool {
 }
 
 func HashFile(path string) (string, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec
 	if err != nil {
 		return "", err
 	}

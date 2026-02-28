@@ -44,7 +44,7 @@ func TestPlaylistGenerator_Generate(t *testing.T) {
 	}
 
 	playlistPath := filepath.Join(tmpDir, "playlists", "Test Playlist.m3u")
-	content, err := os.ReadFile(playlistPath)
+	content, err := os.ReadFile(playlistPath) //nolint:gosec
 	if err != nil {
 		t.Fatalf("Failed to read playlist file: %v", err)
 	}

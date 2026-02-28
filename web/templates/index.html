@@ -3,15 +3,15 @@
 <div class="search">
     <form onsubmit="return false;">
         <input type="text" name="q" placeholder="Search..." hx-get="/htmx/search" hx-target="#results"
-            hx-include="[name='type']" hx-trigger="keyup[keyCode===13]" type="search" autocomplete="off" autofocus>
-        <select name="type" class="form-select" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q']">
+            hx-include="[name='type']" hx-trigger="keyup[keyCode===13]" hx-timeout="30000" type="search" autocomplete="off" autofocus>
+        <select name="type" class="form-select" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q']" hx-timeout="30000">
             <option value="album">Album</option>
             <option value="track">Track</option>
             <option value="artist">Artist</option>
             <option value="playlist">Playlist</option>
         </select>
         <button class="btn-lg" hx-get="/htmx/search" hx-target="#results"
-            hx-include="[name='q'], [name='type']">Search</button>
+            hx-include="[name='q'], [name='type']" hx-timeout="30000">Search</button>
     </form>
 </div>
 <div id="results"></div>

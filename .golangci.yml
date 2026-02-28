@@ -12,6 +12,7 @@ linters:
     - errcheck
     - ineffassign
     - unused
+    - gosec
   settings:
     govet:
       enable-all: true

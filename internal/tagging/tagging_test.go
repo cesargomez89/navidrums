@@ -87,3 +87,78 @@ func TestNewVorbisComment_MultiArtist(t *testing.T) {
 		t.Errorf("Expected 1 ALBUMARTIST field, got %d", albumArtists)
 	}
 }
+
+func TestNewVorbisComment_MultiGenre(t *testing.T) {
+	track := &domain.Track{
+		Title: "Test",
+		Genre: "hip-hop; spanish rap",
+	}
+
+	tags := buildTagMap(track, nil)
+	tagger := &FLACTagger{}
+	vc := tagger.newVorbisComment(tags)
+
+	genreCount := 0
+	for _, entry := range vc.Comments {
+		if entry == "GENRE=hip-hop" {
+			genreCount++
+		}
+		if entry == "GENRE=spanish rap" {
+			genreCount++
+		}
+	}
+
+	if genreCount != 2 {
+		t.Errorf("Expected 2 GENRE fields, got %d", genreCount)
+	}
+}
+
+func TestNewVorbisComment_MultiGenre_CustomSeparator(t *testing.T) {
+	defer func() { GenreSeparator = ";" }()
+	GenreSeparator = "|"
+
+	track := &domain.Track{
+		Title: "Test",
+		Genre: "rock|pop|electronic",
+	}
+
+	tags := buildTagMap(track, nil)
+	tagger := &FLACTagger{}
+	vc := tagger.newVorbisComment(tags)
+
+	genreCount := 0
+	for _, entry := range vc.Comments {
+		if entry == "GENRE=rock" {
+			genreCount++
+		}
+		if entry == "GENRE=pop" {
+			genreCount++
+		}
+		if entry == "GENRE=electronic" {
+			genreCount++
+		}
+	}
+
+	if genreCount != 3 {
+		t.Errorf("Expected 3 GENRE fields, got %d", genreCount)
+	}
+}
+
+func TestSetGenreSeparator(t *testing.T) {
+	defer func() { GenreSeparator = ";" }()
+
+	SetGenreSeparator("|")
+	if GenreSeparator != "|" {
+		t.Errorf("Expected '|', got %q", GenreSeparator)
+	}
+
+	SetGenreSeparator("")
+	if GenreSeparator != "|" {
+		t.Errorf("Expected '|' (unchanged), got %q", GenreSeparator)
+	}
+
+	SetGenreSeparator(";")
+	if GenreSeparator != ";" {
+		t.Errorf("Expected ';', got %q", GenreSeparator)
+	}
+}
