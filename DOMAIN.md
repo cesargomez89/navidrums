@@ -82,6 +82,7 @@ Types:
 - `album` - Album download (decomposes into track jobs)
 - `playlist` - Playlist download (decomposes into track jobs)
 - `artist` - Artist top tracks download (decomposes into track jobs)
+- `discography` - Artist discography download (decomposes into album/track jobs)
 - `sync_file` - Re-tag file with existing DB metadata
 - `sync_musicbrainz` - Enrich from MusicBrainz, fill gaps, re-tag
 - `sync_hifi` - Fetch fresh Hi-Fi data, then MusicBrainz enrichment, re-tag

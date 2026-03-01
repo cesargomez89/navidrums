@@ -66,6 +66,7 @@ Download types accepted:
 - `album` - Full album (decomposes into tracks, saves cover.jpg)
 - `playlist` - Playlist (decomposes into tracks, generates M3U file)
 - `artist` - Artist top tracks (decomposes into tracks, generates M3U file)
+- `discography` - Artist discography (decomposes into albums, saves cover.jpg)
 
 ---
 

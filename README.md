@@ -229,7 +229,35 @@ HiFi API: https://github.com/binimum/hifi-api
 
 ## Docker
 
-### Option 1: Docker Compose
+### Option 1: Pull from GHCR (Quickest)
+
+No clone needed. Just run the container directly:
+
+1. Create a directory for downloads and database:
+   ```bash
+   mkdir -p ~/navidrums/downloads
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -d \
+     --name navidrums \
+     -p 8080:8080 \
+     -v ~/navidrums/downloads:/downloads \
+     -v ~/navidrums/navidrums.db:/app/navidrums.db \
+     -e PROVIDER_URL=https://your-hifi-api.com \
+     -e NAVIDRUMS_PASSWORD=your-secure-password \
+     --restart unless-stopped \
+     ghcr.io/cesargomez89/navidrums:latest
+   ```
+
+3. Open browser at `http://localhost:8080`.
+
+**Available tags:**
+- `latest` - Most recent release
+- `v1.0.0` - Specific version (replace with your desired tag)
+
+### Option 2: Docker Compose
 
 1. Clone the repository:
    ```bash
@@ -255,28 +283,6 @@ HiFi API: https://github.com/binimum/hifi-api
 4. Open browser at `http://localhost:8080`.
 
 **Note:** Downloads are saved to `./downloads` and database to `./navidrums.db` in the project directory.
-
-### Option 2: Docker Run (Without Compose)
-
-1. Create a directory for downloads and database:
-   ```bash
-   mkdir -p ~/navidrums/downloads
-   ```
-
-2. Run the container:
-   ```bash
-   docker run -d \
-     --name navidrums \
-     -p 8080:8080 \
-     -v ~/navidrums/downloads:/downloads \
-     -v ~/navidrums/navidrums.db:/app/navidrums.db \
-     -e PROVIDER_URL=https://your-hifi-api.com \
-     -e NAVIDRUMS_PASSWORD=your-secure-password \
-     --restart unless-stopped \
-     ghcr.io/cesargomez89/navidrums:latest
-   ```
-
-3. Open browser at `http://localhost:8080`.
 
 ### Environment Variables
 
@@ -346,7 +352,10 @@ To create a new release:
    git push origin v1.0.0
    ```
 
-2. GitHub Actions will automatically build binaries for all platforms and create a release.
+2. GitHub Actions will automatically:
+   - Build binaries for all platforms (Linux, macOS, Windows)
+   - Build and push Docker image to GHCR (`ghcr.io/cesargomez89/navidrums:v1.0.0`)
+   - Create a GitHub release
 
 ## Architecture
 
