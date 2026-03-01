@@ -9,6 +9,7 @@
             <span>{{len .Artist.TopTracks}} top tracks</span>
         </div>
         <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)" style="margin-top: 16px;">Download Top Tracks</button>
+        <button class="btn btn-secondary" onclick="queueDownload('discography', '{{.Artist.ID}}', this)" style="margin-top: 16px;">Download Discography</button>
     </div>
 </div>
 

@@ -302,6 +302,8 @@ func (h *ContainerJobHandler) Handle(ctx context.Context, job *domain.Job, logge
 		return h.processPlaylistJob(ctx, job, logger)
 	case domain.JobTypeArtist:
 		return h.processArtistJob(ctx, job, logger)
+	case domain.JobTypeDiscography:
+		return h.processDiscographyJob(ctx, job, logger)
 	default:
 		return ErrUnknownJobType
 	}
@@ -401,6 +403,38 @@ func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.
 	}
 
 	logger.Info("Artist job completed", "tracks_created", createdCount)
+	return nil
+}
+
+func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
+	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
+	if err != nil {
+		logger.Error("Failed to fetch artist", "error", err)
+		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
+		return err
+	}
+	if len(artist.Albums) == 0 {
+		logger.Error("No albums found for artist")
+		_ = h.Repo.UpdateJobError(job.ID, "No albums found")
+		return ErrNoTracksFound
+	}
+
+	logger.Info("Processing discography", "album_count", len(artist.Albums))
+	for _, album := range artist.Albums {
+		albumJob := &domain.Job{
+			Type:     domain.JobTypeAlbum,
+			SourceID: album.ID,
+		}
+		if err := h.processAlbumJob(ctx, albumJob, logger); err != nil {
+			logger.Error("Failed to process album", "album_id", album.ID, "error", err)
+			continue
+		}
+	}
+
+	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
+		logger.Error("Failed to update job status to completed", "error", err)
+	}
+	logger.Info("Discography job completed")
 	return nil
 }
 
