@@ -18,10 +18,14 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `NAVIDRUMS_PASSWORD` | (empty) | No | Password for HTTP basic authentication (empty disables auth) |
 | `CACHE_TTL` | `12h` | No | Provider response cache TTL (e.g., `1h`, `24h`, `7d`) |
 | `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | No | MusicBrainz API endpoint for metadata enrichment |
-| `RATE_LIMIT_REQUESTS` | `60` | No | Maximum requests per rate limit window |
+| `RATE_LIMIT_REQUESTS` | `200` | No | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | No | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | No | Burst requests allowed beyond rate limit |
 | `SKIP_AUTH` | `false` | No | Set to `true` to disable authentication entirely |
+| `FFMPEG_PATH` | (system) | No | Path to ffmpeg binary (required for MP4/M4A tagging - hi-res downloads often come as MP4) |
+| `FFPROBE_PATH` | (system) | No | Path to ffprobe binary |
+
+**Note:** ffmpeg is only required when tagging MP4/M4A files (common for hi-res audio). FLAC and MP3 files are tagged using native Go libraries.
 
 \* `NAVIDRUMS_USERNAME` is required only when `NAVIDRUMS_PASSWORD` is set.
 

@@ -94,6 +94,7 @@ Rate limiting is still applied as a second layer of protection.
 - **Docker & Docker Compose** (for Docker installation only)
 - **Go 1.22+** (for building from source)
 - **Hifi API** running (default: `http://127.0.0.1:8000`)
+- **ffmpeg** (optional, only needed for MP4/M4A tagging - commonly required for hi-res downloads)
 
 ## Configuration
 
@@ -116,8 +117,12 @@ Environment variables:
 | `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | MusicBrainz API endpoint for metadata enrichment |
 | `RATE_LIMIT_REQUESTS` | `200` | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | Rate limit time window (e.g., `30s`, `1m`) |
-| `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond the rate limit |
+| `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond rate limit |
 | `DISABLE_RATE_LIMIT` | `false` | Disable rate limiting (use when behind Cloudflare) |
+| `FFMPEG_PATH` | (system) | Path to ffmpeg binary (required for MP4/M4A tagging) |
+| `FFPROBE_PATH` | (system) | Path to ffprobe binary |
+
+ffmpeg and ffprobe are automatically detected most of the times, but you can override them with the above variables if needed.
 
 **Template Variables:**
 

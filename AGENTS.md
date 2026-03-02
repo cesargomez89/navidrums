@@ -40,7 +40,7 @@ go fmt ./...
 | `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
 | `CACHE_TTL` | 12h | Provider response cache TTL |
 | `MUSICBRAINZ_URL` | https://musicbrainz.org/ws/2 | MusicBrainz API endpoint for metadata enrichment |
-| `RATE_LIMIT_REQUESTS` | 60 | Maximum requests per rate limit window |
+| `RATE_LIMIT_REQUESTS` | 200 | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |
 | `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
 | `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
