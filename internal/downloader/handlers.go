@@ -461,7 +461,7 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 		track := &domain.Track{
 			ProviderID: catalogTrack.ID,
 		}
-		h.Enricher.UpdateTrackFromCatalog(track, &catalogTrack)
+		h.Enricher.UpdateTrackFromCatalog(track, &catalogTrack, logger)
 		track.Status = domain.TrackStatusQueued
 		track.ParentJobID = parentJobID
 		track.CreatedAt = time.Now()

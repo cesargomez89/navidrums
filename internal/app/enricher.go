@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log/slog"
+	"strconv"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -43,7 +44,7 @@ func (e *MetadataEnricher) EnrichTrack(ctx context.Context, track *domain.Track,
 		return nil
 	}
 
-	e.fillTrackFromMusicBrainz(track, meta)
+	e.fillTrackFromMusicBrainz(track, meta, logger)
 
 	return nil
 }
@@ -78,28 +79,34 @@ func (e *MetadataEnricher) EnrichFromHiFi(ctx context.Context, track *domain.Tra
 		return err
 	}
 
-	e.UpdateTrackFromCatalog(track, catalogTrack)
+	e.UpdateTrackFromCatalog(track, catalogTrack, logger)
 
 	e.enrichWithAlbumMetadata(ctx, track, catalogTrack.AlbumID, logger)
 	return nil
 }
 
 func (e *MetadataEnricher) EnrichComplete(ctx context.Context, track *domain.Track, logger *slog.Logger) {
+	logger.Debug("EnrichComplete: starting", "track_year", track.Year, "track_provider_id", track.ProviderID)
 	// 1. Hi-Fi metadata refresh
 	if err := e.EnrichFromHiFi(ctx, track, logger); err != nil {
 		logger.Warn("EnrichFromHiFi failed, proceeding with existing data", "error", err)
 	}
+
+	logger.Debug("EnrichComplete: after Hi-Fi", "track_year", track.Year)
 
 	// 2. MusicBrainz Gap Fill
 	if err := e.EnrichTrack(ctx, track, logger); err != nil {
 		logger.Warn("MusicBrainz enrichment failed", "isrc", track.ISRC, "error", err)
 	}
 
+	logger.Debug("EnrichComplete: after MusicBrainz", "track_year", track.Year)
+
 	// 3. Lyrics
 	e.FetchLyrics(ctx, track, logger)
+	logger.Debug("EnrichComplete: done", "track_year", track.Year)
 }
 
-func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *musicbrainz.RecordingMetadata) {
+func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *musicbrainz.RecordingMetadata, logger *slog.Logger) {
 	if meta.RecordingID != "" && (track.RecordingID == nil || *track.RecordingID == "") {
 		track.RecordingID = &meta.RecordingID
 	}
@@ -116,6 +123,7 @@ func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *m
 		track.Duration = meta.Duration
 	}
 	if track.Year == 0 && meta.Year > 0 {
+		logger.Debug("Setting year from MusicBrainz", "old_year", track.Year, "new_year", meta.Year)
 		track.Year = meta.Year
 	}
 	if track.Barcode == "" && meta.Barcode != "" {
@@ -156,7 +164,7 @@ func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *m
 	}
 }
 
-func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack) {
+func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack, logger *slog.Logger) {
 	if track.Title == "" && ct.Title != "" {
 		track.Title = ct.Title
 	}
@@ -202,6 +210,7 @@ func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domai
 	if track.ReleaseDate == "" && ct.ReleaseDate != "" {
 		track.ReleaseDate = ct.ReleaseDate
 	}
+	e.setYearFromReleaseDate(track)
 	if track.Genre == "" && ct.Genre != "" {
 		track.Genre = ct.Genre
 	}
@@ -281,6 +290,7 @@ func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *d
 	if track.ReleaseDate == "" && album.ReleaseDate != "" {
 		track.ReleaseDate = album.ReleaseDate
 	}
+	e.setYearFromReleaseDate(track)
 	if track.Label == "" && album.Label != "" {
 		track.Label = album.Label
 	}
@@ -307,6 +317,14 @@ func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *d
 	}
 	if track.AlbumArtURL == "" && album.AlbumArtURL != "" {
 		track.AlbumArtURL = album.AlbumArtURL
+	}
+}
+
+func (e *MetadataEnricher) setYearFromReleaseDate(track *domain.Track) {
+	if track.Year == 0 && track.ReleaseDate != "" && len(track.ReleaseDate) >= 4 {
+		if y, err := strconv.Atoi(track.ReleaseDate[:4]); err == nil {
+			track.Year = y
+		}
 	}
 }
 
