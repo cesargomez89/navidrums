@@ -273,6 +273,18 @@ func (r APISimilarAlbumsResponse) ToDomain(p *HifiProvider) []domain.Album {
 	return albums
 }
 
+func (r APISimilarArtistsResponse) ToDomain(p *HifiProvider) []domain.Artist {
+	var artists []domain.Artist
+	for _, item := range r.Artists {
+		artists = append(artists, domain.Artist{
+			ID:         formatID(item.ID),
+			Name:       item.Name,
+			PictureURL: p.ensureAbsoluteURL(item.Picture, "320x320"),
+		})
+	}
+	return artists
+}
+
 func (r APIArtistsSearchResponse) ToDomain(p *HifiProvider) []domain.Artist {
 	var artists []domain.Artist
 	for _, item := range r.Data.Artists.Items {

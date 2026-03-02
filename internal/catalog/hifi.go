@@ -244,6 +244,17 @@ func (p *HifiProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domai
 	return resp.ToDomain(p), nil
 }
 
+func (p *HifiProvider) GetSimilarArtists(ctx context.Context, id string) ([]domain.Artist, error) {
+	u := fmt.Sprintf("%s/artist/similar/?id=%s&limit=8", p.BaseURL, id)
+
+	var resp APISimilarArtistsResponse
+	if err := p.get(ctx, u, &resp); err != nil {
+		return nil, err
+	}
+
+	return resp.ToDomain(p), nil
+}
+
 func (p *HifiProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
 	u := fmt.Sprintf("%s/lyrics/?id=%s", p.BaseURL, trackID)
 	var resp APILyricsResponse

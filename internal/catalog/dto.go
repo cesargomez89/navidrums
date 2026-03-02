@@ -205,6 +205,19 @@ type APISimilarAlbumsResponse struct {
 	Albums []APISimilarAlbum `json:"albums"`
 }
 
+type APISimilarArtist struct {
+	Name         string  `json:"name"`
+	Picture      string  `json:"picture"`
+	URL          string  `json:"url"`
+	RelationType string  `json:"relationType"`
+	ID           int     `json:"id"`
+	Popularity   float64 `json:"popularity"`
+}
+
+type APISimilarArtistsResponse struct {
+	Artists []APISimilarArtist `json:"artists"`
+}
+
 type APIStreamResponse struct {
 	Data struct {
 		Manifest         string `json:"manifest"`

@@ -49,6 +49,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/artist/{id}", h.ArtistPage)
 	r.Get("/album/{id}", h.AlbumPage)
 	r.Get("/htmx/album/{id}/similar", h.SimilarAlbumsHTMX)
+	r.Get("/htmx/artist/{id}/similar", h.SimilarArtistsHTMX)
 	r.Get("/playlist/{id}", h.PlaylistPage)
 
 	r.Post("/htmx/download/{type}/{id}", h.DownloadHTMX)

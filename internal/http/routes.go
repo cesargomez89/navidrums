@@ -428,6 +428,17 @@ func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 	h.RenderFragment(w, "similar_albums.html", albums)
 }
 
+func (h *Handler) SimilarArtistsHTMX(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	artists, err := h.ProviderManager.GetProvider().GetSimilarArtists(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	h.RenderFragment(w, "similar_artists.html", artists)
+}
+
 func (h *Handler) ClearHistoryHTMX(w http.ResponseWriter, r *http.Request) {
 	if err := h.JobService.ClearFinishedJobs(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
