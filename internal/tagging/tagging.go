@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,28 +11,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Sorrow446/go-mp4tag"
 	"github.com/bogem/id3v2/v2"
 	"github.com/go-flac/flacpicture"
 	"github.com/go-flac/flacvorbis"
 	"github.com/go-flac/go-flac"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/ffmpeg"
 )
 
 var ErrUnsupportedFormat = errors.New("unsupported file format")
 
 var GenreSeparator = ";"
-
-func clampInt16(v int) int16 {
-	if v < 0 {
-		return 0
-	}
-	if v > 32767 {
-		return 32767
-	}
-	return int16(v)
-}
 
 func SetGenreSeparator(sep string) {
 	if sep != "" {
@@ -87,7 +78,8 @@ func TagFile(filePath string, track *domain.Track, albumArtData []byte) error {
 	case ".mp4", ".m4a":
 		tagger = &MP4Tagger{}
 	default:
-		return fmt.Errorf("%w: %s", ErrUnsupportedFormat, ext)
+		// Fallback: try FFmpeg for unknown formats
+		tagger = &FFmpegFallbackTagger{}
 	}
 
 	// 3. Execute
@@ -195,59 +187,107 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 type MP4Tagger struct{}
 
 func (t *MP4Tagger) WriteTags(filePath string, tags *TagMap) error {
-	mp4, err := mp4tag.Open(filePath)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	meta := &ffmpeg.Metadata{
+		Title:        tags.Title,
+		Artists:      tags.Artists,
+		Album:        tags.Album,
+		AlbumArtists: tags.AlbumArtists,
+		Genre:        tags.Genre,
+		Mood:         tags.Mood,
+		Style:        tags.Style,
+		Year:         tags.Year,
+		TrackNum:     tags.TrackNum,
+		TrackTotal:   tags.TrackTotal,
+		DiscNum:      tags.DiscNum,
+		DiscTotal:    tags.DiscTotal,
+		BPM:          tags.BPM,
+		Composer:     tags.Composer,
+		Copyright:    tags.Copyright,
+		Lyrics:       tags.Lyrics,
+		CoverArt:     tags.CoverArt,
+		CoverMime:    tags.CoverMime,
+		Custom:       tags.Custom,
+	}
+
+	tempPath, err := ffmpeg.WriteTags(ctx, filePath, meta)
 	if err != nil {
-		return fmt.Errorf("failed to open MP4 file: %w", err)
-	}
-	defer func() { _ = mp4.Close() }()
-
-	mp4Tags := &mp4tag.MP4Tags{
-		Title:       tags.Title,
-		Album:       tags.Album,
-		TrackNumber: clampInt16(tags.TrackNum),
-		TrackTotal:  clampInt16(tags.TrackTotal),
-		DiscNumber:  clampInt16(tags.DiscNum),
-		DiscTotal:   clampInt16(tags.DiscTotal),
-		BPM:         clampInt16(tags.BPM),
-		Composer:    tags.Composer,
-		Copyright:   tags.Copyright,
-		Lyrics:      tags.Lyrics,
+		return fmt.Errorf("failed to write MP4 tags via ffmpeg: %w", err)
 	}
 
-	if len(tags.Artists) > 0 {
-		mp4Tags.Artist = strings.Join(tags.Artists, ", ")
-	}
-	if len(tags.AlbumArtists) > 0 {
-		mp4Tags.AlbumArtist = strings.Join(tags.AlbumArtists, ", ")
+	if err := os.Rename(tempPath, filePath); err != nil {
+		_ = os.Remove(tempPath)
+		return fmt.Errorf("failed to rename temp file: %w", err)
 	}
 
-	if tags.Genre != "" {
-		genres := strings.Split(tags.Genre, GenreSeparator)
-		var genreStrs []string
-		for _, g := range genres {
-			g = strings.TrimSpace(g)
-			if g != "" {
-				genreStrs = append(genreStrs, g)
-			}
-		}
-		if len(genreStrs) > 0 {
-			if tags.Custom == nil {
-				tags.Custom = make(map[string]string)
-			}
-			tags.Custom["GENRE"] = strings.Join(genreStrs, ", ")
-		}
+	now := time.Now()
+	if err := os.Chtimes(filePath, now, now); err != nil {
+		return err
 	}
 
-	if len(tags.CoverArt) > 0 {
-		mp4Tags.Pictures = []*mp4tag.MP4Picture{
-			{Data: tags.CoverArt},
-		}
+	dir := filepath.Dir(filePath)
+	if dirHandle, err := os.Open(dir); err == nil { //nolint:gosec
+		_ = dirHandle.Sync()
+		_ = dirHandle.Close()
 	}
 
-	// Apply all advanced parity tags to iTunes freeform atoms
-	mp4Tags.Custom = tags.Custom
+	return nil
+}
 
-	return mp4.Write(mp4Tags, []string{})
+// ── FFmpeg Fallback Strategy ─────────────────────────────────────────────────
+
+type FFmpegFallbackTagger struct{}
+
+func (t *FFmpegFallbackTagger) WriteTags(filePath string, tags *TagMap) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	meta := &ffmpeg.Metadata{
+		Title:        tags.Title,
+		Artists:      tags.Artists,
+		Album:        tags.Album,
+		AlbumArtists: tags.AlbumArtists,
+		Genre:        tags.Genre,
+		Mood:         tags.Mood,
+		Style:        tags.Style,
+		Year:         tags.Year,
+		TrackNum:     tags.TrackNum,
+		TrackTotal:   tags.TrackTotal,
+		DiscNum:      tags.DiscNum,
+		DiscTotal:    tags.DiscTotal,
+		BPM:          tags.BPM,
+		Composer:     tags.Composer,
+		Copyright:    tags.Copyright,
+		Lyrics:       tags.Lyrics,
+		CoverArt:     tags.CoverArt,
+		CoverMime:    tags.CoverMime,
+		Custom:       tags.Custom,
+	}
+
+	tempPath, err := ffmpeg.WriteTags(ctx, filePath, meta)
+	if err != nil {
+		return fmt.Errorf("failed to write tags via ffmpeg: %w", err)
+	}
+
+	if err := os.Rename(tempPath, filePath); err != nil {
+		_ = os.Remove(tempPath)
+		return fmt.Errorf("failed to rename temp file: %w", err)
+	}
+
+	now := time.Now()
+	if err := os.Chtimes(filePath, now, now); err != nil {
+		return err
+	}
+
+	dir := filepath.Dir(filePath)
+	if dirHandle, err := os.Open(dir); err == nil { //nolint:gosec
+		_ = dirHandle.Sync()
+		_ = dirHandle.Close()
+	}
+
+	return nil
 }
 
 // ── MP3 Strategy ─────────────────────────────────────────────────────────────

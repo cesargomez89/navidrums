@@ -45,6 +45,8 @@ go fmt ./...
 | `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
 | `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
 | `SKIP_AUTH` | false | Disable authentication entirely |
+| `FFMPEG_PATH` | (system) | Path to ffmpeg binary |
+| `FFPROBE_PATH` | (system) | Path to ffprobe binary |
 
 **Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
 

@@ -26,9 +26,11 @@ type Config struct {
 	Password          string
 	SubdirTemplate    string
 	MusicBrainzURL    string
+	FFmpegPath        string
+	FFprobePath       string
 	CacheTTL          time.Duration
-	RateLimitRequests int
 	RateLimitWindow   time.Duration
+	RateLimitRequests int
 	RateLimitBurst    int
 	SkipAuth          bool
 	DisableRateLimit  bool
@@ -57,6 +59,8 @@ func Load() *Config {
 		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
 		SkipAuth:          getEnvBool("SKIP_AUTH", false),
 		DisableRateLimit:  getEnvBool("DISABLE_RATE_LIMIT", false),
+		FFmpegPath:        getEnv("FFMPEG_PATH", ""),
+		FFprobePath:       getEnv("FFPROBE_PATH", ""),
 	}
 }
 
