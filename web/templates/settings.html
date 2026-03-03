@@ -23,6 +23,22 @@
 </div>
 
 <div class="section">
+    <h2>Theme Selector</h2>
+    <p class="hint">Override the default application theme configured via environment variable.</p>
+    <div class="flex gap-2 items-center">
+        <select id="theme-select-input" class="form-select w-full" style="max-width: 200px;">
+            <option value="dracula">Dracula</option>
+            <option value="solarized-dark">Solarized Dark</option>
+            <option value="vintage">Vintage</option>
+            <option value="everforest">Everforest</option>
+        </select>
+        <button onclick="saveTheme()" class="btn btn-primary">Save</button>
+        <button onclick="resetTheme()" class="btn btn-secondary">Reset to Default</button>
+    </div>
+    <div id="theme-status" class="mt-2"></div>
+</div>
+
+<div class="section">
     <h2>Genre Mapping</h2>
     <p class="hint">Customize how MusicBrainz genres are normalized. Maps sub-genres to main genres.</p>
     <div id="genre-map-status"></div>
@@ -191,8 +207,58 @@
             });
     }
 
+    function loadTheme() {
+        fetch('/htmx/theme', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('theme-select-input');
+                const statusDiv = document.getElementById('theme-status');
+
+                if (data.theme) {
+                    select.value = data.theme;
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom theme (' + data.theme + ')</span>';
+                } else {
+                    select.value = data.default || 'dracula';
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'dracula') + ')</span>';
+                }
+            });
+    }
+
+    function saveTheme() {
+        const select = document.getElementById('theme-select-input');
+        const theme = select.value;
+        const statusDiv = document.getElementById('theme-status');
+
+        fetch('/htmx/theme', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: theme })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                    statusDiv.innerHTML = '<span class="badge badge-success">Saved</span>';
+                    setTimeout(() => loadTheme(), 2000);
+                }
+            });
+    }
+
+    function resetTheme() {
+        if (!confirm('Reset to default theme?')) return;
+
+        fetch('/htmx/theme/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            });
+    }
+
     loadProviders();
     loadGenreMap();
     loadGenreSeparator();
+    loadTheme();
 </script>
 {{end}}

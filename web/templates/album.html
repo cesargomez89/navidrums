@@ -4,7 +4,7 @@
         alt="{{.Album.Title}}" class="w-40 h-40 rounded-md object-cover flex-shrink-0"
         style="background: var(--shimmer-bg); background-size: 200px 100%;">
     <div class="flex flex-col justify-end flex-1 min-w-0">
-        <h2>
+        <h2 class="m-0 flex items-center gap-3 flex-wrap">
             {{.Album.Title}}
             {{if .Album.AudioQuality}}
             <span class="quality-badge{{if eq .Album.AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
@@ -15,16 +15,48 @@
                 "LOW"}}Low{{else}}{{.Album.AudioQuality}}{{end}}
             </span>
             {{end}}
+            {{if .Album.Explicit}}<span class="quality-badge quality-badge--low">Explicit</span>{{end}}
         </h2>
-        <div class="text-sm text-dim mt-2">
+
+        <div class="text-sm text-dim mt-2 flex gap-2 items-center flex-wrap">
             <span>{{.Album.Artist}}</span>
-            {{if .Album.Year}}<span>{{.Album.Year}}</span>{{end}}
-            {{if .Album.TotalTracks}}<span>[ {{.Album.TotalTracks}} tracks ]</span>{{end}}
+            {{if .Album.Year}}<span>&bull;</span><span>{{.Album.Year}}</span>{{end}}
+            {{if .Album.TotalTracks}}<span>&bull;</span><span>{{.Album.TotalTracks}} tracks</span>{{end}}
         </div>
-        <button class="btn btn-primary mt-4" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
-            Album</button>
-        <button class="btn btn-outline mt-2" hx-get="/htmx/album/{{.Album.ID}}/similar"
-            hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
+
+        <div class="info-grid mt-4">
+            {{if .Album.Label}}
+            <div class="data-item">
+                <span class="data-label">Label</span>
+                <span class="data-value">{{.Album.Label}}</span>
+            </div>
+            {{end}}
+            {{if .Album.ReleaseDate}}
+            <div class="data-item">
+                <span class="data-label">Released</span>
+                <span class="data-value">{{.Album.ReleaseDate}}</span>
+            </div>
+            {{end}}
+            {{if .Album.UPC}}
+            <div class="data-item">
+                <span class="data-label">UPC</span>
+                <span class="data-value">{{.Album.UPC}}</span>
+            </div>
+            {{end}}
+            {{if .Album.Genre}}
+            <div class="data-item">
+                <span class="data-label">Genre</span>
+                <span class="data-value">{{.Album.Genre}}</span>
+            </div>
+            {{end}}
+        </div>
+
+        <div class="action-row mt-4">
+            <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
+                Album</button>
+            <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar"
+                hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
+        </div>
     </div>
 </div>
 

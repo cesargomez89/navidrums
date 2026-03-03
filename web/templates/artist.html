@@ -4,17 +4,20 @@
         alt="{{.Artist.Name}}" class="w-40 h-40 rounded-md object-cover flex-shrink-0"
         style="background: var(--shimmer-bg); background-size: 200px 100%;">
     <div class="flex flex-col justify-end flex-1 min-w-0">
-        <h2>{{.Artist.Name}}</h2>
-        <div class="text-sm text-dim mt-2">
+        <h2 class="m-0">{{.Artist.Name}}</h2>
+        <div class="text-sm text-dim mt-2 flex gap-2 items-center flex-wrap">
             <span>{{len .Artist.Albums}} albums</span>
+            <span>&bull;</span>
             <span>{{len .Artist.TopTracks}} top tracks</span>
         </div>
-        <button class="btn btn-primary mt-4" onclick="queueDownload('artist', '{{.Artist.ID}}', this)">Download Top
-            Tracks</button>
-        <button class="btn btn-secondary mt-4" onclick="queueDownload('discography', '{{.Artist.ID}}', this)">Download
-            Discography</button>
-        <button class="btn btn-outline mt-2" hx-get="/htmx/artist/{{.Artist.ID}}/similar"
-            hx-target="#similar-artists-container" hx-swap="innerHTML">Similar Artists</button>
+        <div class="action-row mt-4">
+            <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)">Download Top
+                Tracks</button>
+            <button class="btn btn-secondary" onclick="queueDownload('discography', '{{.Artist.ID}}', this)">Download
+                Discography</button>
+            <button class="btn btn-outline" hx-get="/htmx/artist/{{.Artist.ID}}/similar"
+                hx-target="#similar-artists-container" hx-swap="innerHTML">Similar Artists</button>
+        </div>
     </div>
 </div>
 

@@ -1,17 +1,22 @@
 {{define "content"}}
-<div class="detail">
-    <img src="{{if .Playlist.ImageURL}}{{.Playlist.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}" alt="{{.Playlist.Title}}">
-    <div class="detail-info">
-        <h2>{{.Playlist.Title}}</h2>
-        <div class="detail-meta">
-            {{if .Playlist.Description}}<span>{{.Playlist.Description}}</span>{{end}}
-            <span>[ {{len .Playlist.Tracks}} tracks ]</span>
+<div class="flex gap-6 mb-6 items-end flex-wrap">
+    <img src="{{if .Playlist.ImageURL}}{{.Playlist.ImageURL}}{{else}}https://via.placeholder.com/600?text=Playlist{{end}}"
+        alt="{{.Playlist.Title}}" class="w-40 h-40 rounded-md object-cover flex-shrink-0"
+        style="background: var(--shimmer-bg); background-size: 200px 100%;">
+    <div class="flex flex-col justify-end flex-1 min-w-0">
+        <h2 class="m-0">{{.Playlist.Title}}</h2>
+        <div class="text-sm text-dim mt-2 flex gap-2 items-center flex-wrap">
+            {{if .Playlist.Description}}<span>{{.Playlist.Description}}</span><span>&bull;</span>{{end}}
+            <span>{{len .Playlist.Tracks}} tracks</span>
         </div>
-        <button class="btn btn-primary mt-4" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full Playlist</button>
+        <div class="action-row mt-4">
+            <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full
+                Playlist</button>
+        </div>
     </div>
 </div>
 
-<div class="track-list">
+<div class="mb-6">
     {{range .Playlist.Tracks}}
     {{template "track_card.html" .}}
     {{end}}

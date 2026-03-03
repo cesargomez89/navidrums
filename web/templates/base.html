@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ .Theme }}">
 
 <head>
     <meta charset="UTF-8">
@@ -15,10 +15,10 @@
     <nav>
         <a class="nav-logo" href="/">🎵 Navidrums</a>
         <div class="nav-links">
-            <a href="/" {{if eq .ActivePage "search"}}class="active"{{end}}>Search</a>
-            <a href="/queue" {{if eq .ActivePage "queue"}}class="active"{{end}}>Queue</a>
-            <a href="/downloads" {{if eq .ActivePage "downloads"}}class="active"{{end}}>Downloads</a>
-            <a href="/settings" {{if eq .ActivePage "settings"}}class="active"{{end}}>Settings</a>
+            <a href="/" {{if eq .ActivePage "search" }}class="active" {{end}}>Search</a>
+            <a href="/queue" {{if eq .ActivePage "queue" }}class="active" {{end}}>Queue</a>
+            <a href="/downloads" {{if eq .ActivePage "downloads" }}class="active" {{end}}>Downloads</a>
+            <a href="/settings" {{if eq .ActivePage "settings" }}class="active" {{end}}>Settings</a>
         </div>
     </nav>
     <main>
