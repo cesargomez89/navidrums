@@ -1118,6 +1118,7 @@ textarea {
     align-items: center;
 }
 
+
 /* Action Row - for grouping buttons */
 .action-row {
     display: flex;
@@ -1529,6 +1530,31 @@ textarea {
     main {
         padding: 12px;
     }
+
+    .page-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .page-header h2 {
+        justify-content: center;
+    }
+
+    .page-header .text-sm {
+        justify-content: center;
+    }
+
+    .page-header .action-row {
+        justify-content: center;
+    }
+
+    .page-header .info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
 
 
 

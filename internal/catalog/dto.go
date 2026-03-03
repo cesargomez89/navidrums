@@ -96,10 +96,12 @@ type APIPlaylistItem struct {
 			Title string      `json:"title"`
 			Cover FlexCover   `json:"cover"`
 		} `json:"album"`
-		Artists     []APIArtist `json:"artists"`
-		TrackNumber int         `json:"trackNumber"`
-		Duration    int         `json:"duration"`
-		Explicit    bool        `json:"explicit"`
+		Artists       []APIArtist      `json:"artists"`
+		TrackNumber   int              `json:"trackNumber"`
+		Duration      int              `json:"duration"`
+		Explicit      bool             `json:"explicit"`
+		AudioQuality  string           `json:"audioQuality"`
+		MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
 	} `json:"item"`
 }
 

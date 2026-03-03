@@ -183,6 +183,7 @@ func (r APIPlaylistResponse) ToDomain(p *HifiProvider) *domain.Playlist {
 			ISRC:           item.ISRC,
 			AlbumArtURL:    albumArtURL,
 			ExplicitLyrics: item.Explicit,
+			AudioQuality:   resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 		})
 	}
 
