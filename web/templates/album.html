@@ -1,8 +1,9 @@
 {{define "content"}}
-<div class="detail">
+<div class="flex gap-6 mb-6 items-end flex-wrap">
     <img src="{{if .Album.AlbumArtURL}}{{.Album.AlbumArtURL}}{{else}}https://via.placeholder.com/600?text=No+Cover{{end}}"
-        alt="{{.Album.Title}}">
-    <div class="detail-info">
+        alt="{{.Album.Title}}" class="w-40 h-40 rounded-md object-cover flex-shrink-0"
+        style="background: var(--shimmer-bg); background-size: 200px 100%;">
+    <div class="flex flex-col justify-end flex-1 min-w-0">
         <h2>
             {{.Album.Title}}
             {{if .Album.AudioQuality}}
@@ -15,21 +16,21 @@
             </span>
             {{end}}
         </h2>
-        <div class="detail-meta">
+        <div class="text-sm text-dim mt-2">
             <span>{{.Album.Artist}}</span>
             {{if .Album.Year}}<span>{{.Album.Year}}</span>{{end}}
             {{if .Album.TotalTracks}}<span>[ {{.Album.TotalTracks}} tracks ]</span>{{end}}
         </div>
-        <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)"
-            style="margin-top: 16px;">Download Full Album</button>
-        <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar" hx-target="#similar-albums-container"
-            hx-swap="innerHTML" style="margin-top: 8px;">Similar Albums</button>
+        <button class="btn btn-primary mt-4" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
+            Album</button>
+        <button class="btn btn-outline mt-2" hx-get="/htmx/album/{{.Album.ID}}/similar"
+            hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
     </div>
 </div>
 
-<div id="similar-albums-container" style="margin-bottom: 24px;"></div>
+<div id="similar-albums-container" class="mb-6"></div>
 
-<div class="track-list">
+<div class="mb-6">
     {{range .Album.Tracks}}
     {{template "track_card.html" .}}
     {{end}}

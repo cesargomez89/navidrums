@@ -7,7 +7,7 @@
             {{if .Playlist.Description}}<span>{{.Playlist.Description}}</span>{{end}}
             <span>[ {{len .Playlist.Tracks}} tracks ]</span>
         </div>
-        <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)" style="margin-top: 16px;">Download Full Playlist</button>
+        <button class="btn btn-primary mt-4" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full Playlist</button>
     </div>
 </div>
 

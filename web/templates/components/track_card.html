@@ -1,12 +1,14 @@
-<div class="track">
+<div class="item">
     <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
-        alt="{{.Title}}">
-    <div class="track-info">
-        <div class="track-title">{{.Title}}</div>
-        <div class="track-artist"><a href="/artist/{{.ArtistID}}">{{.Artist}}</a></div>
-        <div class="track-album"><a href="/album/{{.AlbumID}}">{{.Album}}</a></div>
+        alt="{{.Title}}" class="item-img">
+    <div class="item-body">
+        <div class="item-title">{{.Title}}</div>
+        <div class="item-subtitle">
+            <a href="/artist/{{.ArtistID}}" class="text-dim hover:text-accent">{{.Artist}}</a> •
+            <a href="/album/{{.AlbumID}}" class="text-dim hover:text-accent">{{.Album}}</a>
+        </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+    <div class="item-actions item-actions--col">
         {{if .AudioQuality}}
         <span class="quality-badge{{if eq .AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
             .AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .AudioQuality "HIGH" }}
