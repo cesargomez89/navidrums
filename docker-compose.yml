@@ -4,9 +4,10 @@ services:
     container_name: navidrums
     ports:
       - "8080:8080"
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
-      - ~/Downloads/navidrums/:/music
-      - ./docker.navidrums.db:/app/navidrums.db
+      - ./downloads:/music
+      - ./data:/data
     env_file:
       - .env
     restart: unless-stopped
@@ -18,7 +19,7 @@ services:
     ports:
       - "4533:4533"
     volumes:
-      - ~/Downloads/navidrums/:/music
+      - ./downloads:/music
       - ./navidrome_data:/data
     environment:
       - ND_SCANSCHEDULE=@every 24h

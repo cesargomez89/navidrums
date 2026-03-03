@@ -238,9 +238,9 @@ HiFi API: https://github.com/binimum/hifi-api
 
 No clone needed. Just run the container directly:
 
-1. Create a directory for downloads and database:
+1. Create a directory for persistent data:
    ```bash
-   mkdir -p ~/navidrums/downloads
+   mkdir -p ~/navidrums/data
    ```
 
 2. Run the container:
@@ -248,8 +248,9 @@ No clone needed. Just run the container directly:
    docker run -d \
      --name navidrums \
      -p 8080:8080 \
-     -v ~/navidrums/downloads:/downloads \
-     -v ~/navidrums/navidrums.db:/app/navidrums.db \
+     -u 1000:1000 \
+     -v ~/navidrums/data:/data \
+     -v ~/Music:/music \
      -e PROVIDER_URL=https://your-hifi-api.com \
      -e NAVIDRUMS_PASSWORD=your-secure-password \
      --restart unless-stopped \
@@ -287,7 +288,7 @@ No clone needed. Just run the container directly:
 
 4. Open browser at `http://localhost:8080`.
 
-**Note:** Downloads are saved to `./downloads` and database to `./navidrums.db` in the project directory.
+**Note:** Persistent data is saved to `./data` and downloads to `./downloads` (mounted to `/music`) in the project directory by default.
 
 ### Environment Variables
 
@@ -297,8 +298,8 @@ See the [Configuration](#configuration) section for all available options. The m
 |----------|-------------|
 | `PROVIDER_URL` | Your Hifi API URL (required) |
 | `NAVIDRUMS_PASSWORD` | Web interface password (empty disables auth) |
-| `DOWNLOADS_DIR` | Container path `/downloads` (mounted volume) |
-| `DB_PATH` | Container path `/app/navidrums.db` (mounted volume) |
+| `DOWNLOADS_DIR` | Container path `/music` (mounted volume) |
+| `DB_PATH` | Container path `/data/navidrums.db` (mounted volume) |
 | `SUBDIR_TEMPLATE` | File organization template (optional) |
 | `QUALITY` | Audio quality preference (optional) |
 
@@ -309,14 +310,14 @@ To use different host directories, modify the volume mounts:
 **Docker Compose:** Edit `docker-compose.yml`:
 ```yaml
 volumes:
-  - /custom/path/to/music:/downloads
-  - /custom/path/to/database.db:/app/navidrums.db
+  - /custom/path/to/music:/music
+  - /custom/path/to/data:/data
 ```
 
 **Docker Run:** Change the `-v` arguments:
 ```bash
--v /custom/path/to/music:/downloads \
--v /custom/path/to/database.db:/app/navidrums.db
+-v /custom/path/to/music:/music \
+-v /custom/path/to/data:/data
 ```
 
 ## Screenshots
