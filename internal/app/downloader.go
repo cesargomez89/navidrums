@@ -48,7 +48,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		ext := constants.ExtFLAC
 		switch mimeType {
 		case constants.MimeTypeMP4:
-			ext = constants.ExtMP4
+			ext = constants.ExtM4A
 		case constants.MimeTypeMP3:
 			ext = constants.ExtMP3
 		}
