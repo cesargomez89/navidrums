@@ -23,11 +23,28 @@
 </div>
 
 <div class="section">
+    <h2>Theme Selector</h2>
+    <p class="hint">Override the default application theme configured via environment variable.</p>
+    <div class="flex gap-2 items-center">
+        <select id="theme-select-input" class="form-select w-full" style="max-width: 200px;">
+            <option value="dracula">Dracula</option>
+            <option value="solarized-dark">Solarized Dark</option>
+            <option value="vintage">Vintage</option>
+            <option value="everforest">Everforest</option>
+        </select>
+        <button onclick="saveTheme()" class="btn btn-primary">Save</button>
+        <button onclick="resetTheme()" class="btn btn-secondary">Reset to Default</button>
+    </div>
+    <div id="theme-status" class="mt-2"></div>
+</div>
+
+<div class="section">
     <h2>Genre Mapping</h2>
     <p class="hint">Customize how MusicBrainz genres are normalized. Maps sub-genres to main genres.</p>
     <div id="genre-map-status"></div>
-    <textarea id="genre-map-input" rows="12" style="width: 100%; font-family: monospace; font-size: 12px;" placeholder='{"death metal": "Metal", "indie pop": "Pop"}'></textarea>
-    <div style="margin-top: 10px;">
+    <textarea id="genre-map-input" rows="12" class="w-full" style="font-family: monospace; font-size: 12px;"
+        placeholder='{"death metal": "Metal", "indie pop": "Pop"}'></textarea>
+    <div class="mt-2">
         <button onclick="saveGenreMap()" class="btn btn-primary">Save</button>
         <button onclick="resetGenreMap()" class="btn btn-secondary">Reset to Default</button>
     </div>
@@ -35,157 +52,213 @@
 
 <div class="section">
     <h2>Genre Separator</h2>
-    <p class="hint">Separator used to split multiple genres when writing to audio file tags. Requires restart to take effect.</p>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="genre-separator-input" placeholder=";" style="width: 80px;" maxlength="5">
+    <p class="hint">Separator used to split multiple genres when writing to audio file tags. Requires restart to take
+        effect.</p>
+    <div class="flex gap-2 items-center">
+        <input type="text" id="genre-separator-input" placeholder=";" class="w-full" style="max-width: 80px;"
+            maxlength="5">
         <button onclick="saveGenreSeparator()" class="btn btn-primary">Save</button>
     </div>
-    <div id="genre-separator-status" style="margin-top: 8px;"></div>
+    <div id="genre-separator-status" class="mt-2"></div>
 </div>
 
 <script>
-function loadProviders() {
-    fetch('/htmx/providers', { cache: 'no-store' })
-        .then(r => r.json())
-        .then(data => {
-            document.querySelector('#current-provider .provider-badge').textContent = 
-                data.active === data.default ? 'Default' : data.active;
-            
-            const container = document.getElementById('providers-list');
-            container.innerHTML = '';
-            
-            let all = [];
-            if (data.default) all.push({ name: 'Default (env)', url: data.default, isDefault: true });
-            (data.custom || []).forEach(p => all.push(p));
-            
-            all.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'provider-card' + (p.url === data.active ? ' active' : '');
-                div.innerHTML = `
-                    <div class="provider-info">
-                        <strong>${p.name}</strong>
-                        <small>${p.url}</small>
+    function loadProviders() {
+        fetch('/htmx/providers', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                document.querySelector('#current-provider .provider-badge').textContent =
+                    data.active === data.default ? 'Default' : data.active;
+
+                const container = document.getElementById('providers-list');
+                container.innerHTML = '';
+
+                let all = [];
+                if (data.default) all.push({ name: 'Default (env)', url: data.default, isDefault: true });
+                (data.custom || []).forEach(p => all.push(p));
+
+                all.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'item item-bordered mb-3';
+                    if (p.url === data.active) {
+                        div.style.borderColor = 'var(--accent)';
+                        div.style.backgroundColor = 'rgba(245,196,0,0.05)';
+                    }
+                    div.innerHTML = `
+                    <div class="item-body">
+                        <div class="item-title">${p.name}</div>
+                        <div class="item-subtitle" style="font-family: monospace;">${p.url}</div>
                     </div>
-                    <div class="provider-actions">
-                        ${p.url === data.active 
-                            ? '<button class="btn btn-success" disabled>Active</button>' 
-                            : `<button onclick="setProvider('${p.url}')">Select</button>`}
+                    <div class="item-actions">
+                        ${p.url === data.active
+                            ? '<button class="btn btn-success" disabled>Active</button>'
+                            : `<button class="btn btn-outline" onclick="setProvider('${p.url}')">Select</button>`}
                         ${p.isDefault ? '' : `<button class="btn btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
                     </div>
                 `;
-                container.appendChild(div);
+                    container.appendChild(div);
+                });
             });
-        });
-}
-
-function setProvider(url) {
-    fetch('/htmx/provider/set?url=' + encodeURIComponent(url), { method: 'POST' })
-        .then(r => r.json())
-        .then(() => loadProviders());
-}
-
-function addProvider(e) {
-    e.preventDefault();
-    const name = document.getElementById('provider-name').value;
-    const url = document.getElementById('provider-url').value;
-    fetch('/htmx/provider/add?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
-        .then(r => r.json())
-        .then(() => {
-            document.getElementById('provider-name').value = '';
-            document.getElementById('provider-url').value = '';
-            loadProviders();
-        });
-}
-
-function removeProvider(url) {
-    if (!confirm('Remove this provider?')) return;
-    fetch('/htmx/provider/remove?url=' + encodeURIComponent(url), { method: 'POST' })
-        .then(r => r.json())
-        .then(() => loadProviders());
-}
-
-function loadGenreMap() {
-    fetch('/htmx/genre-map', { cache: 'no-store' })
-        .then(r => r.json())
-        .then(data => {
-            const textarea = document.getElementById('genre-map-input');
-            const statusDiv = document.getElementById('genre-map-status');
-            
-            if (data.custom) {
-                textarea.value = JSON.stringify(data.custom, null, 2);
-                statusDiv.innerHTML = '<span class="badge badge-custom">Using custom mapping</span>';
-            } else {
-                textarea.value = JSON.stringify(data.default, null, 2);
-                statusDiv.innerHTML = '<span class="badge badge-default">Using default mapping</span>';
-            }
-        });
-}
-
-function saveGenreMap() {
-    const textarea = document.getElementById('genre-map-input');
-    let genreMap;
-    
-    try {
-        genreMap = JSON.parse(textarea.value);
-    } catch (e) {
-        alert('Invalid JSON: ' + e.message);
-        return;
     }
-    
-    fetch('/htmx/genre-map', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ genreMap: genreMap })
-    })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                loadGenreMap();
-                alert('Genre map saved');
-            }
-        });
-}
 
-function resetGenreMap() {
-    if (!confirm('Reset to default genre mapping?')) return;
-    
-    fetch('/htmx/genre-map/reset', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                loadGenreMap();
-            }
-        });
-}
+    function setProvider(url) {
+        fetch('/htmx/provider/set?url=' + encodeURIComponent(url), { method: 'POST' })
+            .then(r => r.json())
+            .then(() => loadProviders());
+    }
 
-function loadGenreSeparator() {
-    fetch('/htmx/genre-separator', { cache: 'no-store' })
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('genre-separator-input').value = data.separator || ';';
-        });
-}
+    function addProvider(e) {
+        e.preventDefault();
+        const name = document.getElementById('provider-name').value;
+        const url = document.getElementById('provider-url').value;
+        fetch('/htmx/provider/add?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
+            .then(r => r.json())
+            .then(() => {
+                document.getElementById('provider-name').value = '';
+                document.getElementById('provider-url').value = '';
+                loadProviders();
+            });
+    }
 
-function saveGenreSeparator() {
-    const separator = document.getElementById('genre-separator-input').value;
-    const statusDiv = document.getElementById('genre-separator-status');
-    
-    fetch('/htmx/genre-separator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ separator: separator })
-    })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                statusDiv.innerHTML = '<span class="badge badge-success">Saved</span>';
-                setTimeout(() => statusDiv.innerHTML = '', 2000);
-            }
-        });
-}
+    function removeProvider(url) {
+        if (!confirm('Remove this provider?')) return;
+        fetch('/htmx/provider/remove?url=' + encodeURIComponent(url), { method: 'POST' })
+            .then(r => r.json())
+            .then(() => loadProviders());
+    }
 
-loadProviders();
-loadGenreMap();
-loadGenreSeparator();
+    function loadGenreMap() {
+        fetch('/htmx/genre-map', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const textarea = document.getElementById('genre-map-input');
+                const statusDiv = document.getElementById('genre-map-status');
+
+                if (data.custom) {
+                    textarea.value = JSON.stringify(data.custom, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom mapping</span>';
+                } else {
+                    textarea.value = JSON.stringify(data.default, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default mapping</span>';
+                }
+            });
+    }
+
+    function saveGenreMap() {
+        const textarea = document.getElementById('genre-map-input');
+        let genreMap;
+
+        try {
+            genreMap = JSON.parse(textarea.value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+
+        fetch('/htmx/genre-map', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ genreMap: genreMap })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadGenreMap();
+                    alert('Genre map saved');
+                }
+            });
+    }
+
+    function resetGenreMap() {
+        if (!confirm('Reset to default genre mapping?')) return;
+
+        fetch('/htmx/genre-map/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadGenreMap();
+                }
+            });
+    }
+
+    function loadGenreSeparator() {
+        fetch('/htmx/genre-separator', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('genre-separator-input').value = data.separator || ';';
+            });
+    }
+
+    function saveGenreSeparator() {
+        const separator = document.getElementById('genre-separator-input').value;
+        const statusDiv = document.getElementById('genre-separator-status');
+
+        fetch('/htmx/genre-separator', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ separator: separator })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.innerHTML = '<span class="badge badge-success">Saved</span>';
+                    setTimeout(() => statusDiv.innerHTML = '', 2000);
+                }
+            });
+    }
+
+    function loadTheme() {
+        fetch('/htmx/theme', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('theme-select-input');
+                const statusDiv = document.getElementById('theme-status');
+
+                if (data.theme) {
+                    select.value = data.theme;
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom theme (' + data.theme + ')</span>';
+                } else {
+                    select.value = data.default || 'dracula';
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'dracula') + ')</span>';
+                }
+            });
+    }
+
+    function saveTheme() {
+        const select = document.getElementById('theme-select-input');
+        const theme = select.value;
+        const statusDiv = document.getElementById('theme-status');
+
+        fetch('/htmx/theme', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: theme })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                    statusDiv.innerHTML = '<span class="badge badge-success">Saved</span>';
+                    setTimeout(() => loadTheme(), 2000);
+                }
+            });
+    }
+
+    function resetTheme() {
+        if (!confirm('Reset to default theme?')) return;
+
+        fetch('/htmx/theme/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                }
+            });
+    }
+
+    loadProviders();
+    loadGenreMap();
+    loadGenreSeparator();
+    loadTheme();
 </script>
 {{end}}

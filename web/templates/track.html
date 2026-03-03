@@ -5,17 +5,17 @@
     <div class="loading">Loading track...</div>
 </div>
 
-<div class="section track-warning-banner">
-    <div class="track-warning-banner-inner">
+<div class="alert alert-warning mb-6">
+    <div class="flex items-center gap-3">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
             <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
             <path d="M12 9v4" />
             <path d="M12 17h.01" />
         </svg>
         <div>
             <strong>Destructive Operation</strong>
-            <p>
+            <p class="mt-1 text-sm opacity-90 m-0">
                 Clicking "Sync to File" will modify the actual audio file on disk.
                 If done incorrectly, this could cause data loss or playback issues.
                 Only use this if you know what you're doing.
@@ -27,7 +27,7 @@
 
 <div class="section">
     <h2>File Information</h2>
-    <div class="track-info-text">
+    <div class="text-sm text-dim flex flex-col gap-2">
         <p><strong>File Path:</strong> {{.Track.FilePath}}</p>
         <p><strong>File Extension:</strong> {{.Track.FileExtension}}</p>
         <p><strong>Status:</strong> {{.Track.Status}}</p>
@@ -43,7 +43,7 @@
 
 <div class="section">
     <h2>Audio Information</h2>
-    <div class="track-info-text">
+    <div class="text-sm text-dim flex flex-col gap-2">
         <p><strong>BPM:</strong> {{if .Track.BPM}}{{.Track.BPM}}{{else}}N/A{{end}}</p>
         <p><strong>Key:</strong> {{.Track.Key}}{{if .Track.KeyScale}} {{.Track.KeyScale}}{{end}}</p>
         <p><strong>Replay Gain:</strong> {{if .Track.ReplayGain}}{{.Track.ReplayGain}} dB{{else}}N/A{{end}}</p>
@@ -65,38 +65,40 @@
 
 <div class="section">
     <h2>MusicBrainz Data</h2>
-    <div class="mb-data-grid">
-        <div class="mb-data-item">
-            <span>Recording ID</span>
-            <span>{{if .Track.RecordingID}}{{.Track.RecordingID}}{{else}}—{{end}}</span>
+    <div class="info-grid">
+        <div class="data-item">
+            <span class="data-label">Recording ID</span>
+            <span class="data-value data-value--mono">{{if
+                .Track.RecordingID}}{{.Track.RecordingID}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item">
-            <span>Release ID</span>
-            <span>{{if .Track.ReleaseID}}{{.Track.ReleaseID}}{{else}}—{{end}}</span>
+        <div class="data-item">
+            <span class="data-label">Release ID</span>
+            <span class="data-value data-value--mono">{{if .Track.ReleaseID}}{{.Track.ReleaseID}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item">
-            <span>ISRC</span>
-            <span>{{if .Track.ISRC}}{{.Track.ISRC}}{{else}}—{{end}}</span>
+        <div class="data-item">
+            <span class="data-label">ISRC</span>
+            <span class="data-value data-value--mono">{{if .Track.ISRC}}{{.Track.ISRC}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item">
-            <span>Release Type</span>
-            <span>{{if .Track.ReleaseType}}{{.Track.ReleaseType}}{{else}}—{{end}}</span>
+        <div class="data-item">
+            <span class="data-label">Release Type</span>
+            <span class="data-value">{{if .Track.ReleaseType}}{{.Track.ReleaseType}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item">
-            <span>Release Date</span>
-            <span>{{if .Track.ReleaseDate}}{{.Track.ReleaseDate}}{{else}}—{{end}}</span>
+        <div class="data-item">
+            <span class="data-label">Release Date</span>
+            <span class="data-value">{{if .Track.ReleaseDate}}{{.Track.ReleaseDate}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item">
-            <span>Barcode</span>
-            <span>{{if .Track.Barcode}}{{.Track.Barcode}}{{else}}—{{end}}</span>
+        <div class="data-item">
+            <span class="data-label">Barcode</span>
+            <span class="data-value data-value--mono">{{if .Track.Barcode}}{{.Track.Barcode}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item">
-            <span>Catalog Number</span>
-            <span>{{if .Track.CatalogNumber}}{{.Track.CatalogNumber}}{{else}}—{{end}}</span>
+        <div class="data-item">
+            <span class="data-label">Catalog Number</span>
+            <span class="data-value data-value--mono">{{if
+                .Track.CatalogNumber}}{{.Track.CatalogNumber}}{{else}}—{{end}}</span>
         </div>
-        <div class="mb-data-item mb-data-item--full">
-            <span>Tags</span>
-            <span>{{if .Track.Tags}}{{range $i, $t := .Track.Tags}}{{if $i}},
+        <div class="data-item data-item--full">
+            <span class="data-label">Tags</span>
+            <span class="data-value">{{if .Track.Tags}}{{range $i, $t := .Track.Tags}}{{if $i}},
                 {{end}}{{$t}}{{end}}{{else}}—{{end}}</span>
         </div>
     </div>

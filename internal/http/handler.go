@@ -24,6 +24,7 @@ type Handler struct {
 	Templates        *template.Template
 	Logger           *logger.Logger
 	FormDecoder      *form.Decoder
+	Theme            string
 }
 
 func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
@@ -87,6 +88,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/htmx/genre-separator", h.GetGenreSeparatorHTMX)
 	r.Post("/htmx/genre-separator", h.SetGenreSeparatorHTMX)
+
+	r.Get("/htmx/theme", h.GetThemeHTMX)
+	r.Post("/htmx/theme", h.SetThemeHTMX)
+	r.Post("/htmx/theme/reset", h.ResetThemeHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {
@@ -100,6 +105,17 @@ func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interf
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
+	}
+
+	// Inject global theme if not already set in data
+	if m, ok := data.(map[string]interface{}); ok {
+		if _, exists := m["Theme"]; !exists {
+			theme, err := h.SettingsRepo.Get(store.SettingTheme)
+			if err != nil || theme == "" {
+				theme = h.Theme
+			}
+			m["Theme"] = theme
+		}
 	}
 
 	if err := tmpl.ExecuteTemplate(w, "base.html", data); err != nil {

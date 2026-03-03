@@ -41,4 +41,5 @@ const (
 	SettingCustomProviders = "custom_providers"
 	SettingGenreMap        = "genre_map"
 	SettingGenreSeparator  = "genre_separator"
+	SettingTheme           = "theme"
 )

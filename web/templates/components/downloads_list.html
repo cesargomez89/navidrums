@@ -1,31 +1,30 @@
 {{define "downloads_list"}}
 {{if .SyncEnqueued}}
-<div class="alert alert-success" style="margin-bottom: 16px;">
+<div class="alert alert-success mb-4">
     {{.SyncEnqueued}} sync job(s) enqueued. Check the <a href="/queue">queue</a> for progress.
 </div>
 {{end}}
 {{if .Downloads}}
-<div class="downloads-list">
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0;">
+<div class="flex flex-col gap-2">
+    <div class="flex items-center gap-2 mb-2 py-1">
         <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" title="Select all">
-        <span style="font-size: 13px; color: var(--color-text-muted, #888);">Select all</span>
+        <span class="text-sm text-dim">Select all</span>
     </div>
     {{range .Downloads}}
-    <div class="download" id="download-{{.ProviderID}}">
-        <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-            <input type="checkbox" class="download-cb" value="{{.ProviderID}}" onchange="onSelectionChange()"
-                title="Select">
-            <div class="download-info">
-                <a href="/track/{{.ID}}" class="download-title">{{.Title}}</a>
-                <div class="download-meta">{{.Artist}} - {{.Album}}{{if .Genre}} - {{.Genre}}{{end}}</div>
+    <div class="item item-bordered" id="download-{{.ProviderID}}">
+        <div class="flex items-center gap-3 w-full">
+            <input type="checkbox" class="download-cb flex-shrink-0" value="{{.ProviderID}}"
+                onchange="onSelectionChange()" title="Select">
+            <div class="item-body">
+                <div class="item-title"><a href="/track/{{.ID}}" class="hover:text-accent">{{.Title}}</a></div>
+                <div class="item-subtitle">{{.Artist}} - {{.Album}}{{if .Genre}} - {{.Genre}}{{end}}</div>
             </div>
-        </div>
-        <div style="text-align: right; flex-shrink: 0;">
-            <span class="download-date">
-                {{if .CompletedAt}}{{.CompletedAt.Format "Jan 02, 2006"}}{{else}}N/A{{end}}
-            </span>
-            <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm"
-                style="margin-top: 8px; margin-left: 12px;">Delete</button>
+            <div class="item-actions item-actions--col items-end">
+                <div class="text-xs text-dim">
+                    {{if .CompletedAt}}{{.CompletedAt.Format "Jan 02, 2006"}}{{else}}N/A{{end}}
+                </div>
+                <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm mt-1">Delete</button>
+            </div>
         </div>
     </div>
     {{end}}

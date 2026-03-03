@@ -1,15 +1,18 @@
 {{define "history_tab"}}
 {{if .Stats}}
-<div class="history-stats">
+<div class="stats-grid mb-4 p-4 card">
     <div class="stat-item"><span class="stat-label">Total</span><span class="stat-value">{{.Stats.Total}}</span></div>
-    <div class="stat-item stat-completed"><span class="stat-label">Completed</span><span class="stat-value">{{.Stats.Completed}}</span></div>
-    <div class="stat-item stat-failed"><span class="stat-label">Failed</span><span class="stat-value">{{.Stats.Failed}}</span></div>
-    <div class="stat-item stat-cancelled"><span class="stat-label">Cancelled</span><span class="stat-value">{{.Stats.Cancelled}}</span></div>
+    <div class="stat-item stat-completed"><span class="stat-label">Completed</span><span
+            class="stat-value">{{.Stats.Completed}}</span></div>
+    <div class="stat-item stat-failed"><span class="stat-label">Failed</span><span
+            class="stat-value">{{.Stats.Failed}}</span></div>
+    <div class="stat-item stat-cancelled"><span class="stat-label">Cancelled</span><span
+            class="stat-value">{{.Stats.Cancelled}}</span></div>
 </div>
 {{end}}
 
-<div class="history-header">
-    <h3 class="history-title">Recent Downloads</h3>
+<div class="section-header">
+    <h3 class="font-bold text-lg m-0">Recent Downloads</h3>
     {{if .HistoryJobs}}
     <button class="btn btn-danger btn-sm" hx-post="/htmx/history/clear"
         hx-confirm="Are you sure you want to clear all download history? This cannot be undone."
@@ -20,28 +23,32 @@
 </div>
 
 {{if .HistoryJobs}}
-<div class="job-list">
+<div class="toolbar">
     {{range .HistoryJobs}}
-    <div class="job">
-        <div class="job-header">
-            <span class="job-type">{{.Type}}</span>
-            <span class="job-status status-{{.Status}}">{{.Status}}</span>
+    <div class="item item-bordered items-start">
+        <div class="item-body">
+            <div class="item-title flex items-center">
+                <span class="text-xs font-bold text-dim uppercase tracking-wider mr-2">{{.Type}}</span>
+                <span class="text-base">{{.SourceID}}</span>
+            </div>
+            <div class="item-subtitle mt-1">
+                {{if .Progress}}Progress: {{printf "%.0f" .Progress}}%{{end}}
+            </div>
+            {{if .Error}}
+            <div class="text-danger text-xs mt-2"
+                style="white-space: normal; overflow-wrap: anywhere; line-height: 1.4;">
+                {{.Error}}
+            </div>
+            {{end}}
         </div>
-        <div class="job-body">
-            <div class="job-info">
-                <div class="job-title">{{.SourceID}}</div>
-                <div class="job-meta">
-                    {{if .Progress}}Progress: {{printf "%.0f" .Progress}}%{{end}}
-                </div>
-                {{if .Error}}<div class="job-error">{{.Error}}</div>{{end}}
-            </div>
-            <div class="job-actions">
-                {{if or (eq .Status "failed") (eq .Status "cancelled")}}
-                <button hx-post="/htmx/retry/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML"
-                    class="btn btn-outline btn-sm">Retry</button>
-                {{end}}
-                <div class="job-date">{{.UpdatedAt.Format "Jan 02, 15:04"}}</div>
-            </div>
+        <div class="item-actions item-actions--col items-end flex-shrink-0">
+            <span
+                class='px-2 py-1 text-xs font-bold rounded-md uppercase {{if eq .Status "completed"}}alert-success{{else if or (eq .Status "failed") (eq .Status "error")}}alert-error{{else if eq .Status "cancelled"}}alert-warning{{else}}btn-outline{{end}}'>{{.Status}}</span>
+            <div class="text-xs text-dim mt-1">{{.UpdatedAt.Format "Jan 02, 15:04"}}</div>
+            {{if or (eq .Status "failed") (eq .Status "cancelled")}}
+            <button hx-post="/htmx/retry/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML"
+                class="btn btn-outline btn-sm mt-2 w-full">Retry</button>
+            {{end}}
         </div>
     </div>
     {{end}}
