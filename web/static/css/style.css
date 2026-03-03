@@ -10,6 +10,32 @@
     --danger: #ef4444;
     --success: #10b981;
     --warning: #f59e0b;
+
+    /* Reusable shadows */
+    --shadow-accent: 0 4px 12px rgba(245, 196, 0, 0.4);
+    --shadow-danger: 0 4px 12px rgba(239, 68, 68, 0.3);
+    --shadow-success: 0 4px 12px rgba(16, 185, 129, 0.3);
+    --shadow-warning: 0 4px 12px rgba(245, 158, 11, 0.3);
+    --shadow-card: 0 8px 24px rgba(245, 196, 0, 0.15);
+    --shadow-card-hover: 0 4px 16px rgba(245, 196, 0, 0.08);
+    --shadow-hover-accent: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-border-accent: 0 0 24px rgba(245, 196, 0, 0.2);
+    --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
+
+    /* Gradient utilities */
+    --gradient-accent: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+    --gradient-border-accent: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+    --gradient-border-accent-v: linear-gradient(180deg, var(--accent), var(--accent-secondary));
+
+    /* Shimmer effect for images */
+    --shimmer-bg: linear-gradient(90deg, var(--input) 0%, var(--border) 50%, var(--input) 100%);
+    --shimmer-anim: shimmer 1.5s infinite;
+
+    /* Breakpoints */
+    --bp-mobile: 600px;
+
+    /* Animation delays */
+    --anim-delay: 0.05s;
 }
 
 *,
@@ -102,19 +128,14 @@ nav::before {
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg,
-            transparent,
-            var(--accent) 20%,
-            var(--accent-secondary) 50%,
-            var(--accent) 80%,
-            transparent);
+    background: var(--gradient-border-accent);
     opacity: 0.5;
 }
 
 .nav-logo {
     font-weight: 700;
     font-size: 1.2rem;
-    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-accent);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -146,7 +167,7 @@ nav a::after {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-border-accent);
     transition: width 0.3s ease;
 }
 
@@ -241,13 +262,13 @@ button {
     font-size: 0.9rem;
     transition: transform 0.1s ease, box-shadow 0.2s ease;
     background: var(--accent);
-    color: #0d0b00;
+    color: var(--bg);
 }
 
 .btn:hover,
 button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(245, 196, 0, 0.4);
+    box-shadow: var(--shadow-accent);
 }
 
 .btn:active,
@@ -256,11 +277,6 @@ button:active {
 }
 
 /* Button Variants */
-.btn-primary {
-    background: var(--accent);
-    color: #0d0b00;
-}
-
 .btn-outline {
     background: transparent;
     border: 1px solid var(--border);
@@ -289,7 +305,7 @@ button:active {
 }
 
 .btn-danger:hover {
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: var(--shadow-danger);
 }
 
 .btn-success {
@@ -298,7 +314,7 @@ button:active {
 }
 
 .btn-success:hover {
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow: var(--shadow-success);
 }
 
 /* Button Sizes */
@@ -332,7 +348,7 @@ button:active {
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(245, 196, 0, 0.15);
+    box-shadow: var(--shadow-card);
 }
 
 .card-img-wrapper {
@@ -347,7 +363,7 @@ button:active {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    background: linear-gradient(90deg, var(--input) 0%, var(--border) 50%, var(--input) 100%);
+    background: var(--shimmer-bg);
     background-size: 200px 100%;
     transition: transform 0.3s ease;
 }
@@ -381,7 +397,7 @@ button:active {
     height: 160px;
     border-radius: 8px;
     object-fit: cover;
-    background: linear-gradient(90deg, var(--input) 0%, var(--border) 50%, var(--input) 100%);
+    background: var(--shimmer-bg);
     background-size: 200px 100%;
 }
 
@@ -394,7 +410,7 @@ button:active {
 .detail h2 {
     font-size: 2rem;
     margin: 0;
-    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-accent);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -515,11 +531,11 @@ textarea {
 
 .btn-warning {
     background: var(--warning);
-    color: #0d0b00;
+    color: var(--bg);
 }
 
 .btn-warning:hover {
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: var(--shadow-warning);
 }
 
 /* Settings */
@@ -533,7 +549,7 @@ textarea {
 }
 
 .section:hover {
-    box-shadow: 0 4px 16px rgba(245, 196, 0, 0.08);
+    box-shadow: var(--shadow-card-hover);
 }
 
 .section h2 {
@@ -550,7 +566,7 @@ textarea {
     content: '';
     width: 4px;
     height: 20px;
-    background: linear-gradient(180deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-border-accent-v);
     border-radius: 2px;
 }
 
@@ -563,12 +579,12 @@ textarea {
 .provider-badge {
     display: inline-block;
     padding: 8px 16px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-accent);
     border-radius: 8px;
     font-weight: 600;
     font-size: 0.9rem;
     letter-spacing: 0.5px;
-    color: #0d0b00;
+    color: var(--bg);
 }
 
 .provider-form {
@@ -606,7 +622,7 @@ textarea {
     background: linear-gradient(135deg,
             rgba(245, 196, 0, 0.1),
             rgba(249, 115, 22, 0.05));
-    box-shadow: 0 0 24px rgba(245, 196, 0, 0.2);
+    box-shadow: var(--shadow-border-accent);
     position: relative;
 }
 
@@ -617,7 +633,7 @@ textarea {
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-border-accent-v);
     border-radius: 10px 0 0 10px;
 }
 
@@ -803,17 +819,13 @@ textarea {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-border-accent);
     transform: scaleX(0);
     transition: transform 0.3s ease;
 }
 
 .tab-btn.active::after {
     transform: scaleX(1);
-}
-
-.job:hover {
-    transform: translateX(4px);
 }
 
 .job-list {
@@ -836,7 +848,7 @@ textarea {
 .job:hover {
     transform: translateX(4px);
     border-color: rgba(245, 196, 0, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-hover-accent);
 }
 
 .job-info {
@@ -908,7 +920,7 @@ textarea {
 
 .status-processing {
     background: var(--accent);
-    color: #0d0b00;
+    color: var(--bg);
     animation: pulse 2s ease-in-out infinite;
 }
 
@@ -922,7 +934,7 @@ textarea {
 
 .status-cancelled {
     background: var(--warning);
-    color: #000;
+    color: var(--bg);
 }
 
 /* Animations */
@@ -1007,7 +1019,7 @@ textarea {
 .download:hover {
     transform: translateX(4px);
     border-color: rgba(245, 196, 0, 0.3);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-hover-accent);
 }
 
 .download-info {
@@ -1049,14 +1061,14 @@ textarea {
     padding: 28px;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-modal);
     animation: fadeIn 0.15s ease-out;
 }
 
 .modal h2 {
     font-size: 1.1rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+    background: var(--gradient-accent);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1220,47 +1232,33 @@ textarea {
     }
 }
 
-/* Similar Albums Animation */
-.similar-albums {
+/* Similar Albums/Artists Animation */
+.similar-albums, .similar-artists {
     animation: fadeIn 0.4s ease-out;
 }
 
-.similar-albums .card {
+.similar-albums .card,
+.similar-artists .card {
     opacity: 0;
     animation: fadeIn 0.4s ease-out forwards;
 }
 
-.similar-albums .card:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.similar-albums .card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.similar-albums .card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.similar-albums .card:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-.similar-albums .card:nth-child(5) {
-    animation-delay: 0.25s;
-}
-
-.similar-albums .card:nth-child(6) {
-    animation-delay: 0.3s;
-}
-
-.similar-albums .card:nth-child(7) {
-    animation-delay: 0.35s;
-}
-
-.similar-albums .card:nth-child(8) {
-    animation-delay: 0.4s;
-}
+.similar-albums .card:nth-child(1),
+.similar-artists .card:nth-child(1) { animation-delay: 0.05s; }
+.similar-albums .card:nth-child(2),
+.similar-artists .card:nth-child(2) { animation-delay: 0.1s; }
+.similar-albums .card:nth-child(3),
+.similar-artists .card:nth-child(3) { animation-delay: 0.15s; }
+.similar-albums .card:nth-child(4),
+.similar-artists .card:nth-child(4) { animation-delay: 0.2s; }
+.similar-albums .card:nth-child(5),
+.similar-artists .card:nth-child(5) { animation-delay: 0.25s; }
+.similar-albums .card:nth-child(6),
+.similar-artists .card:nth-child(6) { animation-delay: 0.3s; }
+.similar-albums .card:nth-child(7),
+.similar-artists .card:nth-child(7) { animation-delay: 0.35s; }
+.similar-albums .card:nth-child(8),
+.similar-artists .card:nth-child(8) { animation-delay: 0.4s; }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {

@@ -169,6 +169,10 @@ func (c *CachedProvider) GetSimilarAlbums(ctx context.Context, id string) ([]dom
 	return c.provider.GetSimilarAlbums(ctx, id)
 }
 
+func (c *CachedProvider) GetSimilarArtists(ctx context.Context, id string) ([]domain.Artist, error) {
+	return c.provider.GetSimilarArtists(ctx, id)
+}
+
 func (c *CachedProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
 	return c.provider.GetLyrics(ctx, trackID)
 }

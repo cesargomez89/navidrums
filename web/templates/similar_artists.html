@@ -1,0 +1,20 @@
+{{define "similar_artists"}}
+<div class="similar-artists">
+    <h3>Similar Artists</h3>
+    {{if .}}
+    <div class="grid">
+        {{range .}}
+        <div class="card">
+            <a href="/artist/{{.ID}}">
+                <img src="{{if .PictureURL}}{{.PictureURL}}{{else}}https://via.placeholder.com/300?text=Artist{{end}}"
+                    alt="{{.Name}}" loading="lazy">
+            </a>
+            <div class="card-title"><a href="/artist/{{.ID}}">{{.Name}}</a></div>
+        </div>
+        {{end}}
+    </div>
+    {{else}}
+    <p>No similar artists found.</p>
+    {{end}}
+</div>
+{{end}}

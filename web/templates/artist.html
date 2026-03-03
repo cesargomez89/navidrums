@@ -10,8 +10,12 @@
         </div>
         <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)" style="margin-top: 16px;">Download Top Tracks</button>
         <button class="btn btn-secondary" onclick="queueDownload('discography', '{{.Artist.ID}}', this)" style="margin-top: 16px;">Download Discography</button>
+        <button class="btn btn-outline" hx-get="/htmx/artist/{{.Artist.ID}}/similar" hx-target="#similar-artists-container"
+            hx-swap="innerHTML" style="margin-top: 8px;">Similar Artists</button>
     </div>
 </div>
+
+<div id="similar-artists-container" style="margin-bottom: 24px;"></div>
 
 <h2>Top Tracks</h2>
 <div class="track-list">

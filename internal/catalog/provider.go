@@ -15,5 +15,6 @@ type Provider interface {
 	GetTrack(ctx context.Context, id string) (*domain.CatalogTrack, error)
 	GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error)
 	GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error)
+	GetSimilarArtists(ctx context.Context, id string) ([]domain.Artist, error)
 	GetLyrics(ctx context.Context, trackID string) (string, string, error)
 }

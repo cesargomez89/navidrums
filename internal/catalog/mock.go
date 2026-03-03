@@ -87,6 +87,19 @@ func (p *MockProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domai
 	}, nil
 }
 
+func (p *MockProvider) GetSimilarArtists(ctx context.Context, id string) ([]domain.Artist, error) {
+	return []domain.Artist{
+		{ID: "201", Name: "Similar Mock Artist 1"},
+		{ID: "202", Name: "Similar Mock Artist 2"},
+		{ID: "203", Name: "Similar Mock Artist 3"},
+		{ID: "204", Name: "Similar Mock Artist 4"},
+		{ID: "205", Name: "Similar Mock Artist 5"},
+		{ID: "206", Name: "Similar Mock Artist 6"},
+		{ID: "207", Name: "Similar Mock Artist 7"},
+		{ID: "208", Name: "Similar Mock Artist 8"},
+	}, nil
+}
+
 func (p *MockProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
 	return "Mock lyrics for testing", "[00:00.00] Mock lyrics for testing", nil
 }
