@@ -28,13 +28,13 @@ type Config struct {
 	MusicBrainzURL    string
 	FFmpegPath        string
 	FFprobePath       string
+	Theme             string
 	CacheTTL          time.Duration
 	RateLimitWindow   time.Duration
 	RateLimitRequests int
 	RateLimitBurst    int
 	SkipAuth          bool
 	DisableRateLimit  bool
-	Theme             string
 }
 
 // Load loads configuration from environment variables with defaults
