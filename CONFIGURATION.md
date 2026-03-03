@@ -7,8 +7,8 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | Variable | Default | Required | Description |
 |----------|---------|----------|-------------|
 | `PORT` | `8080` | No | HTTP server port (1-65535) |
-| `DB_PATH` | `navidrums.db` | No | SQLite database file path |
-| `DOWNLOADS_DIR` | `~/Downloads/navidrums` | No | Output directory for downloaded music |
+| `DB_PATH` | `navidrums.db` | No | SQLite database file path (Docker: `/data/navidrums.db`) |
+| `DOWNLOADS_DIR` | `~/Downloads/navidrums` | No | Output directory for downloaded music (Docker: `/music`) |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | No | Go template for file organization |
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | No | URL of the Hifi API provider |
 | `QUALITY` | `LOSSLESS` | No | Audio quality preference (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
@@ -173,22 +173,22 @@ When running in Docker, mount volumes for persistence:
 
 ```bash
 # Downloads directory
--v /host/path/to/music:/downloads
+-v /host/path/to/music:/music
 
-# Database file
--v /host/path/navidrums.db:/app/navidrums.db
+# Persistent data directory (database, etc.)
+-v /host/path/data:/data
 ```
 
-The container uses these internal paths:
-- Downloads: `/downloads`
-- Database: `/app/navidrums.db`
+The container uses these internal paths by default:
+- Downloads: `/music`
+- Data: `/data` (database is stored at `/data/navidrums.db`)
 
 ## Example .env File
 
 ```bash
 PORT=8080
-DB_PATH=navidrums.db
-DOWNLOADS_DIR=/downloads
+DB_PATH=/data/navidrums.db
+DOWNLOADS_DIR=/music
 PROVIDER_URL=https://your-hifi-api.com
 QUALITY=LOSSLESS
 LOG_LEVEL=info

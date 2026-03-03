@@ -12,13 +12,16 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o navidrums ./cmd/server
 FROM docker.io/library/alpine:3.19
 
 RUN apk --no-cache add ca-certificates tzdata ffmpeg
-
 WORKDIR /app
 
 COPY --from=builder /app/navidrums .
 
-EXPOSE 8080
+RUN mkdir /data && chmod 777 /data
 
-VOLUME ["/downloads"]
+ENV DB_PATH=/data/navidrums.db
+ENV DOWNLOADS_DIR=/music
+
+EXPOSE 8080
+VOLUME ["/data", "/music"]
 
 CMD ["./navidrums"]
