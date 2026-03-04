@@ -120,7 +120,7 @@ Environment variables:
 | `RATE_LIMIT_WINDOW` | `1m` | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | Burst requests allowed beyond rate limit |
 | `DISABLE_RATE_LIMIT` | `false` | Disable rate limiting (use when behind Cloudflare) |
-| `THEME` | `dracula` | Default application theme (can be overridden in Settings) |
+| `THEME` | `golden` | Default application theme (can be overridden in Settings) |
 | `FFMPEG_PATH` | (system) | Path to ffmpeg binary (required for MP4/M4A tagging) |
 | `FFPROBE_PATH` | (system) | Path to ffprobe binary |
 

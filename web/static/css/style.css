@@ -181,6 +181,47 @@
     --nav-border-color: rgba(167, 192, 128, 0.15);
 }
 
+[data-theme="golden"] {
+    --bg: #111111;
+    --card: #1a1a1a;
+    --input: #222222;
+    --border: rgba(212, 175, 55, 0.2);
+    --accent: #d4af37;
+    --accent-rgb: 212, 175, 55;
+    --accent-secondary: #aa8627;
+    --accent-glow: rgba(212, 175, 55, 0.15);
+    --text: #e0e0e0;
+    --text-dim: #a0a0a0;
+    --danger: #cf6679;
+    --success: #66cf8d;
+    --warning: #d4af37;
+
+    --shadow-accent: 0 8px 24px rgba(212, 175, 55, 0.2);
+    --shadow-danger: 0 8px 24px rgba(207, 102, 121, 0.15);
+    --shadow-success: 0 8px 24px rgba(102, 207, 141, 0.15);
+    --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 12px 48px rgba(0, 0, 0, 0.5);
+    --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.7);
+    --shadow-nav: 0 4px 24px rgba(0, 0, 0, 0.6);
+
+    --glass-bg: rgba(17, 17, 17, 0.95);
+    --bg-glow-1: rgba(212, 175, 55, 0.08);
+    --bg-glow-2: rgba(170, 134, 39, 0.05);
+    --bg-grid: rgba(212, 175, 55, 0.05);
+
+    /* Button Content Colors */
+    --accent-content: #111111;
+    --success-content: #111111;
+    --danger-content: #111111;
+    --warning-content: #111111;
+
+    /* Navbar Specifics */
+    --nav-text: #f0f0f0;
+    --nav-text-dim: #b0b0b0;
+    --nav-logo-gradient: linear-gradient(135deg, #d4af37, #f3e5ab, #d4af37);
+    --nav-border-color: rgba(212, 175, 55, 0.25);
+}
+
 *,
 *::before,
 *::after {

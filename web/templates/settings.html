@@ -31,6 +31,7 @@
             <option value="solarized-dark">Solarized Dark</option>
             <option value="vintage">Vintage</option>
             <option value="everforest">Everforest</option>
+            <option value="golden">Golden</option>
         </select>
         <button onclick="saveTheme()" class="btn btn-primary">Save</button>
         <button onclick="resetTheme()" class="btn btn-secondary">Reset to Default</button>
@@ -218,8 +219,8 @@
                     select.value = data.theme;
                     statusDiv.innerHTML = '<span class="badge badge-custom">Using custom theme (' + data.theme + ')</span>';
                 } else {
-                    select.value = data.default || 'dracula';
-                    statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'dracula') + ')</span>';
+                    select.value = data.default || 'golden';
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'golden') + ')</span>';
                 }
             });
     }

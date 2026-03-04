@@ -60,7 +60,7 @@ func Load() *Config {
 		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
 		SkipAuth:          getEnvBool("SKIP_AUTH", false),
 		DisableRateLimit:  getEnvBool("DISABLE_RATE_LIMIT", false),
-		Theme:             getEnv("THEME", "dracula"),
+		Theme:             getEnv("THEME", "golden"),
 		FFmpegPath:        getEnv("FFMPEG_PATH", ""),
 		FFprobePath:       getEnv("FFPROBE_PATH", ""),
 	}
