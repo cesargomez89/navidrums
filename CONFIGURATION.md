@@ -22,7 +22,7 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `RATE_LIMIT_WINDOW` | `1m` | No | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | No | Burst requests allowed beyond rate limit |
 | `SKIP_AUTH` | `false` | No | Set to `true` to disable authentication entirely |
-| `THEME` | `dracula` | No | Default application theme (can be overridden in Settings) |
+| `THEME` | `golden` | No | Default application theme (can be overridden in Settings) |
 | `FFMPEG_PATH` | (system) | No | Path to ffmpeg binary (required for MP4/M4A tagging - hi-res downloads often come as MP4) |
 | `FFPROBE_PATH` | (system) | No | Path to ffprobe binary |
 
@@ -199,7 +199,7 @@ NAVIDRUMS_PASSWORD=secure-password
 SUBDIR_TEMPLATE={{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}
 CACHE_TTL=12h
 MUSICBRAINZ_URL=https://musicbrainz.org/ws/2
-THEME=dracula
+THEME=golden
 ```
 
 See [.env.sample](../.env.sample) for a minimal example.

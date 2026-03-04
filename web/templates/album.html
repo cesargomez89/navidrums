@@ -50,12 +50,11 @@
             </div>
             {{end}}
         </div>
-
-        <div class="action-row mt-4">
-            <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
-                Album</button>
-            <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar"
-                hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
+        <div class="toolbar-row mt-4">
+          <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
+            Album</button>
+          <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar"
+            hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
         </div>
     </div>
 </div>

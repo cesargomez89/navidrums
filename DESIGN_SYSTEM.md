@@ -100,17 +100,6 @@ For list rows with image + content + actions.
 **Variants:**
 - `.item-actions--col` - vertical alignment for actions
 
-### Action Row (`.action-row`)
-
-For grouping multiple buttons.
-
-```html
-<div class="action-row">
-    <button class="btn btn-primary">Primary</button>
-    <button class="btn btn-outline">Secondary</button>
-</div>
-```
-
 ### Info Grid (`.info-grid`)
 
 For key-value data display.
@@ -132,7 +121,7 @@ For key-value data display.
 
 ### Toolbar (`.toolbar`)
 
-For search/filter bars.
+For search/filter bars or group buttons.
 
 ```html
 <div class="toolbar">

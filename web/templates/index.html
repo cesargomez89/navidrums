@@ -1,21 +1,19 @@
 {{define "content"}}
 <h1>Discover Music</h1>
 <div class="mb-6">
-    <form class="flex gap-2" style="flex-wrap: wrap;" onsubmit="return false;">
+    <form class="toolbar-row" onsubmit="return false;">
         <input type="text" name="q" class="flex-1 min-w-[200px]" placeholder="Search..." hx-get="/htmx/search"
             hx-target="#results" hx-include="[name='type']" hx-trigger="keyup[keyCode===13]" hx-timeout="30000"
             type="search" autocomplete="off" autofocus>
-        <div class="flex gap-2">
-            <select name="type" class="form-select" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q']"
-                hx-timeout="30000">
-                <option value="album">Album</option>
-                <option value="track">Track</option>
-                <option value="artist">Artist</option>
-                <option value="playlist">Playlist</option>
-            </select>
-            <button class="btn" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q'], [name='type']"
-                hx-timeout="30000">Search</button>
-        </div>
+        <select name="type" class="form-select" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q']"
+            hx-timeout="30000">
+            <option value="album">Album</option>
+            <option value="track">Track</option>
+            <option value="artist">Artist</option>
+            <option value="playlist">Playlist</option>
+        </select>
+        <button class="btn btn-lg" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q'], [name='type']"
+            hx-timeout="30000">Search</button>
     </form>
 </div>
 <div id="results"></div>

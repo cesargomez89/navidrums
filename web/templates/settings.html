@@ -25,12 +25,13 @@
 <div class="section">
     <h2>Theme Selector</h2>
     <p class="hint">Override the default application theme configured via environment variable.</p>
-    <div class="flex gap-2 items-center">
-        <select id="theme-select-input" class="form-select w-full" style="max-width: 200px;">
+    <div class="toolbar-row">
+        <select id="theme-select-input" class="form-select">
             <option value="dracula">Dracula</option>
             <option value="solarized-dark">Solarized Dark</option>
             <option value="vintage">Vintage</option>
             <option value="everforest">Everforest</option>
+            <option value="golden">Golden</option>
         </select>
         <button onclick="saveTheme()" class="btn btn-primary">Save</button>
         <button onclick="resetTheme()" class="btn btn-secondary">Reset to Default</button>
@@ -218,8 +219,8 @@
                     select.value = data.theme;
                     statusDiv.innerHTML = '<span class="badge badge-custom">Using custom theme (' + data.theme + ')</span>';
                 } else {
-                    select.value = data.default || 'dracula';
-                    statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'dracula') + ')</span>';
+                    select.value = data.default || 'golden';
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'golden') + ')</span>';
                 }
             });
     }
