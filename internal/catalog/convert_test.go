@@ -211,25 +211,33 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 		Items: []APIPlaylistItem{
 			{
 				Item: struct {
-					ID    json.Number "json:\"id\""
-					Title string      "json:\"title\""
-					ISRC  string      "json:\"isrc\""
-					Album struct {
-						ID    json.Number "json:\"id\""
-						Title string      "json:\"title\""
-						Cover FlexCover   "json:\"cover\""
-					} "json:\"album\""
-					Artists     []APIArtist "json:\"artists\""
-					TrackNumber int         "json:\"trackNumber\""
-					Duration    int         "json:\"duration\""
-					Explicit    bool        "json:\"explicit\""
+					ID            json.Number      `json:"id"`
+					Title         string           `json:"title"`
+					ISRC          string           `json:"isrc"`
+					AudioQuality  string           `json:"audioQuality"`
+					Artists       []APIArtist      `json:"artists"`
+					MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
+					Album         struct {
+						ID    json.Number `json:"id"`
+						Title string      `json:"title"`
+						Cover FlexCover   `json:"cover"`
+					} `json:"album"`
+					TrackNumber int  `json:"trackNumber"`
+					Duration    int  `json:"duration"`
+					Explicit    bool `json:"explicit"`
 				}{
 					ID:    json.Number("101"),
 					Title: "Playlist Track",
 					Artists: []APIArtist{
 						{ID: json.Number("1"), Name: "Artist"},
 					},
-					Duration: 180,
+					Album: struct {
+						ID    json.Number `json:"id"`
+						Title string      `json:"title"`
+						Cover FlexCover   `json:"cover"`
+					}{ID: json.Number("201"), Title: "Album", Cover: FlexCover{"cover-id"}},
+					Duration:     180,
+					AudioQuality: "LOSSLESS",
 				},
 			},
 		},
@@ -245,6 +253,9 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 	}
 	if playlist.Tracks[0].Title != "Playlist Track" {
 		t.Errorf("Expected Track Title 'Playlist Track', got %s", playlist.Tracks[0].Title)
+	}
+	if playlist.Tracks[0].AudioQuality != "LOSSLESS" {
+		t.Errorf("Expected AudioQuality 'LOSSLESS', got %s", playlist.Tracks[0].AudioQuality)
 	}
 }
 

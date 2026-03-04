@@ -846,3 +846,52 @@ func (h *Handler) SyncAllHTMX(w http.ResponseWriter, r *http.Request) {
 		"SyncEnqueued": count,
 	})
 }
+
+func (h *Handler) GetThemeHTMX(w http.ResponseWriter, r *http.Request) {
+	theme, err := h.SettingsRepo.Get(store.SettingTheme)
+	if err != nil {
+		h.Logger.Error("Failed to get theme", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"theme":   theme,
+		"default": h.Theme,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		h.Logger.Error("Failed to encode theme response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetThemeHTMX(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Theme string `json:"theme"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingTheme, req.Theme); err != nil {
+		h.Logger.Error("Failed to save theme setting", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) ResetThemeHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingTheme); err != nil {
+		h.Logger.Error("Failed to reset theme setting", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}

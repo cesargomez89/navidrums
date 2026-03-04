@@ -108,18 +108,20 @@
     <div class="section">
         <h2>Additional Information</h2>
         <div class="form-grid">
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group col-full">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" rows="3"
                     placeholder="Description...">{{.Track.Description}}</textarea>
             </div>
             <div class="form-group">
                 <label for="mood">Mood</label>
-                <input type="text" id="mood" name="mood" value="{{.Track.Mood}}" placeholder="e.g. Energetic, Chill, Melancholic">
+                <input type="text" id="mood" name="mood" value="{{.Track.Mood}}"
+                    placeholder="e.g. Energetic, Chill, Melancholic">
             </div>
             <div class="form-group">
                 <label for="style">Style</label>
-                <input type="text" id="style" name="style" value="{{.Track.Style}}" placeholder="e.g. Ambient, Techno, House">
+                <input type="text" id="style" name="style" value="{{.Track.Style}}"
+                    placeholder="e.g. Ambient, Techno, House">
             </div>
             <div class="form-group">
                 <label for="version">Version</label>
@@ -135,11 +137,11 @@
     <div class="section">
         <h2>Lyrics</h2>
         <div class="form-grid">
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group col-full">
                 <label for="lyrics">Unsynced Lyrics</label>
                 <textarea id="lyrics" name="lyrics" rows="4" placeholder="Lyrics text...">{{.Track.Lyrics}}</textarea>
             </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
+            <div class="form-group col-full">
                 <label for="subtitles">Subtitles (LRC format)</label>
                 <textarea id="subtitles" name="subtitles" rows="4"
                     placeholder="[00:12.00] Lyrics line...">{{.Track.Subtitles}}</textarea>
@@ -147,7 +149,7 @@
         </div>
     </div>
 
-    <div class="track-actions">
+    <div class="action-row mb-6">
         <button type="submit" class="btn btn-primary">Save to Database</button>
         <button type="submit" class="btn btn-warning" formaction="/htmx/track/{{.Track.ID}}/sync">Sync to File</button>
         <button type="submit" class="btn btn-outline" formaction="/htmx/track/{{.Track.ID}}/enrich">Enrich from
@@ -159,7 +161,7 @@
 </form>
 
 {{if .JobEnqueued}}
-<div class="alert alert-success" style="margin-bottom: 16px;">
+<div class="alert alert-success mb-4">
     {{if eq .JobEnqueuedType "sync_file"}}
     Sync job enqueued. Check the <a href="/queue">queue</a> for progress.
     {{else if eq .JobEnqueuedType "sync_hifi"}}
@@ -171,15 +173,15 @@
 {{end}}
 
 {{if .SaveSuccess}}
-<div class="alert alert-success" style="margin-bottom: 16px;">
+<div class="alert alert-success mb-4">
     Track saved to database successfully!
 </div>
 {{end}}
 
 {{if .ValidationErrors}}
-<div class="alert alert-error" style="margin-bottom: 16px;">
+<div class="alert alert-error mb-4">
     <strong>Validation Error{{if gt (len .ValidationErrors) 1}}s{{end}}:</strong>
-    <ul style="margin: 8px 0 0 16px;">
+    <ul class="mt-2" style="margin-left: 16px;">
         {{range $field, $msg := .ValidationErrors}}
         <li>{{$field}}: {{$msg}}</li>
         {{end}}
