@@ -348,7 +348,7 @@ h2 {
 
 /* Shared form-select (reusable across pages) */
 .form-select {
-    padding: 8px 12px;
+    padding: 12px;
     background: var(--input);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -1118,16 +1118,6 @@ textarea {
     align-items: center;
 }
 
-
-/* Action Row - for grouping buttons */
-.action-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    margin-top: 16px;
-}
-
 /* Info Grid - for key-value data display */
 .info-grid {
     display: grid;
@@ -1543,10 +1533,6 @@ textarea {
     }
 
     .page-header .text-sm {
-        justify-content: center;
-    }
-
-    .page-header .action-row {
         justify-content: center;
     }
 

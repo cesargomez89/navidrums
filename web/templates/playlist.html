@@ -9,9 +9,9 @@
             {{if .Playlist.Description}}<span>{{.Playlist.Description}}</span><span>&bull;</span>{{end}}
             <span>{{len .Playlist.Tracks}} tracks</span>
         </div>
-        <div class="action-row mt-4">
-            <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full
-                Playlist</button>
+        <div class="toolbar-row mt-4">
+          <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full
+            Playlist</button>
         </div>
     </div>
 </div>

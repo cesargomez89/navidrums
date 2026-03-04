@@ -10,13 +10,13 @@
             <span>&bull;</span>
             <span>{{len .Artist.TopTracks}} top tracks</span>
         </div>
-        <div class="action-row mt-4">
-            <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)">Download Top
-                Tracks</button>
-            <button class="btn btn-secondary" onclick="queueDownload('discography', '{{.Artist.ID}}', this)">Download
-                Discography</button>
-            <button class="btn btn-outline" hx-get="/htmx/artist/{{.Artist.ID}}/similar"
-                hx-target="#similar-artists-container" hx-swap="innerHTML">Similar Artists</button>
+        <div class="toolbar-row mt-4">
+          <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)">Download Top
+            Tracks</button>
+          <button class="btn btn-secondary" onclick="queueDownload('discography', '{{.Artist.ID}}', this)">Download
+            Discography</button>
+          <button class="btn btn-outline" hx-get="/htmx/artist/{{.Artist.ID}}/similar"
+            hx-target="#similar-artists-container" hx-swap="innerHTML">Similar Artists</button>
         </div>
     </div>
 </div>
