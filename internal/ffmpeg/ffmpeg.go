@@ -75,12 +75,16 @@ func buildArgs(inputPath string, meta *Metadata, coverPath string) []string {
 		args = append(args, "-i", coverPath)
 	}
 
-	args = append(args, "-movflags", "use_metadata_tags")
+	args = append(args, "-map_metadata", "-1")
+
 	if coverPath != "" {
-		args = append(args, "-map", "0", "-map", "1", "-c", "copy", "-disposition:v:0", "attached_pic")
+		args = append(args, "-map", "0", "-map", "1", "-c:a", "copy", "-c:v", "copy", "-disposition:v:0", "attached_pic")
 	} else {
-		args = append(args, "-map", "0", "-c", "copy")
+		args = append(args, "-map", "0", "-c:a", "copy")
 	}
+	args = append(args, "-f", "mp4")
+	args = append(args, "-brand", "M4A ")
+	args = append(args, "-movflags", "+faststart")
 
 	if meta.Title != "" {
 		args = append(args, "-metadata", fmt.Sprintf("title=%s", meta.Title))
