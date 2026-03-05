@@ -24,11 +24,13 @@ Override via `PROVIDER_URL` environment variable.
   - `al`: album query
   - `v`: video query
   - `p`: playlist query
+  - `limit`: int (default 25)
+  - `offset`: int (default 0)
 
 #### Artist
 - **GET `/artist/`**: 
-  - `id`: Get artist metadata + cover.
-  - `f`: Get artist content (albums, EPs/Singles).
+  - `id`: int. Get artist metadata + cover.
+  - `f`: int. Get artist content (albums, EPs/Singles).
   - `skip_tracks`: bool (default `false`). If `true` with `f`, returns `toptracks` (15) instead of aggregating all tracks from all albums.
 - **GET `/artist/similar/`**: Get similar artists.
   - `id`: int (required)
@@ -52,6 +54,14 @@ Override via `PROVIDER_URL` environment variable.
 #### Images
 - **GET `/cover/`**: Get album cover URLs.
   - `id`: int (track/album id) OR `q`: search query
+
+#### Videos
+- **GET `/topvideos/`**: Get recommended videos.
+  - `limit`: int (default 25)
+  - `offset`: int (default 0)
+- **GET `/video/`**: Get video playback info.
+  - `id`: int (required)
+  - `quality`: string (`HIGH`, `MEDIUM`, `LOW`)
 
 ### Design Notes
 - Uses `COUNTRY_CODE` (default `US`) for all requests.
