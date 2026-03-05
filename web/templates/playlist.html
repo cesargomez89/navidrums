@@ -10,13 +10,13 @@
             <span>{{len .Playlist.Tracks}} tracks</span>
         </div>
         <div class="toolbar-row mt-4">
-          <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full
-            Playlist</button>
+            <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ID}}', this)">Download Full
+                Playlist</button>
         </div>
     </div>
 </div>
 
-<div class="mb-6">
+<div class="mb-6 list-grid">
     {{range .Playlist.Tracks}}
     {{template "track_card.html" .}}
     {{end}}

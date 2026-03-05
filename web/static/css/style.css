@@ -368,8 +368,8 @@ nav a:hover::after {
 }
 
 main {
-    padding: 16px;
-    max-width: 800px;
+    padding: 24px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -792,7 +792,14 @@ button:active {
 /* Cards Grid */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+/* List Grid for wide rows like tracks */
+.list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 16px;
 }
 

@@ -28,7 +28,7 @@
 
 {{if .Tracks}}
 <h2>Tracks</h2>
-<div class="mb-6">
+<div class="mb-6 list-grid">
     {{range .Tracks}}
     {{template "track_card.html" .}}
     {{end}}

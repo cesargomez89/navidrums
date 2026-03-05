@@ -51,17 +51,17 @@
             {{end}}
         </div>
         <div class="toolbar-row mt-4">
-          <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
-            Album</button>
-          <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar"
-            hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
+            <button class="btn btn-primary" onclick="queueDownload('album', '{{.Album.ID}}', this)">Download Full
+                Album</button>
+            <button class="btn btn-outline" hx-get="/htmx/album/{{.Album.ID}}/similar"
+                hx-target="#similar-albums-container" hx-swap="innerHTML">Similar Albums</button>
         </div>
     </div>
 </div>
 
 <div id="similar-albums-container" class="mb-6"></div>
 
-<div class="mb-6">
+<div class="mb-6 list-grid">
     {{range .Album.Tracks}}
     {{template "track_card.html" .}}
     {{end}}

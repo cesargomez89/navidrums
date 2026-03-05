@@ -119,6 +119,17 @@ For key-value data display.
 - `.data-item--full` - spans full width
 - `.data-value--mono` - monospace font
 
+### List Grid (`.list-grid`)
+
+For displaying lists of wide items (like tracks or downloads) on larger screens. Uses a grid that switches to multiple columns on wide screens, minimum 400px per item.
+
+```html
+<div class="list-grid">
+    <div class="item">...</div>
+    <div class="item">...</div>
+</div>
+```
+
 ### Toolbar (`.toolbar`)
 
 For search/filter bars or group buttons.
