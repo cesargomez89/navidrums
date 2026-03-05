@@ -107,8 +107,8 @@ func TestDownloadsService_GetRecommendationSeeds(t *testing.T) {
 	// Now we should have all 3 types of seeds from different artists
 	// Note: track2 and track3 need ReleaseType="album" for AlbumID to be set for either
 	track2.ReleaseType = "album"
-	if err := db.UpdateTrackPartial(track2.ID, map[string]interface{}{"release_type": "album"}); err != nil {
-		t.Fatalf("Failed to update track 6: %v", err)
+	if updateErr := db.UpdateTrackPartial(track2.ID, map[string]interface{}{"release_type": "album"}); updateErr != nil {
+		t.Fatalf("Failed to update track 6: %v", updateErr)
 	}
 
 	seeds, err = svc.GetRecommendationSeeds()
