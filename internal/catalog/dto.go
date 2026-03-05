@@ -321,3 +321,41 @@ type APIPlaylistsSearchResponse struct {
 		} `json:"playlists"`
 	} `json:"data"`
 }
+
+type APIRecommendationsTrackItem struct {
+	Version      *string      `json:"version"`
+	Artist       APIArtist    `json:"artist"`
+	AudioQuality string       `json:"audioQuality"`
+	ISRC         string       `json:"isrc"`
+	Title        string       `json:"title"`
+	Copyright    string       `json:"copyright"`
+	Key          string       `json:"key"`
+	KeyScale     string       `json:"keyScale"`
+	URL          string       `json:"url"`
+	Album        APIAlbumStub `json:"album"`
+	Artists      []APIArtist  `json:"artists"`
+	MediaTags    []string     `json:"mediaTags"`
+	AudioModes   []string     `json:"audioModes"`
+	Popularity   int          `json:"popularity"`
+	ID           int          `json:"id"`
+	BPM          int          `json:"bpm"`
+	ReplayGain   float64      `json:"replayGain"`
+	Duration     int          `json:"duration"`
+	TrackNumber  int          `json:"trackNumber"`
+	Peak         float64      `json:"peak"`
+	Explicit     bool         `json:"explicit"`
+}
+
+type APIRecommendationsItem struct {
+	Sources []string                    `json:"sources"`
+	Track   APIRecommendationsTrackItem `json:"track"`
+}
+
+type APIRecommendationsResponse struct {
+	Data struct {
+		Items              []APIRecommendationsItem `json:"items"`
+		Limit              int                      `json:"limit"`
+		Offset             int                      `json:"offset"`
+		TotalNumberOfItems int                      `json:"totalNumberOfItems"`
+	} `json:"data"`
+}

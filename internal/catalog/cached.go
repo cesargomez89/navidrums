@@ -166,11 +166,81 @@ func (c *CachedProvider) GetStream(ctx context.Context, trackID string, quality 
 }
 
 func (c *CachedProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {
-	return c.provider.GetSimilarAlbums(ctx, id)
+	cacheKey := fmt.Sprintf("similar-albums:%s", id)
+
+	data, err := c.cache.GetCache(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if data != nil {
+		var albums []domain.Album
+		if unmarshalErr := json.Unmarshal(data, &albums); unmarshalErr == nil {
+			return albums, nil
+		}
+	}
+
+	albums, err := c.provider.GetSimilarAlbums(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if data, marshalErr := json.Marshal(albums); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	}
+
+	return albums, nil
 }
 
 func (c *CachedProvider) GetSimilarArtists(ctx context.Context, id string) ([]domain.Artist, error) {
-	return c.provider.GetSimilarArtists(ctx, id)
+	cacheKey := fmt.Sprintf("similar-artists:%s", id)
+
+	data, err := c.cache.GetCache(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if data != nil {
+		var artists []domain.Artist
+		if unmarshalErr := json.Unmarshal(data, &artists); unmarshalErr == nil {
+			return artists, nil
+		}
+	}
+
+	artists, err := c.provider.GetSimilarArtists(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if data, marshalErr := json.Marshal(artists); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	}
+
+	return artists, nil
+}
+
+func (c *CachedProvider) GetRecommendations(ctx context.Context, id string) ([]domain.CatalogTrack, error) {
+	cacheKey := fmt.Sprintf("track-recommendations:%s", id)
+
+	data, err := c.cache.GetCache(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+	if data != nil {
+		var tracks []domain.CatalogTrack
+		if unmarshalErr := json.Unmarshal(data, &tracks); unmarshalErr == nil {
+			return tracks, nil
+		}
+	}
+
+	tracks, err := c.provider.GetRecommendations(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if data, marshalErr := json.Marshal(tracks); marshalErr == nil {
+		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	}
+
+	return tracks, nil
 }
 
 func (c *CachedProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
