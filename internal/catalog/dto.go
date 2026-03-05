@@ -88,6 +88,7 @@ type APIAlbumTrackItem struct {
 
 type APIPlaylistItem struct {
 	Item struct {
+		Version       *string          `json:"version"`
 		ID            json.Number      `json:"id"`
 		Title         string           `json:"title"`
 		ISRC          string           `json:"isrc"`
@@ -136,7 +137,8 @@ type APIArtistAggregationResponse struct {
 		} `json:"items"`
 	} `json:"albums"`
 	Tracks []struct {
-		Album struct {
+		Version *string `json:"version"`
+		Album   struct {
 			ID    json.Number `json:"id"`
 			Title string      `json:"title"`
 			Cover string      `json:"cover"`
@@ -254,7 +256,8 @@ type APISearchAlbumItem struct {
 }
 
 type APISearchTrackItem struct {
-	Album struct {
+	Version *string `json:"version"`
+	Album   struct {
 		ID    json.Number `json:"id"`
 		Title string      `json:"title"`
 		Cover string      `json:"cover"`
