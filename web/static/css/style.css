@@ -709,6 +709,12 @@ button:active {
     text-transform: uppercase;
 }
 
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .font-medium {
     font-weight: 500;
 }
@@ -1673,5 +1679,47 @@ textarea {
     /* Form grid mobile */
     .form-grid {
         grid-template-columns: 1fr;
+    }
+
+    .list-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        width: 100% !important;
+        overflow-x: hidden;
+    }
+
+    .item {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .item-body {
+        min-width: 0 !important;
+        overflow: hidden;
+    }
+
+    .item-title,
+    .item-subtitle {
+        max-width: 100%;
+    }
+
+    nav {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+
+    .nav-logo {
+        margin-right: 0;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .nav-links {
+        gap: 16px;
+        width: auto;
+        justify-content: center;
     }
 }

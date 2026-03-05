@@ -224,7 +224,7 @@ func (s *DownloadsService) GetRecommendationSeeds() (*RecommendationSeeds, error
 		}
 
 		// Try to find an album seed (from a different artist and album than the track seed)
-		if seeds.AlbumID == "" && track.AlbumID != "" && !seenAlbums[track.AlbumID] && (artistID == "" || !seenArtists[artistID]) {
+		if seeds.AlbumID == "" && track.AlbumID != "" && strings.EqualFold(track.ReleaseType, "album") && !seenAlbums[track.AlbumID] && (artistID == "" || !seenArtists[artistID]) {
 			seeds.AlbumID = track.AlbumID
 			seeds.Album = track
 			seenAlbums[track.AlbumID] = true
