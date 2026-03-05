@@ -1,0 +1,48 @@
+{{define "recommendations"}}
+<div class="recommendations">
+    <div class="mb-6">
+        <h3 class="mb-4">Tracks</h3>
+        <p class="text-sm text-muted mb-4">Based on: {{if .TrackSeed}}{{.TrackSeed.Track.Title}} by
+            {{.TrackSeed.Track.Artist}}{{else}}N/A{{end}}</p>
+        {{if .TrackRecommendations}}
+        <div>
+            {{range .TrackRecommendations}}
+            {{template "track_card.html" .}}
+            {{end}}
+        </div>
+        {{else}}
+        <p>No track recommendations found.</p>
+        {{end}}
+    </div>
+
+    <div class="mb-6">
+        <h3 class="mb-4">Albums</h3>
+        <p class="text-sm text-muted mb-4">Based on: {{if .AlbumSeed}}{{.AlbumSeed.Album.Title}} by
+            {{.AlbumSeed.Album.Artist}}{{else}}N/A{{end}}</p>
+        {{if .AlbumRecommendations}}
+        <div class="grid">
+            {{range .AlbumRecommendations}}
+            {{template "album_card.html" .}}
+            {{end}}
+        </div>
+        {{else}}
+        <p>No album recommendations found.</p>
+        {{end}}
+    </div>
+
+    <div class="mb-6">
+        <h3 class="mb-4">Artists</h3>
+        <p class="text-sm text-muted mb-4">Based on: {{if .ArtistSeed}}{{.ArtistSeed.Artist.Artist}}{{else}}N/A{{end}}
+        </p>
+        {{if .ArtistRecommendations}}
+        <div class="grid">
+            {{range .ArtistRecommendations}}
+            {{template "artist_card.html" .}}
+            {{end}}
+        </div>
+        {{else}}
+        <p>No artist recommendations found.</p>
+        {{end}}
+    </div>
+</div>
+{{end}}

@@ -1,5 +1,8 @@
 {{define "content"}}
 <h1>Discover Music</h1>
+<div class="mb-2">
+    <button class="btn btn-outline" hx-get="/htmx/lucky" hx-target="#results" hx-swap="innerHTML">Lucky?</button>
+</div>
 <div class="mb-6">
     <form class="toolbar-row" onsubmit="return false;">
         <input type="text" name="q" class="flex-1 min-w-[200px]" placeholder="Search..." hx-get="/htmx/search"

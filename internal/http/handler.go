@@ -47,6 +47,7 @@ func (h *Handler) ParseTemplates() {
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/", h.SearchPage)
 	r.Get("/htmx/search", h.SearchHTMX)
+	r.Get("/htmx/lucky", h.LuckyHTMX)
 	r.Get("/artist/{id}", h.ArtistPage)
 	r.Get("/album/{id}", h.AlbumPage)
 	r.Get("/htmx/album/{id}/similar", h.SimilarAlbumsHTMX)

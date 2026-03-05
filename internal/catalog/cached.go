@@ -173,6 +173,10 @@ func (c *CachedProvider) GetSimilarArtists(ctx context.Context, id string) ([]do
 	return c.provider.GetSimilarArtists(ctx, id)
 }
 
+func (c *CachedProvider) GetRecommendations(ctx context.Context, id string) ([]domain.CatalogTrack, error) {
+	return c.provider.GetRecommendations(ctx, id)
+}
+
 func (c *CachedProvider) GetLyrics(ctx context.Context, trackID string) (string, string, error) {
 	return c.provider.GetLyrics(ctx, trackID)
 }

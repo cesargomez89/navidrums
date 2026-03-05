@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,6 +14,15 @@ import (
 	"github.com/cesargomez89/navidrums/internal/storage"
 	"github.com/cesargomez89/navidrums/internal/store"
 )
+
+type RecommendationSeeds struct {
+	TrackID  string
+	AlbumID  string
+	ArtistID string
+	Track    *domain.Track
+	Album    *domain.Track
+	Artist   *domain.Track
+}
 
 type DownloadsService struct {
 	Repo   *store.DB
@@ -173,4 +183,49 @@ func (s *DownloadsService) EnqueueSyncJobs() (int, error) {
 	}
 
 	return count, nil
+}
+
+func (s *DownloadsService) GetRecommendationSeeds() (*RecommendationSeeds, error) {
+	tracks, err := s.Repo.ListCompletedTracks(0, 10)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tracks: %w", err)
+	}
+
+	if len(tracks) == 0 {
+		return nil, nil
+	}
+
+	seeds := &RecommendationSeeds{}
+
+	rand.Shuffle(len(tracks), func(i, j int) {
+		tracks[i], tracks[j] = tracks[j], tracks[i]
+	})
+
+	seenAlbums := make(map[string]bool)
+	seenArtists := make(map[string]bool)
+
+	for _, track := range tracks {
+		if seeds.TrackID == "" && track.ProviderID != "" {
+			seeds.TrackID = track.ProviderID
+			seeds.Track = track
+		}
+
+		if seeds.AlbumID == "" && track.AlbumID != "" && !seenAlbums[track.AlbumID] {
+			seeds.AlbumID = track.AlbumID
+			seeds.Album = track
+			seenAlbums[track.AlbumID] = true
+		}
+
+		if seeds.ArtistID == "" && len(track.ArtistIDs) > 0 && !seenArtists[track.ArtistIDs[0]] {
+			seeds.ArtistID = track.ArtistIDs[0]
+			seeds.Artist = track
+			seenArtists[track.ArtistIDs[0]] = true
+		}
+
+		if seeds.TrackID != "" && seeds.AlbumID != "" && seeds.ArtistID != "" {
+			break
+		}
+	}
+
+	return seeds, nil
 }
