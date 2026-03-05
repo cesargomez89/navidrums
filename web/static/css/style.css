@@ -1685,6 +1685,7 @@ textarea {
         grid-template-columns: minmax(0, 1fr) !important;
         width: 100% !important;
         overflow-x: hidden;
+        gap: 12px;
     }
 
     .item {
