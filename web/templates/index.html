@@ -1,5 +1,6 @@
 {{define "content"}}
 <h1>Discover Music</h1>
+
 <div class="mb-6">
     <form class="toolbar-row" onsubmit="return false;">
         <input type="text" name="q" class="flex-1 min-w-[200px]" placeholder="Search..." hx-get="/htmx/search"
@@ -16,5 +17,9 @@
             hx-timeout="30000">Search</button>
     </form>
 </div>
-<div id="results"></div>
+<div id="results" hx-get="/htmx/lucky" hx-trigger="load" hx-swap="innerHTML">
+    <div class="flex justify-center items-center py-12 text-muted">
+        Loading your recommendations...
+    </div>
+</div>
 {{end}}

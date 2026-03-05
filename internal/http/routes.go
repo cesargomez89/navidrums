@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -42,6 +45,112 @@ func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.RenderFragment(w, "search_results.html", results)
+}
+
+type RecommendationsData struct {
+	TrackSeed             *app.RecommendationSeeds
+	AlbumSeed             *app.RecommendationSeeds
+	ArtistSeed            *app.RecommendationSeeds
+	TrackRecommendations  []interface{}
+	AlbumRecommendations  []interface{}
+	ArtistRecommendations []interface{}
+}
+
+func (h *Handler) LuckyHTMX(w http.ResponseWriter, r *http.Request) {
+	h.recsMutex.RLock()
+	if h.cachedRecs != nil && time.Since(h.cachedRecsTime) < 5*time.Minute {
+		data := *h.cachedRecs
+		h.recsMutex.RUnlock()
+		h.RenderFragment(w, "recommendations.html", data)
+		return
+	}
+	h.recsMutex.RUnlock()
+
+	seeds, err := h.DownloadsService.GetRecommendationSeeds()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if seeds == nil {
+		_, _ = w.Write([]byte("<p>No downloads found. Download some music first!</p>"))
+		return
+	}
+
+	data := RecommendationsData{
+		TrackSeed:  seeds,
+		AlbumSeed:  seeds,
+		ArtistSeed: seeds,
+	}
+
+	provider := h.ProviderManager.GetProvider()
+
+	var wg sync.WaitGroup
+	var trackErr, albumErr, artistErr error
+
+	if seeds.TrackID != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			tracks, err := provider.GetRecommendations(r.Context(), seeds.TrackID)
+			if err != nil {
+				trackErr = err
+				return
+			}
+			var iface []interface{}
+			for i := range tracks {
+				iface = append(iface, tracks[i])
+			}
+			data.TrackRecommendations = iface
+		}()
+	}
+
+	if seeds.AlbumID != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			albums, err := provider.GetSimilarAlbums(r.Context(), seeds.AlbumID)
+			if err != nil {
+				albumErr = err
+				return
+			}
+			var iface []interface{}
+			for i := range albums {
+				iface = append(iface, albums[i])
+			}
+			data.AlbumRecommendations = iface
+		}()
+	}
+
+	if seeds.ArtistID != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			artists, err := provider.GetSimilarArtists(r.Context(), seeds.ArtistID)
+			if err != nil {
+				artistErr = err
+				return
+			}
+			var iface []interface{}
+			for i := range artists {
+				iface = append(iface, artists[i])
+			}
+			data.ArtistRecommendations = iface
+		}()
+	}
+
+	wg.Wait()
+
+	if trackErr != nil || albumErr != nil || artistErr != nil {
+		h.Logger.Error("Failed to get recommendations", "track_error", trackErr, "album_error", albumErr, "artist_error", artistErr)
+	}
+
+	h.recsMutex.Lock()
+	h.cachedRecs = &data
+	h.cachedRecsTime = time.Now()
+	h.recsMutex.Unlock()
+
+	h.RenderFragment(w, "recommendations.html", data)
 }
 
 func (h *Handler) ArtistPage(w http.ResponseWriter, r *http.Request) {

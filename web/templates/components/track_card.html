@@ -1,9 +1,9 @@
-<div class="item item-bordered mb-2">
+<div class="item item-bordered">
     <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
         alt="{{.Title}}" class="item-img">
     <div class="item-body">
-        <div class="item-title">{{.Title}}</div>
-        <div class="item-subtitle">
+        <div class="item-title truncate">{{.Title}}{{if .Version}} ({{.Version}}){{end}}</div>
+        <div class="item-subtitle truncate">
             <a href="/artist/{{.ArtistID}}" class="text-dim hover:text-accent">{{.Artist}}</a> •
             <a href="/album/{{.AlbumID}}" class="text-dim hover:text-accent">{{.Album}}</a>
         </div>

@@ -368,8 +368,8 @@ nav a:hover::after {
 }
 
 main {
-    padding: 16px;
-    max-width: 800px;
+    padding: 24px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -709,6 +709,12 @@ button:active {
     text-transform: uppercase;
 }
 
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .font-medium {
     font-weight: 500;
 }
@@ -792,7 +798,14 @@ button:active {
 /* Cards Grid */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+/* List Grid for wide rows like tracks */
+.list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 16px;
 }
 
@@ -804,19 +817,20 @@ button:active {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.15s ease;
     box-shadow: var(--shadow-card);
     position: relative;
     overflow: hidden;
+    will-change: transform;
 }
 
 .card::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-glow, rgba(var(--accent-rgb), 0.05)), transparent 100%);
+    background: radial-gradient(circle at center, var(--accent-glow, rgba(var(--accent-rgb), 0.05)), transparent 70%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
     pointer-events: none;
 }
 
@@ -825,9 +839,9 @@ button:active {
 }
 
 .card:hover {
-    transform: translateY(-4px) scale(1.01);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-card-hover);
-    border-color: rgba(var(--accent-rgb), 0.4);
+    border-color: rgba(var(--accent-rgb), 0.35);
 }
 
 .card-img-wrapper {
@@ -844,11 +858,11 @@ button:active {
     object-fit: cover;
     background: var(--shimmer-bg);
     background-size: 200px 100%;
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
 }
 
 .card:hover img {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 .card-title {
@@ -1665,5 +1679,48 @@ textarea {
     /* Form grid mobile */
     .form-grid {
         grid-template-columns: 1fr;
+    }
+
+    .list-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+        width: 100% !important;
+        overflow-x: hidden;
+        gap: 12px;
+    }
+
+    .item {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .item-body {
+        min-width: 0 !important;
+        overflow: hidden;
+    }
+
+    .item-title,
+    .item-subtitle {
+        max-width: 100%;
+    }
+
+    nav {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+
+    .nav-logo {
+        margin-right: 0;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .nav-links {
+        gap: 16px;
+        width: auto;
+        justify-content: center;
     }
 }

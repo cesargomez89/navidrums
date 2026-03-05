@@ -10,24 +10,28 @@
         <input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" title="Select all">
         <span class="text-sm text-dim">Select all</span>
     </div>
-    {{range .Downloads}}
-    <div class="item item-bordered" id="download-{{.ProviderID}}">
-        <div class="flex items-center gap-3 w-full">
-            <input type="checkbox" class="download-cb flex-shrink-0" value="{{.ProviderID}}"
-                onchange="onSelectionChange()" title="Select">
-            <div class="item-body">
-                <div class="item-title"><a href="/track/{{.ID}}" class="hover:text-accent">{{.Title}}</a></div>
-                <div class="item-subtitle">{{.Artist}} - {{.Album}}{{if .Genre}} - {{.Genre}}{{end}}</div>
-            </div>
-            <div class="item-actions item-actions--col items-end">
-                <div class="text-xs text-dim">
-                    {{if .CompletedAt}}{{.CompletedAt.Format "Jan 02, 2006"}}{{else}}N/A{{end}}
+    <div class="list-grid">
+        {{range .Downloads}}
+        <div class="item item-bordered" id="download-{{.ProviderID}}">
+            <div class="flex items-center gap-3 w-full">
+                <input type="checkbox" class="download-cb flex-shrink-0" value="{{.ProviderID}}"
+                    onchange="onSelectionChange()" title="Select">
+                <div class="item-body">
+                    <div class="item-title"><a href="/track/{{.ID}}" class="hover:text-accent">{{.Title}}{{if .Version}}
+                            ({{.Version}}){{end}}</a></div>
+                    <div class="item-subtitle">{{.Artist}} - {{.Album}}{{if .Genre}} - {{.Genre}}{{end}}</div>
                 </div>
-                <button onclick="deleteDownload('{{.ProviderID}}')" class="btn btn-outline btn-sm mt-1">Delete</button>
+                <div class="item-actions item-actions--col items-end">
+                    <div class="text-xs text-dim">
+                        {{if .CompletedAt}}{{.CompletedAt.Format "Jan 02, 2006"}}{{else}}N/A{{end}}
+                    </div>
+                    <button onclick="deleteDownload('{{.ProviderID}}')"
+                        class="btn btn-outline btn-sm mt-1">Delete</button>
+                </div>
             </div>
         </div>
+        {{end}}
     </div>
-    {{end}}
 </div>
 <script>onSelectionChange();</script>
 {{else}}

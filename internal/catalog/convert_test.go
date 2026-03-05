@@ -57,7 +57,8 @@ func TestAPIArtistAggregationResponse_ToTopTracks(t *testing.T) {
 	p := &HifiProvider{}
 	resp := APIArtistAggregationResponse{}
 	resp.Tracks = []struct {
-		Album struct {
+		Version *string "json:\"version\""
+		Album   struct {
 			ID    json.Number "json:\"id\""
 			Title string      "json:\"title\""
 			Cover string      "json:\"cover\""
@@ -211,6 +212,7 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 		Items: []APIPlaylistItem{
 			{
 				Item: struct {
+					Version       *string          `json:"version"`
 					ID            json.Number      `json:"id"`
 					Title         string           `json:"title"`
 					ISRC          string           `json:"isrc"`

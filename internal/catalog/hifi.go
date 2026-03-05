@@ -264,6 +264,15 @@ func (p *HifiProvider) GetLyrics(ctx context.Context, trackID string) (string, s
 	return resp.Lyrics.Lyrics, resp.Lyrics.Subtitles, nil
 }
 
+func (p *HifiProvider) GetRecommendations(ctx context.Context, id string) ([]domain.CatalogTrack, error) {
+	u := fmt.Sprintf("%s/recommendations/?id=%s&limit=8", p.BaseURL, id)
+	var resp APIRecommendationsResponse
+	if err := p.get(ctx, u, &resp); err != nil {
+		return nil, err
+	}
+	return resp.ToDomain(p), nil
+}
+
 func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {

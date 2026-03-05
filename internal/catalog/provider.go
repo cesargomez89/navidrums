@@ -17,4 +17,5 @@ type Provider interface {
 	GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error)
 	GetSimilarArtists(ctx context.Context, id string) ([]domain.Artist, error)
 	GetLyrics(ctx context.Context, trackID string) (string, string, error)
+	GetRecommendations(ctx context.Context, id string) ([]domain.CatalogTrack, error)
 }

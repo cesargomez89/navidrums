@@ -47,6 +47,9 @@ func (r APIArtistAggregationResponse) ToTopTracks(p *HifiProvider) []domain.Cata
 			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 		})
+		if item.Version != nil {
+			tracks[len(tracks)-1].Version = *item.Version
+		}
 	}
 	return tracks
 }
@@ -139,6 +142,9 @@ func (r APIAlbumTrackItem) ToDomain(album *domain.Album) domain.CatalogTrack {
 		Genre:          album.Genre,
 		Label:          album.Label,
 	}
+	if r.Version != nil {
+		track.Version = *r.Version
+	}
 	return track
 }
 
@@ -185,6 +191,9 @@ func (r APIPlaylistResponse) ToDomain(p *HifiProvider) *domain.Playlist {
 			ExplicitLyrics: item.Explicit,
 			AudioQuality:   resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 		})
+		if item.Version != nil {
+			pl.Tracks[len(pl.Tracks)-1].Version = *item.Version
+		}
 	}
 
 	return pl
@@ -251,6 +260,9 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 		Label:          data.Album.Label,
 		Genre:          data.Album.Genre,
 	}
+	if data.Version != nil {
+		track.Version = *data.Version
+	}
 
 	return track
 }
@@ -284,6 +296,50 @@ func (r APISimilarArtistsResponse) ToDomain(p *HifiProvider) []domain.Artist {
 		})
 	}
 	return artists
+}
+
+func (r APIRecommendationsResponse) ToDomain(p *HifiProvider) []domain.CatalogTrack {
+	var tracks []domain.CatalogTrack
+	for _, item := range r.Data.Items {
+		var artists []string
+		var artistIDs []string
+		for _, a := range item.Track.Artists {
+			artists = append(artists, a.Name)
+			artistIDs = append(artistIDs, formatID(a.ID))
+		}
+		if len(artists) == 0 {
+			artists = []string{item.Track.Artist.Name}
+			artistIDs = []string{formatID(item.Track.Artist.ID)}
+		}
+
+		track := domain.CatalogTrack{
+			ID:             fmt.Sprintf("%d", item.Track.ID),
+			Title:          item.Track.Title,
+			ArtistID:       artistIDs[0],
+			Artist:         artists[0],
+			Artists:        artists,
+			ArtistIDs:      artistIDs,
+			AlbumID:        formatID(item.Track.Album.ID),
+			Album:          item.Track.Album.Title,
+			TrackNumber:    item.Track.TrackNumber,
+			Duration:       item.Track.Duration,
+			AudioQuality:   resolveAudioQuality(item.Track.AudioQuality, item.Track.MediaTags),
+			AlbumArtURL:    p.ensureAbsoluteURL(item.Track.Album.Cover[0], "640x640"),
+			BPM:            item.Track.BPM,
+			Key:            item.Track.Key,
+			KeyScale:       item.Track.KeyScale,
+			ReplayGain:     item.Track.ReplayGain,
+			Peak:           item.Track.Peak,
+			ISRC:           item.Track.ISRC,
+			Copyright:      item.Track.Copyright,
+			ExplicitLyrics: item.Track.Explicit,
+		}
+		if item.Track.Version != nil {
+			track.Version = *item.Track.Version
+		}
+		tracks = append(tracks, track)
+	}
+	return tracks
 }
 
 func (r APIArtistsSearchResponse) ToDomain(p *HifiProvider) []domain.Artist {
@@ -343,6 +399,9 @@ func (r APITracksSearchResponse) ToDomain(p *HifiProvider) []domain.CatalogTrack
 			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 		})
+		if item.Version != nil {
+			tracks[len(tracks)-1].Version = *item.Version
+		}
 	}
 	return tracks
 }

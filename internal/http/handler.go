@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/form/v4"
@@ -17,6 +19,7 @@ import (
 )
 
 type Handler struct {
+	cachedRecsTime   time.Time
 	JobService       *app.JobService
 	DownloadsService *app.DownloadsService
 	ProviderManager  *catalog.ProviderManager
@@ -24,7 +27,9 @@ type Handler struct {
 	Templates        *template.Template
 	Logger           *logger.Logger
 	FormDecoder      *form.Decoder
+	cachedRecs       *RecommendationsData
 	Theme            string
+	recsMutex        sync.RWMutex
 }
 
 func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
@@ -47,6 +52,7 @@ func (h *Handler) ParseTemplates() {
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/", h.SearchPage)
 	r.Get("/htmx/search", h.SearchHTMX)
+	r.Get("/htmx/lucky", h.LuckyHTMX)
 	r.Get("/artist/{id}", h.ArtistPage)
 	r.Get("/album/{id}", h.AlbumPage)
 	r.Get("/htmx/album/{id}/similar", h.SimilarAlbumsHTMX)
