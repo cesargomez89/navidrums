@@ -146,7 +146,6 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 	addCustom("AUDIO_MODE", track.AudioModes)
 	addCustom("KEY", track.Key)
 	addCustom("KEY_SCALE", track.KeyScale)
-	addCustom("VERSION", track.Version)
 	addCustom("URL", track.URL)
 
 	if track.ReplayGain != 0 {
