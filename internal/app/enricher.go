@@ -2,8 +2,10 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -165,8 +167,12 @@ func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *m
 }
 
 func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domain.CatalogTrack, logger *slog.Logger) {
-	if track.Title == "" && ct.Title != "" {
-		track.Title = ct.Title
+	if ct.Title != "" {
+		title := ct.Title
+		if ct.Version != "" && !strings.Contains(strings.ToLower(title), strings.ToLower(ct.Version)) {
+			title = fmt.Sprintf("%s (%s)", title, ct.Version)
+		}
+		track.Title = title
 	}
 	if track.Artist == "" && ct.Artist != "" {
 		track.Artist = ct.Artist

@@ -2,6 +2,7 @@ package tagging
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
@@ -57,6 +58,13 @@ func TestNewVorbisComment(t *testing.T) {
 	check("BPM", "120")
 	check("COMPILATION", "1")
 	check("MUSICBRAINZ_ARTISTID", "id1; id2")
+
+	// Ensure VERSION is NOT present
+	for _, entry := range vc.Comments {
+		if strings.HasPrefix(entry, "VERSION=") {
+			t.Errorf("VERSION tag should not be present, but found: %s", entry)
+		}
+	}
 }
 
 func TestNewVorbisComment_MultiArtist(t *testing.T) {
