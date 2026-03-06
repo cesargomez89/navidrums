@@ -161,3 +161,26 @@ func writeTempCover(data []byte) (string, error) {
 
 	return tmpFile, nil
 }
+
+func ConvertToFLAC(ctx context.Context, inputPath string) (string, error) {
+	ext := filepath.Ext(inputPath)
+	outputPath := inputPath[:len(inputPath)-len(ext)] + ".flac"
+
+	args := []string{
+		"-y",
+		"-i", inputPath,
+		"-map", "0:a",
+		"-c:a", "flac",
+		"-compression_level", "8",
+		outputPath,
+	}
+
+	// #nosec G204 - variable used to specify ffmpeg binary path from config
+	cmd := exec.CommandContext(ctx, ffmpegBin, args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("ffmpeg conversion to FLAC failed: %w, output: %s", err, string(output))
+	}
+
+	return outputPath, nil
+}
