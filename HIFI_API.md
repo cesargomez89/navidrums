@@ -1,7 +1,7 @@
 ## Hifi API (External Service)
 
 ### Base URL
-Default: `http://127.0.0.1:8000`  
+Default: `http://127.0.0.1:8000` (Replace with a real hifi-api url. Some urls may return HI_RES_LOSSLESS 30 seconds track previews instead of full-length streams.)
 Override via `PROVIDER_URL` environment variable.
 
 ### Endpoints

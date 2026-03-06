@@ -10,6 +10,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/config"
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
+	"github.com/cesargomez89/navidrums/internal/ffmpeg"
 	"github.com/cesargomez89/navidrums/internal/storage"
 )
 
@@ -32,6 +33,8 @@ func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
 	provider := d.providerManager.GetProvider()
 
+	shouldConvertToFLAC := d.config.Quality == constants.QualityHiResLossless
+
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
 		select {
 		case <-ctx.Done():
@@ -53,9 +56,9 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 			ext = constants.ExtMP3
 		}
 
-		finalPath := destPathNoExt + ext
+		downloadPath := destPathNoExt + ext
 
-		f, err := storage.CreateFile(finalPath)
+		f, err := storage.CreateFile(downloadPath)
 		if err != nil {
 			_ = stream.Close()
 			continue
@@ -65,11 +68,29 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		_ = stream.Close()
 		_ = f.Close()
 
-		if err == nil {
-			return finalPath, nil
+		if err != nil {
+			_ = storage.RemoveFile(downloadPath)
+			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
+			continue
 		}
 
-		time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
+		if shouldConvertToFLAC && mimeType == constants.MimeTypeMP4 {
+			flacPath, convErr := ffmpeg.ConvertToFLAC(ctx, downloadPath)
+			if convErr != nil {
+				_ = storage.RemoveFile(downloadPath)
+				time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
+				continue
+			}
+
+			if err := storage.RemoveFile(downloadPath); err != nil {
+				// We won't retry just because cleanup failed, success is the .flac
+				return flacPath, nil
+			}
+
+			return flacPath, nil
+		}
+
+		return downloadPath, nil
 	}
 
 	return "", fmt.Errorf("download failed after %d attempts", constants.DefaultRetryCount)

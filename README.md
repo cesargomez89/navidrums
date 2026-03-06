@@ -126,6 +126,9 @@ Environment variables:
 
 ffmpeg and ffprobe are automatically detected most of the times, but you can override them with the above variables if needed.
 
+For HI_RES_LOSSLESS, some Hifi API providers may return a 30-second preview instead of the full-length stream.
+Switch to a different provider or change the quality to LOSSLESS to get the full-length stream.
+
 **Template Variables:**
 
 The `SUBDIR_TEMPLATE` uses Go's `text/template` syntax. Available variables:
