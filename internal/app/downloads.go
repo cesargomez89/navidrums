@@ -210,7 +210,6 @@ func (s *DownloadsService) GetRecommendationSeeds() (*RecommendationSeeds, error
 			artistID = track.ArtistIDs[0]
 		}
 
-		// Try to find a track seed
 		if seeds.TrackID == "" && track.ProviderID != "" {
 			seeds.TrackID = track.ProviderID
 			seeds.Track = track
@@ -220,10 +219,9 @@ func (s *DownloadsService) GetRecommendationSeeds() (*RecommendationSeeds, error
 			if track.AlbumID != "" {
 				seenAlbums[track.AlbumID] = true
 			}
-			continue // Move to next track to find other seeds for variety
+			continue
 		}
 
-		// Try to find an album seed (from a different artist and album than the track seed)
 		if seeds.AlbumID == "" && track.AlbumID != "" && strings.EqualFold(track.ReleaseType, "album") && !seenAlbums[track.AlbumID] && (artistID == "" || !seenArtists[artistID]) {
 			seeds.AlbumID = track.AlbumID
 			seeds.Album = track
@@ -234,7 +232,6 @@ func (s *DownloadsService) GetRecommendationSeeds() (*RecommendationSeeds, error
 			continue
 		}
 
-		// Try to find an artist seed (from a different artist than the track and album seeds)
 		if seeds.ArtistID == "" && artistID != "" && !seenArtists[artistID] {
 			seeds.ArtistID = artistID
 			seeds.Artist = track
