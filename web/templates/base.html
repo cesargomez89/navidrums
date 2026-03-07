@@ -24,6 +24,77 @@
     <main>
         {{block "content" .}}{{end}}
     </main>
+
+    <script>
+        var currentAudio = null;
+        var currentTrackId = null;
+        var currentButton = null;
+        var isPlaying = false;
+
+        function playTrack(btn, providerId, title, artist, artUrl) {
+            var quality = 'HIGH';
+
+            if (currentTrackId === providerId && isPlaying) {
+                togglePlay(btn);
+                return;
+            }
+
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            if (currentButton) {
+                currentButton.querySelector('.btn-text').textContent = 'Play';
+            }
+
+            currentTrackId = providerId;
+            currentButton = btn;
+            var streamUrl = '/stream/' + encodeURIComponent(providerId) + '?quality=' + quality;
+
+            currentAudio = new Audio(streamUrl);
+            currentAudio.play().then(function() {
+                isPlaying = true;
+                btn.querySelector('.btn-text').textContent = 'Pause';
+            }).catch(function(err) {
+                console.error('Playback failed:', err);
+            });
+
+            currentAudio.onended = function() {
+                isPlaying = false;
+                btn.querySelector('.btn-text').textContent = 'Play';
+                currentAudio = null;
+                currentTrackId = null;
+                currentButton = null;
+            };
+        }
+
+        function togglePlay(btn) {
+            if (!currentAudio) return;
+            if (isPlaying) {
+                currentAudio.pause();
+                isPlaying = false;
+                btn.querySelector('.btn-text').textContent = 'Play';
+            } else {
+                currentAudio.play();
+                isPlaying = true;
+                btn.querySelector('.btn-text').textContent = 'Pause';
+            }
+        }
+
+        function stopTrack() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+                isPlaying = false;
+                currentTrackId = null;
+            }
+            if (currentButton) {
+                currentButton.querySelector('.btn-text').textContent = 'Play';
+                currentButton = null;
+            }
+        }
+    </script>
 </body>
 
 </html>
