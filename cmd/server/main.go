@@ -118,7 +118,7 @@ func main() {
 	})
 
 	// Routes
-	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo)
+	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo, cfg)
 	h.Theme = cfg.Theme
 	h.RegisterRoutes(r)
 

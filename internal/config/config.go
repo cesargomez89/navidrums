@@ -20,6 +20,7 @@ type Config struct {
 	DownloadsDir      string
 	ProviderURL       string
 	Quality           string
+	PlayQuality       string
 	LogLevel          string
 	LogFormat         string
 	Username          string
@@ -48,6 +49,7 @@ func Load() *Config {
 		DownloadsDir:      getEnv("DOWNLOADS_DIR", defaultDownload),
 		ProviderURL:       getEnv("PROVIDER_URL", constants.DefaultProviderURL),
 		Quality:           getEnv("QUALITY", constants.DefaultQuality),
+		PlayQuality:       getEnv("PLAY_QUALITY", "HIGH"),
 		LogLevel:          getEnv("LOG_LEVEL", "info"),
 		LogFormat:         getEnv("LOG_FORMAT", "text"),
 		Username:          getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),

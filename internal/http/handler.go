@@ -13,6 +13,7 @@ import (
 
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
+	"github.com/cesargomez89/navidrums/internal/config"
 	"github.com/cesargomez89/navidrums/internal/logger"
 	"github.com/cesargomez89/navidrums/internal/store"
 	"github.com/cesargomez89/navidrums/web"
@@ -24,6 +25,7 @@ type Handler struct {
 	DownloadsService *app.DownloadsService
 	ProviderManager  *catalog.ProviderManager
 	SettingsRepo     *store.SettingsRepo
+	Config           *config.Config
 	Templates        *template.Template
 	Logger           *logger.Logger
 	FormDecoder      *form.Decoder
@@ -32,12 +34,13 @@ type Handler struct {
 	recsMutex        sync.RWMutex
 }
 
-func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo) *Handler {
+func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo, cfg *config.Config) *Handler {
 	h := &Handler{
 		JobService:       js,
 		DownloadsService: ds,
 		ProviderManager:  pm,
 		SettingsRepo:     sr,
+		Config:           cfg,
 		Logger:           logger.Default(),
 		FormDecoder:      form.NewDecoder(),
 	}
@@ -75,6 +78,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/downloads/bulk-sync", h.BulkSyncHTMX)
 	r.Post("/htmx/downloads/bulk-genre", h.BulkUpdateGenreHTMX)
 	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
+
+	r.Get("/stream/{id}", h.StreamTrack)
 
 	r.Get("/track/{id}", h.TrackPage)
 	r.Get("/htmx/track/{id}", h.TrackHTMX)
