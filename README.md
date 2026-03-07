@@ -7,6 +7,7 @@ Optimized for low-end hardware.
 
 ### Core Functionality
 - **Browse & Search**: Discover artists, albums, playlists, and tracks from remote Hifi API
+- **Stream Preview**: Play tracks directly from search results with play/pause controls on track cards
 - **Download Queue**: Asynchronous job queuing with configurable concurrency control
 - **Provider Management**: Switch between multiple Hifi API endpoints and add custom providers
 - **Quality Selection**: Choose from LOSSLESS, HI_RES_LOSSLESS, HIGH, or LOW audio quality
@@ -108,7 +109,8 @@ Environment variables:
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Output directory for downloaded music |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Go template for file organization |
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API provider |
-| `QUALITY` | `LOSSLESS` | Audio quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
+| `QUALITY` | `LOSSLESS` | Download audio quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
+| `PLAY_QUALITY` | `HIGH` | Streaming playback quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `LOG_LEVEL` | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
 | `LOG_FORMAT` | `text` | Log output format (`text`, `json`) |
 | `NAVIDRUMS_USERNAME` | `navidrums` | Username for HTTP basic authentication |
