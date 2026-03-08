@@ -92,11 +92,13 @@ func (h *Handler) LuckyHTMX(w http.ResponseWriter, r *http.Request) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			h.Logger.Info("Fetching track recommendations", "track_id", seeds.TrackID)
 			tracks, err := provider.GetRecommendations(r.Context(), seeds.TrackID)
 			if err != nil {
 				trackErr = err
 				return
 			}
+			h.Logger.Info("Track recommendations response", "track_id", seeds.TrackID, "count", len(tracks))
 			var iface []interface{}
 			for i := range tracks {
 				iface = append(iface, tracks[i])
@@ -109,11 +111,13 @@ func (h *Handler) LuckyHTMX(w http.ResponseWriter, r *http.Request) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			h.Logger.Info("Fetching album recommendations", "album_id", seeds.AlbumID)
 			albums, err := provider.GetSimilarAlbums(r.Context(), seeds.AlbumID)
 			if err != nil {
 				albumErr = err
 				return
 			}
+			h.Logger.Info("Album recommendations response", "album_id", seeds.AlbumID, "count", len(albums))
 			var iface []interface{}
 			for i := range albums {
 				iface = append(iface, albums[i])
@@ -126,11 +130,13 @@ func (h *Handler) LuckyHTMX(w http.ResponseWriter, r *http.Request) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			h.Logger.Info("Fetching artist recommendations", "artist_id", seeds.ArtistID)
 			artists, err := provider.GetSimilarArtists(r.Context(), seeds.ArtistID)
 			if err != nil {
 				artistErr = err
 				return
 			}
+			h.Logger.Info("Artist recommendations response", "artist_id", seeds.ArtistID, "count", len(artists))
 			var iface []interface{}
 			for i := range artists {
 				iface = append(iface, artists[i])

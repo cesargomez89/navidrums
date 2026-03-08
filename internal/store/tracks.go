@@ -340,7 +340,7 @@ func (db *DB) GetRandomTrack() (*domain.Track, error) {
 }
 
 func (db *DB) GetRandomAlbum() (*domain.Track, error) {
-	query := `SELECT * FROM tracks WHERE status = ? AND release_type = 'album' GROUP BY album_id ORDER BY RANDOM() LIMIT 1`
+	query := `SELECT * FROM tracks WHERE status = ? AND LOWER(release_type) = 'album' GROUP BY album_id ORDER BY RANDOM() LIMIT 1`
 	var track domain.Track
 	err := db.Get(&track, query, domain.TrackStatusCompleted)
 	if err != nil {

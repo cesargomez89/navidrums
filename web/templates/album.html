@@ -19,7 +19,7 @@
         </h2>
 
         <div class="text-sm text-dim mt-2 flex gap-2 items-center flex-wrap">
-            <span>{{.Album.Artist}}</span>
+            <a href="/artist/{{.Album.ArtistID}}" class="hover:text-accent">{{.Album.Artist}}</a>
             {{if .Album.Year}}<span>&bull;</span><span>{{.Album.Year}}</span>{{end}}
             {{if .Album.TotalTracks}}<span>&bull;</span><span>{{.Album.TotalTracks}} tracks</span>{{end}}
         </div>
