@@ -1,8 +1,9 @@
 package app
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
-	"math/rand"
 	"path/filepath"
 	"strings"
 	"time"
@@ -186,62 +187,39 @@ func (s *DownloadsService) EnqueueSyncJobs() (int, error) {
 }
 
 func (s *DownloadsService) GetRecommendationSeeds() (*RecommendationSeeds, error) {
-	tracks, err := s.Repo.ListCompletedTracks(0, 50)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list tracks: %w", err)
-	}
-
-	if len(tracks) == 0 {
-		return nil, nil
-	}
-
 	seeds := &RecommendationSeeds{}
 
-	rand.Shuffle(len(tracks), func(i, j int) {
-		tracks[i], tracks[j] = tracks[j], tracks[i]
-	})
+	track, err := s.Repo.GetRandomTrack()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to get random track: %w", err)
+	}
+	if track != nil {
+		seeds.Track = track
+		seeds.TrackID = track.ProviderID
+	}
 
-	seenAlbums := make(map[string]bool)
-	seenArtists := make(map[string]bool)
+	album, err := s.Repo.GetRandomAlbum()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to get random album: %w", err)
+	}
+	if album != nil {
+		seeds.Album = album
+		seeds.AlbumID = album.AlbumID
+	}
 
-	for _, track := range tracks {
-		artistID := ""
-		if len(track.ArtistIDs) > 0 {
-			artistID = track.ArtistIDs[0]
+	artist, err := s.Repo.GetRandomArtist()
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, fmt.Errorf("failed to get random artist: %w", err)
+	}
+	if artist != nil {
+		seeds.Artist = artist
+		if len(artist.ArtistIDs) > 0 {
+			seeds.ArtistID = artist.ArtistIDs[0]
 		}
+	}
 
-		if seeds.TrackID == "" && track.ProviderID != "" {
-			seeds.TrackID = track.ProviderID
-			seeds.Track = track
-			if artistID != "" {
-				seenArtists[artistID] = true
-			}
-			if track.AlbumID != "" {
-				seenAlbums[track.AlbumID] = true
-			}
-			continue
-		}
-
-		if seeds.AlbumID == "" && track.AlbumID != "" && strings.EqualFold(track.ReleaseType, "album") && !seenAlbums[track.AlbumID] && (artistID == "" || !seenArtists[artistID]) {
-			seeds.AlbumID = track.AlbumID
-			seeds.Album = track
-			seenAlbums[track.AlbumID] = true
-			if artistID != "" {
-				seenArtists[artistID] = true
-			}
-			continue
-		}
-
-		if seeds.ArtistID == "" && artistID != "" && !seenArtists[artistID] {
-			seeds.ArtistID = artistID
-			seeds.Artist = track
-			seenArtists[artistID] = true
-			continue
-		}
-
-		if seeds.TrackID != "" && seeds.AlbumID != "" && seeds.ArtistID != "" {
-			break
-		}
+	if seeds.TrackID == "" && seeds.AlbumID == "" && seeds.ArtistID == "" {
+		return nil, nil
 	}
 
 	return seeds, nil

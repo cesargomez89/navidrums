@@ -184,8 +184,10 @@ func (c *CachedProvider) GetSimilarAlbums(ctx context.Context, id string) ([]dom
 		return nil, err
 	}
 
-	if data, marshalErr := json.Marshal(albums); marshalErr == nil {
-		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if len(albums) > 0 {
+		if data, marshalErr := json.Marshal(albums); marshalErr == nil {
+			_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+		}
 	}
 
 	return albums, nil
@@ -210,8 +212,10 @@ func (c *CachedProvider) GetSimilarArtists(ctx context.Context, id string) ([]do
 		return nil, err
 	}
 
-	if data, marshalErr := json.Marshal(artists); marshalErr == nil {
-		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if len(artists) > 0 {
+		if data, marshalErr := json.Marshal(artists); marshalErr == nil {
+			_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+		}
 	}
 
 	return artists, nil
@@ -236,8 +240,10 @@ func (c *CachedProvider) GetRecommendations(ctx context.Context, id string) ([]d
 		return nil, err
 	}
 
-	if data, marshalErr := json.Marshal(tracks); marshalErr == nil {
-		_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+	if len(tracks) > 0 {
+		if data, marshalErr := json.Marshal(tracks); marshalErr == nil {
+			_ = c.cache.SetCache(cacheKey, data, c.cacheTTL)
+		}
 	}
 
 	return tracks, nil

@@ -328,6 +328,39 @@ func (db *DB) ListAllCompletedTracks() ([]*domain.Track, error) {
 	return selectTracks(db, query, domain.TrackStatusCompleted)
 }
 
+func (db *DB) GetRandomTrack() (*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = ? ORDER BY RANDOM() LIMIT 1`
+	var track domain.Track
+	err := db.Get(&track, query, domain.TrackStatusCompleted)
+	if err != nil {
+		return nil, err
+	}
+	track.Normalize()
+	return &track, nil
+}
+
+func (db *DB) GetRandomAlbum() (*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = ? AND release_type = 'album' GROUP BY album_id ORDER BY RANDOM() LIMIT 1`
+	var track domain.Track
+	err := db.Get(&track, query, domain.TrackStatusCompleted)
+	if err != nil {
+		return nil, err
+	}
+	track.Normalize()
+	return &track, nil
+}
+
+func (db *DB) GetRandomArtist() (*domain.Track, error) {
+	query := `SELECT * FROM tracks WHERE status = ? AND artist_ids IS NOT NULL AND artist_ids != '[]' GROUP BY artist_ids ORDER BY RANDOM() LIMIT 1`
+	var track domain.Track
+	err := db.Get(&track, query, domain.TrackStatusCompleted)
+	if err != nil {
+		return nil, err
+	}
+	track.Normalize()
+	return &track, nil
+}
+
 func selectTracks(q sqlx.Queryer, query string, args ...interface{}) ([]*domain.Track, error) {
 	var tracks []*domain.Track
 	err := sqlx.Select(q, &tracks, query, args...)
