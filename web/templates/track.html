@@ -50,7 +50,7 @@
         <p><strong>Peak:</strong> {{if .Track.Peak}}{{.Track.Peak}}{{else}}N/A{{end}}</p>
         <p><strong>Audio Quality:</strong>
             {{if .Track.AudioQuality}}
-            <span class="quality-badge{{if eq .Track.AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
+            <span class="quality-badge{{if eq .Track.AudioQuality "HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
                 .Track.AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .Track.AudioQuality "HIGH" }}
                 quality-badge--high{{else if eq .Track.AudioQuality "LOW" }} quality-badge--low{{end}}">
                 {{if eq .Track.AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .Track.AudioQuality

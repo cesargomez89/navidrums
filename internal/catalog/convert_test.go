@@ -3,6 +3,8 @@ package catalog
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/cesargomez89/navidrums/internal/constants"
 )
 
 func TestAPIArtistWithPicture_ToDomain(t *testing.T) {
@@ -37,7 +39,7 @@ func TestAPIArtistAggregationResponse_ToAlbums(t *testing.T) {
 		AudioQuality  string           "json:\"audioQuality\""
 		MediaMetadata APIMediaMetadata "json:\"mediaMetadata\""
 	}{
-		{ID: json.Number("1"), Title: "Album 1", Cover: "cover-1", AudioQuality: "LOSSLESS"},
+		{ID: json.Number("1"), Title: "Album 1", Cover: "cover-1", AudioQuality: constants.QualityLossless},
 	}
 
 	albums := resp.ToAlbums("artist-1", "ArtistName", p)
@@ -79,7 +81,7 @@ func TestAPIArtistAggregationResponse_ToTopTracks(t *testing.T) {
 			Title:        "Track 1",
 			TrackNumber:  1,
 			Duration:     200,
-			AudioQuality: "HIGH",
+			AudioQuality: constants.QualityHigh,
 			Artist: struct {
 				ID   json.Number "json:\"id\""
 				Name string      "json:\"name\""
@@ -239,7 +241,7 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 						Cover FlexCover   `json:"cover"`
 					}{ID: json.Number("201"), Title: "Album", Cover: FlexCover{"cover-id"}},
 					Duration:     180,
-					AudioQuality: "LOSSLESS",
+					AudioQuality: constants.QualityLossless,
 				},
 			},
 		},
@@ -256,8 +258,8 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 	if playlist.Tracks[0].Title != "Playlist Track" {
 		t.Errorf("Expected Track Title 'Playlist Track', got %s", playlist.Tracks[0].Title)
 	}
-	if playlist.Tracks[0].AudioQuality != "LOSSLESS" {
-		t.Errorf("Expected AudioQuality 'LOSSLESS', got %s", playlist.Tracks[0].AudioQuality)
+	if playlist.Tracks[0].AudioQuality != constants.QualityLossless {
+		t.Errorf("Expected AudioQuality '%s', got %s", constants.QualityLossless, playlist.Tracks[0].AudioQuality)
 	}
 }
 

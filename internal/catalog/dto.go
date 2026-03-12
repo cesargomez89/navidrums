@@ -2,6 +2,8 @@ package catalog
 
 import (
 	"encoding/json"
+
+	"github.com/cesargomez89/navidrums/internal/constants"
 )
 
 type APIMediaMetadata struct {
@@ -9,11 +11,42 @@ type APIMediaMetadata struct {
 }
 
 func resolveAudioQuality(audioQuality string, tags []string) string {
+	hasLossless := false
+	hasHigh := false
+	hasLow := false
+
 	for _, tag := range tags {
 		if tag == "HIRES_LOSSLESS" || tag == "HI_RES_LOSSLESS" {
-			return "HI_RES_LOSSLESS"
+			return constants.QualityHiResLossless
+		}
+		if tag == "LOSSLESS" {
+			hasLossless = true
+		}
+		if tag == "HIGH" {
+			hasHigh = true
+		}
+		if tag == "LOW" {
+			hasLow = true
 		}
 	}
+
+	// Handle various formats from providers
+	if audioQuality == "HI_RES_LOSSLESS" || audioQuality == "HIRES_LOSSLESS" {
+		return constants.QualityHiResLossless
+	}
+
+	if audioQuality == "" {
+		if hasLossless {
+			return constants.QualityLossless
+		}
+		if hasHigh {
+			return constants.QualityHigh
+		}
+		if hasLow {
+			return constants.QualityLow
+		}
+	}
+
 	return audioQuality
 }
 

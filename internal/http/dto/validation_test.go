@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
@@ -515,7 +516,7 @@ func TestNewTrackResponse(t *testing.T) {
 		Composer:      "Test Composer",
 		Copyright:     "2023 Test",
 		ISRC:          "USRC17607839",
-		AudioQuality:  "LOSSLESS",
+		AudioQuality:  constants.QualityLossless,
 		AudioModes:    "STEREO",
 		FilePath:      "/path/to/track.flac",
 		FileExtension: ".flac",

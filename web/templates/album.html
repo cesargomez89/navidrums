@@ -7,7 +7,7 @@
         <h2 class="m-0 flex items-center gap-3 flex-wrap">
             {{.Album.Title}}
             {{if .Album.AudioQuality}}
-            <span class="quality-badge{{if eq .Album.AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
+            <span class="quality-badge{{if eq .Album.AudioQuality "HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
                 .Album.AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .Album.AudioQuality "HIGH" }}
                 quality-badge--high{{else if eq .Album.AudioQuality "LOW" }} quality-badge--low{{end}}">
                 {{if eq .Album.AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .Album.AudioQuality

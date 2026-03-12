@@ -111,7 +111,8 @@ func (c *Config) Validate() error {
 		constants.QualityLow:           true,
 	}
 	if !validQualities[c.Quality] {
-		errors = append(errors, fmt.Sprintf("QUALITY must be one of: LOSSLESS, HI_RES_LOSSLESS, HIGH, LOW, got: %s", c.Quality))
+		errors = append(errors, fmt.Sprintf("QUALITY must be one of: %s, %s, %s, %s, got: %s",
+			constants.QualityLossless, constants.QualityHiResLossless, constants.QualityHigh, constants.QualityLow, c.Quality))
 	}
 
 	// Validate LogLevel
