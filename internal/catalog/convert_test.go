@@ -40,7 +40,7 @@ func TestAPIArtistAggregationResponse_ToAlbums(t *testing.T) {
 		{ID: json.Number("1"), Title: "Album 1", Cover: "cover-1", AudioQuality: "LOSSLESS"},
 	}
 
-	albums := resp.ToAlbums("ArtistName", p)
+	albums := resp.ToAlbums("artist-1", "ArtistName", p)
 
 	if len(albums) != 1 {
 		t.Fatalf("Expected 1 album, got %d", len(albums))

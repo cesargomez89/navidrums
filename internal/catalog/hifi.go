@@ -56,7 +56,7 @@ func (p *HifiProvider) GetArtist(ctx context.Context, id string) (*domain.Artist
 	aggUrl := fmt.Sprintf("%s/artist/?f=%s&skip_tracks=true", p.BaseURL, id)
 	var aggResp APIArtistAggregationResponse
 	if err := p.get(ctx, aggUrl, &aggResp); err == nil {
-		artist.Albums = aggResp.ToAlbums(artist.Name, p)
+		artist.Albums = aggResp.ToAlbums(id, artist.Name, p)
 		artist.TopTracks = aggResp.ToTopTracks(p)
 	}
 

@@ -18,12 +18,13 @@ func (r APIArtistWithPicture) ToDomain(p *HifiProvider) *domain.Artist {
 	}
 }
 
-func (r APIArtistAggregationResponse) ToAlbums(artistName string, p *HifiProvider) []domain.Album {
+func (r APIArtistAggregationResponse) ToAlbums(artistID, artistName string, p *HifiProvider) []domain.Album {
 	var albums []domain.Album
 	for _, item := range r.Albums.Items {
 		albums = append(albums, domain.Album{
 			ID:           formatID(item.ID),
 			Title:        item.Title,
+			ArtistID:     artistID,
 			Artist:       artistName,
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Cover, "640x640"),
 			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
@@ -270,14 +271,17 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 func (r APISimilarAlbumsResponse) ToDomain(p *HifiProvider) []domain.Album {
 	var albums []domain.Album
 	for _, item := range r.Albums {
+		artistID := ""
 		artistName := ""
 		if len(item.Artists) > 0 {
 			artistName = item.Artists[0].Name
+			artistID = formatID(item.Artists[0].ID)
 		}
 
 		albums = append(albums, domain.Album{
 			ID:           formatID(item.ID),
 			Title:        item.Title,
+			ArtistID:     artistID,
 			Artist:       artistName,
 			AudioQuality: resolveAudioQuality("", item.MediaTags),
 			AlbumArtURL:  p.ensureAbsoluteURL(item.Cover, "640x640"),
