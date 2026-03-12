@@ -14,7 +14,10 @@
             <option value="playlist">Playlist</option>
         </select>
         <button class="btn btn-lg" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q'], [name='type']"
-            hx-timeout="30000">Search</button>
+            hx-timeout="30000">
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Search
+        </button>
     </form>
 </div>
 <div id="results" hx-get="/htmx/lucky" hx-trigger="load" hx-swap="innerHTML">

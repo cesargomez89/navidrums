@@ -30,7 +30,6 @@ type Handler struct {
 	Logger           *logger.Logger
 	FormDecoder      *form.Decoder
 	cachedRecs       *RecommendationsData
-	Theme            string
 	recsMutex        sync.RWMutex
 }
 
@@ -123,7 +122,7 @@ func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interf
 		if _, exists := m["Theme"]; !exists {
 			theme, err := h.SettingsRepo.Get(store.SettingTheme)
 			if err != nil || theme == "" {
-				theme = h.Theme
+				theme = h.Config.Theme
 			}
 			m["Theme"] = theme
 		}

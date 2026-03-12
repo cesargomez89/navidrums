@@ -47,7 +47,10 @@
             <div class="text-xs text-dim mt-1">{{.UpdatedAt.Format "Jan 02, 15:04"}}</div>
             {{if or (eq .Status "failed") (eq .Status "cancelled")}}
             <button hx-post="/htmx/retry/{{.ID}}" hx-target="#tab-content" hx-swap="innerHTML"
-                class="btn btn-outline btn-sm mt-2 w-full">Retry</button>
+                class="btn btn-outline btn-sm mt-2 w-full">
+                <svg class="icon-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                Retry
+            </button>
             {{end}}
         </div>
     </div>
