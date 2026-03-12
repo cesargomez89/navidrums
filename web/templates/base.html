@@ -45,7 +45,7 @@
             }
 
             if (currentButton) {
-                currentButton.querySelector('.btn-text').textContent = 'Play';
+                setPlayIcon(currentButton, false);
             }
 
             currentTrackId = providerId;
@@ -55,18 +55,28 @@
             currentAudio = new Audio(streamUrl);
             currentAudio.play().then(function() {
                 isPlaying = true;
-                btn.querySelector('.btn-text').textContent = 'Pause';
+                setPlayIcon(btn, true);
             }).catch(function(err) {
                 console.error('Playback failed:', err);
             });
 
             currentAudio.onended = function() {
                 isPlaying = false;
-                btn.querySelector('.btn-text').textContent = 'Play';
+                setPlayIcon(btn, false);
                 currentAudio = null;
                 currentTrackId = null;
                 currentButton = null;
             };
+        }
+
+        function setPlayIcon(btn, playing) {
+            var svg = btn.querySelector('svg');
+            if (!svg) return;
+            if (playing) {
+                svg.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+            } else {
+                svg.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+            }
         }
 
         function togglePlay(btn) {
@@ -74,11 +84,11 @@
             if (isPlaying) {
                 currentAudio.pause();
                 isPlaying = false;
-                btn.querySelector('.btn-text').textContent = 'Play';
+                setPlayIcon(btn, false);
             } else {
                 currentAudio.play();
                 isPlaying = true;
-                btn.querySelector('.btn-text').textContent = 'Pause';
+                setPlayIcon(btn, true);
             }
         }
 
@@ -90,7 +100,7 @@
                 currentTrackId = null;
             }
             if (currentButton) {
-                currentButton.querySelector('.btn-text').textContent = 'Play';
+                setPlayIcon(currentButton, false);
                 currentButton = null;
             }
         }

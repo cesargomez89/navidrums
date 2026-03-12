@@ -217,9 +217,11 @@
 
                 if (data.theme) {
                     select.value = data.theme;
+                    document.documentElement.setAttribute('data-theme', data.theme);
                     statusDiv.innerHTML = '<span class="badge badge-custom">Using custom theme (' + data.theme + ')</span>';
                 } else {
                     select.value = data.default || 'golden';
+                    document.documentElement.setAttribute('data-theme', data.default || 'golden');
                     statusDiv.innerHTML = '<span class="badge badge-default">Using default theme (' + (data.default || 'golden') + ')</span>';
                 }
             });
@@ -252,7 +254,8 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    document.documentElement.setAttribute('data-theme', data.theme);
+                    loadTheme();
                 }
             });
     }

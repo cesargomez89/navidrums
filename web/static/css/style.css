@@ -485,6 +485,29 @@ button:active {
     font-size: 1rem;
 }
 
+/* Icon sizes for buttons */
+.icon,
+.icon-sm {
+    vertical-align: middle;
+    stroke: currentColor;
+    fill: none;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon--accent { color: var(--accent); }
+.icon--danger { color: var(--danger); }
+.icon--success { color: var(--success); }
+.icon--muted { color: var(--text-dim); }
+
 /* Utility Classes */
 .flex {
     display: flex;

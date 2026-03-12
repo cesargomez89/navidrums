@@ -970,9 +970,13 @@ func (h *Handler) GetThemeHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if theme == "" {
+		theme = h.Config.Theme
+	}
+
 	response := map[string]interface{}{
 		"theme":   theme,
-		"default": h.Theme,
+		"default": h.Config.Theme,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -998,7 +1002,14 @@ func (h *Handler) SetThemeHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ = w.Write([]byte(`{"success":true}`))
+	resp := map[string]interface{}{
+		"success": true,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.Logger.Error("Failed to encode response", "error", err)
+	}
 }
 
 func (h *Handler) ResetThemeHTMX(w http.ResponseWriter, r *http.Request) {
@@ -1008,5 +1019,13 @@ func (h *Handler) ResetThemeHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, _ = w.Write([]byte(`{"success":true}`))
+	resp := map[string]interface{}{
+		"success": true,
+		"theme":   h.Config.Theme,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.Logger.Error("Failed to encode response", "error", err)
+	}
 }
