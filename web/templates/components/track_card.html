@@ -1,25 +1,22 @@
 <div class="item item-bordered">
-    <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
-        alt="{{.Title}}" class="item-img">
+    <div class="item-media">
+        <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
+            alt="{{.Title}}" class="item-img item-img--lg">
+        <div class="item-media-play" onclick="playTrack(this, '{{.ID}}', '{{.Title}}', '{{.Artist}}', '{{.AlbumArtURL}}', '{{.Album}}')">
+            <svg class="icon-sm" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </div>
+    </div>
     <div class="item-body">
-        <div class="item-title truncate">{{.Title}}{{if .Version}} ({{.Version}}){{end}}</div>
-        <div class="item-subtitle truncate">
-            <a href="/artist/{{.ArtistID}}" class="text-dim hover:text-accent">{{.Artist}}</a> •
+        <div class="item-title">{{.Title}}{{if .Version}} ({{.Version}}){{end}}</div>
+        <div class="item-subtitle">
+            <a href="/artist/{{.ArtistID}}" class="text-dim hover:text-accent">{{.Artist}}</a> &bull;
             <a href="/album/{{.AlbumID}}" class="text-dim hover:text-accent">{{.Album}}</a>
         </div>
     </div>
     <div class="item-actions item-actions--col">
-        {{if .AudioQuality}}
-        <span class="quality-badge{{if eq .AudioQuality " HI_RES_LOSSLESS"}} quality-badge--hires{{else if eq
-            .AudioQuality "LOSSLESS" }} quality-badge--lossless{{else if eq .AudioQuality "HIGH" }}
-            quality-badge--high{{else if eq .AudioQuality "LOW" }} quality-badge--low{{end}}">
-            {{if eq .AudioQuality "HI_RES_LOSSLESS"}}Hi-Res{{else if eq .AudioQuality "LOSSLESS"}}Lossless{{else if eq
-            .AudioQuality "HIGH"}}High{{else if eq .AudioQuality "LOW"}}Low{{else}}{{.AudioQuality}}{{end}}
-        </span>
+        {{if eq .AudioQuality "LOSSLESS"}}
+        <span class="quality-badge quality-badge--lossless">LOSSLESS</span>
         {{end}}
-        <button class="btn btn-outline btn-sm" onclick="playTrack(this, '{{.ID}}', '{{.Title}}', '{{.Artist}}', '{{.AlbumArtURL}}')" title="Play">
-            <svg class="icon-sm" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        </button>
         <button class="btn btn-primary btn-sm" onclick="queueDownload('track', '{{.ID}}', this)" title="Download">
             <svg class="icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </button>

@@ -1196,6 +1196,46 @@ textarea {
     align-items: center;
 }
 
+/* Item Media - wrapper for art + overlay */
+.item-media {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.item-img--lg {
+    width: 56px;
+    height: 56px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.item-media-play {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.item-media-play:hover {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.item-media-play .icon-sm {
+    width: 20px;
+    height: 20px;
+    fill: white;
+    stroke: white;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+}
+
 /* Info Grid - for key-value data display */
 .info-grid {
     display: grid;
