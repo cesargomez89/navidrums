@@ -31,7 +31,7 @@
         var currentButton = null;
         var isPlaying = false;
 
-        function playTrack(btn, providerId, title, artist, artUrl) {
+        function playTrack(btn, providerId, title, artist, artUrl, album) {
             var quality = 'HIGH';
 
             if (currentTrackId === providerId && isPlaying) {
@@ -56,6 +56,14 @@
             currentAudio.play().then(function() {
                 isPlaying = true;
                 setPlayIcon(btn, true);
+                if (navigator.mediaSession) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: title,
+                        artist: artist,
+                        album: album,
+                        artwork: [{ src: artUrl }]
+                    });
+                }
             }).catch(function(err) {
                 console.error('Playback failed:', err);
             });
@@ -65,7 +73,19 @@
                 setPlayIcon(btn, false);
                 currentAudio = null;
                 currentTrackId = null;
-                currentButton = null;
+                if (navigator.mediaSession) {
+                    navigator.mediaSession.metadata = null;
+                }
+            };
+
+            currentAudio.onpause = function() {
+                isPlaying = false;
+                if (currentButton) setPlayIcon(currentButton, false);
+            };
+
+            currentAudio.onplay = function() {
+                isPlaying = true;
+                if (currentButton) setPlayIcon(currentButton, true);
             };
         }
 
@@ -92,6 +112,15 @@
             }
         }
 
+        if (navigator.mediaSession) {
+            navigator.mediaSession.setActionHandler('play', function() {
+                if (currentAudio) currentAudio.play();
+            });
+            navigator.mediaSession.setActionHandler('pause', function() {
+                if (currentAudio) currentAudio.pause();
+            });
+        }
+
         function stopTrack() {
             if (currentAudio) {
                 currentAudio.pause();
@@ -102,6 +131,9 @@
             if (currentButton) {
                 setPlayIcon(currentButton, false);
                 currentButton = null;
+            }
+            if (navigator.mediaSession) {
+                navigator.mediaSession.metadata = null;
             }
         }
     </script>
