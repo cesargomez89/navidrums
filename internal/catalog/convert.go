@@ -151,7 +151,7 @@ func (r APIAlbumTrackItem) ToDomain(album *domain.Album) domain.CatalogTrack {
 
 func (r APIPlaylistResponse) ToDomain(p *HifiProvider) *domain.Playlist {
 	pl := &domain.Playlist{
-		ID:          r.Playlist.Uuid,
+		ProviderID:  r.Playlist.Uuid,
 		Title:       r.Playlist.Title,
 		Description: r.Playlist.Description,
 		ImageURL:    p.ensureAbsoluteURL(r.Playlist.SquareImage, "640x640"),
@@ -414,9 +414,9 @@ func (r APIPlaylistsSearchResponse) ToDomain(p *HifiProvider) []domain.Playlist 
 	var playlists []domain.Playlist
 	for _, item := range r.Data.Playlists.Items {
 		playlists = append(playlists, domain.Playlist{
-			ID:       item.Uuid,
-			Title:    item.Title,
-			ImageURL: p.ensureAbsoluteURL(item.SquareImage, "640x640"),
+			ProviderID: item.Uuid,
+			Title:      item.Title,
+			ImageURL:   p.ensureAbsoluteURL(item.SquareImage, "640x640"),
 		})
 	}
 	return playlists

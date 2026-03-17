@@ -39,6 +39,17 @@ func MoveFile(src, dst string) error {
 	return fmt.Errorf("failed to move %s to %s", src, dst)
 }
 
+func CopyFile(src, dst string) error {
+	data, err := os.ReadFile(src) //nolint:gosec
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %w", src, err)
+	}
+	if err := os.WriteFile(dst, data, constants.FilePermissions); err != nil {
+		return fmt.Errorf("failed to write %s: %w", dst, err)
+	}
+	return nil
+}
+
 func CreateFile(path string) (*os.File, error) {
 	return os.Create(path) //nolint:gosec
 }

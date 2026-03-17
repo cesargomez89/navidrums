@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"database/sql"
 	"testing"
 	"time"
 
@@ -405,8 +406,8 @@ func TestTrackUpdateRequest_ToUpdates(t *testing.T) {
 
 	updates := req.ToUpdates()
 
-	if len(updates) != 7 {
-		t.Errorf("ToUpdates() returned %d items, want 7", len(updates))
+	if len(updates) != 8 {
+		t.Errorf("ToUpdates() returned %d items, want 8", len(updates))
 	}
 	if updates["title"] != "New Title" {
 		t.Errorf("ToUpdates()[title] = %v, want 'New Title'", updates["title"])
@@ -439,7 +440,7 @@ func TestJobResponse_NewJobResponse(t *testing.T) {
 		ID:        "job_123",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusFailed,
-		SourceID:  "track_456",
+		SourceID:  sql.NullString{String: "track_456", Valid: true},
 		Progress:  75.5,
 		CreatedAt: now,
 		UpdatedAt: now,
@@ -474,7 +475,7 @@ func TestJobResponse_NewJobResponse_NilError(t *testing.T) {
 		ID:        "job_123",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusCompleted,
-		SourceID:  "track_456",
+		SourceID:  sql.NullString{String: "track_456", Valid: true},
 		Progress:  100,
 		CreatedAt: now,
 		UpdatedAt: now,
