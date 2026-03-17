@@ -35,6 +35,8 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 
 	shouldConvertToFLAC := d.config.Quality == constants.QualityHiResLossless
 
+	var lastErr error
+
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
 		select {
 		case <-ctx.Done():
@@ -44,6 +46,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 
 		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, d.config.Quality)
 		if err != nil {
+			lastErr = err
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 			continue
 		}
@@ -69,6 +72,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		_ = f.Close()
 
 		if err != nil {
+			lastErr = err
 			_ = storage.RemoveFile(downloadPath)
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 			continue
@@ -77,6 +81,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		if shouldConvertToFLAC && mimeType == constants.MimeTypeMP4 {
 			flacPath, convErr := ffmpeg.ConvertToFLAC(ctx, downloadPath)
 			if convErr != nil {
+				lastErr = convErr
 				_ = storage.RemoveFile(downloadPath)
 				time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 				continue
@@ -93,5 +98,5 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		return downloadPath, nil
 	}
 
-	return "", fmt.Errorf("download failed after %d attempts", constants.DefaultRetryCount)
+	return "", fmt.Errorf("download failed after %d attempts: %w", constants.DefaultRetryCount, lastErr)
 }

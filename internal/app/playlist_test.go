@@ -34,8 +34,8 @@ func TestPlaylistGenerator_Generate(t *testing.T) {
 		},
 	}
 
-	lookup := func(id string) string {
-		return ".flac"
+	lookup := func(id string) *domain.Track {
+		return nil
 	}
 
 	err := pg.Generate(pl, lookup)
@@ -79,7 +79,7 @@ func TestPlaylistGenerator_GenerateFromTracks(t *testing.T) {
 		},
 	}
 
-	lookup := func(id string) string { return ".mp3" }
+	lookup := func(id string) *domain.Track { return nil }
 
 	err := pg.GenerateFromTracks("Famous Artist", tracks, lookup)
 	if err != nil {

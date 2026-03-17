@@ -74,13 +74,14 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	worker.dispatcher = NewDispatcher()
 
 	trackHandler := &TrackJobHandler{
-		Repo:            repo,
-		SettingsRepo:    settingsRepo,
-		Config:          cfg,
-		ProviderManager: pm,
-		Downloader:      worker.downloader,
-		AlbumArtService: worker.albumArtService,
-		Enricher:        worker.enricher,
+		Repo:              repo,
+		SettingsRepo:      settingsRepo,
+		Config:            cfg,
+		ProviderManager:   pm,
+		Downloader:        worker.downloader,
+		AlbumArtService:   worker.albumArtService,
+		PlaylistGenerator: worker.playlistGenerator,
+		Enricher:          worker.enricher,
 	}
 
 	containerHandler := &ContainerJobHandler{
@@ -92,11 +93,12 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	}
 
 	syncHandler := &SyncJobHandler{
-		Repo:            repo,
-		Config:          cfg,
-		ProviderManager: pm,
-		AlbumArtService: worker.albumArtService,
-		Enricher:        worker.enricher,
+		Repo:              repo,
+		Config:            cfg,
+		ProviderManager:   pm,
+		AlbumArtService:   worker.albumArtService,
+		PlaylistGenerator: worker.playlistGenerator,
+		Enricher:          worker.enricher,
 	}
 
 	worker.dispatcher.Register(domain.JobTypeTrack, trackHandler)

@@ -9,11 +9,11 @@ import (
 	"github.com/cesargomez89/navidrums/internal/storage"
 )
 
-type ExtensionLookupFunc func(trackID string) string
+type TrackLookupFunc func(trackID string) *domain.Track
 
 type PlaylistGenerator interface {
-	Generate(pl *domain.Playlist, lookup ExtensionLookupFunc) error
-	GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup ExtensionLookupFunc) error
+	Generate(pl *domain.Playlist, lookup TrackLookupFunc) error
+	GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup TrackLookupFunc) error
 }
 
 type playlistGenerator struct {
@@ -26,17 +26,22 @@ func NewPlaylistGenerator(cfg *config.Config) PlaylistGenerator {
 	}
 }
 
-func (pg *playlistGenerator) Generate(pl *domain.Playlist, lookup ExtensionLookupFunc) error {
-	filename := storage.Sanitize(pl.Title) + ".m3u"
-	return pg.writePlaylist(filename, pl.Tracks, lookup)
+func (pg *playlistGenerator) Generate(pl *domain.Playlist, lookup TrackLookupFunc) error {
+	var filename string
+	if pl.ID != "" {
+		filename = fmt.Sprintf("%s - %s.m3u", storage.Sanitize(pl.Title), storage.Sanitize(pl.ID))
+	} else {
+		filename = storage.Sanitize(pl.Title) + ".m3u"
+	}
+	return pg.writePlaylist(filename, pl.Title, pl.Tracks, lookup)
 }
 
-func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup ExtensionLookupFunc) error {
+func (pg *playlistGenerator) GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup TrackLookupFunc) error {
 	filename := fmt.Sprintf("%s - Top Tracks.m3u", storage.Sanitize(artistName))
-	return pg.writePlaylist(filename, tracks, lookup)
+	return pg.writePlaylist(filename, fmt.Sprintf("%s - Top Tracks", artistName), tracks, lookup)
 }
 
-func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.CatalogTrack, lookup ExtensionLookupFunc) error {
+func (pg *playlistGenerator) writePlaylist(filename string, title string, tracks []domain.CatalogTrack, lookup TrackLookupFunc) error {
 	if len(tracks) == 0 {
 		return nil
 	}
@@ -65,36 +70,76 @@ func (pg *playlistGenerator) writePlaylist(filename string, tracks []domain.Cata
 		return writeErr
 	}
 
+	if title != "" {
+		if _, err := fmt.Fprintf(f, "#PLAYLIST:%s\n", title); err != nil {
+			writeErr = fmt.Errorf("failed to write playlist title: %w", err)
+			return writeErr
+		}
+	}
+
 	for _, t := range tracks {
-		// Try to find the stored track to get the most accurate template data
-		// If not found, build it from catalog track info
-		templateData := storage.BuildPathTemplateData(
-			t.AlbumArtist,
-			t.Year,
-			t.Album,
-			t.DiscNumber,
-			t.TrackNumber,
-			t.Title,
-		)
-		if templateData.AlbumArtist == "" {
-			templateData.AlbumArtist = storage.Sanitize(t.Artist)
-		}
+		var relPath string
+		var err error
 
-		relPath, err := storage.BuildPath(pg.config.SubdirTemplate, templateData)
-		if err != nil {
-			// Fallback to old behavior if template fails
-			folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
-			trackFile := fmt.Sprintf("%02d - %s%s", t.TrackNumber, storage.Sanitize(t.Title), ".flac")
-			relPath = filepath.Join("..", folderName, trackFile)
-		} else {
-			ext := lookup(t.ID)
-			if ext == "" {
-				ext = ".flac"
+		dbTrack := lookup(t.ID)
+
+		if dbTrack != nil && dbTrack.Status == domain.TrackStatusCompleted && dbTrack.FilePath != "" {
+			// If track is already downloaded, use its exact file path relative to playlists dir
+			// FilePath is absolute. DownloadsDir is absolute.
+			// The playlist is in <DownloadsDir>/playlists/
+			// We can figure out the relative path easily:
+			rel, relErr := filepath.Rel(playlistsDir, dbTrack.FilePath)
+			if relErr == nil {
+				relPath = rel
 			}
-			relPath = filepath.Join("..", relPath+ext)
 		}
 
-		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, relPath)
+		if relPath == "" {
+			var templateData *storage.PathTemplateData
+			if dbTrack != nil {
+				artistForFolder := dbTrack.AlbumArtist
+				if artistForFolder == "" {
+					artistForFolder = dbTrack.Artist
+				}
+				templateData = storage.BuildPathTemplateData(
+					artistForFolder,
+					dbTrack.Year,
+					dbTrack.Album,
+					dbTrack.DiscNumber,
+					dbTrack.TrackNumber,
+					dbTrack.Title,
+				)
+			} else {
+				templateData = storage.BuildPathTemplateData(
+					t.AlbumArtist,
+					t.Year,
+					t.Album,
+					t.DiscNumber,
+					t.TrackNumber,
+					t.Title,
+				)
+				if templateData.AlbumArtist == "" {
+					templateData.AlbumArtist = storage.Sanitize(t.Artist)
+				}
+			}
+
+			relPath, err = storage.BuildPath(pg.config.SubdirTemplate, templateData)
+			if err != nil {
+				// Fallback to old behavior if template fails
+				folderName := fmt.Sprintf("%s - %s", storage.Sanitize(t.Artist), storage.Sanitize(t.Album))
+				trackFile := fmt.Sprintf("%02d - %s%s", t.TrackNumber, storage.Sanitize(t.Title), ".flac")
+				relPath = filepath.Join("..", folderName, trackFile)
+			} else {
+				ext := ".flac"
+				if dbTrack != nil && dbTrack.FileExtension != "" {
+					ext = dbTrack.FileExtension
+				}
+				// Format with path.Join to ensure forward slashes, but filepath.Join is what was used
+				relPath = filepath.Join("..", relPath+ext)
+			}
+		}
+
+		line := fmt.Sprintf("#EXTINF:%d,%s - %s\n%s\n", t.Duration, t.Artist, t.Title, filepath.ToSlash(relPath))
 		if _, err := f.WriteString(line); err != nil {
 			writeErr = fmt.Errorf("failed to write track to playlist: %w", err)
 			return writeErr

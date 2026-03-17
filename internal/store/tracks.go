@@ -210,6 +210,13 @@ func (db *DB) ListTracksByParentJobID(parentJobID string) ([]*domain.Track, erro
 	return selectTracks(db, query, parentJobID)
 }
 
+func (db *DB) CountPendingTracksByParentJobID(parentJobID string) (int, error) {
+	query := `SELECT COUNT(*) FROM tracks WHERE parent_job_id = ? AND status IN (?, ?, ?)`
+	var count int
+	err := db.Get(&count, query, parentJobID, domain.TrackStatusQueued, domain.TrackStatusDownloading, domain.TrackStatusProcessing)
+	return count, err
+}
+
 func (db *DB) ListCompletedTracks(offset, limit int) ([]*domain.Track, error) {
 	return db.ListTracksByStatus(domain.TrackStatusCompleted, offset, limit)
 }

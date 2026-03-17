@@ -11,7 +11,7 @@ const (
 	DefaultProviderURL    = "http://127.0.0.1:8000"
 	DefaultConcurrency    = 2
 	DefaultPollInterval   = 2 * time.Second
-	DefaultHTTPTimeout    = 5 * time.Minute
+	DefaultHTTPTimeout    = 1 * time.Minute
 	ImageHTTPTimeout      = 30 * time.Second
 	DefaultRetryCount     = 8
 	DefaultRetryBase      = 1 * time.Second
