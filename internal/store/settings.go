@@ -42,4 +42,5 @@ const (
 	SettingGenreMap        = "genre_map"
 	SettingGenreSeparator  = "genre_separator"
 	SettingTheme           = "theme"
+	SettingForceDownload   = "force_download"
 )

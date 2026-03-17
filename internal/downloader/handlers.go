@@ -24,6 +24,7 @@ import (
 // TrackJobHandler handles downloading individual tracks.
 type TrackJobHandler struct {
 	Repo            *store.DB
+	SettingsRepo    *store.SettingsRepo
 	Config          *config.Config
 	ProviderManager *catalog.ProviderManager
 	Downloader      app.Downloader
@@ -60,8 +61,10 @@ func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *s
 }
 
 func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.Job, logger *slog.Logger) (*domain.Track, string, bool, error) {
+	forceDownload := h.isForceDownload()
+
 	existingTrack, _ := h.Repo.GetTrackByProviderID(job.SourceID)
-	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted {
+	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted && !forceDownload {
 		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
 		_ = h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
 		return nil, "", true, nil
@@ -131,7 +134,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 	}
 	predictedPath := fullPathNoExt + ext
 
-	if track.Status == domain.TrackStatusCompleted {
+	if track.Status == domain.TrackStatusCompleted && !forceDownload {
 		exists := false
 		if _, statErr := os.Stat(predictedPath); statErr == nil {
 			exists = true
@@ -166,6 +169,12 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 				logger.Info("Track exists but hash mismatch, redownloading", "path", predictedPath)
 				_ = storage.RemoveFile(predictedPath)
 			}
+		}
+	} else if track.Status == domain.TrackStatusCompleted && forceDownload {
+		logger.Info("Force download enabled, deleting existing file", "path", predictedPath)
+		_ = storage.RemoveFile(predictedPath)
+		if track.FilePath != "" && track.FilePath != predictedPath {
+			_ = storage.RemoveFile(track.FilePath)
 		}
 	}
 
@@ -288,6 +297,7 @@ func (h *TrackJobHandler) isCancelled(id string) bool {
 // ContainerJobHandler handles albums, playlists, and artists by decomposing them into track jobs.
 type ContainerJobHandler struct {
 	Repo              *store.DB
+	SettingsRepo      *store.SettingsRepo
 	ProviderManager   *catalog.ProviderManager
 	AlbumArtService   app.AlbumArtService
 	PlaylistGenerator app.PlaylistGenerator
@@ -448,13 +458,14 @@ func (h *ContainerJobHandler) lookupTrackExtension(trackID string) string {
 
 func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTracks []domain.CatalogTrack, logger *slog.Logger) int {
 	createdCount := 0
+	forceDownload := h.isForceDownload()
 
 	for _, catalogTrack := range catalogTracks {
-		if downloaded, _ := h.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded {
+		if downloaded, _ := h.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded && !forceDownload {
 			continue
 		}
 
-		if active, _ := h.Repo.IsTrackActive(catalogTrack.ID); active {
+		if active, _ := h.Repo.IsTrackActive(catalogTrack.ID); active && !forceDownload {
 			continue
 		}
 
@@ -716,4 +727,20 @@ func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath str
 
 	logger.Info("Moved track file", "old", oldFilePath, "new", track.FilePath)
 	return nil
+}
+
+func (h *TrackJobHandler) isForceDownload() bool {
+	if h.SettingsRepo == nil {
+		return false
+	}
+	val, err := h.SettingsRepo.Get(store.SettingForceDownload)
+	return err == nil && val == "true"
+}
+
+func (h *ContainerJobHandler) isForceDownload() bool {
+	if h.SettingsRepo == nil {
+		return false
+	}
+	val, err := h.SettingsRepo.Get(store.SettingForceDownload)
+	return err == nil && val == "true"
 }

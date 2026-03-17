@@ -102,6 +102,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/htmx/theme", h.GetThemeHTMX)
 	r.Post("/htmx/theme", h.SetThemeHTMX)
 	r.Post("/htmx/theme/reset", h.ResetThemeHTMX)
+
+	r.Get("/htmx/force-download", h.GetForceDownloadHTMX)
+	r.Post("/htmx/force-download", h.SetForceDownloadHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {
