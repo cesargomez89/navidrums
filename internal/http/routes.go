@@ -1029,3 +1029,54 @@ func (h *Handler) ResetThemeHTMX(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to encode response", "error", err)
 	}
 }
+
+func (h *Handler) GetForceDownloadHTMX(w http.ResponseWriter, r *http.Request) {
+	force, err := h.SettingsRepo.Get(store.SettingForceDownload)
+	if err != nil {
+		h.Logger.Error("Failed to get force download setting", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp := map[string]interface{}{
+		"force": force == "true",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.Logger.Error("Failed to encode response", "error", err)
+	}
+}
+
+func (h *Handler) SetForceDownloadHTMX(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Force bool `json:"force"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.Logger.Error("Failed to decode request", "error", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	value := "false"
+	if req.Force {
+		value = "true"
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingForceDownload, value); err != nil {
+		h.Logger.Error("Failed to set force download setting", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp := map[string]interface{}{
+		"success": true,
+		"force":   req.Force,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.Logger.Error("Failed to encode response", "error", err)
+	}
+}

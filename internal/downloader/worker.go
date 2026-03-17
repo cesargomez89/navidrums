@@ -75,6 +75,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 
 	trackHandler := &TrackJobHandler{
 		Repo:            repo,
+		SettingsRepo:    settingsRepo,
 		Config:          cfg,
 		ProviderManager: pm,
 		Downloader:      worker.downloader,
@@ -84,6 +85,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 
 	containerHandler := &ContainerJobHandler{
 		Repo:              repo,
+		SettingsRepo:      settingsRepo,
 		ProviderManager:   pm,
 		AlbumArtService:   worker.albumArtService,
 		PlaylistGenerator: worker.playlistGenerator,
