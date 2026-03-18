@@ -16,14 +16,30 @@ import (
 )
 
 type HifiProvider struct {
-	Client  *httpclient.Client
-	BaseURL string
+	client         *httpclient.Client
+	downloadClient *httpclient.Client
+	BaseURL        string
 }
 
 func NewHifiProvider(baseURL string) *HifiProvider {
 	return &HifiProvider{
 		BaseURL: baseURL,
-		Client: httpclient.NewClient(&http.Client{
+		client: httpclient.NewClient(&http.Client{
+			Timeout: 20 * time.Second,
+		}, 1200*time.Millisecond),
+		downloadClient: httpclient.NewClient(&http.Client{
+			Timeout: 20 * time.Second,
+		}, 1200*time.Millisecond),
+	}
+}
+
+func NewHifiProviderDual(metadataURL, downloadURL string) *HifiProvider {
+	return &HifiProvider{
+		BaseURL: metadataURL,
+		client: httpclient.NewClient(&http.Client{
+			Timeout: 20 * time.Second,
+		}, 1200*time.Millisecond),
+		downloadClient: httpclient.NewClient(&http.Client{
 			Timeout: 20 * time.Second,
 		}, 1200*time.Millisecond),
 	}
@@ -127,7 +143,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		if err != nil {
 			return nil, "", err
 		}
-		sResp, err := p.Client.Do(ctx, req)
+		sResp, err := p.client.Do(ctx, req)
 		if err != nil {
 			return nil, "", err
 		}
@@ -165,7 +181,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		if err != nil {
 			return nil, "", err
 		}
-		sResp, err := p.Client.Do(ctx, req)
+		sResp, err := p.client.Do(ctx, req)
 		if err != nil {
 			return nil, "", err
 		}
@@ -228,7 +244,7 @@ func (p *HifiProvider) handleSegmentedDash(ctx context.Context, manifest string)
 
 	return &multiSegmentReader{
 		urls:   urls,
-		client: p.Client.GetUnderlyingClient(),
+		client: p.downloadClient.GetUnderlyingClient(),
 		ctx:    ctx,
 	}, "audio/mp4", nil
 }
@@ -279,7 +295,7 @@ func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) 
 		return err
 	}
 
-	resp, err := p.Client.Do(ctx, req)
+	resp, err := p.client.Do(ctx, req)
 	if err != nil {
 		return err
 	}
