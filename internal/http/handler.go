@@ -89,6 +89,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
 	r.Post("/htmx/provider/set", h.SetProviderHTMX)
+	r.Post("/htmx/provider/metadata", h.SetMetadataProviderHTMX)
+	r.Post("/htmx/provider/download", h.SetDownloadProviderHTMX)
 	r.Post("/htmx/provider/add", h.AddCustomProviderHTMX)
 	r.Post("/htmx/provider/remove", h.RemoveCustomProviderHTMX)
 

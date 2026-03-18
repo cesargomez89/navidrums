@@ -109,6 +109,18 @@ func (m *ProviderManager) GetDownloadProvider() Provider {
 	return m.downloadProvider
 }
 
+func (m *ProviderManager) GetDownloadURL() string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.downloadURL
+}
+
+func (m *ProviderManager) GetDefaultDownloadURL() string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.defaultDownloadURL
+}
+
 func (m *ProviderManager) SetMetadataProvider(url string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

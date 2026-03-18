@@ -309,8 +309,10 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
-	active := h.ProviderManager.GetBaseURL()
-	defaultURL := h.ProviderManager.GetDefaultURL()
+	metadataActive := h.ProviderManager.GetBaseURL()
+	metadataDefault := h.ProviderManager.GetDefaultURL()
+	downloadActive := h.ProviderManager.GetDownloadURL()
+	downloadDefault := h.ProviderManager.GetDefaultDownloadURL()
 
 	var customProviders []catalog.CustomProvider
 	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
@@ -321,10 +323,12 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]interface{}{
-		"predefined": json.RawMessage(catalog.GetPredefinedProvidersJSON()),
-		"custom":     customProviders,
-		"active":     active,
-		"default":    defaultURL,
+		"predefined":      json.RawMessage(catalog.GetPredefinedProvidersJSON()),
+		"custom":          customProviders,
+		"metadataActive":  metadataActive,
+		"metadataDefault": metadataDefault,
+		"downloadActive":  downloadActive,
+		"downloadDefault": downloadDefault,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -353,6 +357,40 @@ func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	if err := h.SettingsRepo.Set(store.SettingActiveDownloadProvider, url); err != nil {
+		h.Logger.Error("Failed to save active download provider", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
+}
+
+func (h *Handler) SetMetadataProviderHTMX(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	if url == "" {
+		http.Error(w, "url is required", http.StatusBadRequest)
+		return
+	}
+
+	h.ProviderManager.SetMetadataProvider(url)
+	if err := h.SettingsRepo.Set(store.SettingActiveMetadataProvider, url); err != nil {
+		h.Logger.Error("Failed to save active metadata provider", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
+}
+
+func (h *Handler) SetDownloadProviderHTMX(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	if url == "" {
+		http.Error(w, "url is required", http.StatusBadRequest)
+		return
+	}
+
+	h.ProviderManager.SetDownloadProvider(url)
 	if err := h.SettingsRepo.Set(store.SettingActiveDownloadProvider, url); err != nil {
 		h.Logger.Error("Failed to save active download provider", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
