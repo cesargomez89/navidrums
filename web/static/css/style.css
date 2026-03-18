@@ -1073,6 +1073,15 @@ textarea {
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 }
 
+.badge-env {
+    background: var(--secondary);
+    color: var(--secondary-content, var(--text));
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
 /* Quality Badge */
 .quality-badge {
     display: inline-block;

@@ -2,9 +2,35 @@
 <h1>Settings</h1>
 
 <div class="section">
-    <h2>Current Provider</h2>
-    <div id="current-provider">
-        <span class="provider-badge">Loading...</span>
+    <h2>API Configuration</h2>
+    <p class="hint">env vars override: <code>PROVIDER_URL</code>, <code>PROVIDER_DOWNLOAD_URL</code></p>
+    
+    <div class="grid grid-2 gap-4 mb-4">
+        <div class="card">
+            <h3>Metadata API</h3>
+            <div id="metadata-provider" class="provider-display">
+                <span class="provider-badge">Loading...</span>
+            </div>
+            <button class="btn btn-outline mt-2" onclick="showProviderModal('metadata')">Select</button>
+        </div>
+        
+        <div class="card">
+            <h3>Download API</h3>
+            <div id="download-provider" class="provider-display">
+                <span class="provider-badge">Loading...</span>
+            </div>
+            <button class="btn btn-outline mt-2" onclick="showProviderModal('download')">Select</button>
+        </div>
+    </div>
+</div>
+
+<div id="provider-modal-overlay" class="modal-overlay" style="display: none;" onclick="closeProviderModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="modal-title">Select Provider</h3>
+            <button class="modal-close" onclick="closeProviderModal()">&times;</button>
+        </div>
+        <div id="modal-providers-list"></div>
     </div>
 </div>
 
@@ -15,11 +41,6 @@
         <input type="url" id="provider-url" placeholder="URL (https://api.example.com)" required>
         <button type="submit" class="btn-lg btn-primary">+</button>
     </form>
-</div>
-
-<div class="section">
-    <h2>Available Providers</h2>
-    <div id="providers-list"></div>
 </div>
 
 <div class="section">
@@ -77,42 +98,106 @@
 </div>
 
 <script>
+    let currentProviderType = 'metadata';
+
     function loadProviders() {
         fetch('/htmx/providers', { cache: 'no-store' })
             .then(r => r.json())
             .then(data => {
-                document.querySelector('#current-provider .provider-badge').textContent =
-                    data.active === data.default ? 'Default' : data.active;
-
-                const container = document.getElementById('providers-list');
-                container.innerHTML = '';
-
-                let all = [];
-                if (data.default) all.push({ name: 'Default (env)', url: data.default, isDefault: true });
-                (data.custom || []).forEach(p => all.push(p));
-
-                all.forEach(p => {
-                    const div = document.createElement('div');
-                    div.className = 'item item-bordered mb-3';
-                    if (p.url === data.active) {
-                        div.style.borderColor = 'var(--accent)';
-                        div.style.backgroundColor = 'rgba(245,196,0,0.05)';
-                    }
-                    div.innerHTML = `
-                    <div class="item-body">
-                        <div class="item-title">${p.name}</div>
-                        <div class="item-subtitle" style="font-family: monospace;">${p.url}</div>
-                    </div>
-                    <div class="item-actions">
-                        ${p.url === data.active
-                            ? '<button class="btn btn-success" disabled>Active</button>'
-                            : `<button class="btn btn-outline" onclick="setProvider('${p.url}')">Select</button>`}
-                        ${p.isDefault ? '' : `<button class="btn btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
-                    </div>
+                const metadataDiv = document.getElementById('metadata-provider');
+                const downloadDiv = document.getElementById('download-provider');
+                
+                const metadataEnv = data.metadataActive === data.metadataDefault;
+                const downloadEnv = data.downloadActive === data.downloadDefault;
+                
+                metadataDiv.innerHTML = `
+                    <div class="provider-name">${data.metadataActive || 'None'}</div>
+                    <div class="provider-url">${data.metadataActive || ''}</div>
+                    ${metadataEnv && data.metadataDefault ? '<span class="badge badge-env">(env)</span>' : ''}
                 `;
-                    container.appendChild(div);
-                });
+                
+                downloadDiv.innerHTML = `
+                    <div class="provider-name">${data.downloadActive || 'None'}</div>
+                    <div class="provider-url">${data.downloadActive || ''}</div>
+                    ${downloadEnv && data.downloadDefault ? '<span class="badge badge-env">(env)</span>' : ''}
+                `;
+
+                window._providersData = data;
             });
+    }
+
+    function showProviderModal(type) {
+        currentProviderType = type;
+        const data = window._providersData || {};
+        const modal = document.getElementById('provider-modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const container = document.getElementById('modal-providers-list');
+        
+        modalTitle.textContent = type === 'metadata' ? 'Select Metadata Provider' : 'Select Download Provider';
+        
+        const activeUrl = type === 'metadata' ? data.metadataActive : data.downloadActive;
+        
+        let all = [];
+        if (data.predefined) {
+            try {
+                const predefined = JSON.parse(data.predefined);
+                predefined.forEach(p => all.push({ ...p, isPredefined: true }));
+            } catch (e) {}
+        }
+        if (data.custom) {
+            data.custom.forEach(p => all.push({ ...p, isCustom: true }));
+        }
+
+        container.innerHTML = '';
+        all.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'item item-bordered mb-2';
+            if (p.url === activeUrl) {
+                div.style.borderColor = 'var(--accent)';
+                div.style.backgroundColor = 'rgba(245,196,0,0.05)';
+            }
+            div.innerHTML = `
+                <div class="item-body">
+                    <div class="item-title">${p.name}</div>
+                    <div class="item-subtitle" style="font-family: monospace;">${p.url}</div>
+                </div>
+                <div class="item-actions">
+                    ${p.url === activeUrl
+                        ? '<button class="btn btn-success" disabled>Active</button>'
+                        : `<button class="btn btn-outline" onclick="selectProvider('${p.url}')">Select</button>`}
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeProviderModal(event) {
+        if (!event || event.target === document.getElementById('provider-modal-overlay')) {
+            document.getElementById('provider-modal-overlay').style.display = 'none';
+        }
+    }
+
+    function selectProvider(url) {
+        if (currentProviderType === 'metadata') {
+            setMetadataProvider(url);
+        } else {
+            setDownloadProvider(url);
+        }
+        closeProviderModal();
+    }
+
+    function setMetadataProvider(url) {
+        fetch('/htmx/provider/metadata?url=' + encodeURIComponent(url), { method: 'POST' })
+            .then(r => r.json())
+            .then(() => loadProviders());
+    }
+
+    function setDownloadProvider(url) {
+        fetch('/htmx/provider/download?url=' + encodeURIComponent(url), { method: 'POST' })
+            .then(r => r.json())
+            .then(() => loadProviders());
     }
 
     function setProvider(url) {
