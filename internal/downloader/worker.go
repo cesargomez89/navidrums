@@ -286,7 +286,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With(
 		"job_id", job.ID,
 		"job_type", job.Type,
-		"source_id", job.SourceID,
+		"source_id", job.GetSourceID(),
 	)
 	logger.Info("Running job")
 

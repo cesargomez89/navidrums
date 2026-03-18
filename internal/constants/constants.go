@@ -9,7 +9,7 @@ const (
 	DefaultDBPath         = "navidrums.db"
 	DefaultQuality        = "LOSSLESS"
 	DefaultProviderURL    = "http://127.0.0.1:8000"
-	DefaultConcurrency    = 2
+	DefaultConcurrency    = 1
 	DefaultPollInterval   = 2 * time.Second
 	DefaultHTTPTimeout    = 1 * time.Minute
 	ImageHTTPTimeout      = 30 * time.Second

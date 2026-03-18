@@ -25,7 +25,7 @@ func NewHifiProvider(baseURL string) *HifiProvider {
 		BaseURL: baseURL,
 		Client: httpclient.NewClient(&http.Client{
 			Timeout: 20 * time.Second,
-		}, 1100*time.Millisecond),
+		}, 1200*time.Millisecond),
 	}
 }
 

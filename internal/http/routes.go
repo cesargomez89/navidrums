@@ -348,6 +348,16 @@ func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
+	if err := h.SettingsRepo.Set(store.SettingActiveMetadataProvider, url); err != nil {
+		h.Logger.Error("Failed to save active metadata provider", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if err := h.SettingsRepo.Set(store.SettingActiveDownloadProvider, url); err != nil {
+		h.Logger.Error("Failed to save active download provider", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	_, _ = w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
 }

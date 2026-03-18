@@ -374,14 +374,15 @@ func selectTracks(q sqlx.Queryer, query string, args ...interface{}) ([]*domain.
 	return tracks, err
 }
 
-func (db *DB) CreateTrackBatch(tracks []*domain.Track) error {
+func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 	tx, err := db.root.Beginx()
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return 0, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback() //nolint:errcheck // rollback is best-effort
 
-	query := `INSERT INTO tracks (
+	createdCount := 0
+	query := `INSERT OR IGNORE INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
 		year, genre, mood, style, label, isrc, copyright, composer,
@@ -410,14 +411,17 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) error {
 			track.UpdatedAt = time.Now()
 		}
 
-		if _, err := tx.NamedExec(query, track); err != nil {
-			return fmt.Errorf("failed to create track %s: %w", track.ProviderID, err)
+		result, err := tx.NamedExec(query, track)
+		if err != nil {
+			return 0, fmt.Errorf("failed to create track %s: %w", track.ProviderID, err)
 		}
+		affected, _ := result.RowsAffected()
+		createdCount += int(affected)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return 0, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return nil
+	return createdCount, nil
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -36,7 +37,7 @@ func (s *JobService) EnqueueJob(sourceID string, jobType domain.JobType) (*domai
 		ID:        id,
 		Type:      jobType,
 		Status:    domain.JobStatusQueued,
-		SourceID:  sourceID,
+		SourceID:  sql.NullString{String: sourceID, Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -101,7 +102,7 @@ func (s *JobService) RetryJob(id string) error {
 	if err != nil {
 		return err
 	}
-	s.Logger.Info("Job retried", "job_id", id, "type", job.Type, "source_id", job.SourceID)
+	s.Logger.Info("Job retried", "job_id", id, "type", job.Type, "source_id", job.GetSourceID())
 	return nil
 }
 

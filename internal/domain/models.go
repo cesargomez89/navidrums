@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"database/sql"
 	"strings"
 	"time"
 )
@@ -33,15 +34,29 @@ const (
 //
 //nolint:govet // fieldalignment optimization not critical for correctness
 type Job struct {
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
-	Progress    float64   `json:"progress" db:"progress"`
-	ID          string    `json:"id" db:"id"`
-	ParentJobID string    `json:"parent_job_id" db:"parent_job_id"`
-	Type        JobType   `json:"type" db:"type"`
-	Status      JobStatus `json:"status" db:"status"`
-	SourceID    string    `json:"source_id" db:"source_id"`
-	Error       *string   `json:"error,omitempty" db:"error"`
+	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at" db:"updated_at"`
+	Progress    float64        `json:"progress" db:"progress"`
+	ID          string         `json:"id" db:"id"`
+	ParentJobID sql.NullString `json:"parent_job_id" db:"parent_job_id"`
+	Type        JobType        `json:"type" db:"type"`
+	Status      JobStatus      `json:"status" db:"status"`
+	SourceID    sql.NullString `json:"source_id" db:"source_id"`
+	Error       *string        `json:"error,omitempty" db:"error"`
+}
+
+func (j *Job) GetParentJobID() string {
+	if j.ParentJobID.Valid {
+		return j.ParentJobID.String
+	}
+	return ""
+}
+
+func (j *Job) GetSourceID() string {
+	if j.SourceID.Valid {
+		return j.SourceID.String
+	}
+	return ""
 }
 
 // TrackStatus represents the download status of a track

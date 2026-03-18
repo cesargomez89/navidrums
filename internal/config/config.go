@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -15,27 +16,29 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Port              string
-	DBPath            string
-	DownloadsDir      string
-	ProviderURL       string
-	Quality           string
-	PlayQuality       string
-	LogLevel          string
-	LogFormat         string
-	Username          string
-	Password          string
-	SubdirTemplate    string
-	MusicBrainzURL    string
-	FFmpegPath        string
-	FFprobePath       string
-	Theme             string
-	CacheTTL          time.Duration
-	RateLimitWindow   time.Duration
-	RateLimitRequests int
-	RateLimitBurst    int
-	SkipAuth          bool
-	DisableRateLimit  bool
+	Port                string
+	DBPath              string
+	DownloadsDir        string
+	ProviderURL         string
+	ProviderMetadataURL string
+	ProviderDownloadURL string
+	Quality             string
+	PlayQuality         string
+	LogLevel            string
+	LogFormat           string
+	Username            string
+	Password            string
+	SubdirTemplate      string
+	MusicBrainzURL      string
+	FFmpegPath          string
+	FFprobePath         string
+	Theme               string
+	CacheTTL            time.Duration
+	RateLimitWindow     time.Duration
+	RateLimitRequests   int
+	RateLimitBurst      int
+	SkipAuth            bool
+	DisableRateLimit    bool
 }
 
 // Load loads configuration from environment variables with defaults
@@ -44,32 +47,35 @@ func Load() *Config {
 	defaultDownload := filepath.Join(home, "Downloads/navidrums")
 
 	return &Config{
-		Port:              getEnv("PORT", constants.DefaultPort),
-		DBPath:            getEnv("DB_PATH", constants.DefaultDBPath),
-		DownloadsDir:      getEnv("DOWNLOADS_DIR", defaultDownload),
-		ProviderURL:       getEnv("PROVIDER_URL", constants.DefaultProviderURL),
-		Quality:           getEnv("QUALITY", constants.DefaultQuality),
-		PlayQuality:       getEnv("PLAY_QUALITY", "HIGH"),
-		LogLevel:          getEnv("LOG_LEVEL", "info"),
-		LogFormat:         getEnv("LOG_FORMAT", "text"),
-		Username:          getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
-		Password:          getEnv("NAVIDRUMS_PASSWORD", ""),
-		SubdirTemplate:    getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
-		CacheTTL:          getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
-		MusicBrainzURL:    getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
-		RateLimitRequests: getEnvInt("RATE_LIMIT_REQUESTS", 200),
-		RateLimitWindow:   getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
-		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
-		SkipAuth:          getEnvBool("SKIP_AUTH", false),
-		DisableRateLimit:  getEnvBool("DISABLE_RATE_LIMIT", false),
-		Theme:             getEnv("THEME", "golden"),
-		FFmpegPath:        getEnv("FFMPEG_PATH", ""),
-		FFprobePath:       getEnv("FFPROBE_PATH", ""),
+		Port:                getEnv("PORT", constants.DefaultPort),
+		DBPath:              getEnv("DB_PATH", constants.DefaultDBPath),
+		DownloadsDir:        getEnv("DOWNLOADS_DIR", defaultDownload),
+		ProviderURL:         getEnv("PROVIDER_URL", constants.DefaultProviderURL),
+		ProviderMetadataURL: getEnv("PROVIDER_METADATA_URL", ""),
+		ProviderDownloadURL: getEnv("PROVIDER_DOWNLOAD_URL", ""),
+		Quality:             getEnv("QUALITY", constants.DefaultQuality),
+		PlayQuality:         getEnv("PLAY_QUALITY", "HIGH"),
+		LogLevel:            getEnv("LOG_LEVEL", "info"),
+		LogFormat:           getEnv("LOG_FORMAT", "text"),
+		Username:            getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
+		Password:            getEnv("NAVIDRUMS_PASSWORD", ""),
+		SubdirTemplate:      getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
+		CacheTTL:            getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
+		MusicBrainzURL:      getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+		RateLimitRequests:   getEnvInt("RATE_LIMIT_REQUESTS", 200),
+		RateLimitWindow:     getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
+		RateLimitBurst:      getEnvInt("RATE_LIMIT_BURST", 10),
+		SkipAuth:            getEnvBool("SKIP_AUTH", false),
+		DisableRateLimit:    getEnvBool("DISABLE_RATE_LIMIT", false),
+		Theme:               getEnv("THEME", "golden"),
+		FFmpegPath:          getEnv("FFMPEG_PATH", ""),
+		FFprobePath:         getEnv("FFPROBE_PATH", ""),
 	}
 }
 
-// Validate validates the configuration and returns detailed errors
-func (c *Config) Validate() error {
+// Validate validates the configuration and returns detailed errors.
+// If a logger is provided, deprecation warnings will be logged for legacy configuration.
+func (c *Config) Validate(log *slog.Logger) error {
 	var errors []string
 
 	// Validate Port
@@ -94,12 +100,16 @@ func (c *Config) Validate() error {
 		errors = append(errors, "DOWNLOADS_DIR cannot be empty")
 	}
 
-	// Validate ProviderURL
-	if c.ProviderURL == "" {
-		errors = append(errors, "PROVIDER_URL cannot be empty")
-	} else {
-		if _, err := url.Parse(c.ProviderURL); err != nil {
-			errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid URL: %s", c.ProviderURL))
+	// Validate Provider URLs based on configuration
+	providerErrors, hasNewConfig, hasLegacyConfig := c.validateProviderURLs(log)
+	errors = append(errors, providerErrors...)
+
+	// Emit deprecation warning if using legacy PROVIDER_URL
+	if hasLegacyConfig && log != nil {
+		if hasNewConfig {
+			log.Warn("PROVIDER_URL is deprecated and ignored when PROVIDER_METADATA_URL or PROVIDER_DOWNLOAD_URL are set")
+		} else {
+			log.Warn("PROVIDER_URL is deprecated, use PROVIDER_METADATA_URL and PROVIDER_DOWNLOAD_URL instead")
 		}
 	}
 
@@ -176,6 +186,48 @@ func (c *Config) Validate() error {
 	}
 
 	return nil
+}
+
+// validateProviderURLs validates the provider URL configuration.
+// Returns: (errors, hasNewConfig, hasLegacyConfig)
+func (c *Config) validateProviderURLs(log *slog.Logger) ([]string, bool, bool) {
+	var errors []string
+	hasMetadataURL := c.ProviderMetadataURL != ""
+	hasDownloadURL := c.ProviderDownloadURL != ""
+	hasLegacyURL := c.ProviderURL != ""
+
+	hasNewConfig := hasMetadataURL || hasDownloadURL
+	hasLegacyConfig := hasLegacyURL && !hasNewConfig
+
+	if hasNewConfig {
+		// Both new vars set: validate both
+		if hasMetadataURL {
+			if u, err := url.Parse(c.ProviderMetadataURL); err != nil || u.Scheme == "" || u.Host == "" {
+				errors = append(errors, fmt.Sprintf("PROVIDER_METADATA_URL is not a valid absolute URL: %s", c.ProviderMetadataURL))
+			}
+		} else {
+			errors = append(errors, "PROVIDER_METADATA_URL is required when PROVIDER_DOWNLOAD_URL is set")
+		}
+
+		if hasDownloadURL {
+			if u, err := url.Parse(c.ProviderDownloadURL); err != nil || u.Scheme == "" || u.Host == "" {
+				errors = append(errors, fmt.Sprintf("PROVIDER_DOWNLOAD_URL is not a valid absolute URL: %s", c.ProviderDownloadURL))
+			}
+		} else {
+			errors = append(errors, "PROVIDER_DOWNLOAD_URL is required when PROVIDER_METADATA_URL is set")
+		}
+	} else {
+		// Only legacy PROVIDER_URL set: validate it, use it for both (backward compat)
+		if c.ProviderURL == "" {
+			errors = append(errors, "PROVIDER_URL cannot be empty")
+		} else {
+			if _, err := url.Parse(c.ProviderURL); err != nil {
+				errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid URL: %s", c.ProviderURL))
+			}
+		}
+	}
+
+	return errors, hasNewConfig, hasLegacyConfig
 }
 
 // getEnv retrieves an environment variable with a fallback default

@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -64,7 +65,7 @@ func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *s
 func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.Job, logger *slog.Logger) (*domain.Track, string, bool, error) {
 	forceDownload := h.isForceDownload()
 
-	existingTrack, _ := h.Repo.GetTrackByProviderID(job.SourceID)
+	existingTrack, _ := h.Repo.GetTrackByProviderID(job.GetSourceID())
 	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted && !forceDownload {
 		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
 		_ = h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
@@ -76,7 +77,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		track = existingTrack
 	} else {
 		track = &domain.Track{
-			ProviderID:  job.SourceID,
+			ProviderID:  job.GetSourceID(),
 			Status:      domain.TrackStatusMissing,
 			ParentJobID: job.ID,
 			CreatedAt:   time.Now(),
@@ -287,7 +288,7 @@ func (h *TrackJobHandler) finalizeTrackDownload(job *domain.Job, track *domain.T
 	if track.ParentJobID != "" {
 		parentJob, err := h.Repo.GetJob(track.ParentJobID)
 		if err == nil && parentJob != nil && parentJob.Type == domain.JobTypePlaylist {
-			playlist, err := h.Repo.GetPlaylistByProviderID(parentJob.SourceID)
+			playlist, err := h.Repo.GetPlaylistByProviderID(parentJob.GetSourceID())
 			if err == nil && playlist != nil {
 				if err := h.Repo.AddTrackToPlaylist(playlist.ID, track.ID, track.TrackNumber); err != nil {
 					logger.Warn("Failed to add track to playlist", "error", err)
@@ -331,11 +332,11 @@ func (h *TrackJobHandler) triggerPlaylistGenerationIfComplete(parentJobID string
 	ctx := context.Background()
 	switch parentJob.Type {
 	case domain.JobTypePlaylist:
-		playlist, err := h.Repo.GetPlaylistByProviderID(parentJob.SourceID)
+		playlist, err := h.Repo.GetPlaylistByProviderID(parentJob.GetSourceID())
 		if err == nil && playlist != nil {
 			if genErr := h.PlaylistGenerator.GenerateFromDB(playlist.ID, h.lookupTrack); genErr != nil {
 				logger.Error("Failed to generate complete playlist from DB", "error", genErr)
-				pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, parentJob.SourceID)
+				pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, parentJob.GetSourceID())
 				if err == nil {
 					if genErr2 := h.PlaylistGenerator.Generate(pl, h.lookupTrack); genErr2 != nil {
 						logger.Error("Failed to generate complete playlist from provider", "error", genErr2)
@@ -348,7 +349,7 @@ func (h *TrackJobHandler) triggerPlaylistGenerationIfComplete(parentJobID string
 			}
 		}
 	case domain.JobTypeArtist:
-		artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, parentJob.SourceID)
+		artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, parentJob.GetSourceID())
 		if err == nil {
 			catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
 			copy(catalogTracks, artist.TopTracks)
@@ -423,7 +424,7 @@ func (h *ContainerJobHandler) Handle(ctx context.Context, job *domain.Job, logge
 }
 
 func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	album, err := h.ProviderManager.GetProvider().GetAlbum(ctx, job.SourceID)
+	album, err := h.ProviderManager.GetProvider().GetAlbum(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch album", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
@@ -454,7 +455,7 @@ func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.J
 }
 
 func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, job.SourceID)
+	pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch playlist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
@@ -514,7 +515,7 @@ func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domai
 }
 
 func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
+	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
@@ -547,7 +548,7 @@ func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.
 }
 
 func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
+	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
@@ -563,7 +564,7 @@ func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *do
 	for _, album := range artist.Albums {
 		albumJob := &domain.Job{
 			Type:     domain.JobTypeAlbum,
-			SourceID: album.ID,
+			SourceID: sql.NullString{String: album.ID, Valid: true},
 		}
 		if err := h.processAlbumJob(ctx, albumJob, logger); err != nil {
 			logger.Error("Failed to process album", "album_id", album.ID, "error", err)
@@ -613,8 +614,8 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 			ID:          uuid.New().String(),
 			Type:        domain.JobTypeTrack,
 			Status:      domain.JobStatusQueued,
-			SourceID:    catalogTrack.ID,
-			ParentJobID: parentJobID,
+			SourceID:    sql.NullString{String: catalogTrack.ID, Valid: true},
+			ParentJobID: sql.NullString{String: parentJobID, Valid: true},
 			CreatedAt:   time.Now(),
 			UpdatedAt:   time.Now(),
 		}
@@ -622,10 +623,11 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 	}
 
 	if len(tracksToCreate) > 0 {
-		if err := h.Repo.CreateTrackBatch(tracksToCreate); err != nil {
+		n, err := h.Repo.CreateTrackBatch(tracksToCreate)
+		if err != nil {
 			logger.Error("Failed to create tracks batch", "error", err)
 		} else {
-			createdCount += len(tracksToCreate)
+			createdCount += n
 		}
 	}
 
@@ -698,7 +700,7 @@ func (h *SyncJobHandler) processSyncFileJob(ctx context.Context, job *domain.Job
 }
 
 func (h *SyncJobHandler) getTrackForSync(job *domain.Job, logger *slog.Logger) (*domain.Track, bool) {
-	track, err := h.Repo.GetTrackByProviderID(job.SourceID)
+	track, err := h.Repo.GetTrackByProviderID(job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to get track", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))

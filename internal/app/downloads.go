@@ -110,7 +110,7 @@ func (s *DownloadsService) enqueueSyncJob(providerID string, jobType domain.JobT
 		ID:        uuid.New().String(),
 		Type:      jobType,
 		Status:    domain.JobStatusQueued,
-		SourceID:  providerID,
+		SourceID:  sql.NullString{String: providerID, Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -172,7 +172,7 @@ func (s *DownloadsService) EnqueueSyncJobs() (int, error) {
 			ID:        uuid.New().String(),
 			Type:      domain.JobTypeSyncHiFi,
 			Status:    domain.JobStatusQueued,
-			SourceID:  track.ProviderID,
+			SourceID:  sql.NullString{String: track.ProviderID, Valid: true},
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}

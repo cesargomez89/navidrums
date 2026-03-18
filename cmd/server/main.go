@@ -36,7 +36,7 @@ func main() {
 	})
 
 	// Validate configuration
-	if err := cfg.Validate(); err != nil {
+	if err := cfg.Validate(appLogger.Logger); err != nil {
 		appLogger.Error("Configuration error", "error", err)
 		os.Exit(1)
 	}
