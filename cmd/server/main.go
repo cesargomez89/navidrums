@@ -54,12 +54,23 @@ func main() {
 	}()
 
 	// Initialize Provider Manager
-	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
+	metURL := cfg.ProviderMetadataURL
+	dlURL := cfg.ProviderDownloadURL
+	if metURL == "" {
+		metURL = cfg.ProviderURL
+	}
+	if dlURL == "" {
+		dlURL = cfg.ProviderURL
+	}
+	providerManager := catalog.NewProviderManager(metURL, dlURL, db, cfg.CacheTTL, appLogger)
 
 	// Load saved provider from settings if exists
 	settingsRepo := store.NewSettingsRepo(db)
-	if savedProvider, err := settingsRepo.Get(store.SettingActiveProvider); err == nil && savedProvider != "" {
-		providerManager.SetProvider(savedProvider)
+	if savedMetURL, err := settingsRepo.Get(store.SettingActiveMetadataProvider); err == nil && savedMetURL != "" {
+		providerManager.SetMetadataProvider(savedMetURL)
+	}
+	if savedDlURL, err := settingsRepo.Get(store.SettingActiveDownloadProvider); err == nil && savedDlURL != "" {
+		providerManager.SetDownloadProvider(savedDlURL)
 	}
 
 	// Initialize Worker

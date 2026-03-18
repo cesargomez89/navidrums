@@ -16,33 +16,55 @@ type Logger interface {
 }
 
 type ProviderManager struct {
-	provider   Provider
-	logger     Logger
-	cached     *CachedProvider
-	baseURL    string
-	defaultURL string
-	mu         sync.RWMutex
+	provider           Provider
+	metadataProvider   *HifiProvider
+	downloadProvider   *HifiProvider
+	logger             Logger
+	cached             *CachedProvider
+	settingsRepo       *store.SettingsRepo
+	metadataURL        string
+	downloadURL        string
+	defaultMetadataURL string
+	defaultDownloadURL string
+	mu                 sync.RWMutex
 }
 
-func NewProviderManager(baseURL string, db *store.DB, cacheTTL time.Duration, logger Logger) *ProviderManager {
-	hifi := NewHifiProvider(baseURL)
+func NewProviderManager(metURL, dlURL string, db *store.DB, cacheTTL time.Duration, logger Logger) *ProviderManager {
+	if metURL == "" {
+		metURL = dlURL
+	}
+	if dlURL == "" {
+		dlURL = metURL
+	}
+
+	var settingsRepo *store.SettingsRepo
+	if db != nil {
+		settingsRepo = store.NewSettingsRepo(db)
+	}
+
+	hifi := NewHifiProviderDual(metURL, dlURL)
 	var cached *CachedProvider
 	if db != nil {
 		cached = NewCachedProvider(hifi, &storeCache{store: db}, cacheTTL)
 	}
 	return &ProviderManager{
-		baseURL:    baseURL,
-		defaultURL: baseURL,
-		provider:   hifi,
-		cached:     cached,
-		logger:     logger,
+		metadataURL:        metURL,
+		downloadURL:        dlURL,
+		defaultMetadataURL: metURL,
+		defaultDownloadURL: dlURL,
+		metadataProvider:   hifi,
+		downloadProvider:   hifi,
+		provider:           hifi,
+		cached:             cached,
+		logger:             logger,
+		settingsRepo:       settingsRepo,
 	}
 }
 
 func (m *ProviderManager) GetDefaultURL() string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.defaultURL
+	return m.defaultMetadataURL
 }
 
 func (m *ProviderManager) GetProvider() Provider {
@@ -60,18 +82,62 @@ func (m *ProviderManager) SetProvider(baseURL string) {
 	if m.logger != nil {
 		m.logger.Info("Setting provider", "url", baseURL)
 	}
-	m.provider = NewHifiProvider(baseURL)
+	m.metadataProvider = NewHifiProviderDual(baseURL, baseURL)
+	m.downloadProvider = m.metadataProvider
+	m.provider = m.metadataProvider
 	if m.cached != nil {
-		m.cached.provider = m.provider
+		m.cached.provider = m.metadataProvider
 		_ = m.cached.ClearCache()
 	}
-	m.baseURL = baseURL
+	m.metadataURL = baseURL
+	m.downloadURL = baseURL
+	if m.settingsRepo != nil {
+		_ = m.settingsRepo.Set(store.SettingActiveMetadataProvider, baseURL)
+		_ = m.settingsRepo.Set(store.SettingActiveDownloadProvider, baseURL)
+	}
 }
 
 func (m *ProviderManager) GetBaseURL() string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	return m.baseURL
+	return m.metadataURL
+}
+
+func (m *ProviderManager) GetDownloadProvider() Provider {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.downloadProvider
+}
+
+func (m *ProviderManager) SetMetadataProvider(url string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.logger != nil {
+		m.logger.Info("Setting metadata provider", "url", url)
+	}
+	m.metadataProvider = NewHifiProviderDual(url, m.downloadURL)
+	m.provider = m.metadataProvider
+	if m.cached != nil {
+		m.cached.provider = m.metadataProvider
+		_ = m.cached.ClearCache()
+	}
+	m.metadataURL = url
+	if m.settingsRepo != nil {
+		_ = m.settingsRepo.Set(store.SettingActiveMetadataProvider, url)
+	}
+}
+
+func (m *ProviderManager) SetDownloadProvider(url string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.logger != nil {
+		m.logger.Info("Setting download provider", "url", url)
+	}
+	m.downloadProvider = NewHifiProviderDual(m.metadataURL, url)
+	m.downloadURL = url
+	if m.settingsRepo != nil {
+		_ = m.settingsRepo.Set(store.SettingActiveDownloadProvider, url)
+	}
 }
 
 type CustomProvider struct {
@@ -80,8 +146,11 @@ type CustomProvider struct {
 }
 
 type ProviderSettings struct {
-	ActiveProvider  string           `json:"active_provider"`
-	CustomProviders []CustomProvider `json:"custom_providers"`
+	MetadataURL        string           `json:"metadata_url"`
+	DownloadURL        string           `json:"download_url"`
+	DefaultMetadataURL string           `json:"default_metadata_url"`
+	DefaultDownloadURL string           `json:"default_download_url"`
+	CustomProviders    []CustomProvider `json:"custom_providers"`
 }
 
 func (m *ProviderManager) GetSettingsJSON() string {
@@ -89,8 +158,11 @@ func (m *ProviderManager) GetSettingsJSON() string {
 	defer m.mu.RUnlock()
 
 	settings := ProviderSettings{
-		ActiveProvider:  m.baseURL,
-		CustomProviders: []CustomProvider{},
+		MetadataURL:        m.metadataURL,
+		DownloadURL:        m.downloadURL,
+		DefaultMetadataURL: m.defaultMetadataURL,
+		DefaultDownloadURL: m.defaultDownloadURL,
+		CustomProviders:    []CustomProvider{},
 	}
 
 	data, _ := json.Marshal(settings)
