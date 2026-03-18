@@ -31,7 +31,7 @@ func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 }
 
 func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
-	provider := d.providerManager.GetProvider()
+	provider := d.providerManager.GetDownloadProvider()
 
 	shouldConvertToFLAC := d.config.Quality == constants.QualityHiResLossless
 
