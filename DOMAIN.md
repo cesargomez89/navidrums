@@ -70,7 +70,9 @@ Fields include ID, name, picture URL, albums list, and top tracks list (CatalogT
 ## Playlist
 Collection of tracks curated by users or the system.
 
-Fields include ID, title, description, image URL, and tracks list (CatalogTrack).
+Fields include: `ID` (internal), `ProviderID` (external), `Title`, `Description`, `ImageURL`, `Tracks` (CatalogTrack list for provider data), `CreatedAt`, `UpdatedAt`.
+
+Persisted to database with many-to-many relationship to tracks via `playlist_tracks` junction table.
 
 ---
 
@@ -89,8 +91,10 @@ Types:
 
 Status machine:
 ```
-queued → running → completed | failed | cancelled
+queued → running → decomposed → completed | failed | cancelled
 ```
+
+Note: Container jobs (album/playlist/artist) transition to `decomposed` after creating child track jobs. They remain in `decomposed` status until all children complete, then transition to `completed`.
 
 Track status machine:
 ```
@@ -98,8 +102,10 @@ missing → queued → downloading → downloaded → processing → completed |
 ```
 
 Structure:
-- Minimal fields: ID, Type, Status, SourceID, Progress, Error, timestamps
+- Minimal fields: ID, Type, Status, SourceID, Progress, Error, timestamps, ParentJobID
 - `SourceID` links to Track.ProviderID
+- `ParentJobID` links container jobs to their child track jobs (for cancellation/progress tracking)
+- `m3u_generating` flag prevents race conditions in playlist M3U generation
 - No metadata stored (get from Tracks table)
 
 A container job (album/playlist/artist) creates Track records and child track jobs. Track jobs look up stored metadata and handle the actual download, tagging, and file writing.
@@ -143,7 +149,16 @@ Track operations:
 - `RecomputeAlbumState` - Recompute album download state (missing/partial/completed)
 
 Job operations:
-- `CreateJob`, `GetJob`, `UpdateJobStatus`, `MarkJobFailed` - Job lifecycle
+- `CreateJob`, `CreateJobBatch` - Job lifecycle (batch for atomic decomposition)
+- `GetJob`, `UpdateJobStatus`, `UpdateJobProgress`, `MarkJobFailed` - Job lifecycle
+- `CountJobsForParent` - Count total/pending child jobs for progress tracking
+- `CancelJobsByParentID` - Cancel all child jobs when parent is cancelled
+- `TrySetM3UGenerating`, `ClearM3UGenerating` - Advisory lock for playlist generation
+
+Playlist operations:
+- `CreatePlaylist`, `GetPlaylistByID`, `GetPlaylistByProviderID`, `UpdatePlaylist`, `ListPlaylists`, `DeletePlaylist` - Playlist CRUD
+- `AddTrackToPlaylist`, `RemoveTrackFromPlaylist`, `GetTracksByPlaylistID`, `GetPlaylistsByTrackID` - Junction table operations
+- `PlaylistExists`, `ClearPlaylistTracks` - Utility operations
 
 ---
 
@@ -154,15 +169,71 @@ Workers:
 - Poll for queued jobs at regular intervals
 - Process jobs with configurable max concurrency
 - Handle job lifecycle: running → download → tagging → completion
-- Decompose container jobs (album/playlist/artist) into track records + child jobs
+- Decompose container jobs (album/playlist/artist) into track records + child jobs atomically (using batch operations with transactions)
+- Track container job progress by aggregating child job completion counts
+- Mark container job as `decomposed` after creating children, then `completed` when all children finish
+- Use advisory lock (`m3u_generating` flag) to prevent race conditions in playlist M3U generation
 - Look up Track metadata for downloads (no duplicate provider calls)
 - Update Track status throughout lifecycle (missing → queued → downloading → downloaded → processing → completed)
+- Update parent container job progress when child track jobs complete
 - Recover interrupted tracks on startup (reset downloading/processing to queued)
 - Verify file hash for idempotent downloads (skip if file exists and hash matches)
 - Recompute album state after track completion
 - Recover from panics gracefully
 
 Workers never decide business rules. They only execute service instructions.
+
+---
+
+## Playlist Persistence
+
+Playlists are persisted to the database with the following structure:
+
+**playlists table:**
+- `id` - Auto-increment primary key (internal)
+- `provider_id` - Unique identifier from the provider (prevents duplicates on re-download)
+- `title` - Playlist title
+- `description` - Optional description
+- `image_url` - Playlist cover image URL
+- `created_at`, `updated_at` - Timestamps
+
+**playlist_tracks junction table:**
+- `id` - Auto-increment primary key
+- `playlist_id` - Foreign key to playlists (CASCADE delete)
+- `track_id` - Foreign key to tracks (CASCADE delete)
+- `position` - Track order within playlist
+- `added_at` - Timestamp when track was added
+
+This enables:
+- Many-to-many relationship (tracks can belong to multiple playlists)
+- Playlist metadata persistence across sessions
+- M3U generation from database instead of job hierarchy
+- Upsert behavior: re-downloading a playlist updates existing record
+
+---
+
+## Playlist Generation
+
+M3U playlist files are generated after all tracks in a playlist download complete. Generation uses database-backed playlist-tracks data (via `GenerateFromDB` method) with fallback to provider API.
+
+Protected by an advisory lock (`m3u_generating` flag on the job record) to prevent race conditions when multiple track jobs complete simultaneously.
+
+Location: `<DownloadsDir>/playlists/<sanitized_title>_<provider_id>.m3u`
+
+Format: Extended M3U with `#EXTM3U`, `#PLAYLIST:`, and `#EXTINF:` tags containing track duration and metadata.
+
+---
+
+## CachedProvider
+
+A caching wrapper around the HiFi provider that stores responses in SQLite with configurable TTL (default: 12h). Prevents duplicate API calls for the same content.
+
+Cached methods:
+- `Search`, `GetArtist`, `GetAlbum`, `GetPlaylist`, `GetTrack`
+- `GetSimilarAlbums`, `GetSimilarArtists`, `GetRecommendations`
+
+Not cached (streaming/dynamic data):
+- `GetStream`, `GetLyrics`
 
 ---
 

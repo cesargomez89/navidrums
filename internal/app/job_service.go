@@ -70,7 +70,18 @@ func (s *JobService) ListActiveJobs(page, pageSize int) ([]*domain.Job, int, err
 }
 
 func (s *JobService) CancelJob(id string) error {
-	err := s.Repo.UpdateJobStatus(id, domain.JobStatusCancelled, 0)
+	job, err := s.Repo.GetJob(id)
+	if err != nil {
+		return fmt.Errorf("failed to get job: %w", err)
+	}
+
+	if job.Type != domain.JobTypeTrack && job.Status != domain.JobStatusCompleted {
+		if cancelErr := s.Repo.CancelJobsByParentID(id); cancelErr != nil {
+			return fmt.Errorf("failed to cancel child jobs: %w", cancelErr)
+		}
+	}
+
+	err = s.Repo.UpdateJobStatus(id, domain.JobStatusCancelled, 0)
 	if err != nil {
 		return err
 	}

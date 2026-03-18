@@ -64,7 +64,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	}
 
 	worker.downloader = app.NewDownloader(pm, cfg)
-	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
+	worker.playlistGenerator = app.NewPlaylistGenerator(cfg, repo)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
 
 	baseMBClient := musicbrainz.NewClient(cfg.MusicBrainzURL)

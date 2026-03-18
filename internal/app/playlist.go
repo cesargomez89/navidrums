@@ -7,6 +7,7 @@ import (
 	"github.com/cesargomez89/navidrums/internal/config"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/storage"
+	"github.com/cesargomez89/navidrums/internal/store"
 )
 
 type TrackLookupFunc func(trackID string) *domain.Track
@@ -14,22 +15,52 @@ type TrackLookupFunc func(trackID string) *domain.Track
 type PlaylistGenerator interface {
 	Generate(pl *domain.Playlist, lookup TrackLookupFunc) error
 	GenerateFromTracks(artistName string, tracks []domain.CatalogTrack, lookup TrackLookupFunc) error
+	GenerateFromDB(playlistID int64, lookup TrackLookupFunc) error
 }
 
 type playlistGenerator struct {
 	config *config.Config
+	Repo   *store.DB
 }
 
-func NewPlaylistGenerator(cfg *config.Config) PlaylistGenerator {
+func NewPlaylistGenerator(cfg *config.Config, repo *store.DB) PlaylistGenerator {
 	return &playlistGenerator{
 		config: cfg,
+		Repo:   repo,
 	}
+}
+
+func (pg *playlistGenerator) GenerateFromDB(playlistID int64, lookup TrackLookupFunc) error {
+	playlist, err := pg.Repo.GetPlaylistByID(playlistID)
+	if err != nil {
+		return fmt.Errorf("failed to get playlist: %w", err)
+	}
+
+	tracks, err := pg.Repo.GetTracksByPlaylistID(playlistID)
+	if err != nil {
+		return fmt.Errorf("failed to get playlist tracks: %w", err)
+	}
+
+	catalogTracks := make([]domain.CatalogTrack, len(tracks))
+	for i, t := range tracks {
+		catalogTracks[i] = domain.CatalogTrack{
+			ID:          t.ProviderID,
+			Title:       t.Title,
+			Artist:      t.Artist,
+			Album:       t.Album,
+			AlbumArtist: t.AlbumArtist,
+			Duration:    t.Duration,
+		}
+	}
+
+	filename := fmt.Sprintf("%s - %s.m3u", storage.Sanitize(playlist.Title), storage.Sanitize(playlist.ProviderID))
+	return pg.writePlaylist(filename, playlist.Title, catalogTracks, lookup)
 }
 
 func (pg *playlistGenerator) Generate(pl *domain.Playlist, lookup TrackLookupFunc) error {
 	var filename string
-	if pl.ID != "" {
-		filename = fmt.Sprintf("%s - %s.m3u", storage.Sanitize(pl.Title), storage.Sanitize(pl.ID))
+	if pl.ProviderID != "" {
+		filename = fmt.Sprintf("%s - %s.m3u", storage.Sanitize(pl.Title), storage.Sanitize(pl.ProviderID))
 	} else {
 		filename = storage.Sanitize(pl.Title) + ".m3u"
 	}

@@ -21,23 +21,27 @@ const (
 type JobStatus string
 
 const (
-	JobStatusQueued    JobStatus = "queued"
-	JobStatusRunning   JobStatus = "running"
-	JobStatusCompleted JobStatus = "completed"
-	JobStatusFailed    JobStatus = "failed"
-	JobStatusCancelled JobStatus = "cancelled"
+	JobStatusQueued     JobStatus = "queued"
+	JobStatusRunning    JobStatus = "running"
+	JobStatusDecomposed JobStatus = "decomposed"
+	JobStatusCompleted  JobStatus = "completed"
+	JobStatusFailed     JobStatus = "failed"
+	JobStatusCancelled  JobStatus = "cancelled"
 )
 
 // Job represents a work item in the queue
+//
+//nolint:govet // fieldalignment optimization not critical for correctness
 type Job struct {
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
-	Error     *string   `json:"error,omitempty" db:"error"`
-	ID        string    `json:"id" db:"id"`
-	Type      JobType   `json:"type" db:"type"`
-	Status    JobStatus `json:"status" db:"status"`
-	SourceID  string    `json:"source_id" db:"source_id"`
-	Progress  float64   `json:"progress" db:"progress"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	Progress    float64   `json:"progress" db:"progress"`
+	ID          string    `json:"id" db:"id"`
+	ParentJobID string    `json:"parent_job_id" db:"parent_job_id"`
+	Type        JobType   `json:"type" db:"type"`
+	Status      JobStatus `json:"status" db:"status"`
+	SourceID    string    `json:"source_id" db:"source_id"`
+	Error       *string   `json:"error,omitempty" db:"error"`
 }
 
 // TrackStatus represents the download status of a track
@@ -194,12 +198,15 @@ type Artist struct {
 	TopTracks  []CatalogTrack `json:"top_tracks,omitempty"`
 }
 
-type Playlist struct {
-	ID          string         `json:"id"`
-	Title       string         `json:"title"`
-	Description string         `json:"description,omitempty"`
-	ImageURL    string         `json:"image_url,omitempty"`
-	Tracks      []CatalogTrack `json:"tracks"`
+type Playlist struct { //nolint:govet // fieldalignment optimization not critical for correctness
+	ID          int64          `json:"id" db:"id"`
+	ProviderID  string         `json:"provider_id" db:"provider_id"`
+	Title       string         `json:"title" db:"title"`
+	Description string         `json:"description,omitempty" db:"description"`
+	ImageURL    string         `json:"image_url,omitempty" db:"image_url"`
+	Tracks      []CatalogTrack `json:"tracks,omitempty"` // Transient, populated from provider
+	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at" db:"updated_at"`
 }
 
 type SearchResult struct {

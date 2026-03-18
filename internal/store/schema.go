@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS jobs (
 	status TEXT NOT NULL,
 	progress REAL DEFAULT 0,
 	source_id TEXT,
+	parent_job_id TEXT,
+	m3u_generating INTEGER DEFAULT 0,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	error TEXT
@@ -17,6 +19,32 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_active_source ON jobs(source_id, type
 WHERE status IN ('queued', 'running');
 
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+
+CREATE TABLE IF NOT EXISTS playlists (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	provider_id TEXT UNIQUE NOT NULL,
+	title TEXT NOT NULL,
+	description TEXT,
+	image_url TEXT,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_playlists_provider_id ON playlists(provider_id);
+
+CREATE TABLE IF NOT EXISTS playlist_tracks (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	playlist_id INTEGER NOT NULL,
+	track_id INTEGER NOT NULL,
+	position INTEGER DEFAULT 0,
+	added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
+	FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE,
+	UNIQUE(playlist_id, track_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_playlist_tracks_playlist ON playlist_tracks(playlist_id);
+CREATE INDEX IF NOT EXISTS idx_playlist_tracks_track ON playlist_tracks(track_id);
 
 CREATE TABLE IF NOT EXISTS tracks (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,

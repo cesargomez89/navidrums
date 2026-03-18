@@ -80,6 +80,58 @@ func TestDB_Jobs(t *testing.T) {
 	}
 }
 
+func TestDB_JobWithParentJobID(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	parentID := "parent-job-123"
+
+	// Create parent job
+	parentJob := &domain.Job{
+		ID:        parentID,
+		Type:      domain.JobTypeAlbum,
+		Status:    domain.JobStatusQueued,
+		SourceID:  "album-456",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(parentJob); err != nil {
+		t.Fatalf("CreateJob failed for parent: %v", err)
+	}
+
+	// Create child job with ParentJobID
+	childJob := &domain.Job{
+		ID:          "child-job-789",
+		Type:        domain.JobTypeTrack,
+		Status:      domain.JobStatusQueued,
+		SourceID:    "track-101",
+		ParentJobID: parentID,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	if err := db.CreateJob(childJob); err != nil {
+		t.Fatalf("CreateJob failed for child: %v", err)
+	}
+
+	// Verify child job has ParentJobID
+	retrieved, err := db.GetJob("child-job-789")
+	if err != nil {
+		t.Fatalf("GetJob failed: %v", err)
+	}
+	if retrieved.ParentJobID != parentID {
+		t.Errorf("Expected ParentJobID %s, got %s", parentID, retrieved.ParentJobID)
+	}
+
+	// Verify parent job has empty ParentJobID
+	parentRetrieved, err := db.GetJob(parentID)
+	if err != nil {
+		t.Fatalf("GetJob failed for parent: %v", err)
+	}
+	if parentRetrieved.ParentJobID != "" {
+		t.Errorf("Expected empty ParentJobID for parent, got %s", parentRetrieved.ParentJobID)
+	}
+}
+
 func TestDB_Tracks(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()
@@ -892,5 +944,180 @@ func TestDB_GetTrackByProviderID(t *testing.T) {
 	_, err = db.GetTrackByProviderID("nonexistent")
 	if err == nil {
 		t.Error("Expected error for non-existent provider ID")
+	}
+}
+
+func TestDB_CountJobsForParent(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	parentID := "parent-job-count"
+
+	// Create parent job
+	parentJob := &domain.Job{
+		ID:        parentID,
+		Type:      domain.JobTypeAlbum,
+		Status:    domain.JobStatusDecomposed,
+		SourceID:  "album-1",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(parentJob); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	// Create child jobs - 3 total, 2 pending
+	childJobs := []*domain.Job{
+		{ID: "child-1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "t1", ParentJobID: parentID, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "child-2", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: "t2", ParentJobID: parentID, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "child-3", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: "t3", ParentJobID: parentID, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	for _, j := range childJobs {
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
+	}
+
+	// Test CountJobsForParent
+	total, pending, err := db.CountJobsForParent(parentID)
+	if err != nil {
+		t.Fatalf("CountJobsForParent failed: %v", err)
+	}
+	if total != 3 {
+		t.Errorf("Expected total 3, got %d", total)
+	}
+	if pending != 2 {
+		t.Errorf("Expected pending 2, got %d", pending)
+	}
+
+	// Test progress calculation: (3-2)/3 = 33.33%
+	if err := db.UpdateJobProgress(parentID, 33.33); err != nil {
+		t.Fatalf("UpdateJobProgress failed: %v", err)
+	}
+
+	updated, _ := db.GetJob(parentID)
+	if updated.Progress < 33.0 || updated.Progress > 34.0 {
+		t.Errorf("Expected progress ~33.33, got %f", updated.Progress)
+	}
+
+	// Complete the job
+	if err := db.UpdateJobStatus(parentID, domain.JobStatusCompleted, 100); err != nil {
+		t.Fatalf("UpdateJobStatus failed: %v", err)
+	}
+
+	// Count after completion - need to complete the child jobs too
+	for _, j := range childJobs {
+		_ = db.UpdateJobStatus(j.ID, domain.JobStatusCompleted, 100)
+	}
+
+	// Count after completion
+	_, pendingAfter, _ := db.CountJobsForParent(parentID)
+	if pendingAfter != 0 {
+		t.Errorf("Expected pending 0 after completion, got %d", pendingAfter)
+	}
+}
+
+func TestDB_M3UGenerationLock(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	parentID := "playlist-job-lock"
+
+	job := &domain.Job{
+		ID:        parentID,
+		Type:      domain.JobTypePlaylist,
+		Status:    domain.JobStatusCompleted,
+		SourceID:  "playlist-1",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(job); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	claimed, err := db.TrySetM3UGenerating(parentID)
+	if err != nil {
+		t.Fatalf("TrySetM3UGenerating failed: %v", err)
+	}
+	if !claimed {
+		t.Error("Expected first claim to succeed")
+	}
+
+	claimed2, err := db.TrySetM3UGenerating(parentID)
+	if err != nil {
+		t.Fatalf("TrySetM3UGenerating failed: %v", err)
+	}
+	if claimed2 {
+		t.Error("Expected second claim to fail")
+	}
+
+	if clearErr := db.ClearM3UGenerating(parentID); clearErr != nil {
+		t.Fatalf("ClearM3UGenerating failed: %v", clearErr)
+	}
+
+	claimed3, err := db.TrySetM3UGenerating(parentID)
+	if err != nil {
+		t.Fatalf("TrySetM3UGenerating failed: %v", err)
+	}
+	if !claimed3 {
+		t.Error("Expected third claim to succeed after clear")
+	}
+}
+
+func TestDB_CreateJobBatch(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	jobs := []*domain.Job{
+		{ID: "batch-1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "t1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "batch-2", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "t2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "batch-3", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "t3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	err := db.CreateJobBatch(jobs)
+	if err != nil {
+		t.Fatalf("CreateJobBatch failed: %v", err)
+	}
+
+	for _, j := range jobs {
+		retrieved, err := db.GetJob(j.ID)
+		if err != nil {
+			t.Errorf("GetJob failed for %s: %v", j.ID, err)
+		}
+		if retrieved.SourceID != j.SourceID {
+			t.Errorf("SourceID mismatch for %s: got %s, want %s", j.ID, retrieved.SourceID, j.SourceID)
+		}
+	}
+
+	list, _ := db.ListActiveJobs(0, 10)
+	if len(list) != 3 {
+		t.Errorf("Expected 3 active jobs, got %d", len(list))
+	}
+}
+
+func TestDB_CreateTrackBatch(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	tracks := []*domain.Track{
+		{ProviderID: "batch-track-1", Title: "Track 1", Artist: "Artist", Album: "Album", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "batch-track-2", Title: "Track 2", Artist: "Artist", Album: "Album", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "batch-track-3", Title: "Track 3", Artist: "Artist", Album: "Album", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	err := db.CreateTrackBatch(tracks)
+	if err != nil {
+		t.Fatalf("CreateTrackBatch failed: %v", err)
+	}
+
+	for _, tr := range tracks {
+		retrieved, err := db.GetTrackByProviderID(tr.ProviderID)
+		if err != nil {
+			t.Errorf("GetTrackByProviderID failed for %s: %v", tr.ProviderID, err)
+		}
+		if retrieved.Title != tr.Title {
+			t.Errorf("Title mismatch for %s: got %s, want %s", tr.ProviderID, retrieved.Title, tr.Title)
+		}
 	}
 }

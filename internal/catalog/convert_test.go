@@ -249,8 +249,8 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 
 	playlist := resp.ToDomain(p)
 
-	if playlist.ID != "uuid-123" {
-		t.Errorf("Expected ID 'uuid-123', got %s", playlist.ID)
+	if playlist.ProviderID != "uuid-123" {
+		t.Errorf("Expected ProviderID 'uuid-123', got %s", playlist.ProviderID)
 	}
 	if len(playlist.Tracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(playlist.Tracks))

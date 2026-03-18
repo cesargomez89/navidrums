@@ -58,8 +58,8 @@ func (p *MockProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, 
 
 func (p *MockProvider) GetPlaylist(ctx context.Context, id string) (*domain.Playlist, error) {
 	return &domain.Playlist{
-		ID:    id,
-		Title: "Mock Playlist",
+		ProviderID: id,
+		Title:      "Mock Playlist",
 		Tracks: []domain.CatalogTrack{
 			{ID: "3", Title: "Track 3", ArtistID: "2", Artist: "Unknown", AlbumID: "2", Album: "Unknown Album", TrackNumber: 1},
 		},

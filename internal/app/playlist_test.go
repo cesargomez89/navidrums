@@ -17,7 +17,7 @@ func TestPlaylistGenerator_Generate(t *testing.T) {
 		SubdirTemplate: "{{.AlbumArtist}}/{{.Album}}/{{.Track}} {{.Title}}",
 	}
 
-	pg := NewPlaylistGenerator(cfg)
+	pg := NewPlaylistGenerator(cfg, nil)
 
 	pl := &domain.Playlist{
 		Title: "Test Playlist",
@@ -65,7 +65,7 @@ func TestPlaylistGenerator_GenerateFromTracks(t *testing.T) {
 		SubdirTemplate: "{{.AlbumArtist}}/{{.Album}}/{{.Track}} {{.Title}}",
 	}
 
-	pg := NewPlaylistGenerator(cfg)
+	pg := NewPlaylistGenerator(cfg, nil)
 
 	tracks := []domain.CatalogTrack{
 		{

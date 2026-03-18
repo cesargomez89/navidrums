@@ -98,6 +98,60 @@ func TestJobService_CancelJob(t *testing.T) {
 	}
 }
 
+func TestJobService_CancelJobCancelsChildren(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	log := logger.Default()
+	svc := NewJobService(db, log)
+
+	// Create container job
+	parentID := "container-cancel"
+	parentJob := &domain.Job{
+		ID:        parentID,
+		Type:      domain.JobTypeAlbum,
+		Status:    domain.JobStatusDecomposed,
+		SourceID:  "album-1",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(parentJob); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	// Create child jobs
+	childJobs := []*domain.Job{
+		{ID: "child-cancel-1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "t1", ParentJobID: parentID, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "child-cancel-2", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "t2", ParentJobID: parentID, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "child-cancel-3", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: "t3", ParentJobID: parentID, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+	for _, j := range childJobs {
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
+	}
+
+	// Cancel parent
+	err := svc.CancelJob(parentID)
+	if err != nil {
+		t.Fatalf("CancelJob failed: %v", err)
+	}
+
+	// Verify parent is cancelled
+	parent, _ := db.GetJob(parentID)
+	if parent.Status != domain.JobStatusCancelled {
+		t.Errorf("Expected parent status cancelled, got %s", parent.Status)
+	}
+
+	// Verify children are cancelled
+	for _, childID := range []string{"child-cancel-1", "child-cancel-2", "child-cancel-3"} {
+		child, _ := db.GetJob(childID)
+		if child.Status != domain.JobStatusCancelled {
+			t.Errorf("Expected child %s status cancelled, got %s", childID, child.Status)
+		}
+	}
+}
+
 func TestJobService_RetryJob(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()

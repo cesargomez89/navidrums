@@ -239,6 +239,60 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     9,
+		description: "Add parent_job_id and m3u_generating columns to jobs table",
+		up: func(tx *sqlx.Tx) error {
+			queries := []string{
+				"ALTER TABLE jobs ADD COLUMN parent_job_id TEXT",
+				"ALTER TABLE jobs ADD COLUMN m3u_generating INTEGER DEFAULT 0",
+			}
+			for _, q := range queries {
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
+				}
+			}
+			return nil
+		},
+	},
+	{
+		version:     10,
+		description: "Add playlists and playlist_tracks tables for persistent playlist storage",
+		up: func(tx *sqlx.Tx) error {
+			queries := []string{
+				`CREATE TABLE IF NOT EXISTS playlists (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					provider_id TEXT UNIQUE NOT NULL,
+					title TEXT NOT NULL,
+					description TEXT,
+					image_url TEXT,
+					created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+					updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+				)`,
+				`CREATE INDEX IF NOT EXISTS idx_playlists_provider_id ON playlists(provider_id)`,
+				`CREATE TABLE IF NOT EXISTS playlist_tracks (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					playlist_id INTEGER NOT NULL,
+					track_id INTEGER NOT NULL,
+					position INTEGER DEFAULT 0,
+					added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
+					FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE,
+					UNIQUE(playlist_id, track_id)
+				)`,
+				`CREATE INDEX IF NOT EXISTS idx_playlist_tracks_playlist ON playlist_tracks(playlist_id)`,
+				`CREATE INDEX IF NOT EXISTS idx_playlist_tracks_track ON playlist_tracks(track_id)`,
+			}
+			for _, q := range queries {
+				if _, err := tx.Exec(q); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	},
 }
 
 type dbOps interface {
