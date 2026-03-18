@@ -17,6 +17,7 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `NAVIDRUMS_USERNAME` | `navidrums` | No* | Username for HTTP basic authentication |
 | `NAVIDRUMS_PASSWORD` | (empty) | No | Password for HTTP basic authentication (empty disables auth) |
 | `CACHE_TTL` | `12h` | No | Provider response cache TTL (e.g., `1h`, `24h`, `7d`) |
+| `MUSICBRAINZ_CACHE_TTL` | `7d` | No | MusicBrainz API response cache TTL (e.g., `1d`, `168h`) |
 | `MUSICBRAINZ_URL` | `https://musicbrainz.org/ws/2` | No | MusicBrainz API endpoint for metadata enrichment |
 | `RATE_LIMIT_REQUESTS` | `200` | No | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | No | Rate limit time window (e.g., `30s`, `1m`) |
@@ -105,6 +106,20 @@ CACHE_TTL=168h  # or 7d
 
 Cache is stored in SQLite and automatically invalidated when providers change.
 
+### MusicBrainz Cache
+
+The `MUSICBRAINZ_CACHE_TTL` controls how long MusicBrainz API responses are cached:
+
+```bash
+# Cache for 1 day
+MUSICBRAINZ_CACHE_TTL=1d
+
+# Cache for 2 weeks
+MUSICBRAINZ_CACHE_TTL=336h  # or 14d
+```
+
+MusicBrainz has strict rate limits, so caching their responses for extended periods is recommended.
+
 ## Genre Map Settings
 
 Genre mapping normalizes MusicBrainz subgenre tags into main genres. Configured via the Settings page UI.
@@ -166,6 +181,7 @@ Configuration is validated at startup. Common validation errors:
 - Invalid `QUALITY` (not one of allowed values)
 - Invalid `SUBDIR_TEMPLATE` (template parsing error)
 - Invalid `CACHE_TTL` (not a valid duration)
+- Invalid `MUSICBRAINZ_CACHE_TTL` (not a valid duration)
 - Missing `NAVIDRUMS_USERNAME` when password is set
 
 ## Docker Configuration
@@ -198,6 +214,7 @@ NAVIDRUMS_USERNAME=navidrums
 NAVIDRUMS_PASSWORD=secure-password
 SUBDIR_TEMPLATE={{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}
 CACHE_TTL=12h
+MUSICBRAINZ_CACHE_TTL=7d
 MUSICBRAINZ_URL=https://musicbrainz.org/ws/2
 THEME=golden
 ```

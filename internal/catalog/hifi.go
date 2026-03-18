@@ -21,27 +21,19 @@ type HifiProvider struct {
 	BaseURL        string
 }
 
-func NewHifiProvider(baseURL string) *HifiProvider {
+func NewHifiProvider(metadataURL, downloadURL string) *HifiProvider {
+	baseURL := metadataURL
+	if downloadURL == "" {
+		baseURL = metadataURL
+	}
 	return &HifiProvider{
 		BaseURL: baseURL,
 		client: httpclient.NewClient(&http.Client{
 			Timeout: 20 * time.Second,
-		}, 1200*time.Millisecond),
+		}, 500*time.Millisecond),
 		downloadClient: httpclient.NewClient(&http.Client{
-			Timeout: 20 * time.Second,
-		}, 1200*time.Millisecond),
-	}
-}
-
-func NewHifiProviderDual(metadataURL, downloadURL string) *HifiProvider {
-	return &HifiProvider{
-		BaseURL: metadataURL,
-		client: httpclient.NewClient(&http.Client{
-			Timeout: 20 * time.Second,
-		}, 1200*time.Millisecond),
-		downloadClient: httpclient.NewClient(&http.Client{
-			Timeout: 20 * time.Second,
-		}, 1200*time.Millisecond),
+			Timeout: 30 * time.Second,
+		}, 100*time.Millisecond),
 	}
 }
 

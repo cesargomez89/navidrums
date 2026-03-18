@@ -226,7 +226,7 @@ Format: Extended M3U with `#EXTM3U`, `#PLAYLIST:`, and `#EXTINF:` tags containin
 
 ## CachedProvider
 
-A caching wrapper around the HiFi provider that stores responses in SQLite with configurable TTL (default: 12h). Prevents duplicate API calls for the same content.
+A caching wrapper around the HiFi provider that stores responses in SQLite with configurable TTL (default: 12h, controlled by `CACHE_TTL`). Prevents duplicate API calls for the same content.
 
 Cached methods:
 - `Search`, `GetArtist`, `GetAlbum`, `GetPlaylist`, `GetTrack`
@@ -236,6 +236,24 @@ Not cached (streaming/dynamic data):
 - `GetStream`, `GetLyrics`
 
 ---
+
+## MusicBrainzCache
+
+A caching wrapper around the MusicBrainz client that stores API responses in SQLite with configurable TTL (default: 7 days, controlled by `MUSICBRAINZ_CACHE_TTL`). MusicBrainz has strict rate limits, so extended caching is recommended.
+
+Cached methods:
+- `GetRecording` (by MBID or ISRC)
+- `GetGenres`
+
+Cache is shared with the provider cache in the same SQLite `cache` table.
+
+---
+
+## In-Memory Caching
+
+### Recommendations Cache
+
+The HTTP handler caches recommendations data in memory for 5 minutes to reduce provider calls. This is not configurable and is scoped per handler instance.
 
 ## SearchResult
 Container for search results across all entity types.

@@ -41,6 +41,7 @@ go fmt ./...
 | `NAVIDRUMS_USERNAME` | navidrums | Basic auth username |
 | `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
 | `CACHE_TTL` | 12h | Provider response cache TTL |
+| `MUSICBRAINZ_CACHE_TTL` | 7d | MusicBrainz API response cache TTL |
 | `MUSICBRAINZ_URL` | https://musicbrainz.org/ws/2 | MusicBrainz API endpoint for metadata enrichment |
 | `RATE_LIMIT_REQUESTS` | 200 | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |

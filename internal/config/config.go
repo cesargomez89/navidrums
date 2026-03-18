@@ -34,6 +34,7 @@ type Config struct {
 	FFprobePath         string
 	Theme               string
 	CacheTTL            time.Duration
+	MusicBrainzCacheTTL time.Duration
 	RateLimitWindow     time.Duration
 	RateLimitRequests   int
 	RateLimitBurst      int
@@ -61,6 +62,7 @@ func Load() *Config {
 		Password:            getEnv("NAVIDRUMS_PASSWORD", ""),
 		SubdirTemplate:      getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
 		CacheTTL:            getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
+		MusicBrainzCacheTTL: getEnvDuration("MUSICBRAINZ_CACHE_TTL", constants.DefaultMusicBrainzCacheTTL),
 		MusicBrainzURL:      getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
 		RateLimitRequests:   getEnvInt("RATE_LIMIT_REQUESTS", 200),
 		RateLimitWindow:     getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
@@ -164,6 +166,11 @@ func (c *Config) Validate(log *slog.Logger) error {
 	// Validate CacheTTL
 	if c.CacheTTL <= 0 {
 		errors = append(errors, "CACHE_TTL must be greater than 0")
+	}
+
+	// Validate MusicBrainzCacheTTL
+	if c.MusicBrainzCacheTTL <= 0 {
+		errors = append(errors, "MUSICBRAINZ_CACHE_TTL must be greater than 0")
 	}
 
 	// Validate RateLimitRequests

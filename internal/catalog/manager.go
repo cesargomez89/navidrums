@@ -42,7 +42,7 @@ func NewProviderManager(metURL, dlURL string, db *store.DB, cacheTTL time.Durati
 		settingsRepo = store.NewSettingsRepo(db)
 	}
 
-	hifi := NewHifiProviderDual(metURL, dlURL)
+	hifi := NewHifiProvider(metURL, dlURL)
 	var cached *CachedProvider
 	if db != nil {
 		cached = NewCachedProvider(hifi, &storeCache{store: db}, cacheTTL)
@@ -82,7 +82,7 @@ func (m *ProviderManager) SetProvider(baseURL string) {
 	if m.logger != nil {
 		m.logger.Info("Setting provider", "url", baseURL)
 	}
-	m.metadataProvider = NewHifiProviderDual(baseURL, baseURL)
+	m.metadataProvider = NewHifiProvider(baseURL, baseURL)
 	m.downloadProvider = m.metadataProvider
 	m.provider = m.metadataProvider
 	if m.cached != nil {
@@ -127,7 +127,7 @@ func (m *ProviderManager) SetMetadataProvider(url string) {
 	if m.logger != nil {
 		m.logger.Info("Setting metadata provider", "url", url)
 	}
-	m.metadataProvider = NewHifiProviderDual(url, m.downloadURL)
+	m.metadataProvider = NewHifiProvider(url, m.downloadURL)
 	m.provider = m.metadataProvider
 	if m.cached != nil {
 		m.cached.provider = m.metadataProvider
@@ -145,7 +145,7 @@ func (m *ProviderManager) SetDownloadProvider(url string) {
 	if m.logger != nil {
 		m.logger.Info("Setting download provider", "url", url)
 	}
-	m.downloadProvider = NewHifiProviderDual(m.metadataURL, url)
+	m.downloadProvider = NewHifiProvider(m.metadataURL, url)
 	m.downloadURL = url
 	if m.settingsRepo != nil {
 		_ = m.settingsRepo.Set(store.SettingActiveDownloadProvider, url)

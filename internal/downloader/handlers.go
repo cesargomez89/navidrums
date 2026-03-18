@@ -197,7 +197,7 @@ func (h *TrackJobHandler) executeDownload(ctx context.Context, job *domain.Job, 
 		return "", dirErr
 	}
 
-	finalPath, err := h.Downloader.Download(ctx, track, destPath)
+	finalPath, err := h.Downloader.Download(ctx, track, destPath, logger)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = h.Repo.MarkTrackFailed(track.ID, err.Error())

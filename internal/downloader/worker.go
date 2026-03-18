@@ -68,7 +68,7 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	worker.albumArtService = app.NewAlbumArtService(cfg)
 
 	baseMBClient := musicbrainz.NewClient(cfg.MusicBrainzURL)
-	worker.musicBrainzClient = musicbrainz.NewCachedClient(baseMBClient, repo, 7*24*time.Hour)
+	worker.musicBrainzClient = musicbrainz.NewCachedClient(baseMBClient, repo, cfg.MusicBrainzCacheTTL)
 	worker.enricher = app.NewMetadataEnricher(worker.musicBrainzClient, pm)
 
 	worker.dispatcher = NewDispatcher()
