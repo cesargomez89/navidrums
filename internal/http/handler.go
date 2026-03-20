@@ -25,6 +25,7 @@ type Handler struct {
 	DownloadsService *app.DownloadsService
 	ProviderManager  *catalog.ProviderManager
 	SettingsRepo     *store.SettingsRepo
+	ProvidersRepo    *store.ProvidersRepo
 	Config           *config.Config
 	Templates        *template.Template
 	Logger           *logger.Logger
@@ -33,12 +34,13 @@ type Handler struct {
 	recsMutex        sync.RWMutex
 }
 
-func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo, cfg *config.Config) *Handler {
+func NewHandler(js *app.JobService, ds *app.DownloadsService, pm *catalog.ProviderManager, sr *store.SettingsRepo, pr *store.ProvidersRepo, cfg *config.Config) *Handler {
 	h := &Handler{
 		JobService:       js,
 		DownloadsService: ds,
 		ProviderManager:  pm,
 		SettingsRepo:     sr,
+		ProvidersRepo:    pr,
 		Config:           cfg,
 		Logger:           logger.Default(),
 		FormDecoder:      form.NewDecoder(),
@@ -88,11 +90,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/track/{id}/enrich-hifi", h.EnrichHiFiHTMX)
 
 	r.Get("/htmx/providers", h.GetProvidersHTMX)
-	r.Post("/htmx/provider/set", h.SetProviderHTMX)
-	r.Post("/htmx/provider/metadata", h.SetMetadataProviderHTMX)
-	r.Post("/htmx/provider/download", h.SetDownloadProviderHTMX)
-	r.Post("/htmx/provider/add", h.AddCustomProviderHTMX)
-	r.Post("/htmx/provider/remove", h.RemoveCustomProviderHTMX)
+	r.Post("/htmx/providers/reorder", h.ReorderProvidersHTMX)
+	r.Post("/htmx/provider", h.AddProviderHTMX)
+	r.Delete("/htmx/provider", h.RemoveProviderHTMX)
 
 	r.Get("/htmx/genre-map", h.GetGenreMapHTMX)
 	r.Post("/htmx/genre-map", h.SetGenreMapHTMX)

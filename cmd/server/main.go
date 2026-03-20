@@ -70,6 +70,7 @@ func main() {
 	// Initialize Services
 	jobService := app.NewJobService(db, appLogger)
 	downloadsService := app.NewDownloadsService(db, appLogger)
+	providersRepo := store.NewProvidersRepo(db)
 
 	// Initialize Router
 	r := chi.NewRouter()
@@ -118,7 +119,7 @@ func main() {
 	})
 
 	// Routes
-	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo, cfg)
+	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo, providersRepo, cfg)
 	h.RegisterRoutes(r)
 
 	// Start Server
