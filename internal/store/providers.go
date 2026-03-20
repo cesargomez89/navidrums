@@ -2,10 +2,10 @@ package store
 
 // Provider represents a music provider for fallback support.
 type Provider struct {
-	ID       int64
-	Position int
-	URL      string
-	Name     string
+	ID       int64  `json:"id"`
+	Position int    `json:"position"`
+	URL      string `json:"url"`
+	Name     string `json:"name"`
 }
 
 type ProvidersRepo struct {
