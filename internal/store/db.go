@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -290,6 +291,80 @@ var migrations = []migration{
 					return err
 				}
 			}
+			return nil
+		},
+	},
+	{
+		version:     11,
+		description: "Migrate custom providers from settings to providers table",
+		up: func(tx *sqlx.Tx) error {
+			// Create providers table if not exists
+			_, err := tx.Exec(`
+				CREATE TABLE IF NOT EXISTS providers (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					url TEXT UNIQUE NOT NULL,
+					name TEXT,
+					position INTEGER DEFAULT 0,
+					created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+					updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+				)
+			`)
+			if err != nil {
+				return err
+			}
+
+			// Create index if not exists
+			_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS idx_providers_position ON providers(position)`)
+			if err != nil {
+				return err
+			}
+
+			// Check if providers table already has data
+			var count int
+			err = tx.QueryRow(`SELECT COUNT(*) FROM providers`).Scan(&count)
+			if err != nil {
+				return err
+			}
+			if count > 0 {
+				// Already migrated
+				return nil
+			}
+
+			// Migrate from old custom_providers setting
+			var customProvidersJSON string
+			err = tx.QueryRow(`SELECT value FROM settings WHERE key = 'custom_providers'`).Scan(&customProvidersJSON)
+			if err == sql.ErrNoRows {
+				// No old providers to migrate
+				return nil
+			}
+			if err != nil {
+				return err
+			}
+
+			// Parse JSON and migrate
+			type oldProvider struct {
+				Name string `json:"name"`
+				URL  string `json:"url"`
+			}
+			var oldProviders []oldProvider
+			if customProvidersJSON != "" {
+				if err := json.Unmarshal([]byte(customProvidersJSON), &oldProviders); err != nil {
+					// Invalid JSON, skip migration
+					return nil
+				}
+			}
+
+			// Insert old providers into new table
+			for i, p := range oldProviders {
+				_, err := tx.Exec(
+					`INSERT OR IGNORE INTO providers (url, name, position) VALUES (?, ?, ?)`,
+					p.URL, p.Name, i,
+				)
+				if err != nil {
+					return err
+				}
+			}
+
 			return nil
 		},
 	},
