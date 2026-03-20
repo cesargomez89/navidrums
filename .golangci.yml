@@ -16,6 +16,8 @@ linters:
   settings:
     govet:
       enable-all: true
+      disable:
+        - fieldalignment
   exclusions:
     rules:
       - path: '_test\.go'
