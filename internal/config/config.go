@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -20,8 +19,6 @@ type Config struct {
 	DBPath              string
 	DownloadsDir        string
 	ProviderURL         string
-	ProviderMetadataURL string
-	ProviderDownloadURL string
 	Quality             string
 	PlayQuality         string
 	LogLevel            string
@@ -52,8 +49,6 @@ func Load() *Config {
 		DBPath:              getEnv("DB_PATH", constants.DefaultDBPath),
 		DownloadsDir:        getEnv("DOWNLOADS_DIR", defaultDownload),
 		ProviderURL:         getEnv("PROVIDER_URL", constants.DefaultProviderURL),
-		ProviderMetadataURL: getEnv("PROVIDER_METADATA_URL", ""),
-		ProviderDownloadURL: getEnv("PROVIDER_DOWNLOAD_URL", ""),
 		Quality:             getEnv("QUALITY", constants.DefaultQuality),
 		PlayQuality:         getEnv("PLAY_QUALITY", "HIGH"),
 		LogLevel:            getEnv("LOG_LEVEL", "info"),
@@ -76,8 +71,7 @@ func Load() *Config {
 }
 
 // Validate validates the configuration and returns detailed errors.
-// If a logger is provided, deprecation warnings will be logged for legacy configuration.
-func (c *Config) Validate(log *slog.Logger) error {
+func (c *Config) Validate() error {
 	var errors []string
 
 	// Validate Port
@@ -102,16 +96,12 @@ func (c *Config) Validate(log *slog.Logger) error {
 		errors = append(errors, "DOWNLOADS_DIR cannot be empty")
 	}
 
-	// Validate Provider URLs based on configuration
-	providerErrors, hasNewConfig, hasLegacyConfig := c.validateProviderURLs(log)
-	errors = append(errors, providerErrors...)
-
-	// Emit deprecation warning if using legacy PROVIDER_URL
-	if hasLegacyConfig && log != nil {
-		if hasNewConfig {
-			log.Warn("PROVIDER_URL is deprecated and ignored when PROVIDER_METADATA_URL or PROVIDER_DOWNLOAD_URL are set")
-		} else {
-			log.Warn("PROVIDER_URL is deprecated, use PROVIDER_METADATA_URL and PROVIDER_DOWNLOAD_URL instead")
+	// Validate ProviderURL
+	if c.ProviderURL == "" {
+		errors = append(errors, "PROVIDER_URL cannot be empty")
+	} else {
+		if u, err := url.Parse(c.ProviderURL); err != nil || u.Scheme == "" || u.Host == "" {
+			errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid absolute URL: %s", c.ProviderURL))
 		}
 	}
 
@@ -193,48 +183,6 @@ func (c *Config) Validate(log *slog.Logger) error {
 	}
 
 	return nil
-}
-
-// validateProviderURLs validates the provider URL configuration.
-// Returns: (errors, hasNewConfig, hasLegacyConfig)
-func (c *Config) validateProviderURLs(log *slog.Logger) ([]string, bool, bool) {
-	var errors []string
-	hasMetadataURL := c.ProviderMetadataURL != ""
-	hasDownloadURL := c.ProviderDownloadURL != ""
-	hasLegacyURL := c.ProviderURL != ""
-
-	hasNewConfig := hasMetadataURL || hasDownloadURL
-	hasLegacyConfig := hasLegacyURL && !hasNewConfig
-
-	if hasNewConfig {
-		// Both new vars set: validate both
-		if hasMetadataURL {
-			if u, err := url.Parse(c.ProviderMetadataURL); err != nil || u.Scheme == "" || u.Host == "" {
-				errors = append(errors, fmt.Sprintf("PROVIDER_METADATA_URL is not a valid absolute URL: %s", c.ProviderMetadataURL))
-			}
-		} else {
-			errors = append(errors, "PROVIDER_METADATA_URL is required when PROVIDER_DOWNLOAD_URL is set")
-		}
-
-		if hasDownloadURL {
-			if u, err := url.Parse(c.ProviderDownloadURL); err != nil || u.Scheme == "" || u.Host == "" {
-				errors = append(errors, fmt.Sprintf("PROVIDER_DOWNLOAD_URL is not a valid absolute URL: %s", c.ProviderDownloadURL))
-			}
-		} else {
-			errors = append(errors, "PROVIDER_DOWNLOAD_URL is required when PROVIDER_METADATA_URL is set")
-		}
-	} else {
-		// Only legacy PROVIDER_URL set: validate it, use it for both (backward compat)
-		if c.ProviderURL == "" {
-			errors = append(errors, "PROVIDER_URL cannot be empty")
-		} else {
-			if _, err := url.Parse(c.ProviderURL); err != nil {
-				errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid URL: %s", c.ProviderURL))
-			}
-		}
-	}
-
-	return errors, hasNewConfig, hasLegacyConfig
 }
 
 // getEnv retrieves an environment variable with a fallback default

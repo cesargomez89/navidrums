@@ -36,7 +36,7 @@ func main() {
 	})
 
 	// Validate configuration
-	if err := cfg.Validate(appLogger.Logger); err != nil {
+	if err := cfg.Validate(); err != nil {
 		appLogger.Error("Configuration error", "error", err)
 		os.Exit(1)
 	}
@@ -54,15 +54,7 @@ func main() {
 	}()
 
 	// Initialize Provider Manager
-	metURL := cfg.ProviderMetadataURL
-	dlURL := cfg.ProviderDownloadURL
-	if metURL == "" {
-		metURL = cfg.ProviderURL
-	}
-	if dlURL == "" {
-		dlURL = cfg.ProviderURL
-	}
-	providerManager := catalog.NewProviderManager(metURL, dlURL, db, cfg.CacheTTL, appLogger)
+	providerManager := catalog.NewProviderManager(cfg.ProviderURL, cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
 
 	// Load saved provider from settings if exists
 	settingsRepo := store.NewSettingsRepo(db)

@@ -32,9 +32,7 @@ go fmt ./...
 | `DB_PATH` | navidrums.db | SQLite database path |
 | `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
-| `PROVIDER_METADATA_URL` | (derived) | Music catalog API URL for metadata endpoints (search, albums, artists) |
-| `PROVIDER_DOWNLOAD_URL` | (derived) | Music catalog API URL for stream/download endpoints |
-| `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL (deprecated, use PROVIDER_METADATA_URL and PROVIDER_DOWNLOAD_URL instead) |
+| `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL |
 | `QUALITY` | LOSSLESS | Audio quality |
 | `LOG_LEVEL` | info | Logging level |
 | `LOG_FORMAT` | text | Log format (text, json) |

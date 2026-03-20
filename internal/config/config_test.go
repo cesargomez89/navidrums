@@ -241,7 +241,7 @@ func TestValidate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.config.Validate(nil)
+			err := tt.config.Validate()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -310,14 +310,14 @@ func TestValidateProviderURLs(t *testing.T) {
 		errMsg  string
 	}{
 		{
-			name: "valid legacy PROVIDER_URL",
+			name: "valid PROVIDER_URL",
 			config: Config{
 				ProviderURL: "http://localhost:8000",
 			},
 			wantErr: false,
 		},
 		{
-			name: "empty legacy PROVIDER_URL",
+			name: "empty PROVIDER_URL",
 			config: Config{
 				ProviderURL: "",
 			},
@@ -325,55 +325,12 @@ func TestValidateProviderURLs(t *testing.T) {
 			errMsg:  "PROVIDER_URL cannot be empty",
 		},
 		{
-			name: "both new URLs valid",
+			name: "invalid PROVIDER_URL",
 			config: Config{
-				ProviderMetadataURL: "http://localhost:8000",
-				ProviderDownloadURL: "http://localhost:8001",
-			},
-			wantErr: false,
-		},
-		{
-			name: "metadata URL invalid",
-			config: Config{
-				ProviderMetadataURL: "not-a-valid-url",
-				ProviderDownloadURL: "http://localhost:8001",
+				ProviderURL: "not-a-valid-url",
 			},
 			wantErr: true,
-			errMsg:  "PROVIDER_METADATA_URL is not a valid absolute URL",
-		},
-		{
-			name: "download URL invalid",
-			config: Config{
-				ProviderMetadataURL: "http://localhost:8000",
-				ProviderDownloadURL: "not-a-valid-url",
-			},
-			wantErr: true,
-			errMsg:  "PROVIDER_DOWNLOAD_URL is not a valid absolute URL",
-		},
-		{
-			name: "only metadata URL set",
-			config: Config{
-				ProviderMetadataURL: "http://localhost:8000",
-			},
-			wantErr: true,
-			errMsg:  "PROVIDER_DOWNLOAD_URL is required when PROVIDER_METADATA_URL is set",
-		},
-		{
-			name: "only download URL set",
-			config: Config{
-				ProviderDownloadURL: "http://localhost:8001",
-			},
-			wantErr: true,
-			errMsg:  "PROVIDER_METADATA_URL is required when PROVIDER_DOWNLOAD_URL is set",
-		},
-		{
-			name: "legacy URL with new URLs (new takes precedence)",
-			config: Config{
-				ProviderURL:         "http://localhost:9999",
-				ProviderMetadataURL: "http://localhost:8000",
-				ProviderDownloadURL: "http://localhost:8001",
-			},
-			wantErr: false,
+			errMsg:  "PROVIDER_URL is not a valid absolute URL",
 		},
 	}
 
@@ -381,10 +338,8 @@ func TestValidateProviderURLs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cfg := baseConfig
 			cfg.ProviderURL = tt.config.ProviderURL
-			cfg.ProviderMetadataURL = tt.config.ProviderMetadataURL
-			cfg.ProviderDownloadURL = tt.config.ProviderDownloadURL
 
-			err := cfg.Validate(nil)
+			err := cfg.Validate()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -397,41 +352,23 @@ func TestValidateProviderURLs(t *testing.T) {
 	}
 }
 
-func TestLoadProviderURLs(t *testing.T) {
+func TestLoadProviderURL(t *testing.T) {
 	originalProviderURL := os.Getenv("PROVIDER_URL")
-	originalMetadataURL := os.Getenv("PROVIDER_METADATA_URL")
-	originalDownloadURL := os.Getenv("PROVIDER_DOWNLOAD_URL")
 	defer func() {
 		if originalProviderURL != "" {
 			_ = os.Setenv("PROVIDER_URL", originalProviderURL)
 		} else {
 			_ = os.Unsetenv("PROVIDER_URL")
 		}
-		if originalMetadataURL != "" {
-			_ = os.Setenv("PROVIDER_METADATA_URL", originalMetadataURL)
-		} else {
-			_ = os.Unsetenv("PROVIDER_METADATA_URL")
-		}
-		if originalDownloadURL != "" {
-			_ = os.Setenv("PROVIDER_DOWNLOAD_URL", originalDownloadURL)
-		} else {
-			_ = os.Unsetenv("PROVIDER_DOWNLOAD_URL")
-		}
 	}()
 
 	_ = os.Unsetenv("PROVIDER_URL")
-	_ = os.Unsetenv("PROVIDER_METADATA_URL")
-	_ = os.Unsetenv("PROVIDER_DOWNLOAD_URL")
 
-	_ = os.Setenv("PROVIDER_METADATA_URL", "http://metadata.example.com")
-	_ = os.Setenv("PROVIDER_DOWNLOAD_URL", "http://download.example.com")
+	_ = os.Setenv("PROVIDER_URL", "http://example.com")
 
 	cfg := Load()
 
-	if cfg.ProviderMetadataURL != "http://metadata.example.com" {
-		t.Errorf("Expected ProviderMetadataURL to be 'http://metadata.example.com', got '%s'", cfg.ProviderMetadataURL)
-	}
-	if cfg.ProviderDownloadURL != "http://download.example.com" {
-		t.Errorf("Expected ProviderDownloadURL to be 'http://download.example.com', got '%s'", cfg.ProviderDownloadURL)
+	if cfg.ProviderURL != "http://example.com" {
+		t.Errorf("Expected ProviderURL to be 'http://example.com', got '%s'", cfg.ProviderURL)
 	}
 }
