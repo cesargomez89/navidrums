@@ -16,24 +16,16 @@ import (
 )
 
 type HifiProvider struct {
-	client         *httpclient.Client
-	downloadClient *httpclient.Client
-	BaseURL        string
+	client  *httpclient.Client
+	BaseURL string
 }
 
-func NewHifiProvider(metadataURL, downloadURL string) *HifiProvider {
-	baseURL := metadataURL
-	if downloadURL == "" {
-		baseURL = metadataURL
-	}
+func NewHifiProvider(baseURL string) *HifiProvider {
 	return &HifiProvider{
 		BaseURL: baseURL,
 		client: httpclient.NewClient(&http.Client{
 			Timeout: 20 * time.Second,
-		}, 500*time.Millisecond),
-		downloadClient: httpclient.NewClient(&http.Client{
-			Timeout: 30 * time.Second,
-		}, 100*time.Millisecond),
+		}, 200*time.Millisecond),
 	}
 }
 
@@ -236,7 +228,7 @@ func (p *HifiProvider) handleSegmentedDash(ctx context.Context, manifest string)
 
 	return &multiSegmentReader{
 		urls:   urls,
-		client: p.downloadClient.GetUnderlyingClient(),
+		client: p.client.GetUnderlyingClient(),
 		ctx:    ctx,
 	}, "audio/mp4", nil
 }
