@@ -10,7 +10,7 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `DB_PATH` | `navidrums.db` | No | SQLite database file path (Docker: `/data/navidrums.db`) |
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | No | Output directory for downloaded music (Docker: `/music`) |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | No | Go template for file organization |
-| `PROVIDER_URL` | `http://127.0.0.1:8000` | No | URL of the Hifi API provider |
+| `PROVIDER_URL` | `http://127.0.0.1:8000` | No | Primary music catalog API URL (fallback providers managed via Settings UI) |
 | `QUALITY` | `LOSSLESS` | No | Audio quality preference (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `LOG_LEVEL` | `info` | No | Logging level (`debug`, `info`, `warn`, `error`) |
 | `LOG_FORMAT` | `text` | No | Log output format (`text`, `json`) |
@@ -22,6 +22,8 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `RATE_LIMIT_REQUESTS` | `200` | No | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | No | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | No | Burst requests allowed beyond rate limit |
+
+**Rate limiting**: Each provider enforces a 200ms minimum interval between requests. The global rate limit (`RATE_LIMIT_*`) applies across all providers.
 | `SKIP_AUTH` | `false` | No | Set to `true` to disable authentication entirely |
 | `THEME` | `golden` | No | Default application theme (can be overridden in Settings) |
 | `FFMPEG_PATH` | (system) | No | Path to ffmpeg binary (required for MP4/M4A tagging - hi-res downloads often come as MP4) |
@@ -171,6 +173,31 @@ Basic HTTP authentication is optional:
 - Set `NAVIDRUMS_PASSWORD` to enable authentication
 - Leave `NAVIDRUMS_PASSWORD` empty to disable authentication
 - When password is set, `NAVIDRUMS_USERNAME` must also be set
+
+## Provider Management
+
+The primary provider is configured via `PROVIDER_URL`. Additional fallback providers can be managed through the Settings UI:
+
+### Providers Table
+
+| Field | Description |
+|-------|-------------|
+| Position | Order of preference (lower = higher priority) |
+| Name | Display name for the provider |
+| URL | Provider API endpoint |
+
+### How Fallback Works
+
+1. Requests are attempted against the primary provider first
+2. If the primary provider fails or returns no results, the next provider in the list is tried
+3. Providers are tried in order until one succeeds or the list is exhausted
+
+### Managing Providers
+
+- Add new providers via the Settings UI
+- Reorder providers by dragging rows in the table
+- Edit or delete providers from the Settings UI
+- The primary provider (from `PROVIDER_URL`) is automatically added as the first provider on first run
 
 ## Validation
 

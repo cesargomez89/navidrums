@@ -32,7 +32,7 @@ go fmt ./...
 | `DB_PATH` | navidrums.db | SQLite database path |
 | `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
-| `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL |
+| `PROVIDER_URL` | http://127.0.0.1:8000 | Primary music catalog API URL (fallback providers managed via Settings UI) |
 | `QUALITY` | LOSSLESS | Audio quality |
 | `LOG_LEVEL` | info | Logging level |
 | `LOG_FORMAT` | text | Log format (text, json) |
@@ -44,6 +44,8 @@ go fmt ./...
 | `RATE_LIMIT_REQUESTS` | 200 | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |
 | `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
+
+**Rate limiting**: Each provider enforces a 200ms minimum interval between requests. The global rate limit (`RATE_LIMIT_*` vars) applies across all providers.
 | `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
 | `SKIP_AUTH` | false | Disable authentication entirely |
 | `FFMPEG_PATH` | (system) | Path to ffmpeg binary |
