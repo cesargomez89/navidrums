@@ -1126,14 +1126,7 @@ textarea {
     color: var(--text-dim);
 }
 
-#providers-list:empty::after {
-    content: 'No providers available';
-    display: block;
-    text-align: center;
-    padding: 32px;
-    color: var(--text-dim);
-    font-style: italic;
-}
+
 
 /* Generic Components */
 
@@ -1712,37 +1705,7 @@ textarea {
         grid-template-columns: 1fr;
     }
 
-    .provider-card {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 14px;
-        gap: 12px;
-    }
 
-    .provider-card.active::before {
-        width: 100%;
-        height: 4px;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: auto;
-        border-radius: 10px 10px 0 0;
-    }
-
-    .provider-info {
-        width: 100%;
-    }
-
-    .provider-actions {
-        width: 100%;
-        justify-content: stretch;
-    }
-
-    .provider-actions button,
-    .provider-actions .badge-success {
-        flex: 1;
-        text-align: center;
-    }
 
 
 
@@ -1764,6 +1727,10 @@ textarea {
         min-width: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
+    }
+
+    .item-actions {
+        flex-wrap: wrap;
     }
 
     .item-body {

@@ -754,8 +754,7 @@ func (h *SyncJobHandler) completeSyncWithEnrichment(ctx context.Context, job *do
 	oldFilePath := track.FilePath
 
 	if err := h.Enricher.EnrichTrack(ctx, track, logger); err != nil {
-		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("MusicBrainz enrichment failed: %v", err))
-		return
+		logger.Warn("MusicBrainz enrichment failed, continuing with existing data", "error", err)
 	}
 
 	if h.isCancelled(job.ID) {

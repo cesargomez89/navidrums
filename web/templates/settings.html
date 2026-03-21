@@ -4,7 +4,7 @@
 <div class="section">
     <h2>Providers</h2>
     <p class="hint">First provider is primary. Use Up/Down to reorder.</p>
-    <ul id="provider-list" class="provider-list"></ul>
+    <ul id="provider-list" class="flex flex-col gap-2"></ul>
     <form class="provider-form" onsubmit="addProvider(event)">
         <input type="text" id="provider-name" placeholder="Name" required>
         <input type="url" id="provider-url" placeholder="URL" required>
@@ -82,13 +82,13 @@
         }
         
         container.innerHTML = providers.map((p, i) => `
-            <li class="provider-item">
-                <span class="provider-position">${i + 1}</span>
-                <div class="provider-info">
-                    <div class="provider-name">${p.name}</div>
-                    <div class="provider-url">${p.url}${p.url === defaultURL ? ' <span class="badge badge-default">default</span>' : ''}</div>
+            <li class="item item-bordered">
+                <span class="item-media flex items-center justify-center rounded-md" style="width:32px;height:32px;background:var(--accent);color:var(--accent-content);font-weight:700;font-size:0.85rem;">${i + 1}</span>
+                <div class="item-body">
+                    <div class="item-title">${p.name}</div>
+                    <div class="item-subtitle">${p.url}${p.url === defaultURL ? ' <span class="badge badge-default">default</span>' : ''}</div>
                 </div>
-                <div class="provider-actions">
+                <div class="item-actions">
                     <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'up')" ${i === 0 ? 'disabled' : ''}>Up</button>
                     <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'down')" ${i === providers.length - 1 ? 'disabled' : ''}>Down</button>
                     <button class="btn btn-sm btn-danger" onclick="removeProvider(${p.id})">Remove</button>
