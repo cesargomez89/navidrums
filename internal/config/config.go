@@ -15,27 +15,28 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Port              string
-	DBPath            string
-	DownloadsDir      string
-	ProviderURL       string
-	Quality           string
-	PlayQuality       string
-	LogLevel          string
-	LogFormat         string
-	Username          string
-	Password          string
-	SubdirTemplate    string
-	MusicBrainzURL    string
-	FFmpegPath        string
-	FFprobePath       string
-	Theme             string
-	CacheTTL          time.Duration
-	RateLimitWindow   time.Duration
-	RateLimitRequests int
-	RateLimitBurst    int
-	SkipAuth          bool
-	DisableRateLimit  bool
+	Port                string
+	DBPath              string
+	DownloadsDir        string
+	ProviderURL         string
+	Quality             string
+	PlayQuality         string
+	LogLevel            string
+	LogFormat           string
+	Username            string
+	Password            string
+	SubdirTemplate      string
+	MusicBrainzURL      string
+	FFmpegPath          string
+	FFprobePath         string
+	Theme               string
+	CacheTTL            time.Duration
+	MusicBrainzCacheTTL time.Duration
+	RateLimitWindow     time.Duration
+	RateLimitRequests   int
+	RateLimitBurst      int
+	SkipAuth            bool
+	DisableRateLimit    bool
 }
 
 // Load loads configuration from environment variables with defaults
@@ -44,31 +45,32 @@ func Load() *Config {
 	defaultDownload := filepath.Join(home, "Downloads/navidrums")
 
 	return &Config{
-		Port:              getEnv("PORT", constants.DefaultPort),
-		DBPath:            getEnv("DB_PATH", constants.DefaultDBPath),
-		DownloadsDir:      getEnv("DOWNLOADS_DIR", defaultDownload),
-		ProviderURL:       getEnv("PROVIDER_URL", constants.DefaultProviderURL),
-		Quality:           getEnv("QUALITY", constants.DefaultQuality),
-		PlayQuality:       getEnv("PLAY_QUALITY", "HIGH"),
-		LogLevel:          getEnv("LOG_LEVEL", "info"),
-		LogFormat:         getEnv("LOG_FORMAT", "text"),
-		Username:          getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
-		Password:          getEnv("NAVIDRUMS_PASSWORD", ""),
-		SubdirTemplate:    getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
-		CacheTTL:          getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
-		MusicBrainzURL:    getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
-		RateLimitRequests: getEnvInt("RATE_LIMIT_REQUESTS", 200),
-		RateLimitWindow:   getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
-		RateLimitBurst:    getEnvInt("RATE_LIMIT_BURST", 10),
-		SkipAuth:          getEnvBool("SKIP_AUTH", false),
-		DisableRateLimit:  getEnvBool("DISABLE_RATE_LIMIT", false),
-		Theme:             getEnv("THEME", "golden"),
-		FFmpegPath:        getEnv("FFMPEG_PATH", ""),
-		FFprobePath:       getEnv("FFPROBE_PATH", ""),
+		Port:                getEnv("PORT", constants.DefaultPort),
+		DBPath:              getEnv("DB_PATH", constants.DefaultDBPath),
+		DownloadsDir:        getEnv("DOWNLOADS_DIR", defaultDownload),
+		ProviderURL:         getEnv("PROVIDER_URL", constants.DefaultProviderURL),
+		Quality:             getEnv("QUALITY", constants.DefaultQuality),
+		PlayQuality:         getEnv("PLAY_QUALITY", "HIGH"),
+		LogLevel:            getEnv("LOG_LEVEL", "info"),
+		LogFormat:           getEnv("LOG_FORMAT", "text"),
+		Username:            getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
+		Password:            getEnv("NAVIDRUMS_PASSWORD", ""),
+		SubdirTemplate:      getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
+		CacheTTL:            getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
+		MusicBrainzCacheTTL: getEnvDuration("MUSICBRAINZ_CACHE_TTL", constants.DefaultMusicBrainzCacheTTL),
+		MusicBrainzURL:      getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+		RateLimitRequests:   getEnvInt("RATE_LIMIT_REQUESTS", 200),
+		RateLimitWindow:     getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
+		RateLimitBurst:      getEnvInt("RATE_LIMIT_BURST", 10),
+		SkipAuth:            getEnvBool("SKIP_AUTH", false),
+		DisableRateLimit:    getEnvBool("DISABLE_RATE_LIMIT", false),
+		Theme:               getEnv("THEME", "golden"),
+		FFmpegPath:          getEnv("FFMPEG_PATH", ""),
+		FFprobePath:         getEnv("FFPROBE_PATH", ""),
 	}
 }
 
-// Validate validates the configuration and returns detailed errors
+// Validate validates the configuration and returns detailed errors.
 func (c *Config) Validate() error {
 	var errors []string
 
@@ -98,8 +100,8 @@ func (c *Config) Validate() error {
 	if c.ProviderURL == "" {
 		errors = append(errors, "PROVIDER_URL cannot be empty")
 	} else {
-		if _, err := url.Parse(c.ProviderURL); err != nil {
-			errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid URL: %s", c.ProviderURL))
+		if u, err := url.Parse(c.ProviderURL); err != nil || u.Scheme == "" || u.Host == "" {
+			errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid absolute URL: %s", c.ProviderURL))
 		}
 	}
 
@@ -154,6 +156,11 @@ func (c *Config) Validate() error {
 	// Validate CacheTTL
 	if c.CacheTTL <= 0 {
 		errors = append(errors, "CACHE_TTL must be greater than 0")
+	}
+
+	// Validate MusicBrainzCacheTTL
+	if c.MusicBrainzCacheTTL <= 0 {
+		errors = append(errors, "MUSICBRAINZ_CACHE_TTL must be greater than 0")
 	}
 
 	// Validate RateLimitRequests

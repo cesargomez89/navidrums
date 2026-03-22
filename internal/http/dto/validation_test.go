@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"database/sql"
 	"testing"
 	"time"
 
@@ -439,7 +440,7 @@ func TestJobResponse_NewJobResponse(t *testing.T) {
 		ID:        "job_123",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusFailed,
-		SourceID:  "track_456",
+		SourceID:  sql.NullString{String: "track_456", Valid: true},
 		Progress:  75.5,
 		CreatedAt: now,
 		UpdatedAt: now,
@@ -474,7 +475,7 @@ func TestJobResponse_NewJobResponse_NilError(t *testing.T) {
 		ID:        "job_123",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusCompleted,
-		SourceID:  "track_456",
+		SourceID:  sql.NullString{String: "track_456", Valid: true},
 		Progress:  100,
 		CreatedAt: now,
 		UpdatedAt: now,

@@ -210,6 +210,13 @@ func (db *DB) ListTracksByParentJobID(parentJobID string) ([]*domain.Track, erro
 	return selectTracks(db, query, parentJobID)
 }
 
+func (db *DB) CountPendingTracksByParentJobID(parentJobID string) (int, error) {
+	query := `SELECT COUNT(*) FROM tracks WHERE parent_job_id = ? AND status IN (?, ?, ?)`
+	var count int
+	err := db.Get(&count, query, parentJobID, domain.TrackStatusQueued, domain.TrackStatusDownloading, domain.TrackStatusProcessing)
+	return count, err
+}
+
 func (db *DB) ListCompletedTracks(offset, limit int) ([]*domain.Track, error) {
 	return db.ListTracksByStatus(domain.TrackStatusCompleted, offset, limit)
 }
@@ -365,4 +372,56 @@ func selectTracks(q sqlx.Queryer, query string, args ...interface{}) ([]*domain.
 	var tracks []*domain.Track
 	err := sqlx.Select(q, &tracks, query, args...)
 	return tracks, err
+}
+
+func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
+	tx, err := db.root.Beginx()
+	if err != nil {
+		return 0, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback() //nolint:errcheck // rollback is best-effort
+
+	createdCount := 0
+	query := `INSERT OR IGNORE INTO tracks (
+		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, artist_ids, album_artist_ids,
+		track_number, disc_number, total_tracks, total_discs,
+		year, genre, mood, style, label, isrc, copyright, composer,
+		duration, explicit, compilation, album_art_url, lyrics, subtitles,
+		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
+		barcode, catalog_number, release_type, release_id, recording_id, tags,
+		status, error, parent_job_id, file_path, file_extension,
+		created_at, updated_at, etag, file_hash, last_verified_at
+	) VALUES (
+		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :artist_ids, :album_artist_ids,
+		:track_number, :disc_number, :total_tracks, :total_discs,
+		:year, :genre, :mood, :style, :label, :isrc, :copyright, :composer,
+		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
+		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
+		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
+		:status, :error, :parent_job_id, :file_path, :file_extension,
+		:created_at, :updated_at, :etag, :file_hash, :last_verified_at
+	)`
+
+	for _, track := range tracks {
+		track.Normalize()
+		if track.CreatedAt.IsZero() {
+			track.CreatedAt = time.Now()
+		}
+		if track.UpdatedAt.IsZero() {
+			track.UpdatedAt = time.Now()
+		}
+
+		result, err := tx.NamedExec(query, track)
+		if err != nil {
+			return 0, fmt.Errorf("failed to create track %s: %w", track.ProviderID, err)
+		}
+		affected, _ := result.RowsAffected()
+		createdCount += int(affected)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return createdCount, nil
 }

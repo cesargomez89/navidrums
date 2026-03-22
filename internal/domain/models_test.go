@@ -165,12 +165,12 @@ func TestArtist_Fields(t *testing.T) {
 
 func TestPlaylist_Fields(t *testing.T) {
 	playlist := Playlist{
-		ID:    "playlist_123",
-		Title: "My Playlist",
+		ProviderID: "playlist_123",
+		Title:      "My Playlist",
 	}
 
-	if playlist.ID != "playlist_123" {
-		t.Errorf("ID = %s, want playlist_123", playlist.ID)
+	if playlist.ProviderID != "playlist_123" {
+		t.Errorf("ProviderID = %s, want playlist_123", playlist.ProviderID)
 	}
 	if playlist.Title != "My Playlist" {
 		t.Errorf("Title = %s, want My Playlist", playlist.Title)
@@ -189,7 +189,7 @@ func TestSearchResult_Fields(t *testing.T) {
 			{ID: "track_1", Title: "Track One"},
 		},
 		Playlists: []Playlist{
-			{ID: "playlist_1", Title: "Playlist One"},
+			{ProviderID: "playlist_1", Title: "Playlist One"},
 		},
 	}
 
@@ -215,8 +215,8 @@ func TestSearchResult_Fields(t *testing.T) {
 	if result.Tracks[0].ID != "track_1" {
 		t.Errorf("Tracks[0].ID = %s, want track_1", result.Tracks[0].ID)
 	}
-	if result.Playlists[0].ID != "playlist_1" {
-		t.Errorf("Playlists[0].ID = %s, want playlist_1", result.Playlists[0].ID)
+	if result.Playlists[0].ProviderID != "playlist_1" {
+		t.Errorf("Playlists[0].ProviderID = %s, want playlist_1", result.Playlists[0].ProviderID)
 	}
 }
 

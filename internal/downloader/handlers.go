@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -23,13 +24,14 @@ import (
 
 // TrackJobHandler handles downloading individual tracks.
 type TrackJobHandler struct {
-	Repo            *store.DB
-	SettingsRepo    *store.SettingsRepo
-	Config          *config.Config
-	ProviderManager *catalog.ProviderManager
-	Downloader      app.Downloader
-	AlbumArtService app.AlbumArtService
-	Enricher        *app.MetadataEnricher
+	Repo              *store.DB
+	SettingsRepo      *store.SettingsRepo
+	Config            *config.Config
+	ProviderManager   *catalog.ProviderManager
+	Downloader        app.Downloader
+	AlbumArtService   app.AlbumArtService
+	PlaylistGenerator app.PlaylistGenerator
+	Enricher          *app.MetadataEnricher
 }
 
 func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
@@ -63,7 +65,7 @@ func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *s
 func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.Job, logger *slog.Logger) (*domain.Track, string, bool, error) {
 	forceDownload := h.isForceDownload()
 
-	existingTrack, _ := h.Repo.GetTrackByProviderID(job.SourceID)
+	existingTrack, _ := h.Repo.GetTrackByProviderID(job.GetSourceID())
 	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted && !forceDownload {
 		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
 		_ = h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
@@ -75,7 +77,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		track = existingTrack
 	} else {
 		track = &domain.Track{
-			ProviderID:  job.SourceID,
+			ProviderID:  job.GetSourceID(),
 			Status:      domain.TrackStatusMissing,
 			ParentJobID: job.ID,
 			CreatedAt:   time.Now(),
@@ -195,7 +197,7 @@ func (h *TrackJobHandler) executeDownload(ctx context.Context, job *domain.Job, 
 		return "", dirErr
 	}
 
-	finalPath, err := h.Downloader.Download(ctx, track, destPath)
+	finalPath, err := h.Downloader.Download(ctx, track, destPath, logger)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = h.Repo.MarkTrackFailed(track.ID, err.Error())
@@ -283,7 +285,109 @@ func (h *TrackJobHandler) finalizeTrackDownload(job *domain.Job, track *domain.T
 		logger.Error("Failed to update final job status", "error", err)
 	}
 
+	if track.ParentJobID != "" {
+		parentJob, err := h.Repo.GetJob(track.ParentJobID)
+		if err == nil && parentJob != nil && parentJob.Type == domain.JobTypePlaylist {
+			playlist, err := h.Repo.GetPlaylistByProviderID(parentJob.GetSourceID())
+			if err == nil && playlist != nil {
+				if err := h.Repo.AddTrackToPlaylist(playlist.ID, track.ID, track.TrackNumber); err != nil {
+					logger.Warn("Failed to add track to playlist", "error", err)
+				}
+			}
+		}
+
+		h.updateParentJobProgress(track.ParentJobID, logger)
+		h.triggerPlaylistGenerationIfComplete(track.ParentJobID, logger)
+	}
+
 	logger.Info("Job completed successfully")
+}
+
+func (h *TrackJobHandler) triggerPlaylistGenerationIfComplete(parentJobID string, logger *slog.Logger) {
+	parentJob, err := h.Repo.GetJob(parentJobID)
+	if err != nil || parentJob == nil {
+		return
+	}
+
+	if parentJob.Status != domain.JobStatusCompleted {
+		return
+	}
+
+	count, err := h.Repo.CountPendingTracksByParentJobID(parentJobID)
+	if err != nil || count > 0 {
+		return
+	}
+
+	if parentJob.Type != domain.JobTypePlaylist && parentJob.Type != domain.JobTypeArtist {
+		return
+	}
+
+	claimed, err := h.Repo.TrySetM3UGenerating(parentJobID)
+	if err != nil || !claimed {
+		return
+	}
+
+	defer func() { _ = h.Repo.ClearM3UGenerating(parentJobID) }()
+
+	ctx := context.Background()
+	switch parentJob.Type {
+	case domain.JobTypePlaylist:
+		playlist, err := h.Repo.GetPlaylistByProviderID(parentJob.GetSourceID())
+		if err == nil && playlist != nil {
+			if genErr := h.PlaylistGenerator.GenerateFromDB(playlist.ID, h.lookupTrack); genErr != nil {
+				logger.Error("Failed to generate complete playlist from DB", "error", genErr)
+				pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, parentJob.GetSourceID())
+				if err == nil {
+					if genErr2 := h.PlaylistGenerator.Generate(pl, h.lookupTrack); genErr2 != nil {
+						logger.Error("Failed to generate complete playlist from provider", "error", genErr2)
+					} else {
+						logger.Info("Successfully generated complete playlist", "playlist_id", pl.ProviderID)
+					}
+				}
+			} else {
+				logger.Info("Successfully generated complete playlist from DB", "playlist_id", playlist.ID)
+			}
+		}
+	case domain.JobTypeArtist:
+		artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, parentJob.GetSourceID())
+		if err == nil {
+			catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
+			copy(catalogTracks, artist.TopTracks)
+			if genErr := h.PlaylistGenerator.GenerateFromTracks(artist.Name, catalogTracks, h.lookupTrack); genErr != nil {
+				logger.Error("Failed to generate complete artist playlist", "error", genErr)
+			} else {
+				logger.Info("Successfully generated complete artist playlist", "artist", artist.Name)
+			}
+		}
+	}
+}
+
+func (h *TrackJobHandler) lookupTrack(trackID string) *domain.Track {
+	t, _ := h.Repo.GetTrackByProviderID(trackID)
+	return t
+}
+
+func (h *TrackJobHandler) updateParentJobProgress(parentJobID string, logger *slog.Logger) {
+	total, pending, err := h.Repo.CountJobsForParent(parentJobID)
+	if err != nil {
+		logger.Error("Failed to count jobs for parent", "parent_job", parentJobID, "error", err)
+		return
+	}
+
+	if total == 0 {
+		return
+	}
+
+	progress := float64(total-pending) / float64(total) * 100
+	if err := h.Repo.UpdateJobProgress(parentJobID, progress); err != nil {
+		logger.Error("Failed to update parent job progress", "parent_job", parentJobID, "error", err)
+	}
+
+	if pending == 0 {
+		if err := h.Repo.UpdateJobStatus(parentJobID, domain.JobStatusCompleted, 100); err != nil {
+			logger.Error("Failed to mark parent job as completed", "parent_job", parentJobID, "error", err)
+		}
+	}
 }
 
 func (h *TrackJobHandler) isCancelled(id string) bool {
@@ -320,7 +424,7 @@ func (h *ContainerJobHandler) Handle(ctx context.Context, job *domain.Job, logge
 }
 
 func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	album, err := h.ProviderManager.GetProvider().GetAlbum(ctx, job.SourceID)
+	album, err := h.ProviderManager.GetProvider().GetAlbum(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch album", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
@@ -342,8 +446,8 @@ func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.J
 	logger.Info("Creating track jobs", "track_count", len(album.Tracks))
 	createdCount := h.createTracksAndJobs(job.ID, album.Tracks, logger)
 
-	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-		logger.Error("Failed to update job status to completed", "error", err)
+	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusDecomposed, 0); err != nil {
+		logger.Error("Failed to update job status to decomposed", "error", err)
 	}
 
 	logger.Info("Album job completed", "tracks_created", createdCount)
@@ -351,7 +455,7 @@ func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.J
 }
 
 func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, job.SourceID)
+	pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch playlist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
@@ -365,20 +469,45 @@ func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domai
 	}
 
 	if pl.ImageURL != "" {
-		if err := h.AlbumArtService.DownloadAndSavePlaylistImage(pl, pl.ImageURL); err != nil {
-			logger.Error("Failed to save playlist image", "error", err)
+		if imgErr := h.AlbumArtService.DownloadAndSavePlaylistImage(pl, pl.ImageURL); imgErr != nil {
+			logger.Error("Failed to save playlist image", "error", imgErr)
+		}
+	}
+
+	playlist := &domain.Playlist{
+		ProviderID:  pl.ProviderID,
+		Title:       pl.Title,
+		Description: pl.Description,
+		ImageURL:    pl.ImageURL,
+	}
+
+	existing, err := h.Repo.GetPlaylistByProviderID(pl.ProviderID)
+	if err == nil && existing != nil {
+		playlist.ID = existing.ID
+		playlist.CreatedAt = existing.CreatedAt
+		if err := h.Repo.UpdatePlaylist(playlist); err != nil {
+			logger.Error("Failed to update playlist", "error", err)
+		}
+		if err := h.Repo.ClearPlaylistTracks(playlist.ID); err != nil {
+			logger.Error("Failed to clear playlist tracks", "error", err)
+		}
+	} else {
+		if err := h.Repo.CreatePlaylist(playlist); err != nil {
+			logger.Error("Failed to create playlist", "error", err)
 		}
 	}
 
 	logger.Info("Creating track jobs", "track_count", len(pl.Tracks))
 	createdCount := h.createTracksAndJobs(job.ID, pl.Tracks, logger)
 
-	if err := h.PlaylistGenerator.Generate(pl, h.lookupTrackExtension); err != nil {
-		logger.Error("Failed to generate playlist file", "error", err)
+	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusDecomposed, 0); err != nil {
+		logger.Error("Failed to update job status to decomposed", "error", err)
 	}
 
-	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-		logger.Error("Failed to update job status to completed", "error", err)
+	if createdCount == 0 {
+		if genErr := h.PlaylistGenerator.Generate(pl, h.lookupTrack); genErr != nil {
+			logger.Error("Failed to generate playlist file", "error", genErr)
+		}
 	}
 
 	logger.Info("Playlist job completed", "tracks_created", createdCount)
@@ -386,7 +515,7 @@ func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domai
 }
 
 func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
+	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
@@ -402,14 +531,16 @@ func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.
 	logger.Info("Creating track jobs", "track_count", len(artist.TopTracks))
 	createdCount := h.createTracksAndJobs(job.ID, artist.TopTracks, logger)
 
-	catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
-	copy(catalogTracks, artist.TopTracks)
-	if err := h.PlaylistGenerator.GenerateFromTracks(artist.Name, catalogTracks, h.lookupTrackExtension); err != nil {
-		logger.Error("Failed to generate playlist file", "error", err)
+	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusDecomposed, 0); err != nil {
+		logger.Error("Failed to update job status to decomposed", "error", err)
 	}
 
-	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-		logger.Error("Failed to update job status to completed", "error", err)
+	if createdCount == 0 {
+		catalogTracks := make([]domain.CatalogTrack, len(artist.TopTracks))
+		copy(catalogTracks, artist.TopTracks)
+		if genErr := h.PlaylistGenerator.GenerateFromTracks(artist.Name, catalogTracks, h.lookupTrack); genErr != nil {
+			logger.Error("Failed to generate playlist file", "error", genErr)
+		}
 	}
 
 	logger.Info("Artist job completed", "tracks_created", createdCount)
@@ -417,7 +548,7 @@ func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.
 }
 
 func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.SourceID)
+	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
@@ -433,7 +564,7 @@ func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *do
 	for _, album := range artist.Albums {
 		albumJob := &domain.Job{
 			Type:     domain.JobTypeAlbum,
-			SourceID: album.ID,
+			SourceID: sql.NullString{String: album.ID, Valid: true},
 		}
 		if err := h.processAlbumJob(ctx, albumJob, logger); err != nil {
 			logger.Error("Failed to process album", "album_id", album.ID, "error", err)
@@ -441,24 +572,24 @@ func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *do
 		}
 	}
 
-	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100); err != nil {
-		logger.Error("Failed to update job status to completed", "error", err)
+	if err := h.Repo.UpdateJobStatus(job.ID, domain.JobStatusDecomposed, 0); err != nil {
+		logger.Error("Failed to update job status to decomposed", "error", err)
 	}
 	logger.Info("Discography job completed")
 	return nil
 }
 
-func (h *ContainerJobHandler) lookupTrackExtension(trackID string) string {
+func (h *ContainerJobHandler) lookupTrack(trackID string) *domain.Track {
 	t, _ := h.Repo.GetTrackByProviderID(trackID)
-	if t != nil && t.FileExtension != "" {
-		return t.FileExtension
-	}
-	return ".flac"
+	return t
 }
 
 func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTracks []domain.CatalogTrack, logger *slog.Logger) int {
 	createdCount := 0
 	forceDownload := h.isForceDownload()
+
+	var tracksToCreate []*domain.Track
+	var jobsToCreate []*domain.Job
 
 	for _, catalogTrack := range catalogTracks {
 		if downloaded, _ := h.Repo.IsTrackDownloaded(catalogTrack.ID); downloaded && !forceDownload {
@@ -477,24 +608,32 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 		track.ParentJobID = parentJobID
 		track.CreatedAt = time.Now()
 		track.UpdatedAt = time.Now()
+		tracksToCreate = append(tracksToCreate, track)
 
-		if err := h.Repo.CreateTrack(track); err != nil {
-			logger.Error("Failed to create track record", "track_id", catalogTrack.ID, "error", err)
-			continue
+		job := &domain.Job{
+			ID:          uuid.New().String(),
+			Type:        domain.JobTypeTrack,
+			Status:      domain.JobStatusQueued,
+			SourceID:    sql.NullString{String: catalogTrack.ID, Valid: true},
+			ParentJobID: sql.NullString{String: parentJobID, Valid: true},
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
 		}
+		jobsToCreate = append(jobsToCreate, job)
+	}
 
-		childJob := &domain.Job{
-			ID:        uuid.New().String(),
-			Type:      domain.JobTypeTrack,
-			Status:    domain.JobStatusQueued,
-			SourceID:  catalogTrack.ID,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		if err := h.Repo.CreateJob(childJob); err != nil {
-			logger.Error("Failed to create child track job", "track_id", catalogTrack.ID, "error", err)
+	if len(tracksToCreate) > 0 {
+		n, err := h.Repo.CreateTrackBatch(tracksToCreate)
+		if err != nil {
+			logger.Error("Failed to create tracks batch", "error", err)
 		} else {
-			createdCount++
+			createdCount += n
+		}
+	}
+
+	if len(jobsToCreate) > 0 {
+		if err := h.Repo.CreateJobBatch(jobsToCreate); err != nil {
+			logger.Error("Failed to create jobs batch", "error", err)
 		}
 	}
 
@@ -503,11 +642,12 @@ func (h *ContainerJobHandler) createTracksAndJobs(parentJobID string, catalogTra
 
 // SyncJobHandler handles all metadata resyncs (Hi-Fi, MusicBrainz, File).
 type SyncJobHandler struct {
-	Repo            *store.DB
-	Config          *config.Config
-	ProviderManager *catalog.ProviderManager
-	AlbumArtService app.AlbumArtService
-	Enricher        *app.MetadataEnricher
+	Repo              *store.DB
+	Config            *config.Config
+	ProviderManager   *catalog.ProviderManager
+	AlbumArtService   app.AlbumArtService
+	PlaylistGenerator app.PlaylistGenerator
+	Enricher          *app.MetadataEnricher
 }
 
 func (h *SyncJobHandler) Handle(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
@@ -560,7 +700,7 @@ func (h *SyncJobHandler) processSyncFileJob(ctx context.Context, job *domain.Job
 }
 
 func (h *SyncJobHandler) getTrackForSync(job *domain.Job, logger *slog.Logger) (*domain.Track, bool) {
-	track, err := h.Repo.GetTrackByProviderID(job.SourceID)
+	track, err := h.Repo.GetTrackByProviderID(job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to get track", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to get track: %v", err))
@@ -614,8 +754,7 @@ func (h *SyncJobHandler) completeSyncWithEnrichment(ctx context.Context, job *do
 	oldFilePath := track.FilePath
 
 	if err := h.Enricher.EnrichTrack(ctx, track, logger); err != nil {
-		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("MusicBrainz enrichment failed: %v", err))
-		return
+		logger.Warn("MusicBrainz enrichment failed, continuing with existing data", "error", err)
 	}
 
 	if h.isCancelled(job.ID) {
@@ -726,6 +865,10 @@ func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath str
 	}
 
 	logger.Info("Moved track file", "old", oldFilePath, "new", track.FilePath)
+
+	// In Option A, we don't dynamically rewrite M3Us on movement. If they move, playlists would need to safely know.
+	// But since this is a user-approved architecture switch, M3U relies on recreation. We'll leave sync job rewriting omitted.
+
 	return nil
 }
 

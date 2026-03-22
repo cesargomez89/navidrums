@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -92,20 +93,21 @@ func TestValidate(t *testing.T) {
 		{
 			name: "valid config",
 			config: Config{
-				Port:              "8080",
-				DBPath:            "test.db",
-				DownloadsDir:      "/tmp/downloads",
-				ProviderURL:       "http://localhost:8000",
-				Quality:           "LOSSLESS",
-				LogLevel:          "info",
-				LogFormat:         "text",
-				Username:          "navidrums",
-				Password:          "testpass",
-				SubdirTemplate:    "{{.AlbumArtist}}/{{.Album}}/{{.Title}}",
-				CacheTTL:          12 * time.Hour,
-				RateLimitRequests: 60,
-				RateLimitWindow:   time.Minute,
-				RateLimitBurst:    10,
+				Port:                "8080",
+				DBPath:              "test.db",
+				DownloadsDir:        "/tmp/downloads",
+				ProviderURL:         "http://localhost:8000",
+				Quality:             "LOSSLESS",
+				LogLevel:            "info",
+				LogFormat:           "text",
+				Username:            "navidrums",
+				Password:            "testpass",
+				SubdirTemplate:      "{{.AlbumArtist}}/{{.Album}}/{{.Title}}",
+				CacheTTL:            12 * time.Hour,
+				MusicBrainzCacheTTL: 7 * 24 * time.Hour,
+				RateLimitRequests:   60,
+				RateLimitWindow:     time.Minute,
+				RateLimitBurst:      10,
 			},
 			wantErr: false,
 		},
@@ -281,5 +283,92 @@ func TestDownloadsDirDefault(t *testing.T) {
 	expectedDir := filepath.Join(home, "Downloads/navidrums")
 	if cfg.DownloadsDir != expectedDir {
 		t.Errorf("Expected DownloadsDir to be %s, got %s", expectedDir, cfg.DownloadsDir)
+	}
+}
+
+func TestValidateProviderURLs(t *testing.T) {
+	baseConfig := Config{
+		Port:                "8080",
+		DBPath:              "test.db",
+		DownloadsDir:        "/tmp/downloads",
+		Quality:             "LOSSLESS",
+		LogLevel:            "info",
+		LogFormat:           "text",
+		SubdirTemplate:      "{{.AlbumArtist}}/{{.Album}}/{{.Title}}",
+		CacheTTL:            12 * time.Hour,
+		MusicBrainzCacheTTL: 7 * 24 * time.Hour,
+		RateLimitRequests:   60,
+		RateLimitWindow:     time.Minute,
+		RateLimitBurst:      10,
+	}
+
+	//nolint:govet // test struct, optimization not needed
+	tests := []struct {
+		name    string
+		config  Config
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name: "valid PROVIDER_URL",
+			config: Config{
+				ProviderURL: "http://localhost:8000",
+			},
+			wantErr: false,
+		},
+		{
+			name: "empty PROVIDER_URL",
+			config: Config{
+				ProviderURL: "",
+			},
+			wantErr: true,
+			errMsg:  "PROVIDER_URL cannot be empty",
+		},
+		{
+			name: "invalid PROVIDER_URL",
+			config: Config{
+				ProviderURL: "not-a-valid-url",
+			},
+			wantErr: true,
+			errMsg:  "PROVIDER_URL is not a valid absolute URL",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := baseConfig
+			cfg.ProviderURL = tt.config.ProviderURL
+
+			err := cfg.Validate()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.wantErr && tt.errMsg != "" {
+				if err == nil || !strings.Contains(err.Error(), tt.errMsg) {
+					t.Errorf("Validate() error = %v, should contain %v", err, tt.errMsg)
+				}
+			}
+		})
+	}
+}
+
+func TestLoadProviderURL(t *testing.T) {
+	originalProviderURL := os.Getenv("PROVIDER_URL")
+	defer func() {
+		if originalProviderURL != "" {
+			_ = os.Setenv("PROVIDER_URL", originalProviderURL)
+		} else {
+			_ = os.Unsetenv("PROVIDER_URL")
+		}
+	}()
+
+	_ = os.Unsetenv("PROVIDER_URL")
+
+	_ = os.Setenv("PROVIDER_URL", "http://example.com")
+
+	cfg := Load()
+
+	if cfg.ProviderURL != "http://example.com" {
+		t.Errorf("Expected ProviderURL to be 'http://example.com', got '%s'", cfg.ProviderURL)
 	}
 }

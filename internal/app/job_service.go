@@ -1,6 +1,7 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -36,7 +37,7 @@ func (s *JobService) EnqueueJob(sourceID string, jobType domain.JobType) (*domai
 		ID:        id,
 		Type:      jobType,
 		Status:    domain.JobStatusQueued,
-		SourceID:  sourceID,
+		SourceID:  sql.NullString{String: sourceID, Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -70,7 +71,18 @@ func (s *JobService) ListActiveJobs(page, pageSize int) ([]*domain.Job, int, err
 }
 
 func (s *JobService) CancelJob(id string) error {
-	err := s.Repo.UpdateJobStatus(id, domain.JobStatusCancelled, 0)
+	job, err := s.Repo.GetJob(id)
+	if err != nil {
+		return fmt.Errorf("failed to get job: %w", err)
+	}
+
+	if job.Type != domain.JobTypeTrack && job.Status != domain.JobStatusCompleted {
+		if cancelErr := s.Repo.CancelJobsByParentID(id); cancelErr != nil {
+			return fmt.Errorf("failed to cancel child jobs: %w", cancelErr)
+		}
+	}
+
+	err = s.Repo.UpdateJobStatus(id, domain.JobStatusCancelled, 0)
 	if err != nil {
 		return err
 	}
@@ -90,7 +102,7 @@ func (s *JobService) RetryJob(id string) error {
 	if err != nil {
 		return err
 	}
-	s.Logger.Info("Job retried", "job_id", id, "type", job.Type, "source_id", job.SourceID)
+	s.Logger.Info("Job retried", "job_id", id, "type", job.Type, "source_id", job.GetSourceID())
 	return nil
 }
 

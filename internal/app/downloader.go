@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -15,7 +16,7 @@ import (
 )
 
 type Downloader interface {
-	Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error)
+	Download(ctx context.Context, track *domain.Track, destPathNoExt string, logger *slog.Logger) (string, error)
 }
 
 type downloader struct {
@@ -30,10 +31,12 @@ func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 	}
 }
 
-func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string) (string, error) {
-	provider := d.providerManager.GetProvider()
+func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string, logger *slog.Logger) (string, error) {
+	provider := d.providerManager.GetDownloadProvider()
 
 	shouldConvertToFLAC := d.config.Quality == constants.QualityHiResLossless
+
+	var lastErr error
 
 	for attempt := 0; attempt < constants.DefaultRetryCount; attempt++ {
 		select {
@@ -44,6 +47,15 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 
 		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, d.config.Quality)
 		if err != nil {
+			lastErr = err
+			logger.Error("Download attempt failed",
+				"attempt", attempt+1,
+				"total_attempts", constants.DefaultRetryCount,
+				"track_id", track.ID,
+				"track_title", track.Title,
+				"provider_id", track.ProviderID,
+				"error", err,
+			)
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 			continue
 		}
@@ -69,6 +81,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		_ = f.Close()
 
 		if err != nil {
+			lastErr = err
 			_ = storage.RemoveFile(downloadPath)
 			time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 			continue
@@ -77,6 +90,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		if shouldConvertToFLAC && mimeType == constants.MimeTypeMP4 {
 			flacPath, convErr := ffmpeg.ConvertToFLAC(ctx, downloadPath)
 			if convErr != nil {
+				lastErr = convErr
 				_ = storage.RemoveFile(downloadPath)
 				time.Sleep(time.Duration(attempt+1) * constants.DefaultRetryBase)
 				continue
@@ -93,5 +107,5 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		return downloadPath, nil
 	}
 
-	return "", fmt.Errorf("download failed after %d attempts", constants.DefaultRetryCount)
+	return "", fmt.Errorf("download failed after %d attempts: %w", constants.DefaultRetryCount, lastErr)
 }
