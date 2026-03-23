@@ -128,7 +128,10 @@ func (pg *playlistGenerator) writePlaylist(filename string, title string, tracks
 		if relPath == "" {
 			var templateData *storage.PathTemplateData
 			if dbTrack != nil {
-				artistForFolder := dbTrack.AlbumArtist
+				artistForFolder := dbTrack.PathArtist
+				if artistForFolder == "" {
+					artistForFolder = dbTrack.AlbumArtist
+				}
 				if artistForFolder == "" {
 					artistForFolder = dbTrack.Artist
 				}
@@ -141,17 +144,18 @@ func (pg *playlistGenerator) writePlaylist(filename string, title string, tracks
 					dbTrack.Title,
 				)
 			} else {
+				artistForFolder := t.AlbumArtist
+				if artistForFolder == "" {
+					artistForFolder = t.Artist
+				}
 				templateData = storage.BuildPathTemplateData(
-					t.AlbumArtist,
+					artistForFolder,
 					t.Year,
 					t.Album,
 					t.DiscNumber,
 					t.TrackNumber,
 					t.Title,
 				)
-				if templateData.AlbumArtist == "" {
-					templateData.AlbumArtist = storage.Sanitize(t.Artist)
-				}
 			}
 
 			relPath, err = storage.BuildPath(pg.config.SubdirTemplate, templateData)

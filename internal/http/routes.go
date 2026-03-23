@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -653,9 +654,12 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 	genre := r.FormValue("genre")
 	mood := r.FormValue("mood")
 	style := r.FormValue("style")
+	pathArtist := r.FormValue("path_artist")
+	artists := r.FormValue("artists")
+	albumArtists := r.FormValue("album_artists")
 
-	if year == "" && genre == "" && mood == "" && style == "" {
-		http.Error(w, "At least one field (year, genre, mood, or style) is required", http.StatusBadRequest)
+	if year == "" && genre == "" && mood == "" && style == "" && pathArtist == "" && artists == "" && albumArtists == "" {
+		http.Error(w, "At least one field is required", http.StatusBadRequest)
 		return
 	}
 
@@ -682,6 +686,23 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 		}
 		if style != "" {
 			updates["style"] = style
+		}
+		if pathArtist != "" {
+			updates["path_artist"] = pathArtist
+		}
+		if artists != "" {
+			artistList := strings.Split(artists, ",")
+			for i := range artistList {
+				artistList[i] = strings.TrimSpace(artistList[i])
+			}
+			updates["artists"] = artistList
+		}
+		if albumArtists != "" {
+			albumArtistList := strings.Split(albumArtists, ",")
+			for i := range albumArtistList {
+				albumArtistList[i] = strings.TrimSpace(albumArtistList[i])
+			}
+			updates["album_artists"] = albumArtistList
 		}
 
 		if len(updates) == 0 {

@@ -8,16 +8,20 @@
                 <input type="text" id="title" name="title" value="{{.Track.Title}}">
             </div>
             <div class="form-group">
-                <label for="artist">Artist</label>
-                <input type="text" id="artist" name="artist" value="{{.Track.Artist}}">
+                <label for="artists">Artists (comma-separated)</label>
+                <input type="text" id="artists" name="artists" value="{{if .Track.Artists}}{{join .Track.Artists ", "}}{{end}}" placeholder="Artist 1, Artist 2">
             </div>
             <div class="form-group">
                 <label for="album">Album</label>
                 <input type="text" id="album" name="album" value="{{.Track.Album}}">
             </div>
             <div class="form-group">
-                <label for="album_artist">Album Artist</label>
-                <input type="text" id="album_artist" name="album_artist" value="{{.Track.AlbumArtist}}">
+                <label for="album_artists">Album Artists (comma-separated)</label>
+                <input type="text" id="album_artists" name="album_artists" value="{{if .Track.AlbumArtists}}{{join .Track.AlbumArtists ", "}}{{end}}" placeholder="Album Artist 1, Album Artist 2">
+            </div>
+            <div class="form-group">
+                <label for="path_artist">Artist Directory (template path)</label>
+                <input type="text" id="path_artist" name="path_artist" value="{{.Track.PathArtist}}" placeholder="Folder name for file organization">
             </div>
             <div class="form-group">
                 <label for="genre">Genre</label>

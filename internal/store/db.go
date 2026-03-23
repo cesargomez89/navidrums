@@ -368,6 +368,22 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     12,
+		description: "Add path_artist column for folder naming",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec("ALTER TABLE tracks ADD COLUMN path_artist TEXT")
+			if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
+				return err
+			}
+			_, err = tx.Exec(`
+				UPDATE tracks 
+				SET path_artist = COALESCE(NULLIF(TRIM(album_artist), ''), NULLIF(TRIM(artist), ''))
+				WHERE path_artist IS NULL OR path_artist = ''
+			`)
+			return err
+		},
+	},
 }
 
 type dbOps interface {

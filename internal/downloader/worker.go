@@ -172,7 +172,10 @@ func (w *Worker) recoverInterruptedTracks() {
 
 		// Attempt to clean up potential partial files
 		// We need to reconstruct the path since it might not be saved in DB yet
-		artistForFolder := t.AlbumArtist
+		artistForFolder := t.PathArtist
+		if artistForFolder == "" {
+			artistForFolder = t.AlbumArtist
+		}
 		if artistForFolder == "" {
 			artistForFolder = t.Artist
 		}

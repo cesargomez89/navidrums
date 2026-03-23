@@ -15,7 +15,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	track.Normalize()
 
 	query := `INSERT INTO tracks (
-		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, artist_ids, album_artist_ids,
+		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, path_artist, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
 		year, genre, mood, style, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
@@ -24,7 +24,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
 	) VALUES (
-		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :artist_ids, :album_artist_ids,
+		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :path_artist, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
 		:year, :genre, :mood, :style, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
@@ -78,7 +78,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 
 	query := `UPDATE tracks SET
 		provider_id = :provider_id, title = :title, artist = :artist, artists = :artists,
-		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists,
+		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists, path_artist = :path_artist,
 		artist_ids = :artist_ids, album_artist_ids = :album_artist_ids,
 		track_number = :track_number, disc_number = :disc_number, total_tracks = :total_tracks, total_discs = :total_discs,
 		year = :year, genre = :genre, mood = :mood, style = :style, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
@@ -400,7 +400,7 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 
 	createdCount := 0
 	query := `INSERT OR IGNORE INTO tracks (
-		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, artist_ids, album_artist_ids,
+		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, path_artist, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
 		year, genre, mood, style, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
@@ -409,7 +409,7 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 		status, error, parent_job_id, file_path, file_extension,
 		created_at, updated_at, etag, file_hash, last_verified_at
 	) VALUES (
-		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :artist_ids, :album_artist_ids,
+		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :path_artist, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
 		:year, :genre, :mood, :style, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,

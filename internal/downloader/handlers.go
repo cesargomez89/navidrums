@@ -108,7 +108,10 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		}
 	}
 
-	artistForFolder := track.AlbumArtist
+	artistForFolder := track.PathArtist
+	if artistForFolder == "" {
+		artistForFolder = track.AlbumArtist
+	}
 	if artistForFolder == "" {
 		artistForFolder = track.Artist
 	}
@@ -824,8 +827,16 @@ func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath str
 
 	oldDir := filepath.Dir(oldFilePath)
 
+	artistForFolder := track.PathArtist
+	if artistForFolder == "" {
+		artistForFolder = track.AlbumArtist
+	}
+	if artistForFolder == "" {
+		artistForFolder = track.Artist
+	}
+
 	templateData := storage.BuildPathTemplateData(
-		track.AlbumArtist,
+		artistForFolder,
 		track.Year,
 		track.Album,
 		track.DiscNumber,

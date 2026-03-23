@@ -113,6 +113,7 @@ type Track struct { //nolint:govet // field ordering prioritizes readability ove
 	AlbumID        string      `json:"album_id,omitempty" db:"album_id"`
 	AlbumArtist    string      `json:"album_artist" db:"album_artist"`
 	AlbumArtists   StringSlice `json:"album_artists" db:"album_artists"`
+	PathArtist     string      `json:"path_artist" db:"path_artist"`
 	TrackNumber    int         `json:"track_number" db:"track_number"`
 	DiscNumber     int         `json:"disc_number" db:"disc_number"`
 	TotalTracks    int         `json:"total_tracks" db:"total_tracks"`

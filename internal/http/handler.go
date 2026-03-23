@@ -110,8 +110,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {
-	// Use ParseFS to properly handle template names
-	tmpl, err := template.ParseFS(web.Files,
+	// Register template functions before parsing
+	tmpl := template.New("base").Funcs(template.FuncMap{"join": strings.Join})
+	tmpl, err := tmpl.ParseFS(web.Files,
 		"templates/base.html",
 		"templates/"+pageTmpl,
 		"templates/search_results.html",
@@ -141,7 +142,9 @@ func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interf
 func (h *Handler) RenderFragment(w http.ResponseWriter, fragTmpl string, data interface{}) {
 	patterns := []string{"templates/components/*.html", "templates/" + fragTmpl}
 
-	tmpl, err := template.ParseFS(web.Files, patterns...)
+	// Register functions before parsing
+	tmpl := template.New("frag").Funcs(template.FuncMap{"join": strings.Join})
+	tmpl, err := tmpl.ParseFS(web.Files, patterns...)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
