@@ -164,6 +164,8 @@ func (db *DB) UpdateJobProgress(id string, progress float64) error {
 	return err
 }
 
+// CreateJobBatch creates multiple jobs in a single transaction.
+// It uses an all-or-nothing approach: if any insertion fails (besides IGNORE), the whole batch is rolled back.
 func (db *DB) CreateJobBatch(jobs []*domain.Job) error {
 	tx, err := db.root.Beginx()
 	if err != nil {

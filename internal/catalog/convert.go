@@ -203,8 +203,7 @@ func (r APIPlaylistResponse) ToDomain(p *HifiProvider) *domain.Playlist {
 			albumArtURL = p.ensureAbsoluteURL(item.Album.Cover[0], "640x640")
 		}
 
-		albumArtist := ""
-
+		albumArtist := artists[0]
 
 		var aArtists []string
 		var aArtistIDs []string
@@ -213,6 +212,7 @@ func (r APIPlaylistResponse) ToDomain(p *HifiProvider) *domain.Playlist {
 				aArtists = append(aArtists, a.Name)
 				aArtistIDs = append(aArtistIDs, formatID(a.ID))
 			}
+			albumArtist = aArtists[0]
 		}
 
 		pl.Tracks = append(pl.Tracks, domain.CatalogTrack{
@@ -247,11 +247,11 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 	year := parseYear(data.Album.ReleaseDate)
 
 	albumArtURL := ""
-		if len(data.Album.Cover) > 0 {
-			albumArtURL = p.ensureAbsoluteURL(data.Album.Cover[0], "640x640")
-		}
+	if len(data.Album.Cover) > 0 {
+		albumArtURL = p.ensureAbsoluteURL(data.Album.Cover[0], "640x640")
+	}
 
-		audioModes := ""
+	audioModes := ""
 	if len(data.AudioModes) > 0 {
 		audioModes = data.AudioModes[0]
 	}
@@ -267,7 +267,7 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 		artistIDs = []string{formatID(data.Artist.ID)}
 	}
 
-	albumArtist := ""
+	albumArtist := data.Artist.Name
 
 	var aArtists []string
 	var aArtistIDs []string
@@ -275,6 +275,9 @@ func (r APITrackInfoResponse) ToDomain(p *HifiProvider) *domain.CatalogTrack {
 		for _, a := range data.Album.Artists {
 			aArtists = append(aArtists, a.Name)
 			aArtistIDs = append(aArtistIDs, formatID(a.ID))
+		}
+		if albumArtist == "" {
+			albumArtist = aArtists[0]
 		}
 	}
 
@@ -441,8 +444,7 @@ func (r APITracksSearchResponse) ToDomain(p *HifiProvider) []domain.CatalogTrack
 			artistIDs = []string{""}
 		}
 
-		albumArtist := ""
-
+		albumArtist := artists[0]
 
 		var aArtists []string
 		var aArtistIDs []string
@@ -454,21 +456,21 @@ func (r APITracksSearchResponse) ToDomain(p *HifiProvider) []domain.CatalogTrack
 		}
 
 		tracks = append(tracks, domain.CatalogTrack{
-			ID:           formatID(item.ID),
-			Title:        item.Title,
-			ArtistID:     artistIDs[0],
-			Artist:       artists[0],
-			Artists:      artists,
-			ArtistIDs:    artistIDs,
-			AlbumID:      formatID(item.Album.ID),
-			AlbumArtist:  albumArtist,
-			AlbumArtists: aArtists,
+			ID:             formatID(item.ID),
+			Title:          item.Title,
+			ArtistID:       artistIDs[0],
+			Artist:         artists[0],
+			Artists:        artists,
+			ArtistIDs:      artistIDs,
+			AlbumID:        formatID(item.Album.ID),
+			AlbumArtist:    albumArtist,
+			AlbumArtists:   aArtists,
 			AlbumArtistIDs: aArtistIDs,
-			Album:        item.Album.Title,
-			TrackNumber:  item.TrackNumber,
-			Duration:     item.Duration,
-			AudioQuality: resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
-			AlbumArtURL:  p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
+			Album:          item.Album.Title,
+			TrackNumber:    item.TrackNumber,
+			Duration:       item.Duration,
+			AudioQuality:   resolveAudioQuality(item.AudioQuality, item.MediaMetadata.Tags),
+			AlbumArtURL:    p.ensureAbsoluteURL(item.Album.Cover, "640x640"),
 		})
 		if item.Version != nil {
 			tracks[len(tracks)-1].Version = *item.Version

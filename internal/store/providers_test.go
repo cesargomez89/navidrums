@@ -9,12 +9,12 @@ func TestProvidersRepo_Create(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id1 := repo.Create("http://provider1.example", "Provider 1")
+	id1, _ := repo.Create("http://provider1.example", "Provider 1")
 	if id1 == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
 
-	id2 := repo.Create("http://provider2.example", "Provider 2")
+	id2, _ := repo.Create("http://provider2.example", "Provider 2")
 	if id2 == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -45,12 +45,12 @@ func TestProvidersRepo_CreateDuplicate(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id1 := repo.Create("http://dup.example", "First")
+	id1, _ := repo.Create("http://dup.example", "First")
 	if id1 == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
 
-	id2 := repo.Create("http://dup.example", "Second")
+	id2, _ := repo.Create("http://dup.example", "Second")
 	if id2 != 0 {
 		t.Errorf("Expected id=0 for duplicate, got %d", id2)
 	}
@@ -69,9 +69,9 @@ func TestProvidersRepo_ListOrdered(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	repo.Create("http://c.example", "C")
-	repo.Create("http://a.example", "A")
-	repo.Create("http://b.example", "B")
+	_, _ = repo.Create("http://c.example", "C")
+	_, _ = repo.Create("http://a.example", "A")
+	_, _ = repo.Create("http://b.example", "B")
 
 	providers, err := repo.ListOrdered()
 	if err != nil {
@@ -112,7 +112,7 @@ func TestProvidersRepo_GetByPosition(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id := repo.Create("http://test.example", "Test")
+	id, _ := repo.Create("http://test.example", "Test")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -142,7 +142,7 @@ func TestProvidersRepo_Update(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id := repo.Create("http://old.example", "Old Name")
+	id, _ := repo.Create("http://old.example", "Old Name")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -180,7 +180,7 @@ func TestProvidersRepo_Delete(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id := repo.Create("http://delete.example", "Delete Me")
+	id, _ := repo.Create("http://delete.example", "Delete Me")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -220,7 +220,7 @@ func TestProvidersRepo_Exists(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id := repo.Create("http://exists.example", "Exists")
+	id, _ := repo.Create("http://exists.example", "Exists")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -239,9 +239,9 @@ func TestProvidersRepo_Reorder(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id1 := repo.Create("http://a.example", "A")
-	id2 := repo.Create("http://b.example", "B")
-	id3 := repo.Create("http://c.example", "C")
+	id1, _ := repo.Create("http://a.example", "A")
+	id2, _ := repo.Create("http://b.example", "B")
+	id3, _ := repo.Create("http://c.example", "C")
 
 	err := repo.Reorder([]int64{id3, id1, id2})
 	if err != nil {
@@ -273,9 +273,9 @@ func TestProvidersRepo_Reorder_PartialUpdate(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	repo.Create("http://a.example", "A")
-	id2 := repo.Create("http://b.example", "B")
-	repo.Create("http://c.example", "C")
+	_, _ = repo.Create("http://a.example", "A")
+	id2, _ := repo.Create("http://b.example", "B")
+	_, _ = repo.Create("http://c.example", "C")
 
 	err := repo.Reorder([]int64{id2})
 	if err != nil {

@@ -77,7 +77,9 @@ func (m *ProviderManager) SetProvider(url string) {
 	}
 	if m.providers != nil {
 		if !m.providers.Exists(url) {
-			m.providers.Create(url, "")
+			if _, err := m.providers.Create(url, ""); err != nil && m.logger != nil {
+				m.logger.Error("failed to create provider", "url", url, "error", err)
+			}
 		}
 		providers, _ := m.providers.ListOrdered()
 		for _, p := range providers {

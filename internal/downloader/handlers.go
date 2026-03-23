@@ -879,11 +879,6 @@ func (h *SyncJobHandler) maybeMoveTrackFile(track *domain.Track, oldFilePath str
 		logger.Warn("Failed to clean up old directory", "dir", oldDir, "error", err)
 	}
 
-	logger.Info("Moved track file", "old", oldFilePath, "new", track.FilePath)
-
-	// In Option A, we don't dynamically rewrite M3Us on movement. If they move, playlists would need to safely know.
-	// But since this is a user-approved architecture switch, M3U relies on recreation. We'll leave sync job rewriting omitted.
-
 	return nil
 }
 

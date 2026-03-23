@@ -391,6 +391,8 @@ func selectTracks(q sqlx.Queryer, query string, args ...interface{}) ([]*domain.
 	return tracks, err
 }
 
+// CreateTrackBatch creates multiple tracks in a single transaction.
+// It uses an all-or-nothing approach: if any insertion fails (besides IGNORE), the whole batch is rolled back.
 func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 	tx, err := db.root.Beginx()
 	if err != nil {

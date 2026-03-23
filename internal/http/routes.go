@@ -364,9 +364,9 @@ func (h *Handler) AddProviderHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := h.ProvidersRepo.Create(url, name)
-	if id == 0 {
-		h.Logger.Error("Failed to create provider")
+	id, err := h.ProvidersRepo.Create(url, name)
+	if err != nil || id == 0 {
+		h.Logger.Error("Failed to create provider", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

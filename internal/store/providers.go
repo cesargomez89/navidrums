@@ -1,7 +1,7 @@
 package store
 
-// Provider represents a music provider for fallback support.
-type Provider struct {
+// ProviderRecord represents a music provider stored in the database for fallback support.
+type ProviderRecord struct {
 	ID       int64  `json:"id"`
 	Position int    `json:"position"`
 	URL      string `json:"url"`
@@ -16,7 +16,7 @@ func NewProvidersRepo(db *DB) *ProvidersRepo {
 	return &ProvidersRepo{db: db}
 }
 
-func (r *ProvidersRepo) Create(url, name string) int64 {
+func (r *ProvidersRepo) Create(url, name string) (int64, error) {
 	var id int64
 	err := r.db.RunInTx(func(txDB *DB) error {
 		var maxPos int
@@ -28,10 +28,7 @@ func (r *ProvidersRepo) Create(url, name string) int64 {
 		row := txDB.QueryRowx(query, url, name, maxPos+1)
 		return row.Scan(&id)
 	})
-	if err != nil {
-		return 0
-	}
-	return id
+	return id, err
 }
 
 func (r *ProvidersRepo) Delete(id int64) error {
@@ -39,16 +36,16 @@ func (r *ProvidersRepo) Delete(id int64) error {
 	return err
 }
 
-func (r *ProvidersRepo) ListOrdered() ([]Provider, error) {
-	var providers []Provider
+func (r *ProvidersRepo) ListOrdered() ([]ProviderRecord, error) {
+	var providers []ProviderRecord
 	query := `SELECT id, url, name, position FROM providers ORDER BY position ASC`
 	err := r.db.Select(&providers, query)
 	return providers, err
 }
 
-func (r *ProvidersRepo) GetByPosition(pos int) (*Provider, error) {
+func (r *ProvidersRepo) GetByPosition(pos int) (*ProviderRecord, error) {
 	query := `SELECT id, url, name, position FROM providers WHERE position = ?`
-	var provider Provider
+	var provider ProviderRecord
 	err := r.db.Get(&provider, query, pos)
 	if err != nil {
 		return nil, err

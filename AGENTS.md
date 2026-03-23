@@ -101,10 +101,10 @@ spawning goroutines in handlers
 ## Job Lifecycle (Invariant)
 
 ```
-queued → running → completed | failed | cancelled
+queued → running → completed | failed | cancelled | decomposed
 ```
 
-**Container jobs** (album/playlist/artist): fetch tracks from provider → create Track records → create child track jobs → complete
+**Container jobs** (album/playlist/artist): fetch tracks from provider → create Track records → create child track jobs → decomposed (waiting for children) → completed
 
 **Track jobs**: lookup stored Track metadata → check if downloaded → download stream → tag → save art → update Track record
 
@@ -132,7 +132,7 @@ Rules:
 ### Job (Work Queue)
 Minimal state for work tracking:
 - `ID`, `Type`, `Status`, `SourceID`, `Progress`, `Error`, timestamps
-- Status: queued | running | completed | failed | cancelled
+- Status: queued | running | completed | failed | cancelled | decomposed
 - Types: track, album, playlist, artist, sync_file, sync_musicbrainz, sync_hifi
 
 ### Track (Download Domain)
