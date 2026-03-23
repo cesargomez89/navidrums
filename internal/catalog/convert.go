@@ -64,13 +64,20 @@ func (r APIAlbumResponse) ToDomain(p *HifiProvider) *domain.Album {
 		albumArtURL = p.ensureAbsoluteURL(data.Cover[0], "640x640")
 	}
 
+	var albumArtists []string
+	var albumArtistIDs []string
+	if data.Artist.Name == "Various Artists" {
+		albumArtists = []string{data.Artist.Name}
+		albumArtistIDs = []string{formatID(data.Artist.ID)}
+	}
+
 	album := &domain.Album{
 		ID:           formatID(data.ID),
 		Title:        data.Title,
 		ArtistID:     formatID(data.Artist.ID),
 		Artist:       data.Artist.Name,
-		Artists:      []string{data.Artist.Name},
-		ArtistIDs:    []string{formatID(data.Artist.ID)},
+		Artists:      albumArtists,
+		ArtistIDs:    albumArtistIDs,
 		Year:         year,
 		ReleaseDate:  data.ReleaseDate,
 		Copyright:    data.Copyright,
@@ -92,6 +99,11 @@ func (r APIAlbumResponse) ToDomain(p *HifiProvider) *domain.Album {
 		album.Tracks = append(album.Tracks, track)
 	}
 
+	if len(album.Artists) == 0 && len(album.Tracks) > 0 {
+		album.Artists = album.Tracks[0].Artists
+		album.ArtistIDs = album.Tracks[0].ArtistIDs
+	}
+
 	return album
 }
 
@@ -110,6 +122,16 @@ func (r APIAlbumTrackItem) ToDomain(album *domain.Album) domain.CatalogTrack {
 		tArtistID = artistIDs[0]
 	}
 
+	var albumArtists []string
+	var albumArtistIDs []string
+	if len(album.Artists) > 0 {
+		albumArtists = album.Artists
+		albumArtistIDs = album.ArtistIDs
+	} else {
+		albumArtists = artists
+		albumArtistIDs = artistIDs
+	}
+
 	track := domain.CatalogTrack{
 		ID:             formatID(r.ID),
 		Title:          r.Title,
@@ -119,8 +141,8 @@ func (r APIAlbumTrackItem) ToDomain(album *domain.Album) domain.CatalogTrack {
 		ArtistIDs:      artistIDs,
 		AlbumID:        album.ID,
 		AlbumArtist:    album.Artist,
-		AlbumArtists:   album.Artists,
-		AlbumArtistIDs: album.ArtistIDs,
+		AlbumArtists:   albumArtists,
+		AlbumArtistIDs: albumArtistIDs,
 		Album:          album.Title,
 		TrackNumber:    r.TrackNumber,
 		DiscNumber:     r.VolumeNumber,

@@ -155,6 +155,9 @@ func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *m
 	if len(track.AlbumArtists) == 0 && len(meta.AlbumArtists) > 0 {
 		track.AlbumArtists = meta.AlbumArtists
 	}
+	if track.AlbumArtist == "" && len(meta.AlbumArtists) > 0 {
+		track.AlbumArtist = meta.AlbumArtists[0]
+	}
 	if track.Composer == "" && meta.Composer != "" {
 		track.Composer = meta.Composer
 	}
@@ -191,6 +194,9 @@ func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domai
 	}
 	if len(track.AlbumArtists) == 0 && len(ct.AlbumArtists) > 0 {
 		track.AlbumArtists = ct.AlbumArtists
+	}
+	if track.AlbumArtist == "" && len(ct.AlbumArtists) > 0 {
+		track.AlbumArtist = ct.AlbumArtists[0]
 	}
 	if len(track.AlbumArtistIDs) == 0 && len(ct.AlbumArtistIDs) > 0 {
 		track.AlbumArtistIDs = ct.AlbumArtistIDs
@@ -317,6 +323,9 @@ func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *d
 	}
 	if len(track.AlbumArtists) == 0 && len(album.Artists) > 0 {
 		track.AlbumArtists = album.Artists
+	}
+	if track.AlbumArtist == "" && len(album.Artists) > 0 {
+		track.AlbumArtist = album.Artists[0]
 	}
 	if len(track.AlbumArtistIDs) == 0 && len(album.ArtistIDs) > 0 {
 		track.AlbumArtistIDs = album.ArtistIDs
