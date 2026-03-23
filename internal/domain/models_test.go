@@ -4,6 +4,117 @@ import (
 	"testing"
 )
 
+func TestJob_IsValidTransition(t *testing.T) {
+	tests := []struct {
+		name       string
+		fromStatus JobStatus
+		toStatus   JobStatus
+		want       bool
+	}{
+		{"queued to running", JobStatusQueued, JobStatusRunning, true},
+		{"queued to cancelled", JobStatusQueued, JobStatusCancelled, true},
+		{"queued to completed", JobStatusQueued, JobStatusCompleted, false},
+		{"queued to failed", JobStatusQueued, JobStatusFailed, false},
+
+		{"running to completed", JobStatusRunning, JobStatusCompleted, true},
+		{"running to failed", JobStatusRunning, JobStatusFailed, true},
+		{"running to cancelled", JobStatusRunning, JobStatusCancelled, true},
+		{"running to decomposed", JobStatusRunning, JobStatusDecomposed, true},
+		{"running to queued", JobStatusRunning, JobStatusQueued, false},
+
+		{"decomposed to completed", JobStatusDecomposed, JobStatusCompleted, true},
+		{"decomposed to failed", JobStatusDecomposed, JobStatusFailed, true},
+		{"decomposed to cancelled", JobStatusDecomposed, JobStatusCancelled, true},
+		{"decomposed to running", JobStatusDecomposed, JobStatusRunning, false},
+
+		{"completed to any", JobStatusCompleted, JobStatusQueued, false},
+		{"completed to cancelled", JobStatusCompleted, JobStatusCancelled, false},
+		{"failed to any", JobStatusFailed, JobStatusQueued, false},
+		{"cancelled to any", JobStatusCancelled, JobStatusQueued, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			job := &Job{Status: tt.fromStatus}
+			if got := job.IsValidTransition(tt.toStatus); got != tt.want {
+				t.Errorf("IsValidTransition(%s -> %s) = %v, want %v",
+					tt.fromStatus, tt.toStatus, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestJob_CanRetry(t *testing.T) {
+	tests := []struct {
+		status JobStatus
+		want   bool
+	}{
+		{JobStatusFailed, true},
+		{JobStatusCancelled, true},
+		{JobStatusCompleted, false},
+		{JobStatusQueued, false},
+		{JobStatusRunning, false},
+		{JobStatusDecomposed, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			job := &Job{Status: tt.status}
+			if got := job.CanRetry(); got != tt.want {
+				t.Errorf("CanRetry() with status %s = %v, want %v", tt.status, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestJob_IsTerminal(t *testing.T) {
+	tests := []struct {
+		status JobStatus
+		want   bool
+	}{
+		{JobStatusCompleted, true},
+		{JobStatusFailed, true},
+		{JobStatusCancelled, true},
+		{JobStatusQueued, false},
+		{JobStatusRunning, false},
+		{JobStatusDecomposed, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			job := &Job{Status: tt.status}
+			if got := job.IsTerminal(); got != tt.want {
+				t.Errorf("IsTerminal() with status %s = %v, want %v", tt.status, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestJob_IsContainer(t *testing.T) {
+	tests := []struct {
+		jobType JobType
+		want    bool
+	}{
+		{JobTypeTrack, false},
+		{JobTypeAlbum, true},
+		{JobTypePlaylist, true},
+		{JobTypeArtist, true},
+		{JobTypeDiscography, true},
+		{JobTypeSyncFile, false},
+		{JobTypeSyncMusicBrainz, false},
+		{JobTypeSyncHiFi, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.jobType), func(t *testing.T) {
+			job := &Job{Type: tt.jobType}
+			if got := job.IsContainer(); got != tt.want {
+				t.Errorf("IsContainer() with type %s = %v, want %v", tt.jobType, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestJobType_Constants(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -165,12 +276,12 @@ func TestArtist_Fields(t *testing.T) {
 
 func TestPlaylist_Fields(t *testing.T) {
 	playlist := Playlist{
-		ID:    "playlist_123",
-		Title: "My Playlist",
+		ProviderID: "playlist_123",
+		Title:      "My Playlist",
 	}
 
-	if playlist.ID != "playlist_123" {
-		t.Errorf("ID = %s, want playlist_123", playlist.ID)
+	if playlist.ProviderID != "playlist_123" {
+		t.Errorf("ProviderID = %s, want playlist_123", playlist.ProviderID)
 	}
 	if playlist.Title != "My Playlist" {
 		t.Errorf("Title = %s, want My Playlist", playlist.Title)
@@ -189,7 +300,7 @@ func TestSearchResult_Fields(t *testing.T) {
 			{ID: "track_1", Title: "Track One"},
 		},
 		Playlists: []Playlist{
-			{ID: "playlist_1", Title: "Playlist One"},
+			{ProviderID: "playlist_1", Title: "Playlist One"},
 		},
 	}
 
@@ -215,8 +326,8 @@ func TestSearchResult_Fields(t *testing.T) {
 	if result.Tracks[0].ID != "track_1" {
 		t.Errorf("Tracks[0].ID = %s, want track_1", result.Tracks[0].ID)
 	}
-	if result.Playlists[0].ID != "playlist_1" {
-		t.Errorf("Playlists[0].ID = %s, want playlist_1", result.Playlists[0].ID)
+	if result.Playlists[0].ProviderID != "playlist_1" {
+		t.Errorf("Playlists[0].ProviderID = %s, want playlist_1", result.Playlists[0].ProviderID)
 	}
 }
 

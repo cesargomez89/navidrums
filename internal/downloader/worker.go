@@ -64,23 +64,24 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	}
 
 	worker.downloader = app.NewDownloader(pm, cfg)
-	worker.playlistGenerator = app.NewPlaylistGenerator(cfg)
+	worker.playlistGenerator = app.NewPlaylistGenerator(cfg, repo)
 	worker.albumArtService = app.NewAlbumArtService(cfg)
 
 	baseMBClient := musicbrainz.NewClient(cfg.MusicBrainzURL)
-	worker.musicBrainzClient = musicbrainz.NewCachedClient(baseMBClient, repo, 7*24*time.Hour)
+	worker.musicBrainzClient = musicbrainz.NewCachedClient(baseMBClient, repo, cfg.MusicBrainzCacheTTL)
 	worker.enricher = app.NewMetadataEnricher(worker.musicBrainzClient, pm)
 
 	worker.dispatcher = NewDispatcher()
 
 	trackHandler := &TrackJobHandler{
-		Repo:            repo,
-		SettingsRepo:    settingsRepo,
-		Config:          cfg,
-		ProviderManager: pm,
-		Downloader:      worker.downloader,
-		AlbumArtService: worker.albumArtService,
-		Enricher:        worker.enricher,
+		Repo:              repo,
+		SettingsRepo:      settingsRepo,
+		Config:            cfg,
+		ProviderManager:   pm,
+		Downloader:        worker.downloader,
+		AlbumArtService:   worker.albumArtService,
+		PlaylistGenerator: worker.playlistGenerator,
+		Enricher:          worker.enricher,
 	}
 
 	containerHandler := &ContainerJobHandler{
@@ -284,7 +285,7 @@ func (w *Worker) runJob(ctx context.Context, job *domain.Job) {
 	logger := w.Logger.With(
 		"job_id", job.ID,
 		"job_type", job.Type,
-		"source_id", job.SourceID,
+		"source_id", job.GetSourceID(),
 	)
 	logger.Info("Running job")
 

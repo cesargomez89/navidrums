@@ -252,7 +252,7 @@ func TestClient_ConcurrentRateLimiting(t *testing.T) {
 
 func TestClient_RetryAfterHeader(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping rate limiting concurrency test in short mode")
+		t.Skip("Skipping rate limiting test in short mode")
 	}
 
 	var mu sync.Mutex
@@ -260,42 +260,46 @@ func TestClient_RetryAfterHeader(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
-		reqCount := requests
 		requests++
 		mu.Unlock()
 
-		if reqCount == 0 {
-			// First request, tell them to wait 2 seconds
-			w.Header().Set("Retry-After", "2")
-			w.WriteHeader(http.StatusTooManyRequests)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"recordings":[]}`))
+		// Always return 429 to test immediate failure behavior
+		w.Header().Set("Retry-After", "2")
+		w.WriteHeader(http.StatusTooManyRequests)
 	}))
 	defer ts.Close()
 
 	client := NewClient(ts.URL)
 
-	// This should block for at least 2 seconds because of the Retry-After header
 	start := time.Now()
-	_, err := client.doGet(context.Background(), ts.URL)
+	resp, err := client.doGet(context.Background(), ts.URL)
 	elapsed := time.Since(start)
 
+	// Should return response (not error) with 429 status - caller handles status check
 	if err != nil {
-		t.Errorf("Request failed: %v", err)
+		t.Errorf("doGet should not return error, got: %v", err)
+	}
+	if resp == nil {
+		t.Fatalf("Expected response, got nil")
+	}
+	defer resp.Body.Close()
+
+	// Verify it's actually 429
+	if resp.StatusCode != http.StatusTooManyRequests {
+		t.Errorf("Expected 429, got %d", resp.StatusCode)
 	}
 
 	mu.Lock()
 	totalReqs := requests
 	mu.Unlock()
 
-	if totalReqs != 2 {
-		t.Errorf("Expected 2 requests total (1 rejected, 1 success), got %d", totalReqs)
+	// Only 1 request should be made (no retries)
+	if totalReqs != 1 {
+		t.Errorf("Expected 1 request (no retries), got %d", totalReqs)
 	}
 
-	if elapsed < 2*time.Second {
-		t.Errorf("Expected request to block for at least 2 seconds due to Retry-After, got %v", elapsed)
+	// Should be fast (no Retry-After waiting, no retries)
+	if elapsed > 500*time.Millisecond {
+		t.Errorf("Expected fast response, got %v", elapsed)
 	}
 }

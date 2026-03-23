@@ -2,24 +2,14 @@
 <h1>Settings</h1>
 
 <div class="section">
-    <h2>Current Provider</h2>
-    <div id="current-provider">
-        <span class="provider-badge">Loading...</span>
-    </div>
-</div>
-
-<div class="section">
-    <h2>Add Custom Provider</h2>
+    <h2>Providers</h2>
+    <p class="hint">First provider is primary. Use Up/Down to reorder.</p>
+    <ul id="provider-list" class="flex flex-col gap-2"></ul>
     <form class="provider-form" onsubmit="addProvider(event)">
         <input type="text" id="provider-name" placeholder="Name" required>
-        <input type="url" id="provider-url" placeholder="URL (https://api.example.com)" required>
-        <button type="submit" class="btn-lg btn-primary">+</button>
+        <input type="url" id="provider-url" placeholder="URL" required>
+        <button type="submit" class="btn-lg btn-primary">+ Add</button>
     </form>
-</div>
-
-<div class="section">
-    <h2>Available Providers</h2>
-    <div id="providers-list"></div>
 </div>
 
 <div class="section">
@@ -80,52 +70,62 @@
     function loadProviders() {
         fetch('/htmx/providers', { cache: 'no-store' })
             .then(r => r.json())
-            .then(data => {
-                document.querySelector('#current-provider .provider-badge').textContent =
-                    data.active === data.default ? 'Default' : data.active;
-
-                const container = document.getElementById('providers-list');
-                container.innerHTML = '';
-
-                let all = [];
-                if (data.default) all.push({ name: 'Default (env)', url: data.default, isDefault: true });
-                (data.custom || []).forEach(p => all.push(p));
-
-                all.forEach(p => {
-                    const div = document.createElement('div');
-                    div.className = 'item item-bordered mb-3';
-                    if (p.url === data.active) {
-                        div.style.borderColor = 'var(--accent)';
-                        div.style.backgroundColor = 'rgba(245,196,0,0.05)';
-                    }
-                    div.innerHTML = `
-                    <div class="item-body">
-                        <div class="item-title">${p.name}</div>
-                        <div class="item-subtitle" style="font-family: monospace;">${p.url}</div>
-                    </div>
-                    <div class="item-actions">
-                        ${p.url === data.active
-                            ? '<button class="btn btn-success" disabled>Active</button>'
-                            : `<button class="btn btn-outline" onclick="setProvider('${p.url}')">Select</button>`}
-                        ${p.isDefault ? '' : `<button class="btn btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
-                    </div>
-                `;
-                    container.appendChild(div);
-                });
-            });
+            .then(data => renderProviderList(data.providers || [], data.defaultURL));
     }
 
-    function setProvider(url) {
-        fetch('/htmx/provider/set?url=' + encodeURIComponent(url), { method: 'POST' })
+    function renderProviderList(providers, defaultURL) {
+        const container = document.getElementById('provider-list');
+        
+        if (providers.length === 0) {
+            container.innerHTML = '<p class="hint">No custom providers configured. Add one below.</p>';
+            return;
+        }
+        
+        container.innerHTML = providers.map((p, i) => `
+            <li class="item item-bordered">
+                <span class="item-media flex items-center justify-center rounded-md" style="width:32px;height:32px;background:var(--accent);color:var(--accent-content);font-weight:700;font-size:0.85rem;">${i + 1}</span>
+                <div class="item-body">
+                    <div class="item-title">${p.name}</div>
+                    <div class="item-subtitle">${p.url}${p.url === defaultURL ? ' <span class="badge badge-default">default</span>' : ''}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'up')" ${i === 0 ? 'disabled' : ''}>Up</button>
+                    <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'down')" ${i === providers.length - 1 ? 'disabled' : ''}>Down</button>
+                    <button class="btn btn-sm btn-danger" onclick="removeProvider(${p.id})">Remove</button>
+                </div>
+            </li>
+        `).join('');
+    }
+
+    function moveProvider(id, direction) {
+        fetch('/htmx/providers', { cache: 'no-store' })
             .then(r => r.json())
-            .then(() => loadProviders());
+            .then(data => {
+                const providers = data.providers || [];
+                const currentIdx = providers.findIndex(p => p.id === id);
+                if (currentIdx === -1) return;
+                
+                const newIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1;
+                if (newIdx < 0 || newIdx >= providers.length) return;
+                
+                const newOrder = [...providers];
+                [newOrder[currentIdx], newOrder[newIdx]] = [newOrder[newIdx], newOrder[currentIdx]];
+                
+                const ids = newOrder.map(p => p.id);
+                
+                fetch('/htmx/providers/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'ids[]=' + ids.join('&ids[]=')
+                }).then(() => loadProviders());
+            });
     }
 
     function addProvider(e) {
         e.preventDefault();
         const name = document.getElementById('provider-name').value;
         const url = document.getElementById('provider-url').value;
-        fetch('/htmx/provider/add?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
+        fetch('/htmx/provider?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
             .then(r => r.json())
             .then(() => {
                 document.getElementById('provider-name').value = '';
@@ -134,9 +134,9 @@
             });
     }
 
-    function removeProvider(url) {
+    function removeProvider(id) {
         if (!confirm('Remove this provider?')) return;
-        fetch('/htmx/provider/remove?url=' + encodeURIComponent(url), { method: 'POST' })
+        fetch('/htmx/provider?id=' + id, { method: 'DELETE' })
             .then(r => r.json())
             .then(() => loadProviders());
     }

@@ -81,12 +81,22 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	}
 	if r.Artist != nil {
 		updates["artist"] = *r.Artist
+		artistList := strings.Split(*r.Artist, ",")
+		for i := range artistList {
+			artistList[i] = strings.TrimSpace(artistList[i])
+		}
+		updates["artists"] = artistList
 	}
 	if r.Album != nil {
 		updates["album"] = *r.Album
 	}
 	if r.AlbumArtist != nil {
 		updates["album_artist"] = *r.AlbumArtist
+		albumArtistList := strings.Split(*r.AlbumArtist, ",")
+		for i := range albumArtistList {
+			albumArtistList[i] = strings.TrimSpace(albumArtistList[i])
+		}
+		updates["album_artists"] = albumArtistList
 	}
 	if r.Label != nil {
 		updates["label"] = *r.Label

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
@@ -353,7 +354,7 @@ func TestDownloadsService_EnqueueSyncJobs(t *testing.T) {
 		ID:       "existing",
 		Type:     domain.JobTypeSyncHiFi,
 		Status:   domain.JobStatusRunning,
-		SourceID: "t1",
+		SourceID: sql.NullString{String: "t1", Valid: true},
 	}
 	if err := db.CreateJob(existingJob); err != nil {
 		t.Fatalf("CreateJob failed: %v", err)

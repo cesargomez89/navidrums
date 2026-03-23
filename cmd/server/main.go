@@ -58,8 +58,8 @@ func main() {
 
 	// Load saved provider from settings if exists
 	settingsRepo := store.NewSettingsRepo(db)
-	if savedProvider, err := settingsRepo.Get(store.SettingActiveProvider); err == nil && savedProvider != "" {
-		providerManager.SetProvider(savedProvider)
+	if savedMetURL, err := settingsRepo.Get(store.SettingActiveMetadataProvider); err == nil && savedMetURL != "" {
+		providerManager.SetProvider(savedMetURL)
 	}
 
 	// Initialize Worker
@@ -70,6 +70,7 @@ func main() {
 	// Initialize Services
 	jobService := app.NewJobService(db, appLogger)
 	downloadsService := app.NewDownloadsService(db, appLogger)
+	providersRepo := store.NewProvidersRepo(db)
 
 	// Initialize Router
 	r := chi.NewRouter()
@@ -118,7 +119,7 @@ func main() {
 	})
 
 	// Routes
-	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo, cfg)
+	h := httpapp.NewHandler(jobService, downloadsService, providerManager, settingsRepo, providersRepo, cfg)
 	h.RegisterRoutes(r)
 
 	// Start Server

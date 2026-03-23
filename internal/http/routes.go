@@ -10,7 +10,6 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/cesargomez89/navidrums/internal/app"
-	"github.com/cesargomez89/navidrums/internal/catalog"
 	"github.com/cesargomez89/navidrums/internal/constants"
 	"github.com/cesargomez89/navidrums/internal/domain"
 	"github.com/cesargomez89/navidrums/internal/http/dto"
@@ -309,22 +308,16 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
-	active := h.ProviderManager.GetBaseURL()
-	defaultURL := h.ProviderManager.GetDefaultURL()
-
-	var customProviders []catalog.CustomProvider
-	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
-	if err == nil && customProvidersJSON != "" {
-		if unmarshalErr := json.Unmarshal([]byte(customProvidersJSON), &customProviders); unmarshalErr != nil {
-			h.Logger.Error("Failed to unmarshal custom providers", "error", unmarshalErr)
-		}
+	providers, err := h.ProvidersRepo.ListOrdered()
+	if err != nil {
+		h.Logger.Error("Failed to list providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	response := map[string]interface{}{
-		"predefined": json.RawMessage(catalog.GetPredefinedProvidersJSON()),
-		"custom":     customProviders,
-		"active":     active,
-		"default":    defaultURL,
+		"providers":  providers,
+		"defaultURL": h.ProviderManager.GetBaseURL(),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -335,24 +328,34 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) SetProviderHTMX(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.Query().Get("url")
-	if url == "" {
-		http.Error(w, "url is required", http.StatusBadRequest)
+func (h *Handler) ReorderProvidersHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
 	}
 
-	h.ProviderManager.SetProvider(url)
-	if err := h.SettingsRepo.Set(store.SettingActiveProvider, url); err != nil {
-		h.Logger.Error("Failed to save active provider", "error", err)
+	ids := r.Form["ids[]"]
+	intIDs := make([]int64, 0, len(ids))
+	for _, idStr := range ids {
+		var id int64
+		if _, err := fmt.Sscanf(idStr, "%d", &id); err != nil {
+			continue
+		}
+		intIDs = append(intIDs, id)
+	}
+
+	if err := h.ProvidersRepo.Reorder(intIDs); err != nil {
+		h.Logger.Error("Failed to reorder providers", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	_, _ = w.Write([]byte(`{"success":true,"url":"` + url + `"}`))
+	h.ProviderManager.InvalidateProviderCache()
+
+	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
-func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddProviderHTMX(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	url := r.URL.Query().Get("url")
 	if name == "" || url == "" {
@@ -360,71 +363,38 @@ func (h *Handler) AddCustomProviderHTMX(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
-	if err != nil {
-		h.Logger.Error("Failed to get custom providers", "error", err)
-	}
-	var customProviders []catalog.CustomProvider
-	if customProvidersJSON != "" {
-		if unmarshalErr := json.Unmarshal([]byte(customProvidersJSON), &customProviders); unmarshalErr != nil {
-			h.Logger.Error("Failed to unmarshal custom providers", "error", unmarshalErr)
-		}
-	}
-
-	customProviders = append(customProviders, catalog.CustomProvider{Name: name, URL: url})
-
-	newJSON, err := json.Marshal(customProviders)
-	if err != nil {
-		h.Logger.Error("Failed to marshal custom providers", "error", err)
+	id := h.ProvidersRepo.Create(url, name)
+	if id == 0 {
+		h.Logger.Error("Failed to create provider")
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	if err := h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON)); err != nil {
-		h.Logger.Error("Failed to save custom providers", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
+
+	h.ProviderManager.InvalidateProviderCache()
 
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
-func (h *Handler) RemoveCustomProviderHTMX(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.Query().Get("url")
-	if url == "" {
-		http.Error(w, "url is required", http.StatusBadRequest)
+func (h *Handler) RemoveProviderHTMX(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "id is required", http.StatusBadRequest)
 		return
 	}
 
-	customProvidersJSON, err := h.SettingsRepo.Get(store.SettingCustomProviders)
-	if err != nil || customProvidersJSON == "" {
-		_, _ = w.Write([]byte(`{"success":false,"error":"no custom catalog"}`))
+	var id int64
+	if _, err := fmt.Sscanf(idStr, "%d", &id); err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
 
-	var customProviders []catalog.CustomProvider
-	if unmarshalErr := json.Unmarshal([]byte(customProvidersJSON), &customProviders); unmarshalErr != nil {
-		_, _ = w.Write([]byte(`{"success":false,"error":"invalid data"}`))
-		return
-	}
-
-	var newProviders []catalog.CustomProvider
-	for _, p := range customProviders {
-		if p.URL != url {
-			newProviders = append(newProviders, p)
-		}
-	}
-
-	newJSON, err := json.Marshal(newProviders)
-	if err != nil {
-		h.Logger.Error("Failed to marshal custom providers", "error", err)
+	if err := h.ProvidersRepo.Delete(id); err != nil {
+		h.Logger.Error("Failed to delete provider", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	if err := h.SettingsRepo.Set(store.SettingCustomProviders, string(newJSON)); err != nil {
-		h.Logger.Error("Failed to save custom providers", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
+
+	h.ProviderManager.InvalidateProviderCache()
 
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
