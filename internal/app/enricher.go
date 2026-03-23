@@ -106,6 +106,19 @@ func (e *MetadataEnricher) EnrichComplete(ctx context.Context, track *domain.Tra
 	// 3. Lyrics
 	e.FetchLyrics(ctx, track, logger)
 	logger.Debug("EnrichComplete: done", "track_year", track.Year)
+
+	if track.AlbumArtist == "" && len(track.Artists) > 0 {
+		track.AlbumArtist = track.Artists[0]
+	}
+	if len(track.AlbumArtists) == 0 && len(track.Artists) > 0 {
+		track.AlbumArtists = track.Artists
+	}
+	if len(track.AlbumArtistIDs) == 0 && len(track.ArtistIDs) > 0 {
+		track.AlbumArtistIDs = track.ArtistIDs
+	}
+	if track.PathArtist == "" {
+		track.PathArtist = track.AlbumArtist
+	}
 }
 
 func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *musicbrainz.RecordingMetadata, logger *slog.Logger) {
@@ -155,6 +168,9 @@ func (e *MetadataEnricher) fillTrackFromMusicBrainz(track *domain.Track, meta *m
 	if len(track.AlbumArtists) == 0 && len(meta.AlbumArtists) > 0 {
 		track.AlbumArtists = meta.AlbumArtists
 	}
+	if track.AlbumArtist == "" && len(meta.AlbumArtists) > 0 {
+		track.AlbumArtist = meta.AlbumArtists[0]
+	}
 	if track.PathArtist == "" && len(meta.AlbumArtists) > 0 {
 		track.PathArtist = meta.AlbumArtists[0]
 	}
@@ -194,6 +210,9 @@ func (e *MetadataEnricher) UpdateTrackFromCatalog(track *domain.Track, ct *domai
 	}
 	if len(track.AlbumArtists) == 0 && len(ct.AlbumArtists) > 0 {
 		track.AlbumArtists = ct.AlbumArtists
+	}
+	if track.AlbumArtist == "" && len(ct.AlbumArtists) > 0 {
+		track.AlbumArtist = ct.AlbumArtists[0]
 	}
 	if track.PathArtist == "" && len(ct.AlbumArtists) > 0 {
 		track.PathArtist = ct.AlbumArtists[0]
@@ -287,51 +306,53 @@ func (e *MetadataEnricher) enrichWithAlbumMetadata(ctx context.Context, track *d
 		return
 	}
 
-	hasAlbumMetadata := track.TotalTracks > 0 && track.TotalDiscs > 0 &&
+	needsAlbumArtist := track.AlbumArtist == "" || len(track.AlbumArtists) == 0 || track.PathArtist == ""
+	hasBasicMetadata := track.TotalTracks > 0 && track.TotalDiscs > 0 &&
 		track.ReleaseDate != "" && track.Genre != "" && track.Label != ""
-	if hasAlbumMetadata {
-		logger.Debug("Track already has album metadata, skipping album fetch")
-		return
-	}
 
-	album, err := e.providerManager.GetProvider().GetAlbum(ctx, albumID)
-	if err != nil {
-		logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
-		return
-	}
-	if track.ReleaseDate == "" && album.ReleaseDate != "" {
-		track.ReleaseDate = album.ReleaseDate
-	}
-	e.setYearFromReleaseDate(track)
-	if track.Label == "" && album.Label != "" {
-		track.Label = album.Label
-	}
-	if track.Genre == "" && album.Genre != "" {
-		track.Genre = album.Genre
-	}
-	if track.TotalTracks == 0 && album.TotalTracks > 0 {
-		track.TotalTracks = album.TotalTracks
-	}
-	if track.TotalDiscs == 0 && album.TotalDiscs > 0 {
-		track.TotalDiscs = album.TotalDiscs
-	}
-	if track.Barcode == "" && album.UPC != "" {
-		track.Barcode = album.UPC
-	}
-	if track.AlbumArtist == "" && album.Artist != "" {
-		track.AlbumArtist = album.Artist
-	}
-	if len(track.AlbumArtists) == 0 && len(album.Artists) > 0 {
-		track.AlbumArtists = album.Artists
-	}
-	if track.PathArtist == "" && len(album.Artists) > 0 {
-		track.PathArtist = album.Artists[0]
-	}
-	if len(track.AlbumArtistIDs) == 0 && len(album.ArtistIDs) > 0 {
-		track.AlbumArtistIDs = album.ArtistIDs
-	}
-	if track.AlbumArtURL == "" && album.AlbumArtURL != "" {
-		track.AlbumArtURL = album.AlbumArtURL
+	if needsAlbumArtist || !hasBasicMetadata {
+		album, err := e.providerManager.GetProvider().GetAlbum(ctx, albumID)
+		if err != nil {
+			logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
+			return
+		}
+		if track.ReleaseDate == "" && album.ReleaseDate != "" {
+			track.ReleaseDate = album.ReleaseDate
+		}
+		e.setYearFromReleaseDate(track)
+		if track.Label == "" && album.Label != "" {
+			track.Label = album.Label
+		}
+		if track.Genre == "" && album.Genre != "" {
+			track.Genre = album.Genre
+		}
+		if track.TotalTracks == 0 && album.TotalTracks > 0 {
+			track.TotalTracks = album.TotalTracks
+		}
+		if track.TotalDiscs == 0 && album.TotalDiscs > 0 {
+			track.TotalDiscs = album.TotalDiscs
+		}
+		if track.Barcode == "" && album.UPC != "" {
+			track.Barcode = album.UPC
+		}
+		if track.AlbumArtist == "" && album.Artist != "" {
+			track.AlbumArtist = album.Artist
+		}
+		if len(track.AlbumArtists) == 0 && len(album.Artists) > 0 {
+			track.AlbumArtists = album.Artists
+		}
+		if track.AlbumArtist == "" && len(album.Artists) > 0 {
+			track.AlbumArtist = album.Artists[0]
+		}
+		if track.PathArtist == "" && len(album.Artists) > 0 {
+			track.PathArtist = album.Artists[0]
+		}
+		if len(track.AlbumArtistIDs) == 0 && len(album.ArtistIDs) > 0 {
+			track.AlbumArtistIDs = album.ArtistIDs
+		}
+		if track.AlbumArtURL == "" && album.AlbumArtURL != "" {
+			track.AlbumArtURL = album.AlbumArtURL
+		}
 	}
 }
 

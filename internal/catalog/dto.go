@@ -79,6 +79,7 @@ type APITrackItem struct {
 
 type APIAlbumWithTracks struct {
 	Artist        APIArtist        `json:"artist"`
+	Artists       []APIArtist      `json:"artists"`
 	Copyright     string           `json:"copyright"`
 	UPC           string           `json:"upc"`
 	ID            json.Number      `json:"id"`
@@ -129,9 +130,11 @@ type APIPlaylistItem struct {
 		Artists       []APIArtist      `json:"artists"`
 		MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
 		Album         struct {
-			ID    json.Number `json:"id"`
-			Title string      `json:"title"`
-			Cover FlexCover   `json:"cover"`
+			ID      json.Number `json:"id"`
+			Title   string      `json:"title"`
+			Cover   FlexCover   `json:"cover"`
+			Artist  *APIArtist  `json:"artist,omitempty"`
+			Artists []APIArtist `json:"artists,omitempty"`
 		} `json:"album"`
 		TrackNumber int  `json:"trackNumber"`
 		Duration    int  `json:"duration"`
@@ -217,6 +220,8 @@ type APITrackInfoData struct {
 		Cover           FlexCover   `json:"cover"`
 		NumberOfTracks  int         `json:"numberOfTracks"`
 		NumberOfVolumes int         `json:"numberOfVolumes"`
+		Artist          *APIArtist  `json:"artist,omitempty"`
+		Artists         []APIArtist `json:"artists,omitempty"`
 	} `json:"album"`
 	BPM          int     `json:"bpm"`
 	Peak         float64 `json:"peak"`
@@ -291,9 +296,11 @@ type APISearchAlbumItem struct {
 type APISearchTrackItem struct {
 	Version *string `json:"version"`
 	Album   struct {
-		ID    json.Number `json:"id"`
-		Title string      `json:"title"`
-		Cover string      `json:"cover"`
+		ID      json.Number `json:"id"`
+		Title   string      `json:"title"`
+		Cover   string      `json:"cover"`
+		Artist  *APIArtist  `json:"artist,omitempty"`
+		Artists []APIArtist `json:"artists,omitempty"`
 	} `json:"album"`
 	ID            json.Number      `json:"id"`
 	Title         string           `json:"title"`
