@@ -3,6 +3,6 @@
         <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}https://via.placeholder.com/300?text=Playlist{{end}}"
             alt="{{.Title}}" loading="lazy">
     </a>
-    <div class="card-title"><a href="/playlist/{{.ProviderID}}">{{.Title}}</a></div>
+    <div class="card-title" title="{{.Title}}"><a href="/playlist/{{.ProviderID}}">{{.Title}}</a></div>
     <div class="card-sub">{{.Description}}</div>
 </div>
