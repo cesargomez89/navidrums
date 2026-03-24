@@ -13,8 +13,8 @@
     </span>
 </div>
 {{end}}
-    <div class="card-title">
+    <div class="card-title" title="{{.Title}}">
         <a href="/album/{{.ID}}">{{.Title}}</a>
     </div>
-    <div class="card-sub"><a href="/artist/{{.ArtistID}}" class="hover:text-accent">{{.Artist}}</a></div>
+    <div class="card-sub" title="{{.Artist}}"><a href="/artist/{{.ArtistID}}" class="hover:text-accent">{{.Artist}}</a></div>
 </div>

@@ -17,8 +17,8 @@
                 <input type="checkbox" class="download-cb flex-shrink-0" value="{{.ProviderID}}"
                     onchange="onSelectionChange()" title="Select">
                 <div class="item-body">
-                    <div class="item-title"><a href="/track/{{.ID}}" class="hover:text-accent">{{.Title}}</a></div>
-                    <div class="item-subtitle">{{.Artist}} - <a href="/album/{{.AlbumID}}" class="hover:text-accent">{{.Album}}</a>{{if .Genre}} - {{.Genre}}{{end}}</div>
+                    <div class="item-title" title="{{.Title}}"><a href="/track/{{.ID}}" class="hover:text-accent">{{.Title}}</a></div>
+                    <div class="item-subtitle" title="{{.Artist}} - {{.Album}}{{if .Genre}} - {{.Genre}}{{end}}">{{.Artist}} - <a href="/album/{{.AlbumID}}" class="hover:text-accent">{{.Album}}</a>{{if .Genre}} - {{.Genre}}{{end}}</div>
                 </div>
                 <div class="item-actions item-actions--col items-end">
                     <div class="text-xs text-dim">
