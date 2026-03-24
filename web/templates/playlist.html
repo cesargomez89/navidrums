@@ -10,7 +10,7 @@
             <span>{{len .Playlist.Tracks}} tracks</span>
         </div>
         <div class="toolbar-row mt-4">
-            <button class="btn btn-primary" onclick="queueDownload('playlist', '{{.Playlist.ProviderID}}', this)" title="Download Full Playlist">
+            <button class="btn btn-primary" onclick="queueDownload(event, 'playlist', '{{.Playlist.ProviderID}}', this)" title="Download Full Playlist">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Download Full Playlist</button>
         </div>

@@ -11,10 +11,10 @@
             <span>{{len .Artist.TopTracks}} top tracks</span>
         </div>
         <div class="toolbar-row mt-4">
-            <button class="btn btn-primary" onclick="queueDownload('artist', '{{.Artist.ID}}', this)" title="Download Top Tracks">
+            <button class="btn btn-primary" onclick="queueDownload(event, 'artist', '{{.Artist.ID}}', this)" title="Download Top Tracks">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Download Top Tracks</button>
-            <button class="btn btn-secondary" onclick="queueDownload('discography', '{{.Artist.ID}}', this)" title="Download Discography">
+            <button class="btn btn-secondary" onclick="queueDownload(event, 'discography', '{{.Artist.ID}}', this)" title="Download Discography">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Download Discography</button>
             <button class="btn btn-outline" hx-get="/htmx/artist/{{.Artist.ID}}/similar"

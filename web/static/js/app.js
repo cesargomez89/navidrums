@@ -5,7 +5,9 @@ function handleDownload(btn) {
   btn.innerText = '...';
 }
 
-function queueDownload(type, id, btn) {
+function queueDownload(e, type, id, btn) {
+  e.preventDefault();
+  e.stopPropagation();
   handleDownload(btn);
   fetch(`/htmx/download/${type}/${id}`, {
     method: 'POST',
