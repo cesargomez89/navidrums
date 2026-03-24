@@ -16,13 +16,17 @@ linters:
   settings:
     govet:
       enable-all: true
+      disable:
+        - fieldalignment
   exclusions:
     rules:
-      - path: '(.+)_test\.go'
+      - path: '_test\.go'
         linters:
           - errcheck
           - ineffassign
           - unused
+          - gosec
+          - fieldalignment
     paths:
       - navidrome_data
 

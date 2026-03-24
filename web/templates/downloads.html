@@ -48,9 +48,15 @@
                 Empty fields will be ignored.
             </p>
             <div class="flex flex-col gap-3 mb-4">
-                <input type="text" id="genre-input" placeholder="Genre (e.g. Electronic, Jazz, Rock...)"
+                <input type="text" id="path-artist-input" placeholder="Artist Directory (template path)"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <input type="text" id="artists-input" placeholder="Artists (comma-separated)"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <input type="text" id="album-artists-input" placeholder="Album Artists (comma-separated)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="number" id="year-input" placeholder="Year (e.g. 2024)" min="1900" max="2100"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <input type="text" id="genre-input" placeholder="Genre (e.g. Electronic, Jazz, Rock...)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="text" id="mood-input" placeholder="Mood (e.g. Energetic, Chill, Melancholic...)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
@@ -176,12 +182,15 @@
 
         // ─── genre modal ───────────────────────────────────────────────────
         function openGenreModal() {
+            document.getElementById('path-artist-input').value = '';
+            document.getElementById('artists-input').value = '';
+            document.getElementById('album-artists-input').value = '';
             document.getElementById('year-input').value = '';
             document.getElementById('genre-input').value = '';
             document.getElementById('mood-input').value = '';
             document.getElementById('style-input').value = '';
             document.getElementById('genre-modal-overlay').style.display = 'flex';
-            setTimeout(() => document.getElementById('genre-input').focus(), 50);
+            setTimeout(() => document.getElementById('path-artist-input').focus(), 50);
         }
 
         function closeGenreModal(e) {
@@ -191,12 +200,15 @@
         }
 
         function applyMetadata() {
-            var genre = document.getElementById('genre-input').value.trim();
+            var pathArtist = document.getElementById('path-artist-input').value.trim();
+            var artists = document.getElementById('artists-input').value.trim();
+            var albumArtists = document.getElementById('album-artists-input').value.trim();
             var year = document.getElementById('year-input').value.trim();
+            var genre = document.getElementById('genre-input').value.trim();
             var mood = document.getElementById('mood-input').value.trim();
             var style = document.getElementById('style-input').value.trim();
 
-            if (!year && !genre && !mood && !style) {
+            if (!pathArtist && !artists && !albumArtists && !year && !genre && !mood && !style) {
                 alert('Please enter at least one field.'); return;
             }
             var ids = getSelectedIDs();
@@ -204,6 +216,9 @@
             document.getElementById('genre-modal-overlay').style.display = 'none';
             var params = new URLSearchParams();
             ids.forEach(id => params.append('ids[]', id));
+            if (pathArtist) params.set('path_artist', pathArtist);
+            if (artists) params.set('artists', artists);
+            if (albumArtists) params.set('album_artists', albumArtists);
             if (year) params.set('year', year);
             if (genre) params.set('genre', genre);
             if (mood) params.set('mood', mood);

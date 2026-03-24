@@ -2,21 +2,22 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/cesargomez89/navidrums/internal/domain"
 )
 
 func (db *DB) CreateJob(job *domain.Job) error {
-	query := `INSERT OR IGNORE INTO jobs (id, type, status, progress, source_id, created_at, updated_at)
-		VALUES (:id, :type, :status, :progress, :source_id, :created_at, :updated_at)`
+	query := `INSERT OR IGNORE INTO jobs (id, type, status, progress, source_id, parent_job_id, created_at, updated_at)
+		VALUES (:id, :type, :status, :progress, :source_id, :parent_job_id, :created_at, :updated_at)`
 
 	_, err := db.NamedExec(query, job)
 	return err
 }
 
 func (db *DB) GetJob(id string) (*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE id = ?`
+	query := `SELECT id, type, status, progress, source_id, parent_job_id, created_at, updated_at, error FROM jobs WHERE id = ?`
 
 	job := &domain.Job{}
 	err := db.Get(job, query, id)
@@ -45,7 +46,7 @@ func (db *DB) ClearJobError(id string) error {
 }
 
 func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
+	query := `SELECT id, type, status, progress, source_id, parent_job_id, created_at, updated_at, error FROM jobs ORDER BY created_at DESC LIMIT ?`
 
 	var jobs []*domain.Job
 	err := db.Select(&jobs, query, limit)
@@ -53,7 +54,7 @@ func (db *DB) ListJobs(limit int) ([]*domain.Job, error) {
 }
 
 func (db *DB) ListActiveJobs(offset, limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at FROM jobs WHERE status IN (?, ?) ORDER BY created_at ASC LIMIT ? OFFSET ?`
+	query := `SELECT id, type, status, progress, source_id, parent_job_id, created_at, updated_at FROM jobs WHERE status IN (?, ?) ORDER BY created_at ASC LIMIT ? OFFSET ?`
 
 	var jobs []*domain.Job
 	err := db.Select(&jobs, query, domain.JobStatusQueued, domain.JobStatusRunning, limit, offset)
@@ -68,7 +69,7 @@ func (db *DB) CountActiveJobs() (int, error) {
 }
 
 func (db *DB) ListFinishedJobs(offset, limit int) ([]*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at, error FROM jobs WHERE status IN (?, ?, ?) ORDER BY updated_at DESC LIMIT ? OFFSET ?`
+	query := `SELECT id, type, status, progress, source_id, parent_job_id, created_at, updated_at, error FROM jobs WHERE status IN (?, ?, ?) ORDER BY updated_at DESC LIMIT ? OFFSET ?`
 
 	var jobs []*domain.Job
 	err := db.Select(&jobs, query, domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled, limit, offset)
@@ -83,7 +84,7 @@ func (db *DB) CountFinishedJobs() (int, error) {
 }
 
 func (db *DB) GetActiveJobBySourceID(sourceID string, jobType domain.JobType) (*domain.Job, error) {
-	query := `SELECT id, type, status, progress, source_id, created_at, updated_at 
+	query := `SELECT id, type, status, progress, source_id, parent_job_id, created_at, updated_at 
 		FROM jobs 
 		WHERE source_id = ? AND type = ? AND status IN (?, ?)
 		LIMIT 1`
@@ -139,4 +140,67 @@ func (db *DB) GetJobStats() (*JobStats, error) {
 		domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled,
 		domain.JobStatusCompleted, domain.JobStatusFailed, domain.JobStatusCancelled)
 	return stats, err
+}
+
+func (db *DB) CountJobsForParent(parentID string) (total int, pending int, err error) {
+	row := db.QueryRow(`SELECT COUNT(*) FROM jobs WHERE parent_job_id = ?`, parentID)
+	if err := row.Scan(&total); err != nil {
+		return 0, 0, err
+	}
+
+	row = db.QueryRow(`
+		SELECT COUNT(*) FROM jobs 
+		WHERE parent_job_id = ? AND status IN (?, ?)`,
+		parentID, domain.JobStatusQueued, domain.JobStatusRunning)
+	if err := row.Scan(&pending); err != nil {
+		return 0, 0, err
+	}
+	return total, pending, nil
+}
+
+func (db *DB) UpdateJobProgress(id string, progress float64) error {
+	_, err := db.Exec(`UPDATE jobs SET progress = ?, updated_at = ? WHERE id = ?`,
+		progress, time.Now(), id)
+	return err
+}
+
+// CreateJobBatch creates multiple jobs in a single transaction.
+// It uses an all-or-nothing approach: if any insertion fails (besides IGNORE), the whole batch is rolled back.
+func (db *DB) CreateJobBatch(jobs []*domain.Job) error {
+	tx, err := db.root.Beginx()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback() //nolint:errcheck // rollback is best-effort
+
+	query := `INSERT OR IGNORE INTO jobs (id, type, status, progress, source_id, parent_job_id, created_at, updated_at)
+		VALUES (:id, :type, :status, :progress, :source_id, :parent_job_id, :created_at, :updated_at)`
+
+	for _, job := range jobs {
+		if job.CreatedAt.IsZero() {
+			job.CreatedAt = time.Now()
+		}
+		if job.UpdatedAt.IsZero() {
+			job.UpdatedAt = time.Now()
+		}
+
+		if _, err := tx.NamedExec(query, job); err != nil {
+			return fmt.Errorf("failed to create job %s: %w", job.ID, err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (db *DB) CancelJobsByParentID(parentID string) error {
+	_, err := db.Exec(`
+		UPDATE jobs 
+		SET status = ?, updated_at = ? 
+		WHERE parent_job_id = ? AND status IN (?, ?)`,
+		domain.JobStatusCancelled, time.Now(), parentID, domain.JobStatusQueued, domain.JobStatusRunning)
+	return err
 }
