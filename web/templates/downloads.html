@@ -48,19 +48,19 @@
                 Empty fields will be ignored.
             </p>
             <div class="flex flex-col gap-3 mb-4">
+                <input type="text" id="genre-input" placeholder="Genre (e.g. Electronic, Jazz, Rock...)"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <input type="number" id="year-input" placeholder="Year (e.g. 2024)" min="1900" max="2100"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <input type="text" id="mood-input" placeholder="Mood (e.g. Energetic, Chill, Melancholic...)"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <input type="text" id="style-input" placeholder="Style (e.g. Ambient, Techno, House...)"
+                    onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="text" id="path-artist-input" placeholder="Artist Directory (template path)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="text" id="artists-input" placeholder="Artists (comma-separated)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="text" id="album-artists-input" placeholder="Album Artists (comma-separated)"
-                    onkeydown="if(event.key==='Enter') applyMetadata()">
-                <input type="number" id="year-input" placeholder="Year (e.g. 2024)" min="1900" max="2100"
-                    onkeydown="if(event.key==='Enter') applyMetadata()">
-                <input type="text" id="genre-input" placeholder="Genre (e.g. Electronic, Jazz, Rock...)"
-                    onkeydown="if(event.key==='Enter') applyMetadata()">
-                <input type="text" id="mood-input" placeholder="Mood (e.g. Energetic, Chill, Melancholic...)"
-                    onkeydown="if(event.key==='Enter') applyMetadata()">
-                <input type="text" id="style-input" placeholder="Style (e.g. Ambient, Techno, House...)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
             </div>
             <div class="flex gap-2 justify-end">
