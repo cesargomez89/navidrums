@@ -19,7 +19,7 @@ func NewJobResponse(j *domain.Job) JobResponse {
 		Type:      string(j.Type),
 		Status:    string(j.Status),
 		Progress:  j.Progress,
-		SourceID:  j.SourceID,
+		SourceID:  j.GetSourceID(),
 		CreatedAt: j.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: j.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}

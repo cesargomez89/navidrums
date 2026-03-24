@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -24,23 +23,20 @@ func TestDownloadsService_GetRecommendationSeeds(t *testing.T) {
 		t.Errorf("Expected nil seeds when no tracks exist, got %v", seeds)
 	}
 
-	artistID := "artist_1"
-	for i := 1; i <= 5; i++ {
-		track := &domain.Track{
-			ProviderID:  fmt.Sprintf("track_%d", i),
-			Title:       fmt.Sprintf("Track %d", i),
-			Artist:      "Artist 1",
-			ArtistIDs:   []string{artistID},
-			Album:       "Album 1",
-			AlbumID:     "album_1",
-			Status:      domain.TrackStatusCompleted,
-			ReleaseType: "album",
-			CreatedAt:   time.Now().Add(time.Duration(i) * time.Minute),
-			UpdatedAt:   time.Now(),
-		}
-		if createErr := db.CreateTrack(track); createErr != nil {
-			t.Fatalf("Failed to create track %d: %v", i, createErr)
-		}
+	track := &domain.Track{
+		ProviderID:  "track_1",
+		Title:       "Track 1",
+		Artist:      "Artist 1",
+		ArtistIDs:   []string{"artist_1"},
+		Album:       "Album 1",
+		AlbumID:     "album_1",
+		Status:      domain.TrackStatusCompleted,
+		ReleaseType: "album",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	if createErr := db.CreateTrack(track); createErr != nil {
+		t.Fatalf("Failed to create track 1: %v", createErr)
 	}
 
 	seeds, err = svc.GetRecommendationSeeds()

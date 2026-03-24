@@ -54,8 +54,8 @@ func TestImageSizes(t *testing.T) {
 }
 
 func TestTimeouts(t *testing.T) {
-	if DefaultHTTPTimeout != 5*time.Minute {
-		t.Errorf("Expected DefaultHTTPTimeout to be 5 minutes, got %v", DefaultHTTPTimeout)
+	if DefaultHTTPTimeout != 1*time.Minute {
+		t.Errorf("Expected DefaultHTTPTimeout to be 1 minutes, got %v", DefaultHTTPTimeout)
 	}
 
 	if DefaultPollInterval != 2*time.Second {
@@ -74,8 +74,8 @@ func TestRetryCount(t *testing.T) {
 }
 
 func TestConcurrency(t *testing.T) {
-	if DefaultConcurrency != 2 {
-		t.Errorf("Expected DefaultConcurrency to be 2, got %d", DefaultConcurrency)
+	if DefaultConcurrency != 1 {
+		t.Errorf("Expected DefaultConcurrency to be 1, got %d", DefaultConcurrency)
 	}
 }
 

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql"
 	"os"
 	"testing"
 	"time"
@@ -34,7 +35,7 @@ func TestDB_Jobs(t *testing.T) {
 		ID:        "123",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusQueued,
-		SourceID:  "track_123",
+		SourceID:  sql.NullString{String: "track_123", Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -77,6 +78,58 @@ func TestDB_Jobs(t *testing.T) {
 	}
 	if len(list) != 1 {
 		t.Errorf("Expected 1 active job, got %d", len(list))
+	}
+}
+
+func TestDB_JobWithParentJobID(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	parentID := "parent-job-123"
+
+	// Create parent job
+	parentJob := &domain.Job{
+		ID:        parentID,
+		Type:      domain.JobTypeAlbum,
+		Status:    domain.JobStatusQueued,
+		SourceID:  sql.NullString{String: "album-456", Valid: true},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(parentJob); err != nil {
+		t.Fatalf("CreateJob failed for parent: %v", err)
+	}
+
+	// Create child job with ParentJobID
+	childJob := &domain.Job{
+		ID:          "child-job-789",
+		Type:        domain.JobTypeTrack,
+		Status:      domain.JobStatusQueued,
+		SourceID:    sql.NullString{String: "track-101", Valid: true},
+		ParentJobID: sql.NullString{String: parentID, Valid: true},
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	if err := db.CreateJob(childJob); err != nil {
+		t.Fatalf("CreateJob failed for child: %v", err)
+	}
+
+	// Verify child job has ParentJobID
+	retrieved, err := db.GetJob("child-job-789")
+	if err != nil {
+		t.Fatalf("GetJob failed: %v", err)
+	}
+	if retrieved.GetParentJobID() != parentID {
+		t.Errorf("Expected ParentJobID %s, got %s", parentID, retrieved.GetParentJobID())
+	}
+
+	// Verify parent job has empty ParentJobID
+	parentRetrieved, err := db.GetJob(parentID)
+	if err != nil {
+		t.Fatalf("GetJob failed for parent: %v", err)
+	}
+	if parentRetrieved.GetParentJobID() != "" {
+		t.Errorf("Expected empty ParentJobID for parent, got %s", parentRetrieved.GetParentJobID())
 	}
 }
 
@@ -339,11 +392,11 @@ func TestDB_JobStats(t *testing.T) {
 
 	// Create jobs with different statuses
 	jobs := []*domain.Job{
-		{ID: "job_1", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: "s1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "job_2", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: "s2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "job_3", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: "s3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "job_4", Type: domain.JobTypeTrack, Status: domain.JobStatusCancelled, SourceID: "s4", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "job_5", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s5", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "job_1", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: sql.NullString{String: "s1", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "job_2", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: sql.NullString{String: "s2", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "job_3", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: sql.NullString{String: "s3", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "job_4", Type: domain.JobTypeTrack, Status: domain.JobStatusCancelled, SourceID: sql.NullString{String: "s4", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "job_5", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "s5", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
 	}
 
 	for _, j := range jobs {
@@ -393,7 +446,7 @@ func TestDB_GetActiveJobBySourceID(t *testing.T) {
 		ID:        "active_job",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusRunning,
-		SourceID:  "track_123",
+		SourceID:  sql.NullString{String: "track_123", Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -718,7 +771,7 @@ func TestDB_ClearJobError(t *testing.T) {
 		ID:        "error_job",
 		Type:      domain.JobTypeTrack,
 		Status:    domain.JobStatusFailed,
-		SourceID:  "track_error",
+		SourceID:  sql.NullString{String: "track_error", Valid: true},
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -758,9 +811,9 @@ func TestDB_ResetStuckJobs(t *testing.T) {
 	defer cleanup()
 
 	jobs := []*domain.Job{
-		{ID: "stuck_1", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: "s1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "stuck_2", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: "s2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "queued", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "stuck_1", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: sql.NullString{String: "s1", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "stuck_2", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: sql.NullString{String: "s2", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "queued", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "s3", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
 	}
 
 	for _, j := range jobs {
@@ -792,9 +845,9 @@ func TestDB_ListJobs(t *testing.T) {
 	defer cleanup()
 
 	jobs := []*domain.Job{
-		{ID: "list_1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: "list_2", Type: domain.JobTypeAlbum, Status: domain.JobStatusCompleted, SourceID: "s2", CreatedAt: time.Now().Add(-1 * time.Hour), UpdatedAt: time.Now()},
-		{ID: "list_3", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: "s3", CreatedAt: time.Now().Add(-2 * time.Hour), UpdatedAt: time.Now()},
+		{ID: "list_1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "s1", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "list_2", Type: domain.JobTypeAlbum, Status: domain.JobStatusCompleted, SourceID: sql.NullString{String: "s2", Valid: true}, CreatedAt: time.Now().Add(-1 * time.Hour), UpdatedAt: time.Now()},
+		{ID: "list_3", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: sql.NullString{String: "s3", Valid: true}, CreatedAt: time.Now().Add(-2 * time.Hour), UpdatedAt: time.Now()},
 	}
 
 	for _, j := range jobs {
@@ -831,10 +884,10 @@ func TestDB_ListFinishedJobs(t *testing.T) {
 
 	now := time.Now()
 	jobs := []*domain.Job{
-		{ID: "finished_1", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: "s1", CreatedAt: now, UpdatedAt: now.Add(-1 * time.Hour)},
-		{ID: "finished_2", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: "s2", CreatedAt: now, UpdatedAt: now},
-		{ID: "finished_3", Type: domain.JobTypeTrack, Status: domain.JobStatusCancelled, SourceID: "s3", CreatedAt: now, UpdatedAt: now.Add(-2 * time.Hour)},
-		{ID: "active", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: "s4", CreatedAt: now, UpdatedAt: now},
+		{ID: "finished_1", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: sql.NullString{String: "s1", Valid: true}, CreatedAt: now, UpdatedAt: now.Add(-1 * time.Hour)},
+		{ID: "finished_2", Type: domain.JobTypeTrack, Status: domain.JobStatusFailed, SourceID: sql.NullString{String: "s2", Valid: true}, CreatedAt: now, UpdatedAt: now},
+		{ID: "finished_3", Type: domain.JobTypeTrack, Status: domain.JobStatusCancelled, SourceID: sql.NullString{String: "s3", Valid: true}, CreatedAt: now, UpdatedAt: now.Add(-2 * time.Hour)},
+		{ID: "active", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "s4", Valid: true}, CreatedAt: now, UpdatedAt: now},
 	}
 
 	for _, j := range jobs {
@@ -892,5 +945,136 @@ func TestDB_GetTrackByProviderID(t *testing.T) {
 	_, err = db.GetTrackByProviderID("nonexistent")
 	if err == nil {
 		t.Error("Expected error for non-existent provider ID")
+	}
+}
+
+func TestDB_CountJobsForParent(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	parentID := "parent-job-count"
+
+	// Create parent job
+	parentJob := &domain.Job{
+		ID:        parentID,
+		Type:      domain.JobTypeAlbum,
+		Status:    domain.JobStatusDecomposed,
+		SourceID:  sql.NullString{String: "album-1", Valid: true},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	if err := db.CreateJob(parentJob); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	// Create child jobs - 3 total, 2 pending
+	childJobs := []*domain.Job{
+		{ID: "child-1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "t1", Valid: true}, ParentJobID: sql.NullString{String: parentID, Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "child-2", Type: domain.JobTypeTrack, Status: domain.JobStatusRunning, SourceID: sql.NullString{String: "t2", Valid: true}, ParentJobID: sql.NullString{String: parentID, Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "child-3", Type: domain.JobTypeTrack, Status: domain.JobStatusCompleted, SourceID: sql.NullString{String: "t3", Valid: true}, ParentJobID: sql.NullString{String: parentID, Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	for _, j := range childJobs {
+		if err := db.CreateJob(j); err != nil {
+			t.Fatalf("CreateJob failed: %v", err)
+		}
+	}
+
+	// Test CountJobsForParent
+	total, pending, err := db.CountJobsForParent(parentID)
+	if err != nil {
+		t.Fatalf("CountJobsForParent failed: %v", err)
+	}
+	if total != 3 {
+		t.Errorf("Expected total 3, got %d", total)
+	}
+	if pending != 2 {
+		t.Errorf("Expected pending 2, got %d", pending)
+	}
+
+	// Test progress calculation: (3-2)/3 = 33.33%
+	if err := db.UpdateJobProgress(parentID, 33.33); err != nil {
+		t.Fatalf("UpdateJobProgress failed: %v", err)
+	}
+
+	updated, _ := db.GetJob(parentID)
+	if updated.Progress < 33.0 || updated.Progress > 34.0 {
+		t.Errorf("Expected progress ~33.33, got %f", updated.Progress)
+	}
+
+	// Complete the job
+	if err := db.UpdateJobStatus(parentID, domain.JobStatusCompleted, 100); err != nil {
+		t.Fatalf("UpdateJobStatus failed: %v", err)
+	}
+
+	// Count after completion - need to complete the child jobs too
+	for _, j := range childJobs {
+		_ = db.UpdateJobStatus(j.ID, domain.JobStatusCompleted, 100)
+	}
+
+	// Count after completion
+	_, pendingAfter, _ := db.CountJobsForParent(parentID)
+	if pendingAfter != 0 {
+		t.Errorf("Expected pending 0 after completion, got %d", pendingAfter)
+	}
+}
+
+func TestDB_CreateJobBatch(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	jobs := []*domain.Job{
+		{ID: "batch-1", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "t1", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "batch-2", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "t2", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: "batch-3", Type: domain.JobTypeTrack, Status: domain.JobStatusQueued, SourceID: sql.NullString{String: "t3", Valid: true}, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	err := db.CreateJobBatch(jobs)
+	if err != nil {
+		t.Fatalf("CreateJobBatch failed: %v", err)
+	}
+
+	for _, j := range jobs {
+		retrieved, err := db.GetJob(j.ID)
+		if err != nil {
+			t.Errorf("GetJob failed for %s: %v", j.ID, err)
+		}
+		if retrieved.SourceID != j.SourceID {
+			t.Errorf("SourceID mismatch for %s: got %s, want %s", j.ID, retrieved.GetSourceID(), j.GetSourceID())
+		}
+	}
+
+	list, _ := db.ListActiveJobs(0, 10)
+	if len(list) != 3 {
+		t.Errorf("Expected 3 active jobs, got %d", len(list))
+	}
+}
+
+func TestDB_CreateTrackBatch(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	tracks := []*domain.Track{
+		{ProviderID: "batch-track-1", Title: "Track 1", Artist: "Artist", Album: "Album", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "batch-track-2", Title: "Track 2", Artist: "Artist", Album: "Album", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "batch-track-3", Title: "Track 3", Artist: "Artist", Album: "Album", Status: domain.TrackStatusQueued, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	n, err := db.CreateTrackBatch(tracks)
+	if err != nil {
+		t.Fatalf("CreateTrackBatch failed: %v", err)
+	}
+	if n != 3 {
+		t.Errorf("CreateTrackBatch count: got %d, want 3", n)
+	}
+
+	for _, tr := range tracks {
+		retrieved, err := db.GetTrackByProviderID(tr.ProviderID)
+		if err != nil {
+			t.Errorf("GetTrackByProviderID failed for %s: %v", tr.ProviderID, err)
+		}
+		if retrieved.Title != tr.Title {
+			t.Errorf("Title mismatch for %s: got %s, want %s", tr.ProviderID, retrieved.Title, tr.Title)
+		}
 	}
 }

@@ -32,17 +32,20 @@ go fmt ./...
 | `DB_PATH` | navidrums.db | SQLite database path |
 | `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
-| `PROVIDER_URL` | http://127.0.0.1:8000 | Music catalog API URL |
+| `PROVIDER_URL` | http://127.0.0.1:8000 | Primary music catalog API URL (fallback providers managed via Settings UI) |
 | `QUALITY` | LOSSLESS | Audio quality |
 | `LOG_LEVEL` | info | Logging level |
 | `LOG_FORMAT` | text | Log format (text, json) |
 | `NAVIDRUMS_USERNAME` | navidrums | Basic auth username |
 | `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
 | `CACHE_TTL` | 12h | Provider response cache TTL |
+| `MUSICBRAINZ_CACHE_TTL` | 7d | MusicBrainz API response cache TTL |
 | `MUSICBRAINZ_URL` | https://musicbrainz.org/ws/2 | MusicBrainz API endpoint for metadata enrichment |
 | `RATE_LIMIT_REQUESTS` | 200 | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |
 | `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
+
+**Rate limiting**: Each provider enforces a 200ms minimum interval between requests. The global rate limit (`RATE_LIMIT_*` vars) applies across all providers.
 | `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
 | `SKIP_AUTH` | false | Disable authentication entirely |
 | `FFMPEG_PATH` | (system) | Path to ffmpeg binary |
@@ -98,10 +101,10 @@ spawning goroutines in handlers
 ## Job Lifecycle (Invariant)
 
 ```
-queued → running → completed | failed | cancelled
+queued → running → completed | failed | cancelled | decomposed
 ```
 
-**Container jobs** (album/playlist/artist): fetch tracks from provider → create Track records → create child track jobs → complete
+**Container jobs** (album/playlist/artist): fetch tracks from provider → create Track records → create child track jobs → decomposed (waiting for children) → completed
 
 **Track jobs**: lookup stored Track metadata → check if downloaded → download stream → tag → save art → update Track record
 
@@ -129,7 +132,7 @@ Rules:
 ### Job (Work Queue)
 Minimal state for work tracking:
 - `ID`, `Type`, `Status`, `SourceID`, `Progress`, `Error`, timestamps
-- Status: queued | running | completed | failed | cancelled
+- Status: queued | running | completed | failed | cancelled | decomposed
 - Types: track, album, playlist, artist, sync_file, sync_musicbrainz, sync_hifi
 
 ### Track (Download Domain)

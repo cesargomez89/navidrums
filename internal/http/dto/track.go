@@ -10,8 +10,11 @@ import (
 type TrackUpdateRequest struct {
 	Title         *string `form:"title"`
 	Artist        *string `form:"artist"`
+	Artists       *string `form:"artists"`
 	Album         *string `form:"album"`
 	AlbumArtist   *string `form:"album_artist"`
+	AlbumArtists  *string `form:"album_artists"`
+	PathArtist    *string `form:"path_artist"`
 	Genre         *string `form:"genre"`
 	Mood          *string `form:"mood"`
 	Style         *string `form:"style"`
@@ -81,12 +84,39 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	}
 	if r.Artist != nil {
 		updates["artist"] = *r.Artist
+		artistList := strings.Split(*r.Artist, ",")
+		for i := range artistList {
+			artistList[i] = strings.TrimSpace(artistList[i])
+		}
+		updates["artists"] = artistList
 	}
 	if r.Album != nil {
 		updates["album"] = *r.Album
 	}
 	if r.AlbumArtist != nil {
 		updates["album_artist"] = *r.AlbumArtist
+		albumArtistList := strings.Split(*r.AlbumArtist, ",")
+		for i := range albumArtistList {
+			albumArtistList[i] = strings.TrimSpace(albumArtistList[i])
+		}
+		updates["album_artists"] = albumArtistList
+	}
+	if r.Artists != nil {
+		artistList := strings.Split(*r.Artists, ",")
+		for i := range artistList {
+			artistList[i] = strings.TrimSpace(artistList[i])
+		}
+		updates["artists"] = artistList
+	}
+	if r.AlbumArtists != nil {
+		albumArtistList := strings.Split(*r.AlbumArtists, ",")
+		for i := range albumArtistList {
+			albumArtistList[i] = strings.TrimSpace(albumArtistList[i])
+		}
+		updates["album_artists"] = albumArtistList
+	}
+	if r.PathArtist != nil {
+		updates["path_artist"] = *r.PathArtist
 	}
 	if r.Label != nil {
 		updates["label"] = *r.Label
@@ -184,8 +214,11 @@ type TrackResponse struct {
 	Label          string     `json:"label"`
 	Title          string     `json:"title"`
 	Artist         string     `json:"artist"`
+	Artists        []string   `json:"artists"`
 	Album          string     `json:"album"`
 	AlbumArtist    string     `json:"album_artist"`
+	AlbumArtists   []string   `json:"album_artists"`
+	PathArtist     string     `json:"path_artist"`
 	FilePath       string     `json:"file_path"`
 	Status         string     `json:"status"`
 	ProviderID     string     `json:"provider_id"`
@@ -210,8 +243,6 @@ type TrackResponse struct {
 	ParentJobID    string     `json:"parent_job_id"`
 	FileExtension  string     `json:"file_extension"`
 	AlbumArtURL    string     `json:"album_art_url"`
-	AlbumArtists   []string   `json:"album_artists"`
-	Artists        []string   `json:"artists"`
 	TotalDiscs     int        `json:"total_discs"`
 	ID             int        `json:"id"`
 	Peak           float64    `json:"peak"`
@@ -271,6 +302,7 @@ func NewTrackResponse(t *domain.Track) TrackResponse {
 		FileExtension:  t.FileExtension,
 		Artists:        t.Artists,
 		AlbumArtists:   t.AlbumArtists,
+		PathArtist:     t.PathArtist,
 		Error:          t.Error,
 		ParentJobID:    t.ParentJobID,
 		CreatedAt:      t.CreatedAt,

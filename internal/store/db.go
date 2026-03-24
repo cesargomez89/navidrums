@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -235,6 +236,150 @@ var migrations = []migration{
 			// Backfill NULL values to empty strings to avoid scan errors
 			_, err := tx.Exec(`
 				UPDATE tracks SET mood = COALESCE(mood, ''), style = COALESCE(style, '')
+			`)
+			return err
+		},
+	},
+	{
+		version:     9,
+		description: "Add parent_job_id and m3u_generating columns to jobs table",
+		up: func(tx *sqlx.Tx) error {
+			queries := []string{
+				"ALTER TABLE jobs ADD COLUMN parent_job_id TEXT",
+				"ALTER TABLE jobs ADD COLUMN m3u_generating INTEGER DEFAULT 0",
+			}
+			for _, q := range queries {
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
+				}
+			}
+			return nil
+		},
+	},
+	{
+		version:     10,
+		description: "Add playlists and playlist_tracks tables for persistent playlist storage",
+		up: func(tx *sqlx.Tx) error {
+			queries := []string{
+				`CREATE TABLE IF NOT EXISTS playlists (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					provider_id TEXT UNIQUE NOT NULL,
+					title TEXT NOT NULL,
+					description TEXT,
+					image_url TEXT,
+					created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+					updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+				)`,
+				`CREATE INDEX IF NOT EXISTS idx_playlists_provider_id ON playlists(provider_id)`,
+				`CREATE TABLE IF NOT EXISTS playlist_tracks (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					playlist_id INTEGER NOT NULL,
+					track_id INTEGER NOT NULL,
+					position INTEGER DEFAULT 0,
+					added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+					FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
+					FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE,
+					UNIQUE(playlist_id, track_id)
+				)`,
+				`CREATE INDEX IF NOT EXISTS idx_playlist_tracks_playlist ON playlist_tracks(playlist_id)`,
+				`CREATE INDEX IF NOT EXISTS idx_playlist_tracks_track ON playlist_tracks(track_id)`,
+			}
+			for _, q := range queries {
+				if _, err := tx.Exec(q); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	},
+	{
+		version:     11,
+		description: "Migrate custom providers from settings to providers table",
+		up: func(tx *sqlx.Tx) error {
+			// Create providers table if not exists
+			_, err := tx.Exec(`
+				CREATE TABLE IF NOT EXISTS providers (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					url TEXT UNIQUE NOT NULL,
+					name TEXT,
+					position INTEGER DEFAULT 0,
+					created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+					updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+				)
+			`)
+			if err != nil {
+				return err
+			}
+
+			// Create index if not exists
+			_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS idx_providers_position ON providers(position)`)
+			if err != nil {
+				return err
+			}
+
+			// Check if providers table already has data
+			var count int
+			err = tx.QueryRow(`SELECT COUNT(*) FROM providers`).Scan(&count)
+			if err != nil {
+				return err
+			}
+			if count > 0 {
+				// Already migrated
+				return nil
+			}
+
+			// Migrate from old custom_providers setting
+			var customProvidersJSON string
+			err = tx.QueryRow(`SELECT value FROM settings WHERE key = 'custom_providers'`).Scan(&customProvidersJSON)
+			if err == sql.ErrNoRows {
+				// No old providers to migrate
+				return nil
+			}
+			if err != nil {
+				return err
+			}
+
+			// Parse JSON and migrate
+			type oldProvider struct {
+				Name string `json:"name"`
+				URL  string `json:"url"`
+			}
+			var oldProviders []oldProvider
+			if customProvidersJSON != "" {
+				if err := json.Unmarshal([]byte(customProvidersJSON), &oldProviders); err != nil {
+					// Invalid JSON, skip migration
+					return nil
+				}
+			}
+
+			// Insert old providers into new table
+			for i, p := range oldProviders {
+				_, err := tx.Exec(
+					`INSERT OR IGNORE INTO providers (url, name, position) VALUES (?, ?, ?)`,
+					p.URL, p.Name, i,
+				)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		},
+	},
+	{
+		version:     12,
+		description: "Add path_artist column for folder naming",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec("ALTER TABLE tracks ADD COLUMN path_artist TEXT")
+			if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
+				return err
+			}
+			_, err = tx.Exec(`
+				UPDATE tracks 
+				SET path_artist = COALESCE(NULLIF(TRIM(album_artist), ''), NULLIF(TRIM(artist), ''))
+				WHERE path_artist IS NULL OR path_artist = ''
 			`)
 			return err
 		},

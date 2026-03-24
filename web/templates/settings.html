@@ -2,24 +2,14 @@
 <h1>Settings</h1>
 
 <div class="section">
-    <h2>Current Provider</h2>
-    <div id="current-provider">
-        <span class="provider-badge">Loading...</span>
-    </div>
-</div>
-
-<div class="section">
-    <h2>Add Custom Provider</h2>
-    <form class="provider-form" onsubmit="addProvider(event)">
+    <h2>Providers</h2>
+    <p class="hint">We use PROVIDER_URL as primary API, then we fallback to the other providers in order.</p>
+    <div id="provider-list" class="flex flex-col gap-2" data-default-url="{{.DefaultURL}}"></div>
+    <form class="provider-form mt-4" onsubmit="addProvider(event)">
         <input type="text" id="provider-name" placeholder="Name" required>
-        <input type="url" id="provider-url" placeholder="URL (https://api.example.com)" required>
-        <button type="submit" class="btn-lg btn-primary">+</button>
+        <input type="url" id="provider-url" placeholder="URL" required>
+        <button type="submit" class="btn-lg btn-primary">+ Add</button>
     </form>
-</div>
-
-<div class="section">
-    <h2>Available Providers</h2>
-    <div id="providers-list"></div>
 </div>
 
 <div class="section">
@@ -33,8 +23,8 @@
             <option value="everforest">Everforest</option>
             <option value="golden">Golden</option>
         </select>
-        <button onclick="saveTheme()" class="btn btn-primary">Save</button>
-        <button onclick="resetTheme()" class="btn btn-secondary">Reset to Default</button>
+        <button onclick="saveTheme()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetTheme()" class="btn-lg btn-secondary">Reset to Default</button>
     </div>
     <div id="theme-status" class="mt-2"></div>
 </div>
@@ -46,8 +36,8 @@
     <textarea id="genre-map-input" rows="12" class="w-full" style="font-family: monospace; font-size: 12px;"
         placeholder='{"death metal": "Metal", "indie pop": "Pop"}'></textarea>
     <div class="mt-2">
-        <button onclick="saveGenreMap()" class="btn btn-primary">Save</button>
-        <button onclick="resetGenreMap()" class="btn btn-secondary">Reset to Default</button>
+        <button onclick="saveGenreMap()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetGenreMap()" class="btn-lg btn-secondary">Reset to Default</button>
     </div>
 </div>
 
@@ -58,7 +48,7 @@
     <div class="flex gap-2 items-center">
         <input type="text" id="genre-separator-input" placeholder=";" class="w-full" style="max-width: 80px;"
             maxlength="5">
-        <button onclick="saveGenreSeparator()" class="btn btn-primary">Save</button>
+        <button onclick="saveGenreSeparator()" class="btn-lg btn-primary">Save</button>
     </div>
     <div id="genre-separator-status" class="mt-2"></div>
 </div>
@@ -71,7 +61,7 @@
             <input type="checkbox" id="force-download-input">
             <span>Force re-download</span>
         </label>
-        <button onclick="saveForceDownload()" class="btn btn-primary">Save</button>
+        <button onclick="saveForceDownload()" class="btn-lg btn-primary">Save</button>
     </div>
     <div id="force-download-status" class="mt-2"></div>
 </div>
@@ -80,52 +70,83 @@
     function loadProviders() {
         fetch('/htmx/providers', { cache: 'no-store' })
             .then(r => r.json())
-            .then(data => {
-                document.querySelector('#current-provider .provider-badge').textContent =
-                    data.active === data.default ? 'Default' : data.active;
-
-                const container = document.getElementById('providers-list');
-                container.innerHTML = '';
-
-                let all = [];
-                if (data.default) all.push({ name: 'Default (env)', url: data.default, isDefault: true });
-                (data.custom || []).forEach(p => all.push(p));
-
-                all.forEach(p => {
-                    const div = document.createElement('div');
-                    div.className = 'item item-bordered mb-3';
-                    if (p.url === data.active) {
-                        div.style.borderColor = 'var(--accent)';
-                        div.style.backgroundColor = 'rgba(245,196,0,0.05)';
-                    }
-                    div.innerHTML = `
-                    <div class="item-body">
-                        <div class="item-title">${p.name}</div>
-                        <div class="item-subtitle" style="font-family: monospace;">${p.url}</div>
-                    </div>
-                    <div class="item-actions">
-                        ${p.url === data.active
-                            ? '<button class="btn btn-success" disabled>Active</button>'
-                            : `<button class="btn btn-outline" onclick="setProvider('${p.url}')">Select</button>`}
-                        ${p.isDefault ? '' : `<button class="btn btn-danger" onclick="removeProvider('${p.url}')">Delete</button>`}
-                    </div>
-                `;
-                    container.appendChild(div);
-                });
-            });
+            .then(data => renderProviderList(data.providers || [], data.defaultURL));
     }
 
-    function setProvider(url) {
-        fetch('/htmx/provider/set?url=' + encodeURIComponent(url), { method: 'POST' })
+    function renderProviderList(providers, defaultURL) {
+        const container = document.getElementById('provider-list');
+        const fallbackURL = defaultURL || container.dataset.defaultUrl;
+        
+        // Filter out any items already in the list that match system provider to avoid duplication
+        const customProviders = providers.filter(p => p.url !== fallbackURL);
+
+        let html = `
+            <div class="item item-bordered">
+                <span class="badge-env flex-shrink-0" title="System provided via PROVIDER_URL environment variable">Primary</span>
+                <div class="item-body min-w-0 flex-1">
+                    <div class="item-title truncate font-medium">System Default</div>
+                    <div class="item-subtitle truncate text-dim">${fallbackURL}</div>
+                </div>
+            </div>
+        `;
+
+        if (customProviders.length === 0) {
+            html += `<p class="hint mt-2">No custom fallback providers configured. The system default above is being used.</p>`;
+        } else {
+            html += customProviders.map((p, i) => `
+                <div class="item item-bordered">
+                    <span class="badge-env flex-shrink-0">${i + 1}</span>
+                    <div class="item-body min-w-0 flex-1">
+                        <div class="item-title truncate font-medium">${p.name}</div>
+                        <div class="item-subtitle truncate text-dim">${p.url}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'up')" ${i === 0 ? 'disabled' : ''} title="Move Up">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'down')" ${i === customProviders.length - 1 ? 'disabled' : ''} title="Move Down">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeProvider(${p.id})" title="Remove">
+                            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function moveProvider(id, direction) {
+        fetch('/htmx/providers', { cache: 'no-store' })
             .then(r => r.json())
-            .then(() => loadProviders());
+            .then(data => {
+                const providers = data.providers || [];
+                const currentIdx = providers.findIndex(p => p.id === id);
+                if (currentIdx === -1) return;
+                
+                const newIdx = direction === 'up' ? currentIdx - 1 : currentIdx + 1;
+                if (newIdx < 0 || newIdx >= providers.length) return;
+                
+                const newOrder = [...providers];
+                [newOrder[currentIdx], newOrder[newIdx]] = [newOrder[newIdx], newOrder[currentIdx]];
+                
+                const ids = newOrder.map(p => p.id);
+                
+                fetch('/htmx/providers/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'ids[]=' + ids.join('&ids[]=')
+                }).then(() => loadProviders());
+            });
     }
 
     function addProvider(e) {
         e.preventDefault();
         const name = document.getElementById('provider-name').value;
         const url = document.getElementById('provider-url').value;
-        fetch('/htmx/provider/add?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
+        fetch('/htmx/provider?name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url), { method: 'POST' })
             .then(r => r.json())
             .then(() => {
                 document.getElementById('provider-name').value = '';
@@ -134,9 +155,9 @@
             });
     }
 
-    function removeProvider(url) {
+    function removeProvider(id) {
         if (!confirm('Remove this provider?')) return;
-        fetch('/htmx/provider/remove?url=' + encodeURIComponent(url), { method: 'POST' })
+        fetch('/htmx/provider?id=' + id, { method: 'DELETE' })
             .then(r => r.json())
             .then(() => loadProviders());
     }

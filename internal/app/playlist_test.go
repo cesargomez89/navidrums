@@ -17,7 +17,7 @@ func TestPlaylistGenerator_Generate(t *testing.T) {
 		SubdirTemplate: "{{.AlbumArtist}}/{{.Album}}/{{.Track}} {{.Title}}",
 	}
 
-	pg := NewPlaylistGenerator(cfg)
+	pg := NewPlaylistGenerator(cfg, nil)
 
 	pl := &domain.Playlist{
 		Title: "Test Playlist",
@@ -34,8 +34,8 @@ func TestPlaylistGenerator_Generate(t *testing.T) {
 		},
 	}
 
-	lookup := func(id string) string {
-		return ".flac"
+	lookup := func(id string) *domain.Track {
+		return nil
 	}
 
 	err := pg.Generate(pl, lookup)
@@ -65,7 +65,7 @@ func TestPlaylistGenerator_GenerateFromTracks(t *testing.T) {
 		SubdirTemplate: "{{.AlbumArtist}}/{{.Album}}/{{.Track}} {{.Title}}",
 	}
 
-	pg := NewPlaylistGenerator(cfg)
+	pg := NewPlaylistGenerator(cfg, nil)
 
 	tracks := []domain.CatalogTrack{
 		{
@@ -79,7 +79,7 @@ func TestPlaylistGenerator_GenerateFromTracks(t *testing.T) {
 		},
 	}
 
-	lookup := func(id string) string { return ".mp3" }
+	lookup := func(id string) *domain.Track { return nil }
 
 	err := pg.GenerateFromTracks("Famous Artist", tracks, lookup)
 	if err != nil {

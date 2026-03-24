@@ -154,6 +154,99 @@ func TestAPIAlbumResponse_ToDomain(t *testing.T) {
 	}
 }
 
+func TestAPIAlbumResponse_ToDomain_VariousArtists(t *testing.T) {
+	p := &HifiProvider{}
+	resp := APIAlbumResponse{
+		Data: APIAlbumWithTracks{
+			Artist:          APIArtist{ID: json.Number("2935"), Name: "Various Artists"},
+			ID:              json.Number("263609445"),
+			Title:           "TANO*C EXTRA",
+			NumberOfTracks:  12,
+			NumberOfVolumes: 1,
+			Items: []struct {
+				Item APIAlbumTrackItem `json:"item"`
+			}{
+				{
+					Item: APIAlbumTrackItem{
+						ID:           json.Number("263609451"),
+						Title:        "Cross Breeding",
+						Artists:      []APIArtist{{ID: json.Number("4436931"), Name: "Redalice"}},
+						TrackNumber:  2,
+						VolumeNumber: 1,
+						Duration:     128,
+					},
+				},
+			},
+		},
+	}
+
+	album := resp.ToDomain(p)
+
+	if album.Artist != "Various Artists" {
+		t.Errorf("Expected album.Artist 'Various Artists', got '%s'", album.Artist)
+	}
+	if len(album.Artists) != 1 || album.Artists[0] != "Various Artists" {
+		t.Errorf("Expected album.Artists ['Various Artists'], got %v", album.Artists)
+	}
+	if len(album.Tracks) != 1 {
+		t.Fatalf("Expected 1 track, got %d", len(album.Tracks))
+	}
+	if album.Tracks[0].Artist != "Redalice" {
+		t.Errorf("Expected track.Artist 'Redalice', got '%s'", album.Tracks[0].Artist)
+	}
+	if album.Tracks[0].AlbumArtist != "Various Artists" {
+		t.Errorf("Expected track.AlbumArtist 'Various Artists', got '%s'", album.Tracks[0].AlbumArtist)
+	}
+	if len(album.Tracks[0].AlbumArtists) != 1 || album.Tracks[0].AlbumArtists[0] != "Various Artists" {
+		t.Errorf("Expected track.AlbumArtists ['Various Artists'], got %v", album.Tracks[0].AlbumArtists)
+	}
+}
+
+func TestAPIAlbumResponse_ToDomain_SingleArtistAlbum(t *testing.T) {
+	p := &HifiProvider{}
+	resp := APIAlbumResponse{
+		Data: APIAlbumWithTracks{
+			Artist:          APIArtist{ID: json.Number("100"), Name: "Redalice"},
+			ID:              json.Number("123"),
+			Title:           "Single Artist Album",
+			NumberOfTracks:  10,
+			NumberOfVolumes: 1,
+			Items: []struct {
+				Item APIAlbumTrackItem `json:"item"`
+			}{
+				{
+					Item: APIAlbumTrackItem{
+						ID:           json.Number("1"),
+						Title:        "Track 1",
+						Artists:      []APIArtist{{ID: json.Number("100"), Name: "Redalice"}},
+						TrackNumber:  1,
+						VolumeNumber: 1,
+						Duration:     200,
+					},
+				},
+			},
+		},
+	}
+
+	album := resp.ToDomain(p)
+
+	if album.Artist != "Redalice" {
+		t.Errorf("Expected album.Artist 'Redalice', got '%s'", album.Artist)
+	}
+	if len(album.Artists) != 1 || album.Artists[0] != "Redalice" {
+		t.Errorf("Expected album.Artists ['Redalice'], got %v", album.Artists)
+	}
+	if len(album.Tracks) != 1 {
+		t.Fatalf("Expected 1 track, got %d", len(album.Tracks))
+	}
+	if album.Tracks[0].AlbumArtist != "Redalice" {
+		t.Errorf("Expected track.AlbumArtist 'Redalice', got '%s'", album.Tracks[0].AlbumArtist)
+	}
+	if len(album.Tracks[0].AlbumArtists) != 1 || album.Tracks[0].AlbumArtists[0] != "Redalice" {
+		t.Errorf("Expected track.AlbumArtists ['Redalice'], got %v", album.Tracks[0].AlbumArtists)
+	}
+}
+
 func TestAPITrackInfoResponse_ToDomain(t *testing.T) {
 	p := &HifiProvider{}
 	resp := APITrackInfoResponse{
@@ -174,6 +267,8 @@ func TestAPITrackInfoResponse_ToDomain(t *testing.T) {
 				Cover           FlexCover   "json:\"cover\""
 				NumberOfTracks  int         "json:\"numberOfTracks\""
 				NumberOfVolumes int         "json:\"numberOfVolumes\""
+				Artist          *APIArtist  "json:\"artist,omitempty\""
+				Artists         []APIArtist "json:\"artists,omitempty\""
 			}{
 				ID:          json.Number("201"),
 				Title:       "Album Title",
@@ -222,9 +317,11 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 					Artists       []APIArtist      `json:"artists"`
 					MediaMetadata APIMediaMetadata `json:"mediaMetadata"`
 					Album         struct {
-						ID    json.Number `json:"id"`
-						Title string      `json:"title"`
-						Cover FlexCover   `json:"cover"`
+						ID      json.Number `json:"id"`
+						Title   string      `json:"title"`
+						Cover   FlexCover   `json:"cover"`
+						Artist  *APIArtist  `json:"artist,omitempty"`
+						Artists []APIArtist `json:"artists,omitempty"`
 					} `json:"album"`
 					TrackNumber int  `json:"trackNumber"`
 					Duration    int  `json:"duration"`
@@ -236,9 +333,11 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 						{ID: json.Number("1"), Name: "Artist"},
 					},
 					Album: struct {
-						ID    json.Number `json:"id"`
-						Title string      `json:"title"`
-						Cover FlexCover   `json:"cover"`
+						ID      json.Number `json:"id"`
+						Title   string      `json:"title"`
+						Cover   FlexCover   `json:"cover"`
+						Artist  *APIArtist  `json:"artist,omitempty"`
+						Artists []APIArtist `json:"artists,omitempty"`
 					}{ID: json.Number("201"), Title: "Album", Cover: FlexCover{"cover-id"}},
 					Duration:     180,
 					AudioQuality: constants.QualityLossless,
@@ -249,8 +348,8 @@ func TestAPIPlaylistResponse_ToDomain(t *testing.T) {
 
 	playlist := resp.ToDomain(p)
 
-	if playlist.ID != "uuid-123" {
-		t.Errorf("Expected ID 'uuid-123', got %s", playlist.ID)
+	if playlist.ProviderID != "uuid-123" {
+		t.Errorf("Expected ProviderID 'uuid-123', got %s", playlist.ProviderID)
 	}
 	if len(playlist.Tracks) != 1 {
 		t.Fatalf("Expected 1 track, got %d", len(playlist.Tracks))
