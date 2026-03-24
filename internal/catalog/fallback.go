@@ -27,26 +27,23 @@ func (f *FallbackProvider) getProviders() []Provider {
 		return f.cachedProviders
 	}
 
-	if f.manager == nil || f.manager.providers == nil {
-		f.cachedProviders = []Provider{NewHifiProvider(f.manager.defaultURL)}
-		f.cacheExpiry = time.Now().Add(providerCacheTTL)
-		return f.cachedProviders
+	// Always start with the system default URL
+	providers := []Provider{NewHifiProvider(f.manager.defaultURL)}
+
+	if f.manager != nil && f.manager.providers != nil {
+		storeProviders, _ := f.manager.providers.ListOrdered()
+		for _, p := range storeProviders {
+			// Skip if it's the same as default to avoid double-requesting
+			if p.URL == f.manager.defaultURL {
+				continue
+			}
+			providers = append(providers, NewHifiProvider(p.URL))
+		}
 	}
 
-	storeProviders, err := f.manager.providers.ListOrdered()
-	if err != nil || len(storeProviders) == 0 {
-		f.cachedProviders = []Provider{NewHifiProvider(f.manager.defaultURL)}
-		f.cacheExpiry = time.Now().Add(providerCacheTTL)
-		return f.cachedProviders
-	}
-
-	result := make([]Provider, len(storeProviders))
-	for i, p := range storeProviders {
-		result[i] = NewHifiProvider(p.URL)
-	}
-	f.cachedProviders = result
+	f.cachedProviders = providers
 	f.cacheExpiry = time.Now().Add(providerCacheTTL)
-	return result
+	return providers
 }
 
 func (f *FallbackProvider) invalidateCache() {

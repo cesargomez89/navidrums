@@ -222,6 +222,7 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	h.RenderPage(w, "settings.html", map[string]interface{}{
 		"ActivePage": "settings",
+		"DefaultURL": h.Config.ProviderURL,
 	})
 }
 
