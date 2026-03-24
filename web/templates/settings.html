@@ -85,7 +85,7 @@
                 <span class="badge-env flex-shrink-0" title="System provided via PROVIDER_URL environment variable">Primary</span>
                 <div class="item-body min-w-0 flex-1">
                     <div class="item-title truncate font-medium" title="System Default">System Default</div>
-                    <div class="item-subtitle truncate text-dim" title="${fallbackURL}">${fallbackURL}</div>
+                    <div class="item-subtitle truncate text-dim" title="${fallbackURL}"><a href="${fallbackURL}" target="_blank" rel="noopener noreferrer" class="text-dim">${fallbackURL}</a></div>
                 </div>
             </div>
         `;
@@ -98,7 +98,7 @@
                     <span class="badge-env flex-shrink-0">${i + 1}</span>
                     <div class="item-body min-w-0 flex-1">
                         <div class="item-title truncate font-medium" title="${p.name}">${p.name}</div>
-                        <div class="item-subtitle truncate text-dim" title="${p.url}">${p.url}</div>
+                        <div class="item-subtitle truncate text-dim" title="${p.url}"><a href="${p.url}" target="_blank" rel="noopener noreferrer" class="text-dim">${p.url}</a></div>
                     </div>
                     <div class="item-actions">
                         <button class="btn btn-sm btn-outline" onclick="moveProvider(${p.id}, 'up')" ${i === 0 ? 'disabled' : ''} title="Move Up">
