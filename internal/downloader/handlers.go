@@ -202,7 +202,8 @@ func (h *TrackJobHandler) executeDownload(ctx context.Context, job *domain.Job, 
 		return "", dirErr
 	}
 
-	finalPath, err := h.Downloader.Download(ctx, track, destPath, logger)
+	quality := h.getQuality()
+	finalPath, err := h.Downloader.Download(ctx, track, destPath, quality, logger)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = h.Repo.MarkTrackFailed(track.ID, err.Error())
@@ -888,6 +889,17 @@ func (h *TrackJobHandler) isForceDownload() bool {
 	}
 	val, err := h.SettingsRepo.Get(store.SettingForceDownload)
 	return err == nil && val == "true"
+}
+
+func (h *TrackJobHandler) getQuality() string {
+	if h.SettingsRepo == nil {
+		return h.Config.Quality
+	}
+	val, err := h.SettingsRepo.Get(store.SettingQuality)
+	if err == nil && val != "" {
+		return val
+	}
+	return h.Config.Quality
 }
 
 func (h *ContainerJobHandler) isForceDownload() bool {

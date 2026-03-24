@@ -74,8 +74,8 @@ func TestRetryCount(t *testing.T) {
 }
 
 func TestConcurrency(t *testing.T) {
-	if DefaultConcurrency != 1 {
-		t.Errorf("Expected DefaultConcurrency to be 1, got %d", DefaultConcurrency)
+	if DefaultConcurrency != 2 {
+		t.Errorf("Expected DefaultConcurrency to be 2, got %d", DefaultConcurrency)
 	}
 }
 

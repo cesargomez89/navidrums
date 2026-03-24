@@ -13,6 +13,22 @@
 </div>
 
 <div class="section">
+    <h2>Download Quality</h2>
+    <p class="hint">Override the default audio quality configured via QUALITY environment variable.</p>
+    <div class="toolbar-row">
+        <select id="quality-select-input" class="form-select">
+            <option value="LOSSLESS">Lossless</option>
+            <option value="HI_RES_LOSSLESS">Hi-Res Lossless</option>
+            <option value="HIGH">High</option>
+            <option value="LOW">Low</option>
+        </select>
+        <button onclick="saveQuality()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetQuality()" class="btn-lg btn-secondary">Reset to Default</button>
+    </div>
+    <div id="quality-status" class="mt-2"></div>
+</div>
+
+<div class="section">
     <h2>Theme Selector</h2>
     <p class="hint">Override the default application theme configured via environment variable.</p>
     <div class="toolbar-row">
@@ -320,10 +336,59 @@
             });
     }
 
+    function loadQuality() {
+        fetch('/htmx/quality', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('quality-select-input');
+                const statusDiv = document.getElementById('quality-status');
+
+                if (data.quality) {
+                    select.value = data.quality;
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom quality (' + data.quality + ')</span>';
+                } else {
+                    select.value = data.default || 'LOSSLESS';
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default quality (' + (data.default || 'LOSSLESS') + ')</span>';
+                }
+            });
+    }
+
+    function saveQuality() {
+        const select = document.getElementById('quality-select-input');
+        const quality = select.value;
+        const statusDiv = document.getElementById('quality-status');
+
+        fetch('/htmx/quality', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quality: quality })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.innerHTML = '<span class="badge badge-success">Saved</span>';
+                    setTimeout(() => loadQuality(), 2000);
+                }
+            });
+    }
+
+    function resetQuality() {
+        if (!confirm('Reset to default quality?')) return;
+
+        fetch('/htmx/quality/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadQuality();
+                }
+            });
+    }
+
     loadProviders();
     loadGenreMap();
     loadGenreSeparator();
     loadTheme();
     loadForceDownload();
+    loadQuality();
 </script>
 {{end}}

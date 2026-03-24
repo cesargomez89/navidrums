@@ -16,7 +16,7 @@ import (
 )
 
 type Downloader interface {
-	Download(ctx context.Context, track *domain.Track, destPathNoExt string, logger *slog.Logger) (string, error)
+	Download(ctx context.Context, track *domain.Track, destPathNoExt string, quality string, logger *slog.Logger) (string, error)
 }
 
 type downloader struct {
@@ -31,10 +31,10 @@ func NewDownloader(pm *catalog.ProviderManager, cfg *config.Config) Downloader {
 	}
 }
 
-func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string, logger *slog.Logger) (string, error) {
+func (d *downloader) Download(ctx context.Context, track *domain.Track, destPathNoExt string, quality string, logger *slog.Logger) (string, error) {
 	provider := d.providerManager.GetProvider()
 
-	shouldConvertToFLAC := d.config.Quality == constants.QualityHiResLossless
+	shouldConvertToFLAC := quality == constants.QualityHiResLossless
 
 	var lastErr error
 
@@ -45,7 +45,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		default:
 		}
 
-		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, d.config.Quality)
+		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, quality)
 		if err != nil {
 			lastErr = err
 			logger.Error("Download attempt failed",

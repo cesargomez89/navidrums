@@ -45,4 +45,5 @@ const (
 	SettingGenreSeparator         = "genre_separator"
 	SettingTheme                  = "theme"
 	SettingForceDownload          = "force_download"
+	SettingQuality                = "quality"
 )

@@ -107,6 +107,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/htmx/force-download", h.GetForceDownloadHTMX)
 	r.Post("/htmx/force-download", h.SetForceDownloadHTMX)
+
+	r.Get("/htmx/quality", h.GetQualityHTMX)
+	r.Post("/htmx/quality", h.SetQualityHTMX)
+	r.Post("/htmx/quality/reset", h.ResetQualityHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {

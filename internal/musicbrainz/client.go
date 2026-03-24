@@ -16,7 +16,7 @@ import (
 const (
 	DefaultUserAgent   = "navidrums/1.0 (https://github.com/cesargomez89/navidrums)"
 	requestTimeout     = 10 * time.Second
-	minRequestInterval = 1150 * time.Millisecond
+	minRequestInterval = 1250 * time.Millisecond
 )
 
 // --------------------------------------------------------------------------

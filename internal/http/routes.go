@@ -1072,3 +1072,76 @@ func (h *Handler) SetForceDownloadHTMX(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to encode response", "error", err)
 	}
 }
+
+func (h *Handler) GetQualityHTMX(w http.ResponseWriter, r *http.Request) {
+	quality, err := h.SettingsRepo.Get(store.SettingQuality)
+	if err != nil {
+		h.Logger.Error("Failed to get quality", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if quality == "" {
+		quality = h.Config.Quality
+	}
+
+	response := map[string]interface{}{
+		"quality": quality,
+		"default": h.Config.Quality,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		h.Logger.Error("Failed to encode quality response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetQualityHTMX(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Quality string `json:"quality"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if req.Quality == "" {
+		http.Error(w, "Quality cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingQuality, req.Quality); err != nil {
+		h.Logger.Error("Failed to save quality setting", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp := map[string]interface{}{
+		"success": true,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.Logger.Error("Failed to encode response", "error", err)
+	}
+}
+
+func (h *Handler) ResetQualityHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingQuality); err != nil {
+		h.Logger.Error("Failed to reset quality setting", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	resp := map[string]interface{}{
+		"success": true,
+		"quality": h.Config.Quality,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		h.Logger.Error("Failed to encode response", "error", err)
+	}
+}
