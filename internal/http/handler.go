@@ -122,6 +122,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/htmx/moods", h.GetMoodsHTMX)
 	r.Get("/htmx/styles", h.GetStylesHTMX)
+	r.Get("/htmx/languages", h.GetLanguagesHTMX)
+	r.Get("/htmx/countries", h.GetCountriesHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {

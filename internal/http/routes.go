@@ -1291,3 +1291,27 @@ func (h *Handler) GetStylesHTMX(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to encode styles response", "error", err)
 	}
 }
+
+func (h *Handler) GetLanguagesHTMX(w http.ResponseWriter, r *http.Request) {
+	langMap := app.GetLanguages(h.SettingsRepo)
+	languages := make([]string, 0, len(langMap))
+	for _, v := range langMap {
+		languages = append(languages, v)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string][]string{"languages": languages}); err != nil {
+		h.Logger.Error("Failed to encode languages response", "error", err)
+	}
+}
+
+func (h *Handler) GetCountriesHTMX(w http.ResponseWriter, r *http.Request) {
+	countryMap := app.GetCountries(h.SettingsRepo)
+	countries := make([]string, 0, len(countryMap))
+	for _, v := range countryMap {
+		countries = append(countries, v)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string][]string{"countries": countries}); err != nil {
+		h.Logger.Error("Failed to encode countries response", "error", err)
+	}
+}
