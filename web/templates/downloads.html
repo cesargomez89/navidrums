@@ -235,8 +235,10 @@
             var genre = document.getElementById('genre-input').value.trim();
             var mood = getMultiSelectValues('mood-input');
             var style = getMultiSelectValues('style-input');
+            var language = document.getElementById('language-input').value.trim();
+            var country = document.getElementById('country-input').value.trim();
 
-            if (!pathArtist && !artists && !albumArtists && !year && !genre && !mood && !style) {
+            if (!pathArtist && !artists && !albumArtists && !year && !genre && !mood && !style && !language && !country) {
                 alert('Please enter at least one field.'); return;
             }
             var ids = getSelectedIDs();
@@ -251,6 +253,8 @@
             if (genre) params.set('genre', genre);
             if (mood) params.set('mood', mood);
             if (style) params.set('style', style);
+            if (language) params.set('language', language);
+            if (country) params.set('country', country);
             fetch('/htmx/downloads/bulk-genre' + listParams(), { method: 'POST', body: params })
                 .then(r => r.text())
                 .then(html => {

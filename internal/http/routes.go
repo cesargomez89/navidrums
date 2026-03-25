@@ -915,11 +915,13 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 	genre := r.FormValue("genre")
 	mood := r.FormValue("mood")
 	style := r.FormValue("style")
+	language := r.FormValue("language")
+	country := r.FormValue("country")
 	pathArtist := r.FormValue("path_artist")
 	artists := r.FormValue("artists")
 	albumArtists := r.FormValue("album_artists")
 
-	if year == "" && genre == "" && mood == "" && style == "" && pathArtist == "" && artists == "" && albumArtists == "" {
+	if year == "" && genre == "" && mood == "" && style == "" && language == "" && country == "" && pathArtist == "" && artists == "" && albumArtists == "" {
 		http.Error(w, "At least one field is required", http.StatusBadRequest)
 		return
 	}
@@ -947,6 +949,12 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 		}
 		if style != "" {
 			updates["style"] = style
+		}
+		if language != "" {
+			updates["language"] = language
+		}
+		if country != "" {
+			updates["country"] = country
 		}
 		if pathArtist != "" {
 			updates["path_artist"] = pathArtist
