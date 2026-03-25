@@ -58,6 +58,14 @@
                 <label for="style-input" class="text-sm text-dim">Style (Cmd/Ctrl+click to select multiple)</label>
                 <select id="style-input" multiple class="multi-select-bulk" data-placeholder="Select styles...">
                 </select>
+                <label for="language-input" class="text-sm text-dim">Language</label>
+                <select id="language-input" class="w-full" data-placeholder="Select language...">
+                    <option value="">Select language...</option>
+                </select>
+                <label for="country-input" class="text-sm text-dim">Country/Region</label>
+                <select id="country-input" class="w-full" data-placeholder="Select country...">
+                    <option value="">Select country...</option>
+                </select>
                 <input type="text" id="path-artist-input" placeholder="Artist Directory (template path)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="text" id="artists-input" placeholder="Artists (comma-separated)"
@@ -276,10 +284,14 @@
         function loadBulkMoodStyleOptions() {
             Promise.all([
                 fetch('/htmx/moods', { cache: 'no-store' }).then(r => r.json()),
-                fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json())
-            ]).then(([moodData, styleData]) => {
+                fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json()),
+                fetch('/htmx/languages', { cache: 'no-store' }).then(r => r.json()),
+                fetch('/htmx/countries', { cache: 'no-store' }).then(r => r.json())
+            ]).then(([moodData, styleData, languageData, countryData]) => {
                 const moodSelect = document.getElementById('mood-input');
                 const styleSelect = document.getElementById('style-input');
+                const languageSelect = document.getElementById('language-input');
+                const countrySelect = document.getElementById('country-input');
 
                 moodData.moods.forEach(mood => {
                     const option = document.createElement('option');
@@ -293,6 +305,20 @@
                     option.value = style;
                     option.textContent = style;
                     styleSelect.appendChild(option);
+                });
+
+                languageData.languages.forEach(lang => {
+                    const option = document.createElement('option');
+                    option.value = lang;
+                    option.textContent = lang;
+                    languageSelect.appendChild(option);
+                });
+
+                countryData.countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country;
+                    option.textContent = country;
+                    countrySelect.appendChild(option);
                 });
             });
         }
