@@ -119,13 +119,15 @@
             </div>
             <div class="form-group">
                 <label for="mood">Mood</label>
-                <input type="text" id="mood" name="mood" value="{{.Track.Mood}}"
-                    placeholder="e.g. Energetic, Chill, Melancholic">
+                <select id="mood" name="mood" multiple class="multi-select" data-placeholder="Select moods...">
+                </select>
+                <div class="hint">Hold Ctrl/Cmd to select multiple</div>
             </div>
             <div class="form-group">
                 <label for="style">Style</label>
-                <input type="text" id="style" name="style" value="{{.Track.Style}}"
-                    placeholder="e.g. Ambient, Techno, House">
+                <select id="style" name="style" multiple class="multi-select" data-placeholder="Select styles...">
+                </select>
+                <div class="hint">Hold Ctrl/Cmd to select multiple</div>
             </div>
             <div class="form-group">
                 <label for="version">Version</label>
@@ -192,5 +194,43 @@
     </ul>
 </div>
 {{end}}
+
+<script>
+function loadMoodStyleOptions() {
+    Promise.all([
+        fetch('/htmx/moods', { cache: 'no-store' }).then(r => r.json()),
+        fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json())
+    ]).then(([moodData, styleData]) => {
+        const moodSelect = document.getElementById('mood');
+        const styleSelect = document.getElementById('style');
+        
+        const currentMood = "{{.Track.Mood}}";
+        const currentStyle = "{{.Track.Style}}";
+        
+        // Populate moods
+        moodData.moods.forEach(mood => {
+            const option = document.createElement('option');
+            option.value = mood;
+            option.textContent = mood;
+            if (currentMood.split(';').includes(mood)) {
+                option.selected = true;
+            }
+            moodSelect.appendChild(option);
+        });
+        
+        // Populate styles
+        styleData.styles.forEach(style => {
+            const option = document.createElement('option');
+            option.value = style;
+            option.textContent = style;
+            if (currentStyle.split(';').includes(style)) {
+                option.selected = true;
+            }
+            styleSelect.appendChild(option);
+        });
+    });
+}
+loadMoodStyleOptions();
+</script>
 
 {{end}}
