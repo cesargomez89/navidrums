@@ -48,4 +48,6 @@ const (
 	SettingQuality                = "quality"
 	SettingMoodList               = "mood_list"
 	SettingStyleList              = "style_list"
+	SettingLanguageList           = "language_list"
+	SettingCountryList            = "country_list"
 )
