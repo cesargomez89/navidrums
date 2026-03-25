@@ -71,6 +71,18 @@
 </div>
 
 <div class="section">
+    <h2>Style List</h2>
+    <p class="hint">Default styles available for selection. Stored as JSON array.</p>
+    <div id="style-list-status"></div>
+    <textarea id="style-list-input" rows="8" class="w-full" style="font-family: monospace; font-size: 12px;"
+        placeholder='["Acoustic", "Alternative", "Cinematic", ...]'></textarea>
+    <div class="mt-2">
+        <button onclick="saveStyleList()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetStyleList()" class="btn-lg btn-secondary">Reset to Default</button>
+    </div>
+</div>
+
+<div class="section">
     <h2>Genre Separator</h2>
     <p class="hint">Separator used to split multiple genres when writing to audio file tags. Requires restart to take
         effect.</p>
@@ -258,6 +270,60 @@
             .then(data => {
                 if (data.success) {
                     loadMoodList();
+                }
+            });
+    }
+
+    function loadStyleList() {
+        fetch('/htmx/style-list', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const textarea = document.getElementById('style-list-input');
+                const statusDiv = document.getElementById('style-list-status');
+
+                if (data.custom) {
+                    textarea.value = JSON.stringify(data.custom, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom list</span>';
+                } else {
+                    textarea.value = JSON.stringify(data.default, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default list</span>';
+                }
+            });
+    }
+
+    function saveStyleList() {
+        const textarea = document.getElementById('style-list-input');
+        let styleList;
+
+        try {
+            styleList = JSON.parse(textarea.value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+
+        fetch('/htmx/style-list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ styleList: styleList })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadStyleList();
+                    alert('Style list saved');
+                }
+            });
+    }
+
+    function resetStyleList() {
+        if (!confirm('Reset to default style list?')) return;
+
+        fetch('/htmx/style-list/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadStyleList();
                 }
             });
     }
@@ -454,6 +520,7 @@
     loadProviders();
     loadGenreMap();
     loadMoodList();
+    loadStyleList();
     loadGenreSeparator();
     loadTheme();
     loadForceDownload();
