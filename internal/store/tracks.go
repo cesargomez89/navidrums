@@ -17,7 +17,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	query := `INSERT INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, path_artist, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, mood, style, label, isrc, copyright, composer,
+		year, genre, mood, style, language, country, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id, recording_id, tags,
@@ -26,7 +26,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	) VALUES (
 		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :path_artist, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
-		:year, :genre, :mood, :style, :label, :isrc, :copyright, :composer,
+		:year, :genre, :mood, :style, :language, :country, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
@@ -404,7 +404,7 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 	query := `INSERT OR IGNORE INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, path_artist, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, mood, style, label, isrc, copyright, composer,
+		year, genre, mood, style, language, country, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id, recording_id, tags,
@@ -413,7 +413,7 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 	) VALUES (
 		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :path_artist, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
-		:year, :genre, :mood, :style, :label, :isrc, :copyright, :composer,
+		:year, :genre, :mood, :style, :language, :country, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
