@@ -52,10 +52,10 @@
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="number" id="year-input" placeholder="Year (e.g. 2024)" min="1900" max="2100"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
-                <input type="text" id="mood-input" placeholder="Mood (e.g. Energetic, Chill, Melancholic...)"
-                    onkeydown="if(event.key==='Enter') applyMetadata()">
-                <input type="text" id="style-input" placeholder="Style (e.g. Ambient, Techno, House...)"
-                    onkeydown="if(event.key==='Enter') applyMetadata()">
+                <select id="mood-input" multiple class="multi-select-bulk" data-placeholder="Select moods...">
+                </select>
+                <select id="style-input" multiple class="multi-select-bulk" data-placeholder="Select styles...">
+                </select>
                 <input type="text" id="path-artist-input" placeholder="Artist Directory (template path)"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="text" id="artists-input" placeholder="Artists (comma-separated)"
@@ -74,6 +74,24 @@
         <div class="loading">Loading downloads...</div>
     </div>
 
+    <style>
+        .multi-select-bulk {
+            width: 100%;
+            min-height: 80px;
+            padding: 8px;
+            background: var(--bg-secondary, #1e1e1e);
+            border: 1px solid var(--border-color, #333);
+            border-radius: 4px;
+            color: var(--text-primary, #eee);
+        }
+        .multi-select-bulk option {
+            padding: 4px 8px;
+        }
+        .multi-select-bulk option:checked {
+            background: var(--accent, #646cff);
+            color: white;
+        }
+    </style>
     <script>
         // ─── helpers ───────────────────────────────────────────────────────
         function getSelectedIDs() {
@@ -187,8 +205,8 @@
             document.getElementById('album-artists-input').value = '';
             document.getElementById('year-input').value = '';
             document.getElementById('genre-input').value = '';
-            document.getElementById('mood-input').value = '';
-            document.getElementById('style-input').value = '';
+            Array.from(document.getElementById('mood-input').options).forEach(o => o.selected = false);
+            Array.from(document.getElementById('style-input').options).forEach(o => o.selected = false);
             document.getElementById('genre-modal-overlay').style.display = 'flex';
             setTimeout(() => document.getElementById('path-artist-input').focus(), 50);
         }
@@ -205,8 +223,8 @@
             var albumArtists = document.getElementById('album-artists-input').value.trim();
             var year = document.getElementById('year-input').value.trim();
             var genre = document.getElementById('genre-input').value.trim();
-            var mood = document.getElementById('mood-input').value.trim();
-            var style = document.getElementById('style-input').value.trim();
+            var mood = getMultiSelectValues('mood-input');
+            var style = getMultiSelectValues('style-input');
 
             if (!pathArtist && !artists && !albumArtists && !year && !genre && !mood && !style) {
                 alert('Please enter at least one field.'); return;
@@ -251,5 +269,37 @@
                 onSelectionChange();
             }
         });
+
+        // ─── multi-select bulk options ─────────────────────────────────────────
+        function loadBulkMoodStyleOptions() {
+            Promise.all([
+                fetch('/htmx/moods', { cache: 'no-store' }).then(r => r.json()),
+                fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json())
+            ]).then(([moodData, styleData]) => {
+                const moodSelect = document.getElementById('mood-input');
+                const styleSelect = document.getElementById('style-input');
+
+                moodData.moods.forEach(mood => {
+                    const option = document.createElement('option');
+                    option.value = mood;
+                    option.textContent = mood;
+                    moodSelect.appendChild(option);
+                });
+
+                styleData.styles.forEach(style => {
+                    const option = document.createElement('option');
+                    option.value = style;
+                    option.textContent = style;
+                    styleSelect.appendChild(option);
+                });
+            });
+        }
+
+        function getMultiSelectValues(id) {
+            const select = document.getElementById(id);
+            return Array.from(select.selectedOptions).map(opt => opt.value).join(';');
+        }
+
+        loadBulkMoodStyleOptions();
     </script>
     {{end}}
