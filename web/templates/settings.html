@@ -59,6 +59,18 @@
 </div>
 
 <div class="section">
+    <h2>Mood List</h2>
+    <p class="hint">Default moods available for selection. Stored as JSON array.</p>
+    <div id="mood-list-status"></div>
+    <textarea id="mood-list-input" rows="8" class="w-full" style="font-family: monospace; font-size: 12px;"
+        placeholder='["Aggressive", "Atmospheric", "Chill", ...]'></textarea>
+    <div class="mt-2">
+        <button onclick="saveMoodList()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetMoodList()" class="btn-lg btn-secondary">Reset to Default</button>
+    </div>
+</div>
+
+<div class="section">
     <h2>Genre Separator</h2>
     <p class="hint">Separator used to split multiple genres when writing to audio file tags. Requires restart to take
         effect.</p>
@@ -192,6 +204,60 @@
                 } else {
                     textarea.value = JSON.stringify(data.default, null, 2);
                     statusDiv.innerHTML = '<span class="badge badge-default">Using default mapping</span>';
+                }
+            });
+    }
+
+    function loadMoodList() {
+        fetch('/htmx/mood-list', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const textarea = document.getElementById('mood-list-input');
+                const statusDiv = document.getElementById('mood-list-status');
+
+                if (data.custom) {
+                    textarea.value = JSON.stringify(data.custom, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom list</span>';
+                } else {
+                    textarea.value = JSON.stringify(data.default, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default list</span>';
+                }
+            });
+    }
+
+    function saveMoodList() {
+        const textarea = document.getElementById('mood-list-input');
+        let moodList;
+
+        try {
+            moodList = JSON.parse(textarea.value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+
+        fetch('/htmx/mood-list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ moodList: moodList })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadMoodList();
+                    alert('Mood list saved');
+                }
+            });
+    }
+
+    function resetMoodList() {
+        if (!confirm('Reset to default mood list?')) return;
+
+        fetch('/htmx/mood-list/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadMoodList();
                 }
             });
     }
@@ -387,6 +453,7 @@
 
     loadProviders();
     loadGenreMap();
+    loadMoodList();
     loadGenreSeparator();
     loadTheme();
     loadForceDownload();
