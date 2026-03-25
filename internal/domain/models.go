@@ -122,6 +122,8 @@ type Track struct { //nolint:govet // field ordering prioritizes readability ove
 	Genre          string      `json:"genre" db:"genre"`
 	Mood           string      `json:"mood,omitempty" db:"mood"`
 	Style          string      `json:"style,omitempty" db:"style"`
+	Language       string      `json:"language,omitempty" db:"language"`
+	Country        string      `json:"country,omitempty" db:"country"`
 	Duration       int         `json:"duration" db:"duration"`
 	Label          string      `json:"label" db:"label"`
 	ISRC           string      `json:"isrc" db:"isrc"`
