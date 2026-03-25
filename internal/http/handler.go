@@ -102,6 +102,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/mood-list", h.SetMoodListHTMX)
 	r.Post("/htmx/mood-list/reset", h.ResetMoodListHTMX)
 
+	r.Get("/htmx/style-list", h.GetStyleListHTMX)
+	r.Post("/htmx/style-list", h.SetStyleListHTMX)
+	r.Post("/htmx/style-list/reset", h.ResetStyleListHTMX)
+
 	r.Get("/htmx/genre-separator", h.GetGenreSeparatorHTMX)
 	r.Post("/htmx/genre-separator", h.SetGenreSeparatorHTMX)
 
