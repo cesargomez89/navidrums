@@ -67,6 +67,8 @@ CREATE TABLE IF NOT EXISTS tracks (
 	genre TEXT,
 	mood TEXT,
 	style TEXT,
+	language TEXT,
+	country TEXT,
 	label TEXT,
 	isrc TEXT,
 	copyright TEXT,

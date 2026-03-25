@@ -384,6 +384,27 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     13,
+		description: "Add language and country columns",
+		up: func(tx *sqlx.Tx) error {
+			columns := []string{
+				"ALTER TABLE tracks ADD COLUMN language TEXT",
+				"ALTER TABLE tracks ADD COLUMN country TEXT",
+			}
+			for _, q := range columns {
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "duplicate column name") {
+						return err
+					}
+				}
+			}
+			_, err := tx.Exec(`
+				UPDATE tracks SET language = COALESCE(language, ''), country = COALESCE(country, '')
+			`)
+			return err
+		},
+	},
 }
 
 type dbOps interface {
