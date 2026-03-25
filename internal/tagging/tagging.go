@@ -41,6 +41,8 @@ type TagMap struct {
 	Genre        string
 	Mood         string
 	Style        string
+	Language     string
+	Country      string
 	Composer     string
 	Copyright    string
 	CoverMime    string
@@ -96,6 +98,8 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 		Genre:        track.Genre,
 		Mood:         track.Mood,
 		Style:        track.Style,
+		Language:     track.Language,
+		Country:      track.Country,
 		Year:         track.Year,
 		TrackNum:     track.TrackNumber,
 		TrackTotal:   track.TotalTracks,
@@ -138,6 +142,8 @@ func buildTagMap(track *domain.Track, art []byte) *TagMap {
 	addCustom("LABEL", track.Label)
 	addCustom("MOOD", track.Mood)
 	addCustom("STYLE", track.Style)
+	addCustom("LANGUAGE", track.Language)
+	addCustom("COUNTRY", track.Country)
 	addCustom("BARCODE", track.Barcode)
 	addCustom("CATALOGNUMBER", track.CatalogNumber)
 	addCustom("RELEASETYPE", track.ReleaseType)
@@ -197,6 +203,7 @@ func (t *MP4Tagger) WriteTags(filePath string, tags *TagMap) error {
 		Genre:        tags.Genre,
 		Mood:         tags.Mood,
 		Style:        tags.Style,
+		Language:     tags.Language,
 		Year:         tags.Year,
 		TrackNum:     tags.TrackNum,
 		TrackTotal:   tags.TrackTotal,
@@ -251,6 +258,7 @@ func (t *FFmpegFallbackTagger) WriteTags(filePath string, tags *TagMap) error {
 		Genre:        tags.Genre,
 		Mood:         tags.Mood,
 		Style:        tags.Style,
+		Language:     tags.Language,
 		Year:         tags.Year,
 		TrackNum:     tags.TrackNum,
 		TrackTotal:   tags.TrackTotal,
@@ -356,6 +364,9 @@ func (t *MP3Tagger) WriteTags(filePath string, tags *TagMap) error {
 	if tags.Lyrics != "" {
 		tag.AddTextFrame(tag.CommonID("Lyrics"), tag.DefaultEncoding(), tags.Lyrics)
 	}
+	if tags.Language != "" {
+		tag.AddTextFrame("TLAN", tag.DefaultEncoding(), tags.Language)
+	}
 
 	// Apply Custom Metadata Mapping
 	for k, v := range tags.Custom {
@@ -382,6 +393,12 @@ func (t *MP3Tagger) WriteTags(filePath string, tags *TagMap) error {
 			tag.AddTextFrame(tag.CommonID("WWWAudioSource"), tag.DefaultEncoding(), v)
 		case "COMPILATION":
 			tag.AddTextFrame("TCMP", tag.DefaultEncoding(), v)
+		case "COUNTRY":
+			tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
+				Encoding:    id3v2.EncodingUTF8,
+				Description: "COUNTRY",
+				Value:       v,
+			})
 		default:
 			tag.AddUserDefinedTextFrame(id3v2.UserDefinedTextFrame{
 				Encoding:    id3v2.EncodingUTF8,
@@ -558,6 +575,7 @@ func (t *FLACTagger) newVorbisComment(tags *TagMap) *flacvorbis.MetaDataBlockVor
 	}
 
 	add("UNSYNCEDLYRICS", tags.Lyrics)
+	add("LANGUAGE", tags.Language)
 
 	// Dump all custom normalized tags
 	for k, v := range tags.Custom {
