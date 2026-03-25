@@ -98,6 +98,10 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/genre-map", h.SetGenreMapHTMX)
 	r.Post("/htmx/genre-map/reset", h.ResetGenreMapHTMX)
 
+	r.Get("/htmx/mood-list", h.GetMoodListHTMX)
+	r.Post("/htmx/mood-list", h.SetMoodListHTMX)
+	r.Post("/htmx/mood-list/reset", h.ResetMoodListHTMX)
+
 	r.Get("/htmx/genre-separator", h.GetGenreSeparatorHTMX)
 	r.Post("/htmx/genre-separator", h.SetGenreSeparatorHTMX)
 
