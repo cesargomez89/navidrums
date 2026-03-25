@@ -14,21 +14,22 @@ var DefaultMoods = []string{
 	"Energetic",
 	"Melancholic",
 	"Mystical",
-	"Romantic",
+	"Nostalgic",
 	"Sophisticated",
 	"Uplifting",
 }
 
 var DefaultStyles = []string{
 	"Acoustic",
-	"Alternative",
 	"Cinematic",
-	"Electronic",
+	"Experimental",
 	"Hardcore",
+	"Lo-Fi",
 	"Lyricist",
-	"Pop",
-	"Rock",
-	"Traditional",
+	"Minimalist",
+	"Organic",
+	"Polished",
+	"Synthetic",
 	"Urban",
 	"Crossover",
 }

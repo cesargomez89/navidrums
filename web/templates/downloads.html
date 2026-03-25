@@ -52,8 +52,10 @@
                     onkeydown="if(event.key==='Enter') applyMetadata()">
                 <input type="number" id="year-input" placeholder="Year (e.g. 2024)" min="1900" max="2100"
                     onkeydown="if(event.key==='Enter') applyMetadata()">
+                <label for="mood-input" class="text-sm text-dim">Mood (Cmd/Ctrl+click to select multiple)</label>
                 <select id="mood-input" multiple class="multi-select-bulk" data-placeholder="Select moods...">
                 </select>
+                <label for="style-input" class="text-sm text-dim">Style (Cmd/Ctrl+click to select multiple)</label>
                 <select id="style-input" multiple class="multi-select-bulk" data-placeholder="Select styles...">
                 </select>
                 <input type="text" id="path-artist-input" placeholder="Artist Directory (template path)"
