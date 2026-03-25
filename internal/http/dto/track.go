@@ -18,6 +18,8 @@ type TrackUpdateRequest struct {
 	Genre         *string `form:"genre"`
 	Mood          *string `form:"mood"`
 	Style         *string `form:"style"`
+	Language      *string `form:"language"`
+	Country       *string `form:"country"`
 	Label         *string `form:"label"`
 	Composer      *string `form:"composer"`
 	Copyright     *string `form:"copyright"`
