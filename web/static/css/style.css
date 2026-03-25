@@ -43,7 +43,7 @@
     --accent-secondary: #9a66f5;
     --accent-glow: rgba(189, 147, 249, 0.1);
     --text: #f8f8f2;
-    --text-dim: #6272a4;
+    --text-dim: #7583a8;
     --danger: #ff5555;
     --success: #50fa7b;
     --warning: #f1fa8c;
@@ -70,15 +70,15 @@
 
 [data-theme="solarized-dark"] {
     --bg: #002b36;
-    --card: #073642;
+    --card: #094154;
     --input: #002b36;
-    --border: rgba(38, 139, 210, 0.1);
+    --border: rgba(38, 139, 210, 0.15);
     --accent: #268bd2;
     --accent-rgb: 38, 139, 210;
-    --accent-secondary: #005f73;
-    --accent-glow: rgba(38, 139, 210, 0.1);
-    --text: #93a1a1;
-    --text-dim: #586e75;
+    --accent-secondary: #00a8c5;
+    --accent-glow: rgba(38, 139, 210, 0.15);
+    --text: #c8d2d2;
+    --text-dim: #87a3ab;
     --danger: #dc322f;
     --success: #859900;
     --warning: #b58900;
@@ -91,15 +91,15 @@
     --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
     --shadow-nav: 0 4px 24px rgba(0, 0, 0, 0.4);
 
-    --glass-bg: rgba(0, 43, 54, 0.95);
-    --bg-glow-1: rgba(38, 139, 210, 0.08);
-    --bg-glow-2: rgba(42, 161, 152, 0.06);
-    --bg-grid: rgba(38, 139, 210, 0.025);
+    --glass-bg: rgba(9, 65, 84, 0.92);
+    --bg-glow-1: rgba(38, 139, 210, 0.06);
+    --bg-glow-2: rgba(0, 168, 197, 0.05);
+    --bg-grid: rgba(38, 139, 210, 0.02);
 
     /* Button Content Colors */
     --accent-content: #002b36;
     --success-content: #002b36;
-    --danger-content: #002b36;
+    --danger-content: #ffffff;
     --warning-content: #002b36;
 }
 
@@ -179,6 +179,47 @@
     --nav-text-dim: #859289;
     --nav-logo-gradient: linear-gradient(135deg, #a7c080, #83c092, #a7c080);
     --nav-border-color: rgba(167, 192, 128, 0.15);
+}
+
+[data-theme="pink"] {
+    --bg: #fdf2f5;
+    --card: #ffffff;
+    --input: #fce4ec;
+    --border: rgba(236, 64, 122, 0.15);
+    --accent: #ec407a;
+    --accent-rgb: 236, 64, 122;
+    --accent-secondary: #ab47bc;
+    --accent-glow: rgba(236, 64, 122, 0.15);
+    --text: #4a2c33;
+    --text-dim: #8a6a73;
+    --danger: #e53935;
+    --success: #43a047;
+    --warning: #f9a825;
+
+    --shadow-accent: 0 8px 24px rgba(236, 64, 122, 0.2);
+    --shadow-danger: 0 8px 24px rgba(229, 57, 53, 0.15);
+    --shadow-success: 0 8px 24px rgba(67, 160, 71, 0.15);
+    --shadow-card: 0 8px 32px rgba(74, 44, 51, 0.08);
+    --shadow-card-hover: 0 12px 48px rgba(74, 44, 51, 0.12);
+    --shadow-modal: 0 24px 64px rgba(74, 44, 51, 0.15);
+    --shadow-nav: 0 4px 24px rgba(74, 44, 51, 0.1);
+
+    --glass-bg: rgba(255, 255, 255, 0.92);
+    --bg-glow-1: rgba(236, 64, 122, 0.06);
+    --bg-glow-2: rgba(171, 71, 188, 0.05);
+    --bg-grid: rgba(236, 64, 122, 0.03);
+
+    /* Button Content Colors */
+    --accent-content: #ffffff;
+    --success-content: #ffffff;
+    --danger-content: #ffffff;
+    --warning-content: #4a2c33;
+
+    /* Navbar Specifics */
+    --nav-text: #4a2c33;
+    --nav-text-dim: #8a6a73;
+    --nav-logo-gradient: linear-gradient(135deg, #ec407a, #ab47bc, #ec407a);
+    --nav-border-color: rgba(236, 64, 122, 0.2);
 }
 
 [data-theme="golden"] {
@@ -472,6 +513,17 @@ button:active {
 
 .btn-success:hover {
     box-shadow: var(--shadow-success);
+}
+
+.btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: none;
+}
+
+.btn-secondary:hover {
+    background: var(--border);
 }
 
 /* Button Sizes */
