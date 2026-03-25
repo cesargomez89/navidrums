@@ -596,6 +596,136 @@ func (h *Handler) ResetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
+func (h *Handler) GetLanguageListHTMX(w http.ResponseWriter, r *http.Request) {
+	custom, err := h.SettingsRepo.Get(store.SettingLanguageList)
+	if err != nil {
+		h.Logger.Error("Failed to get language list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	result := map[string]interface{}{
+		"default": app.DefaultLanguages,
+		"custom":  nil,
+	}
+
+	if custom != "" {
+		var list map[string]string
+		if err := json.Unmarshal([]byte(custom), &list); err != nil {
+			h.Logger.Error("Failed to unmarshal custom language list", "error", err)
+		} else {
+			result["custom"] = list
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		h.Logger.Error("Failed to encode language list response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetLanguageListHTMX(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		LanguageList map[string]string `json:"languageList"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	data, err := json.Marshal(body.LanguageList)
+	if err != nil {
+		h.Logger.Error("Failed to marshal language list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingLanguageList, string(data)); err != nil {
+		h.Logger.Error("Failed to save language list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) ResetLanguageListHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingLanguageList); err != nil {
+		h.Logger.Error("Failed to reset language list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) GetCountryListHTMX(w http.ResponseWriter, r *http.Request) {
+	custom, err := h.SettingsRepo.Get(store.SettingCountryList)
+	if err != nil {
+		h.Logger.Error("Failed to get country list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	result := map[string]interface{}{
+		"default": app.DefaultCountries,
+		"custom":  nil,
+	}
+
+	if custom != "" {
+		var list map[string]string
+		if err := json.Unmarshal([]byte(custom), &list); err != nil {
+			h.Logger.Error("Failed to unmarshal custom country list", "error", err)
+		} else {
+			result["custom"] = list
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		h.Logger.Error("Failed to encode country list response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetCountryListHTMX(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		CountryList map[string]string `json:"countryList"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	data, err := json.Marshal(body.CountryList)
+	if err != nil {
+		h.Logger.Error("Failed to marshal country list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingCountryList, string(data)); err != nil {
+		h.Logger.Error("Failed to save country list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) ResetCountryListHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingCountryList); err != nil {
+		h.Logger.Error("Failed to reset country list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
 func (h *Handler) GetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) {
 	sep, err := h.SettingsRepo.Get(store.SettingGenreSeparator)
 	if err != nil {

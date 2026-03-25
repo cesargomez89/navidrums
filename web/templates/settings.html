@@ -83,6 +83,30 @@
 </div>
 
 <div class="section">
+    <h2>Language List</h2>
+    <p class="hint">Default languages available for selection. Stored as JSON map (code: name).</p>
+    <div id="language-list-status"></div>
+    <textarea id="language-list-input" rows="8" class="w-full" style="font-family: monospace; font-size: 12px;"
+        placeholder='{"en": "English", "es": "Spanish", ...}'></textarea>
+    <div class="mt-2">
+        <button onclick="saveLanguageList()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetLanguageList()" class="btn-lg btn-secondary">Reset to Default</button>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Country List</h2>
+    <p class="hint">Default countries/regions available for selection. Stored as JSON map (code: name).</p>
+    <div id="country-list-status"></div>
+    <textarea id="country-list-input" rows="8" class="w-full" style="font-family: monospace; font-size: 12px;"
+        placeholder='{"US": "United States", "GB": "United Kingdom", ...}'></textarea>
+    <div class="mt-2">
+        <button onclick="saveCountryList()" class="btn-lg btn-primary">Save</button>
+        <button onclick="resetCountryList()" class="btn-lg btn-secondary">Reset to Default</button>
+    </div>
+</div>
+
+<div class="section">
     <h2>Genre Separator</h2>
     <p class="hint">Separator used to split multiple genres when writing to audio file tags. Requires restart to take
         effect.</p>
@@ -328,6 +352,114 @@
             });
     }
 
+    function loadLanguageList() {
+        fetch('/htmx/language-list', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const textarea = document.getElementById('language-list-input');
+                const statusDiv = document.getElementById('language-list-status');
+
+                if (data.custom) {
+                    textarea.value = JSON.stringify(data.custom, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom list</span>';
+                } else {
+                    textarea.value = JSON.stringify(data.default, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default list</span>';
+                }
+            });
+    }
+
+    function saveLanguageList() {
+        const textarea = document.getElementById('language-list-input');
+        let languageList;
+
+        try {
+            languageList = JSON.parse(textarea.value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+
+        fetch('/htmx/language-list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ languageList: languageList })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadLanguageList();
+                    alert('Language list saved');
+                }
+            });
+    }
+
+    function resetLanguageList() {
+        if (!confirm('Reset to default language list?')) return;
+
+        fetch('/htmx/language-list/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadLanguageList();
+                }
+            });
+    }
+
+    function loadCountryList() {
+        fetch('/htmx/country-list', { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+                const textarea = document.getElementById('country-list-input');
+                const statusDiv = document.getElementById('country-list-status');
+
+                if (data.custom) {
+                    textarea.value = JSON.stringify(data.custom, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom list</span>';
+                } else {
+                    textarea.value = JSON.stringify(data.default, null, 2);
+                    statusDiv.innerHTML = '<span class="badge badge-default">Using default list</span>';
+                }
+            });
+    }
+
+    function saveCountryList() {
+        const textarea = document.getElementById('country-list-input');
+        let countryList;
+
+        try {
+            countryList = JSON.parse(textarea.value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+
+        fetch('/htmx/country-list', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ countryList: countryList })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadCountryList();
+                    alert('Country list saved');
+                }
+            });
+    }
+
+    function resetCountryList() {
+        if (!confirm('Reset to default country list?')) return;
+
+        fetch('/htmx/country-list/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadCountryList();
+                }
+            });
+    }
+
     function saveGenreMap() {
         const textarea = document.getElementById('genre-map-input');
         let genreMap;
@@ -521,6 +653,8 @@
     loadGenreMap();
     loadMoodList();
     loadStyleList();
+    loadLanguageList();
+    loadCountryList();
     loadGenreSeparator();
     loadTheme();
     loadForceDownload();
