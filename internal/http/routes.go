@@ -466,6 +466,136 @@ func (h *Handler) ResetGenreMapHTMX(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
+func (h *Handler) GetMoodListHTMX(w http.ResponseWriter, r *http.Request) {
+	custom, err := h.SettingsRepo.Get(store.SettingMoodList)
+	if err != nil {
+		h.Logger.Error("Failed to get mood list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	result := map[string]interface{}{
+		"default": app.DefaultMoods,
+		"custom":  nil,
+	}
+
+	if custom != "" {
+		var list []string
+		if err := json.Unmarshal([]byte(custom), &list); err != nil {
+			h.Logger.Error("Failed to unmarshal custom mood list", "error", err)
+		} else {
+			result["custom"] = list
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		h.Logger.Error("Failed to encode mood list response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetMoodListHTMX(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		MoodList []string `json:"moodList"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	data, err := json.Marshal(body.MoodList)
+	if err != nil {
+		h.Logger.Error("Failed to marshal mood list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingMoodList, string(data)); err != nil {
+		h.Logger.Error("Failed to save mood list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) ResetMoodListHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingMoodList); err != nil {
+		h.Logger.Error("Failed to reset mood list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) GetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
+	custom, err := h.SettingsRepo.Get(store.SettingStyleList)
+	if err != nil {
+		h.Logger.Error("Failed to get style list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	result := map[string]interface{}{
+		"default": app.DefaultStyles,
+		"custom":  nil,
+	}
+
+	if custom != "" {
+		var list []string
+		if err := json.Unmarshal([]byte(custom), &list); err != nil {
+			h.Logger.Error("Failed to unmarshal custom style list", "error", err)
+		} else {
+			result["custom"] = list
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(result); err != nil {
+		h.Logger.Error("Failed to encode style list response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		StyleList []string `json:"styleList"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	data, err := json.Marshal(body.StyleList)
+	if err != nil {
+		h.Logger.Error("Failed to marshal style list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(store.SettingStyleList, string(data)); err != nil {
+		h.Logger.Error("Failed to save style list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) ResetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := h.SettingsRepo.Delete(store.SettingStyleList); err != nil {
+		h.Logger.Error("Failed to reset style list", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
 func (h *Handler) GetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) {
 	sep, err := h.SettingsRepo.Get(store.SettingGenreSeparator)
 	if err != nil {
@@ -1143,5 +1273,21 @@ func (h *Handler) ResetQualityHTMX(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		h.Logger.Error("Failed to encode response", "error", err)
+	}
+}
+
+func (h *Handler) GetMoodsHTMX(w http.ResponseWriter, r *http.Request) {
+	moods := app.GetMoods(h.SettingsRepo)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string][]string{"moods": moods}); err != nil {
+		h.Logger.Error("Failed to encode moods response", "error", err)
+	}
+}
+
+func (h *Handler) GetStylesHTMX(w http.ResponseWriter, r *http.Request) {
+	styles := app.GetStyles(h.SettingsRepo)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string][]string{"styles": styles}); err != nil {
+		h.Logger.Error("Failed to encode styles response", "error", err)
 	}
 }

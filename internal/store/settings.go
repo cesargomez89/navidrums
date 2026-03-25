@@ -46,4 +46,6 @@ const (
 	SettingTheme                  = "theme"
 	SettingForceDownload          = "force_download"
 	SettingQuality                = "quality"
+	SettingMoodList               = "mood_list"
+	SettingStyleList              = "style_list"
 )
