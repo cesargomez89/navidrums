@@ -1275,3 +1275,19 @@ func (h *Handler) ResetQualityHTMX(w http.ResponseWriter, r *http.Request) {
 		h.Logger.Error("Failed to encode response", "error", err)
 	}
 }
+
+func (h *Handler) GetMoodsHTMX(w http.ResponseWriter, r *http.Request) {
+	moods := app.GetMoods(h.SettingsRepo)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string][]string{"moods": moods}); err != nil {
+		h.Logger.Error("Failed to encode moods response", "error", err)
+	}
+}
+
+func (h *Handler) GetStylesHTMX(w http.ResponseWriter, r *http.Request) {
+	styles := app.GetStyles(h.SettingsRepo)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(map[string][]string{"styles": styles}); err != nil {
+		h.Logger.Error("Failed to encode styles response", "error", err)
+	}
+}

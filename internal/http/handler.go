@@ -119,6 +119,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Get("/htmx/quality", h.GetQualityHTMX)
 	r.Post("/htmx/quality", h.SetQualityHTMX)
 	r.Post("/htmx/quality/reset", h.ResetQualityHTMX)
+
+	r.Get("/htmx/moods", h.GetMoodsHTMX)
+	r.Get("/htmx/styles", h.GetStylesHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {
