@@ -123,6 +123,7 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"album_artists":    true,
 		"artist_ids":       true,
 		"album_artist_ids": true,
+		"path_artist":      true,
 		"genre":            true,
 		"mood":             true,
 		"style":            true,
@@ -154,6 +155,8 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"peak":             true,
 		"compilation":      true,
 		"explicit":         true,
+		"language":         true,
+		"country":          true,
 	}
 
 	setClauses := make([]string, 0, len(updates))

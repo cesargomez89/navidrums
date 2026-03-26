@@ -202,6 +202,12 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	if r.Explicit != nil {
 		updates["explicit"] = *r.Explicit
 	}
+	if r.Language != nil {
+		updates["language"] = *r.Language
+	}
+	if r.Country != nil {
+		updates["country"] = *r.Country
+	}
 
 	return updates
 }
@@ -257,6 +263,8 @@ type TrackResponse struct {
 	TrackNumber    int        `json:"track_number"`
 	Compilation    bool       `json:"compilation"`
 	Explicit       bool       `json:"explicit"`
+	Language       string     `json:"language"`
+	Country        string     `json:"country"`
 }
 
 func NewTrackResponse(t *domain.Track) TrackResponse {
@@ -298,6 +306,8 @@ func NewTrackResponse(t *domain.Track) TrackResponse {
 		Peak:           t.Peak,
 		Compilation:    t.Compilation,
 		Explicit:       t.Explicit,
+		Language:       t.Language,
+		Country:        t.Country,
 		TotalTracks:    t.TotalTracks,
 		TotalDiscs:     t.TotalDiscs,
 		AlbumArtURL:    t.AlbumArtURL,
