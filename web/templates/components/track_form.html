@@ -117,17 +117,23 @@
                 <textarea id="description" name="description" rows="3"
                     placeholder="Description...">{{.Track.Description}}</textarea>
             </div>
-            <div class="form-group">
-                <label for="mood">Mood</label>
-                <select id="mood" name="mood" multiple class="multi-select" data-placeholder="Select moods...">
-                </select>
-                <div class="hint">Hold Ctrl/Cmd to select multiple</div>
+            <div class="form-group relative">
+                <label for="mood-input">Mood</label>
+                <input type="hidden" id="mood" name="mood" value="{{.Track.Mood}}">
+                <div class="tag-input-wrapper">
+                    <div id="mood-tags" class="tag-list"></div>
+                    <input type="text" id="mood-input" class="tag-input" placeholder="Type and press Enter..." autocomplete="off">
+                </div>
+                <div class="tag-suggestions" id="mood-suggestions"></div>
             </div>
-            <div class="form-group">
-                <label for="style">Style</label>
-                <select id="style" name="style" multiple class="multi-select" data-placeholder="Select styles...">
-                </select>
-                <div class="hint">Hold Ctrl/Cmd to select multiple</div>
+            <div class="form-group relative">
+                <label for="style-input">Style</label>
+                <input type="hidden" id="style" name="style" value="{{.Track.Style}}">
+                <div class="tag-input-wrapper">
+                    <div id="style-tags" class="tag-list"></div>
+                    <input type="text" id="style-input" class="tag-input" placeholder="Type and press Enter..." autocomplete="off">
+                </div>
+                <div class="tag-suggestions" id="style-suggestions"></div>
             </div>
             <div class="form-group">
                 <label for="language">Language</label>
@@ -209,45 +215,40 @@
 
 <script>
 function loadMoodStyleOptions() {
+    const currentMood = "{{.Track.Mood}}";
+    const currentStyle = "{{.Track.Style}}";
+    const initialMood = currentMood ? currentMood.split(';').filter(s => s) : [];
+    const initialStyle = currentStyle ? currentStyle.split(';').filter(s => s) : [];
+    const currentLanguage = "{{.Track.Language}}";
+    const currentCountry = "{{.Track.Country}}";
+
     Promise.all([
         fetch('/htmx/moods', { cache: 'no-store' }).then(r => r.json()),
         fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json()),
         fetch('/htmx/languages', { cache: 'no-store' }).then(r => r.json()),
         fetch('/htmx/countries', { cache: 'no-store' }).then(r => r.json())
     ]).then(([moodData, styleData, languageData, countryData]) => {
-        const moodSelect = document.getElementById('mood');
-        const styleSelect = document.getElementById('style');
         const languageSelect = document.getElementById('language');
         const countrySelect = document.getElementById('country');
-        
-        const currentMood = "{{.Track.Mood}}";
-        const currentStyle = "{{.Track.Style}}";
-        const currentLanguage = "{{.Track.Language}}";
-        const currentCountry = "{{.Track.Country}}";
-        
-        // Populate moods
-        moodData.moods.forEach(mood => {
-            const option = document.createElement('option');
-            option.value = mood;
-            option.textContent = mood;
-            if (currentMood.split(';').includes(mood)) {
-                option.selected = true;
-            }
-            moodSelect.appendChild(option);
+
+        new TagInput({
+            inputId: 'mood-input',
+            hiddenId: 'mood',
+            tagsId: 'mood-tags',
+            suggestionsId: 'mood-suggestions',
+            options: moodData.moods,
+            initialValues: initialMood
         });
-        
-        // Populate styles
-        styleData.styles.forEach(style => {
-            const option = document.createElement('option');
-            option.value = style;
-            option.textContent = style;
-            if (currentStyle.split(';').includes(style)) {
-                option.selected = true;
-            }
-            styleSelect.appendChild(option);
+
+        new TagInput({
+            inputId: 'style-input',
+            hiddenId: 'style',
+            tagsId: 'style-tags',
+            suggestionsId: 'style-suggestions',
+            options: styleData.styles,
+            initialValues: initialStyle
         });
-        
-        // Populate languages
+
         languageData.languages.forEach(lang => {
             const option = document.createElement('option');
             option.value = lang;
@@ -257,8 +258,7 @@ function loadMoodStyleOptions() {
             }
             languageSelect.appendChild(option);
         });
-        
-        // Populate countries
+
         countryData.countries.forEach(country => {
             const option = document.createElement('option');
             option.value = country;

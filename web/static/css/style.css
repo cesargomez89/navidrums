@@ -1012,6 +1012,98 @@ textarea {
     font-weight: 500;
 }
 
+.form-group.relative {
+    position: relative;
+}
+
+/* Tag Input */
+.tag-input-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--bg-secondary, #1e1e1e);
+    border: 1px solid var(--border-color, #333);
+    border-radius: var(--radius-md);
+    min-height: 42px;
+    align-items: center;
+}
+
+.tag-input-wrapper:focus-within {
+    border-color: var(--accent, #646cff);
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: var(--accent, #646cff);
+    color: white;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+}
+
+.tag-remove {
+    cursor: pointer;
+    opacity: 0.7;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.tag-remove:hover {
+    opacity: 1;
+}
+
+.tag-input {
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary, #eee);
+    outline: none;
+    font-size: var(--text-sm);
+}
+
+.tag-input::placeholder {
+    color: var(--text-dim, #888);
+}
+
+.tag-suggestions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary, #1e1e1e);
+    border: 1px solid var(--border-color, #333);
+    border-radius: var(--radius-md);
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 10;
+}
+
+.tag-suggestions.show {
+    display: block;
+}
+
+.tag-suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: var(--text-sm);
+}
+
+.tag-suggestion:hover {
+    background: var(--accent, #646cff);
+    color: white;
+}
+
 .alert {
     padding: 12px 16px;
     border-radius: 8px;
