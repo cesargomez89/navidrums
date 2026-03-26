@@ -106,6 +106,14 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/style-list", h.SetStyleListHTMX)
 	r.Post("/htmx/style-list/reset", h.ResetStyleListHTMX)
 
+	r.Get("/htmx/language-list", h.GetLanguageListHTMX)
+	r.Post("/htmx/language-list", h.SetLanguageListHTMX)
+	r.Post("/htmx/language-list/reset", h.ResetLanguageListHTMX)
+
+	r.Get("/htmx/country-list", h.GetCountryListHTMX)
+	r.Post("/htmx/country-list", h.SetCountryListHTMX)
+	r.Post("/htmx/country-list/reset", h.ResetCountryListHTMX)
+
 	r.Get("/htmx/genre-separator", h.GetGenreSeparatorHTMX)
 	r.Post("/htmx/genre-separator", h.SetGenreSeparatorHTMX)
 
@@ -122,6 +130,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 
 	r.Get("/htmx/moods", h.GetMoodsHTMX)
 	r.Get("/htmx/styles", h.GetStylesHTMX)
+	r.Get("/htmx/languages", h.GetLanguagesHTMX)
+	r.Get("/htmx/countries", h.GetCountriesHTMX)
 }
 
 func (h *Handler) RenderPage(w http.ResponseWriter, pageTmpl string, data interface{}) {
