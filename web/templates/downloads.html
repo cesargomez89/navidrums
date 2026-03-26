@@ -210,7 +210,7 @@
             Array.from(document.getElementById('mood-input').options).forEach(o => o.selected = false);
             Array.from(document.getElementById('style-input').options).forEach(o => o.selected = false);
             document.getElementById('genre-modal-overlay').style.display = 'flex';
-            setTimeout(() => document.getElementById('path-artist-input').focus(), 50);
+            setTimeout(() => document.getElementById('genre-input').focus(), 50);
         }
 
         function closeGenreModal(e) {
