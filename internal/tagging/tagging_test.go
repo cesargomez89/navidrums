@@ -170,3 +170,68 @@ func TestSetGenreSeparator(t *testing.T) {
 		t.Errorf("Expected ';', got %q", GenreSeparator)
 	}
 }
+
+func TestNewVorbisComment_LanguageAndCountry(t *testing.T) {
+	track := &domain.Track{
+		Title:    "Test Title",
+		Language: "eng",
+		Country:  "USA",
+	}
+
+	tags := buildTagMap(track, nil)
+	tagger := &FLACTagger{}
+	vc := tagger.newVorbisComment(tags)
+
+	check := func(name, expected string) {
+		t.Helper()
+		found := false
+		target := fmt.Sprintf("%s=%s", name, expected)
+		for _, entry := range vc.Comments {
+			if entry == target {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Field %s not found in VorbisComment", target)
+		}
+	}
+
+	check("TITLE", "Test Title")
+	check("LANGUAGE", "eng")
+	check("COUNTRY", "USA")
+}
+
+func TestBuildTagMap_LanguageAndCountry(t *testing.T) {
+	track := &domain.Track{
+		Title:    "Test",
+		Language: "spa",
+		Country:  "Mexico",
+	}
+
+	tags := buildTagMap(track, nil)
+
+	if tags.Language != "spa" {
+		t.Errorf("Language = %q, want %q", tags.Language, "spa")
+	}
+	if tags.Country != "Mexico" {
+		t.Errorf("Country = %q, want %q", tags.Country, "Mexico")
+	}
+
+	hasLanguage := false
+	hasCountry := false
+	for k, v := range tags.Custom {
+		if k == "LANGUAGE" && v == "spa" {
+			hasLanguage = true
+		}
+		if k == "COUNTRY" && v == "Mexico" {
+			hasCountry = true
+		}
+	}
+	if !hasLanguage {
+		t.Error("LANGUAGE not found in custom tags")
+	}
+	if !hasCountry {
+		t.Error("COUNTRY not found in custom tags")
+	}
+}
