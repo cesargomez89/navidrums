@@ -25,7 +25,6 @@ func (t *FFmpegFallbackTagger) WriteTags(filePath string, tags *TagMap) error {
 		AlbumArtists: tags.AlbumArtists,
 		Genre:        tags.Genre,
 		Mood:         tags.Mood,
-		Style:        tags.Style,
 		Language:     tags.Language,
 		Year:         tags.Year,
 		TrackNum:     tags.TrackNum,

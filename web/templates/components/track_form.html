@@ -126,25 +126,10 @@
                 </div>
                 <div class="tag-suggestions" id="mood-suggestions"></div>
             </div>
-            <div class="form-group relative">
-                <label for="style-input">Style</label>
-                <input type="hidden" id="style" name="style" value="{{.Track.Style}}">
-                <div class="tag-input-wrapper">
-                    <div id="style-tags" class="tag-list"></div>
-                    <input type="text" id="style-input" class="tag-input" placeholder="Type and press Enter..." autocomplete="off">
-                </div>
-                <div class="tag-suggestions" id="style-suggestions"></div>
-            </div>
             <div class="form-group">
                 <label for="language">Language</label>
                 <select id="language" name="language" class="w-full" data-placeholder="Select language...">
                     <option value="">Select language...</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="country">Country/Region</label>
-                <select id="country" name="country" class="w-full" data-placeholder="Select country...">
-                    <option value="">Select country...</option>
                 </select>
             </div>
             <div class="form-group">
@@ -214,22 +199,16 @@
 {{end}}
 
 <script>
-function loadMoodStyleOptions() {
+function loadMoodOptions() {
     const currentMood = "{{.Track.Mood}}";
-    const currentStyle = "{{.Track.Style}}";
     const initialMood = currentMood ? currentMood.split(';').filter(s => s) : [];
-    const initialStyle = currentStyle ? currentStyle.split(';').filter(s => s) : [];
     const currentLanguage = "{{.Track.Language}}";
-    const currentCountry = "{{.Track.Country}}";
 
     Promise.all([
         fetch('/htmx/moods', { cache: 'no-store' }).then(r => r.json()),
-        fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json()),
-        fetch('/htmx/languages', { cache: 'no-store' }).then(r => r.json()),
-        fetch('/htmx/countries', { cache: 'no-store' }).then(r => r.json())
-    ]).then(([moodData, styleData, languageData, countryData]) => {
+        fetch('/htmx/languages', { cache: 'no-store' }).then(r => r.json())
+    ]).then(([moodData, languageData]) => {
         const languageSelect = document.getElementById('language');
-        const countrySelect = document.getElementById('country');
 
         new TagInput({
             inputId: 'mood-input',
@@ -238,15 +217,6 @@ function loadMoodStyleOptions() {
             suggestionsId: 'mood-suggestions',
             options: moodData.moods,
             initialValues: initialMood
-        });
-
-        new TagInput({
-            inputId: 'style-input',
-            hiddenId: 'style',
-            tagsId: 'style-tags',
-            suggestionsId: 'style-suggestions',
-            options: styleData.styles,
-            initialValues: initialStyle
         });
 
         languageData.languages.forEach(lang => {
@@ -258,19 +228,9 @@ function loadMoodStyleOptions() {
             }
             languageSelect.appendChild(option);
         });
-
-        countryData.countries.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            if (currentCountry === country) {
-                option.selected = true;
-            }
-            countrySelect.appendChild(option);
-        });
     });
 }
-loadMoodStyleOptions();
+loadMoodOptions();
 </script>
 
 {{end}}

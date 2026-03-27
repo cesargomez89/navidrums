@@ -17,9 +17,7 @@ type TrackUpdateRequest struct {
 	PathArtist    *string `form:"path_artist"`
 	Genre         *string `form:"genre"`
 	Mood          *string `form:"mood"`
-	Style         *string `form:"style"`
 	Language      *string `form:"language"`
-	Country       *string `form:"country"`
 	Label         *string `form:"label"`
 	Composer      *string `form:"composer"`
 	Copyright     *string `form:"copyright"`
@@ -77,9 +75,6 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	}
 	if r.Mood != nil {
 		updates["mood"] = *r.Mood
-	}
-	if r.Style != nil {
-		updates["style"] = *r.Style
 	}
 	if r.Title != nil {
 		updates["title"] = *r.Title
@@ -205,9 +200,6 @@ func (r *TrackUpdateRequest) ToUpdates() map[string]interface{} {
 	if r.Language != nil {
 		updates["language"] = *r.Language
 	}
-	if r.Country != nil {
-		updates["country"] = *r.Country
-	}
 
 	return updates
 }
@@ -264,7 +256,6 @@ type TrackResponse struct {
 	Compilation    bool       `json:"compilation"`
 	Explicit       bool       `json:"explicit"`
 	Language       string     `json:"language"`
-	Country        string     `json:"country"`
 }
 
 func NewTrackResponse(t *domain.Track) TrackResponse {
@@ -307,7 +298,6 @@ func NewTrackResponse(t *domain.Track) TrackResponse {
 		Compilation:    t.Compilation,
 		Explicit:       t.Explicit,
 		Language:       t.Language,
-		Country:        t.Country,
 		TotalTracks:    t.TotalTracks,
 		TotalDiscs:     t.TotalDiscs,
 		AlbumArtURL:    t.AlbumArtURL,

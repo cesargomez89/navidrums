@@ -63,16 +63,10 @@
                         <option value="">Select...</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="country-input">Country</label>
-                    <select id="country-input">
-                        <option value="">Select...</option>
-                    </select>
-                </div>
             </div>
 
             <div class="section-header mb-3">
-                <h3 class="text-sm text-dim">Mood & Style</h3>
+                <h3 class="text-sm text-dim">Mood</h3>
             </div>
             <div class="form-grid mb-4">
                 <div class="form-group relative">
@@ -82,14 +76,6 @@
                         <input type="text" id="mood-input" class="tag-input" placeholder="Type and press Enter..." autocomplete="off">
                     </div>
                     <div class="tag-suggestions" id="mood-suggestions"></div>
-                </div>
-                <div class="form-group relative">
-                    <label for="style-input">Style</label>
-                    <div class="tag-input-wrapper">
-                        <div id="style-tags" class="tag-list"></div>
-                        <input type="text" id="style-input" class="tag-input" placeholder="Type and press Enter..." autocomplete="off">
-                    </div>
-                    <div class="tag-suggestions" id="style-suggestions"></div>
                 </div>
             </div>
 
@@ -229,18 +215,16 @@
         }
 
         // ─── genre modal ───────────────────────────────────────────────────
-        let moodTagInput, styleTagInput;
+        let moodTagInput;
 
         // ─── tag input options ──────────────────────────────────────────────
         let optionsLoaded = false;
-        function loadBulkMoodStyleOptions() {
+        function loadBulkMoodOptions() {
             if (optionsLoaded) return Promise.resolve();
             return Promise.all([
                 fetch('/htmx/moods', { cache: 'no-store' }).then(r => r.json()),
-                fetch('/htmx/styles', { cache: 'no-store' }).then(r => r.json()),
-                fetch('/htmx/languages', { cache: 'no-store' }).then(r => r.json()),
-                fetch('/htmx/countries', { cache: 'no-store' }).then(r => r.json())
-            ]).then(([moodData, styleData, languageData, countryData]) => {
+                fetch('/htmx/languages', { cache: 'no-store' }).then(r => r.json())
+            ]).then(([moodData, languageData]) => {
                 moodTagInput = new TagInput({
                     inputId: 'mood-input',
                     tagsId: 'mood-tags',
@@ -248,15 +232,7 @@
                     options: moodData.moods
                 });
 
-                styleTagInput = new TagInput({
-                    inputId: 'style-input',
-                    tagsId: 'style-tags',
-                    suggestionsId: 'style-suggestions',
-                    options: styleData.styles
-                });
-
                 const languageSelect = document.getElementById('language-input');
-                const countrySelect = document.getElementById('country-input');
 
                 languageData.languages.forEach(lang => {
                     const option = document.createElement('option');
@@ -265,18 +241,12 @@
                     languageSelect.appendChild(option);
                 });
 
-                countryData.countries.forEach(country => {
-                    const option = document.createElement('option');
-                    option.value = country;
-                    option.textContent = country;
-                    countrySelect.appendChild(option);
-                });
                 optionsLoaded = true;
             });
         }
 
         function openGenreModal() {
-            loadBulkMoodStyleOptions().then(() => {
+            loadBulkMoodOptions().then(() => {
                 document.getElementById('path-artist-input').value = '';
                 document.getElementById('artists-input').value = '';
                 document.getElementById('album-artists-input').value = '';
@@ -284,7 +254,6 @@
                 document.getElementById('genre-input').value = '';
                 
                 if (moodTagInput) moodTagInput.reset();
-                if (styleTagInput) styleTagInput.reset();
 
                 document.getElementById('genre-modal-overlay').style.display = 'flex';
                 setTimeout(() => document.getElementById('genre-input').focus(), 50);
@@ -304,11 +273,9 @@
             var year = document.getElementById('year-input').value.trim();
             var genre = document.getElementById('genre-input').value.trim();
             var mood = moodTagInput && moodTagInput.tags.length > 0 ? moodTagInput.tags.join(';') : '';
-            var style = styleTagInput && styleTagInput.tags.length > 0 ? styleTagInput.tags.join(';') : '';
             var language = document.getElementById('language-input').value.trim();
-            var country = document.getElementById('country-input').value.trim();
 
-            if (!pathArtist && !artists && !albumArtists && !year && !genre && !mood && !style && !language && !country) {
+            if (!pathArtist && !artists && !albumArtists && !year && !genre && !mood && !language) {
                 alert('Please enter at least one field.'); return;
             }
             var ids = getSelectedIDs();
@@ -322,9 +289,7 @@
             if (year) params.set('year', year);
             if (genre) params.set('genre', genre);
             if (mood) params.set('mood', mood);
-            if (style) params.set('style', style);
             if (language) params.set('language', language);
-            if (country) params.set('country', country);
             fetch('/htmx/downloads/bulk-genre' + listParams(), { method: 'POST', body: params })
                 .then(r => r.text())
                 .then(html => {

@@ -405,6 +405,24 @@ var migrations = []migration{
 			return err
 		},
 	},
+	{
+		version:     14,
+		description: "Drop style and country columns",
+		up: func(tx *sqlx.Tx) error {
+			columns := []string{
+				"ALTER TABLE tracks DROP COLUMN style",
+				"ALTER TABLE tracks DROP COLUMN country",
+			}
+			for _, q := range columns {
+				if _, err := tx.Exec(q); err != nil {
+					if !strings.Contains(err.Error(), "no such column") {
+						return err
+					}
+				}
+			}
+			return nil
+		},
+	},
 }
 
 type dbOps interface {
