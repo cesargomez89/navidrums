@@ -531,71 +531,6 @@ func (h *Handler) ResetMoodListHTMX(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
 
-func (h *Handler) GetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
-	custom, err := h.SettingsRepo.Get(store.SettingStyleList)
-	if err != nil {
-		h.Logger.Error("Failed to get style list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	result := map[string]interface{}{
-		"default": app.DefaultStyles,
-		"custom":  nil,
-	}
-
-	if custom != "" {
-		var list []string
-		if err := json.Unmarshal([]byte(custom), &list); err != nil {
-			h.Logger.Error("Failed to unmarshal custom style list", "error", err)
-		} else {
-			result["custom"] = list
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		h.Logger.Error("Failed to encode style list response", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
-}
-
-func (h *Handler) SetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		StyleList []string `json:"styleList"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	data, err := json.Marshal(body.StyleList)
-	if err != nil {
-		h.Logger.Error("Failed to marshal style list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if err := h.SettingsRepo.Set(store.SettingStyleList, string(data)); err != nil {
-		h.Logger.Error("Failed to save style list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	_, _ = w.Write([]byte(`{"success":true}`))
-}
-
-func (h *Handler) ResetStyleListHTMX(w http.ResponseWriter, r *http.Request) {
-	if err := h.SettingsRepo.Delete(store.SettingStyleList); err != nil {
-		h.Logger.Error("Failed to reset style list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	_, _ = w.Write([]byte(`{"success":true}`))
-}
-
 func (h *Handler) GetLanguageListHTMX(w http.ResponseWriter, r *http.Request) {
 	custom, err := h.SettingsRepo.Get(store.SettingLanguageList)
 	if err != nil {
@@ -654,71 +589,6 @@ func (h *Handler) SetLanguageListHTMX(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ResetLanguageListHTMX(w http.ResponseWriter, r *http.Request) {
 	if err := h.SettingsRepo.Delete(store.SettingLanguageList); err != nil {
 		h.Logger.Error("Failed to reset language list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	_, _ = w.Write([]byte(`{"success":true}`))
-}
-
-func (h *Handler) GetCountryListHTMX(w http.ResponseWriter, r *http.Request) {
-	custom, err := h.SettingsRepo.Get(store.SettingCountryList)
-	if err != nil {
-		h.Logger.Error("Failed to get country list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	result := map[string]interface{}{
-		"default": app.DefaultCountries,
-		"custom":  nil,
-	}
-
-	if custom != "" {
-		var list map[string]string
-		if err := json.Unmarshal([]byte(custom), &list); err != nil {
-			h.Logger.Error("Failed to unmarshal custom country list", "error", err)
-		} else {
-			result["custom"] = list
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		h.Logger.Error("Failed to encode country list response", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	}
-}
-
-func (h *Handler) SetCountryListHTMX(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		CountryList map[string]string `json:"countryList"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	data, err := json.Marshal(body.CountryList)
-	if err != nil {
-		h.Logger.Error("Failed to marshal country list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	if err := h.SettingsRepo.Set(store.SettingCountryList, string(data)); err != nil {
-		h.Logger.Error("Failed to save country list", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	_, _ = w.Write([]byte(`{"success":true}`))
-}
-
-func (h *Handler) ResetCountryListHTMX(w http.ResponseWriter, r *http.Request) {
-	if err := h.SettingsRepo.Delete(store.SettingCountryList); err != nil {
-		h.Logger.Error("Failed to reset country list", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -914,14 +784,12 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 	year := r.FormValue("year")
 	genre := r.FormValue("genre")
 	mood := r.FormValue("mood")
-	style := r.FormValue("style")
 	language := r.FormValue("language")
-	country := r.FormValue("country")
 	pathArtist := r.FormValue("path_artist")
 	artists := r.FormValue("artists")
 	albumArtists := r.FormValue("album_artists")
 
-	if year == "" && genre == "" && mood == "" && style == "" && language == "" && country == "" && pathArtist == "" && artists == "" && albumArtists == "" {
+	if year == "" && genre == "" && mood == "" && language == "" && pathArtist == "" && artists == "" && albumArtists == "" {
 		http.Error(w, "At least one field is required", http.StatusBadRequest)
 		return
 	}
@@ -947,14 +815,8 @@ func (h *Handler) BulkUpdateGenreHTMX(w http.ResponseWriter, r *http.Request) {
 		if mood != "" {
 			updates["mood"] = mood
 		}
-		if style != "" {
-			updates["style"] = style
-		}
 		if language != "" {
 			updates["language"] = language
-		}
-		if country != "" {
-			updates["country"] = country
 		}
 		if pathArtist != "" {
 			updates["path_artist"] = pathArtist
@@ -1422,14 +1284,6 @@ func (h *Handler) GetMoodsHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetStylesHTMX(w http.ResponseWriter, r *http.Request) {
-	styles := app.GetStyles(h.SettingsRepo)
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(map[string][]string{"styles": styles}); err != nil {
-		h.Logger.Error("Failed to encode styles response", "error", err)
-	}
-}
-
 func (h *Handler) GetLanguagesHTMX(w http.ResponseWriter, r *http.Request) {
 	langMap := app.GetLanguages(h.SettingsRepo)
 	languages := make([]string, 0, len(langMap))
@@ -1439,17 +1293,5 @@ func (h *Handler) GetLanguagesHTMX(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(map[string][]string{"languages": languages}); err != nil {
 		h.Logger.Error("Failed to encode languages response", "error", err)
-	}
-}
-
-func (h *Handler) GetCountriesHTMX(w http.ResponseWriter, r *http.Request) {
-	countryMap := app.GetCountries(h.SettingsRepo)
-	countries := make([]string, 0, len(countryMap))
-	for _, v := range countryMap {
-		countries = append(countries, v)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(map[string][]string{"countries": countries}); err != nil {
-		h.Logger.Error("Failed to encode countries response", "error", err)
 	}
 }

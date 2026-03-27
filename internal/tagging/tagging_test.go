@@ -171,11 +171,10 @@ func TestSetGenreSeparator(t *testing.T) {
 	}
 }
 
-func TestNewVorbisComment_LanguageAndCountry(t *testing.T) {
+func TestNewVorbisComment_Language(t *testing.T) {
 	track := &domain.Track{
 		Title:    "Test Title",
 		Language: "eng",
-		Country:  "USA",
 	}
 
 	tags := buildTagMap(track, nil)
@@ -199,14 +198,12 @@ func TestNewVorbisComment_LanguageAndCountry(t *testing.T) {
 
 	check("TITLE", "Test Title")
 	check("LANGUAGE", "eng")
-	check("COUNTRY", "USA")
 }
 
-func TestBuildTagMap_LanguageAndCountry(t *testing.T) {
+func TestBuildTagMap_Language(t *testing.T) {
 	track := &domain.Track{
 		Title:    "Test",
 		Language: "spa",
-		Country:  "Mexico",
 	}
 
 	tags := buildTagMap(track, nil)
@@ -214,24 +211,14 @@ func TestBuildTagMap_LanguageAndCountry(t *testing.T) {
 	if tags.Language != "spa" {
 		t.Errorf("Language = %q, want %q", tags.Language, "spa")
 	}
-	if tags.Country != "Mexico" {
-		t.Errorf("Country = %q, want %q", tags.Country, "Mexico")
-	}
 
 	hasLanguage := false
-	hasCountry := false
 	for k, v := range tags.Custom {
 		if k == "LANGUAGE" && v == "spa" {
 			hasLanguage = true
 		}
-		if k == "COUNTRY" && v == "Mexico" {
-			hasCountry = true
-		}
 	}
 	if !hasLanguage {
 		t.Error("LANGUAGE not found in custom tags")
-	}
-	if !hasCountry {
-		t.Error("COUNTRY not found in custom tags")
 	}
 }

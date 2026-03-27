@@ -71,18 +71,6 @@
 </div>
 
 <div class="section">
-    <h2>Style List</h2>
-    <p class="hint">Default styles available for selection. Stored as JSON array.</p>
-    <div id="style-list-status"></div>
-    <textarea id="style-list-input" rows="8" class="w-full" style="font-family: monospace; font-size: 12px;"
-        placeholder='["Acoustic", "Alternative", "Cinematic", ...]'></textarea>
-    <div class="mt-2">
-        <button onclick="saveStyleList()" class="btn-lg btn-primary">Save</button>
-        <button onclick="resetStyleList()" class="btn-lg btn-secondary">Reset to Default</button>
-    </div>
-</div>
-
-<div class="section">
     <h2>Language List</h2>
     <p class="hint">Default languages available for selection. Stored as JSON map (code: name).</p>
     <div id="language-list-status"></div>
@@ -91,18 +79,6 @@
     <div class="mt-2">
         <button onclick="saveLanguageList()" class="btn-lg btn-primary">Save</button>
         <button onclick="resetLanguageList()" class="btn-lg btn-secondary">Reset to Default</button>
-    </div>
-</div>
-
-<div class="section">
-    <h2>Country List</h2>
-    <p class="hint">Default countries/regions available for selection. Stored as JSON map (code: name).</p>
-    <div id="country-list-status"></div>
-    <textarea id="country-list-input" rows="8" class="w-full" style="font-family: monospace; font-size: 12px;"
-        placeholder='{"US": "United States", "GB": "United Kingdom", ...}'></textarea>
-    <div class="mt-2">
-        <button onclick="saveCountryList()" class="btn-lg btn-primary">Save</button>
-        <button onclick="resetCountryList()" class="btn-lg btn-secondary">Reset to Default</button>
     </div>
 </div>
 
@@ -298,60 +274,6 @@
             });
     }
 
-    function loadStyleList() {
-        fetch('/htmx/style-list', { cache: 'no-store' })
-            .then(r => r.json())
-            .then(data => {
-                const textarea = document.getElementById('style-list-input');
-                const statusDiv = document.getElementById('style-list-status');
-
-                if (data.custom) {
-                    textarea.value = JSON.stringify(data.custom, null, 2);
-                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom list</span>';
-                } else {
-                    textarea.value = JSON.stringify(data.default, null, 2);
-                    statusDiv.innerHTML = '<span class="badge badge-default">Using default list</span>';
-                }
-            });
-    }
-
-    function saveStyleList() {
-        const textarea = document.getElementById('style-list-input');
-        let styleList;
-
-        try {
-            styleList = JSON.parse(textarea.value);
-        } catch (e) {
-            alert('Invalid JSON: ' + e.message);
-            return;
-        }
-
-        fetch('/htmx/style-list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ styleList: styleList })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    loadStyleList();
-                    alert('Style list saved');
-                }
-            });
-    }
-
-    function resetStyleList() {
-        if (!confirm('Reset to default style list?')) return;
-
-        fetch('/htmx/style-list/reset', { method: 'POST' })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    loadStyleList();
-                }
-            });
-    }
-
     function loadLanguageList() {
         fetch('/htmx/language-list', { cache: 'no-store' })
             .then(r => r.json())
@@ -402,60 +324,6 @@
             .then(data => {
                 if (data.success) {
                     loadLanguageList();
-                }
-            });
-    }
-
-    function loadCountryList() {
-        fetch('/htmx/country-list', { cache: 'no-store' })
-            .then(r => r.json())
-            .then(data => {
-                const textarea = document.getElementById('country-list-input');
-                const statusDiv = document.getElementById('country-list-status');
-
-                if (data.custom) {
-                    textarea.value = JSON.stringify(data.custom, null, 2);
-                    statusDiv.innerHTML = '<span class="badge badge-custom">Using custom list</span>';
-                } else {
-                    textarea.value = JSON.stringify(data.default, null, 2);
-                    statusDiv.innerHTML = '<span class="badge badge-default">Using default list</span>';
-                }
-            });
-    }
-
-    function saveCountryList() {
-        const textarea = document.getElementById('country-list-input');
-        let countryList;
-
-        try {
-            countryList = JSON.parse(textarea.value);
-        } catch (e) {
-            alert('Invalid JSON: ' + e.message);
-            return;
-        }
-
-        fetch('/htmx/country-list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ countryList: countryList })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    loadCountryList();
-                    alert('Country list saved');
-                }
-            });
-    }
-
-    function resetCountryList() {
-        if (!confirm('Reset to default country list?')) return;
-
-        fetch('/htmx/country-list/reset', { method: 'POST' })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    loadCountryList();
                 }
             });
     }
@@ -652,9 +520,7 @@
     loadProviders();
     loadGenreMap();
     loadMoodList();
-    loadStyleList();
     loadLanguageList();
-    loadCountryList();
     loadGenreSeparator();
     loadTheme();
     loadForceDownload();

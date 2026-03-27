@@ -168,7 +168,6 @@ func (t *FLACTagger) newVorbisComment(tags *TagMap) *flacvorbis.MetaDataBlockVor
 
 	add("UNSYNCEDLYRICS", tags.Lyrics)
 	add("LANGUAGE", tags.Language)
-	add("COUNTRY", tags.Country)
 
 	// Dump all custom normalized tags
 	for k, v := range tags.Custom {

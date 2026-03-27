@@ -17,7 +17,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	query := `INSERT INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, path_artist, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, mood, style, language, country, label, isrc, copyright, composer,
+		year, genre, mood, language, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id, recording_id, tags,
@@ -26,7 +26,7 @@ func (db *DB) CreateTrack(track *domain.Track) error {
 	) VALUES (
 		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :path_artist, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
-		:year, :genre, :mood, :style, :language, :country, :label, :isrc, :copyright, :composer,
+		:year, :genre, :mood, :language, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,
@@ -81,7 +81,7 @@ func (db *DB) UpdateTrack(track *domain.Track) error {
 		album = :album, album_id = :album_id, album_artist = :album_artist, album_artists = :album_artists, path_artist = :path_artist,
 		artist_ids = :artist_ids, album_artist_ids = :album_artist_ids,
 		track_number = :track_number, disc_number = :disc_number, total_tracks = :total_tracks, total_discs = :total_discs,
-		year = :year, genre = :genre, mood = :mood, style = :style, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
+		year = :year, genre = :genre, mood = :mood, label = :label, isrc = :isrc, copyright = :copyright, composer = :composer,
 		duration = :duration, explicit = :explicit, compilation = :compilation, album_art_url = :album_art_url, lyrics = :lyrics, subtitles = :subtitles,
 		bpm = :bpm, key_name = :key_name, key_scale = :key_scale, replay_gain = :replay_gain, peak = :peak,
 		version = :version, description = :description, url = :url, audio_quality = :audio_quality, audio_modes = :audio_modes, release_date = :release_date,
@@ -126,7 +126,6 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"path_artist":      true,
 		"genre":            true,
 		"mood":             true,
-		"style":            true,
 		"tags":             true,
 		"label":            true,
 		"composer":         true,
@@ -156,7 +155,6 @@ func (db *DB) UpdateTrackPartial(id int, updates map[string]interface{}) error {
 		"compilation":      true,
 		"explicit":         true,
 		"language":         true,
-		"country":          true,
 	}
 
 	setClauses := make([]string, 0, len(updates))
@@ -407,7 +405,7 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 	query := `INSERT OR IGNORE INTO tracks (
 		provider_id, title, artist, artists, album, album_id, album_artist, album_artists, path_artist, artist_ids, album_artist_ids,
 		track_number, disc_number, total_tracks, total_discs,
-		year, genre, mood, style, language, country, label, isrc, copyright, composer,
+		year, genre, mood, language, label, isrc, copyright, composer,
 		duration, explicit, compilation, album_art_url, lyrics, subtitles,
 		bpm, key_name, key_scale, replay_gain, peak, version, description, url, audio_quality, audio_modes, release_date,
 		barcode, catalog_number, release_type, release_id, recording_id, tags,
@@ -416,7 +414,7 @@ func (db *DB) CreateTrackBatch(tracks []*domain.Track) (int, error) {
 	) VALUES (
 		:provider_id, :title, :artist, :artists, :album, :album_id, :album_artist, :album_artists, :path_artist, :artist_ids, :album_artist_ids,
 		:track_number, :disc_number, :total_tracks, :total_discs,
-		:year, :genre, :mood, :style, :language, :country, :label, :isrc, :copyright, :composer,
+		:year, :genre, :mood, :language, :label, :isrc, :copyright, :composer,
 		:duration, :explicit, :compilation, :album_art_url, :lyrics, :subtitles,
 		:bpm, :key_name, :key_scale, :replay_gain, :peak, :version, :description, :url, :audio_quality, :audio_modes, :release_date,
 		:barcode, :catalog_number, :release_type, :release_id, :recording_id, :tags,

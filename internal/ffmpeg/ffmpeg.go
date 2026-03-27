@@ -16,9 +16,7 @@ type Metadata struct {
 	Album        string
 	Genre        string
 	Mood         string
-	Style        string
 	Language     string
-	Country      string
 	Composer     string
 	Copyright    string
 	CoverMime    string
@@ -134,9 +132,6 @@ func buildArgs(inputPath string, meta *Metadata, coverPath string) []string {
 	}
 	if meta.Language != "" {
 		args = append(args, "-metadata", fmt.Sprintf("language=%s", meta.Language))
-	}
-	if meta.Country != "" {
-		args = append(args, "-metadata", fmt.Sprintf("country=%s", meta.Country))
 	}
 	for k, v := range meta.Custom {
 		args = append(args, "-metadata", fmt.Sprintf("%s=%s", k, v))
