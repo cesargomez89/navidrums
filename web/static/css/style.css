@@ -296,15 +296,13 @@ body::before {
         linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
     background-size: 32px 32px;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
     opacity: 0.65;
     mix-blend-mode: multiply;
 }
 
-nav,
 main {
     position: relative;
-    z-index: 2;
 }
 
 a {
@@ -1598,7 +1596,7 @@ textarea {
     background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    z-index: 100;
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1612,6 +1610,9 @@ textarea {
     padding: 28px;
     width: 100%;
     max-width: 420px;
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: var(--shadow-modal);
     animation: fadeIn 0.15s ease-out;
 }
