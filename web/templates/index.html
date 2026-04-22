@@ -8,8 +8,8 @@
             type="search" autocomplete="off" autofocus>
         <select name="type" class="form-select" hx-get="/htmx/search" hx-target="#results" hx-include="[name='q']"
             hx-timeout="30000">
-            <option value="album">Album</option>
             <option value="track">Track</option>
+            <option value="album">Album</option>
             <option value="artist">Artist</option>
             <option value="playlist">Playlist</option>
         </select>
