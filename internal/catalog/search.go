@@ -18,29 +18,34 @@ func (p *HifiProvider) Search(ctx context.Context, query string, searchType stri
 	switch searchType {
 	case "artist":
 		artists, err := p.searchArtists(ctx, query)
-		if err == nil {
-			res.Artists = artists
+		if err != nil {
+			return nil, err
 		}
+		res.Artists = artists
 	case "album":
 		albums, err := p.searchAlbums(ctx, query)
-		if err == nil {
-			res.Albums = albums
+		if err != nil {
+			return nil, err
 		}
+		res.Albums = albums
 	case "track":
 		tracks, err := p.searchTracks(ctx, query)
-		if err == nil {
-			res.Tracks = tracks
+		if err != nil {
+			return nil, err
 		}
+		res.Tracks = tracks
 	case "playlist":
 		playlists, err := p.searchPlaylists(ctx, query)
-		if err == nil {
-			res.Playlists = playlists
+		if err != nil {
+			return nil, err
 		}
+		res.Playlists = playlists
 	default:
 		albums, err := p.searchAlbums(ctx, query)
-		if err == nil {
-			res.Albums = albums
+		if err != nil {
+			return nil, err
 		}
+		res.Albums = albums
 	}
 
 	return res, nil

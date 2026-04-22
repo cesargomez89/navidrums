@@ -20,6 +20,8 @@ type HifiProvider struct {
 	BaseURL string
 }
 
+const defaultProviderUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
 func NewHifiProvider(baseURL string) *HifiProvider {
 	return &HifiProvider{
 		BaseURL: baseURL,
@@ -27,6 +29,20 @@ func NewHifiProvider(baseURL string) *HifiProvider {
 			Timeout: 20 * time.Second,
 		}, 500*time.Millisecond),
 	}
+}
+
+func (p *HifiProvider) setRequestHeaders(req *http.Request) {
+	if req.Header.Get("User-Agent") == "" {
+		req.Header.Set("User-Agent", defaultProviderUserAgent)
+	}
+	if req.Header.Get("Accept") == "" {
+		req.Header.Set("Accept", "application/json, text/plain, */*")
+	}
+	if req.Header.Get("Accept-Language") == "" {
+		req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	}
+	req.Header.Set("Referer", "https://listen.tidal.com/")
+	req.Header.Set("Origin", "https://listen.tidal.com")
 }
 
 func (p *HifiProvider) ensureAbsoluteURL(urlOrID string, size ...string) string {
@@ -127,6 +143,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		if err != nil {
 			return nil, "", err
 		}
+		p.setRequestHeaders(req)
 		sResp, err := p.client.Do(ctx, req)
 		if err != nil {
 			return nil, "", err
@@ -165,6 +182,7 @@ func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality st
 		if err != nil {
 			return nil, "", err
 		}
+		p.setRequestHeaders(req)
 		sResp, err := p.client.Do(ctx, req)
 		if err != nil {
 			return nil, "", err
@@ -278,6 +296,7 @@ func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) 
 	if err != nil {
 		return err
 	}
+	p.setRequestHeaders(req)
 
 	resp, err := p.client.Do(ctx, req)
 	if err != nil {
