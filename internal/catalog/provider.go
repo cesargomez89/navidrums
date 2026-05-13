@@ -19,3 +19,10 @@ type Provider interface {
 	GetLyrics(ctx context.Context, trackID string) (string, string, error)
 	GetRecommendations(ctx context.Context, id string) ([]domain.CatalogTrack, error)
 }
+
+type ProviderType string
+
+const (
+	ProviderTypeHifi  ProviderType = "hifi"
+	ProviderTypeQobuz ProviderType = "qobuz"
+)
