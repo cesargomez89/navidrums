@@ -17,6 +17,7 @@ const (
 	JobTypeSyncFile        JobType = "sync_file"
 	JobTypeSyncMusicBrainz JobType = "sync_musicbrainz"
 	JobTypeSyncHiFi        JobType = "sync_hifi"
+	JobTypeImportLocal     JobType = "import_local"
 )
 
 type JobStatus string
