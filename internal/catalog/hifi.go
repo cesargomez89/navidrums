@@ -315,3 +315,12 @@ func (p *HifiProvider) get(ctx context.Context, url string, target interface{}) 
 	err = decoder.Decode(target)
 	return err
 }
+
+func NewProvider(providerType ProviderType, baseURL string) Provider {
+	switch providerType {
+	case ProviderTypeQobuz:
+		return NewQobuzProvider(baseURL)
+	default:
+		return NewHifiProvider(baseURL)
+	}
+}
