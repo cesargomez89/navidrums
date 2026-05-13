@@ -18,6 +18,7 @@ type Config struct {
 	Port                string
 	DBPath              string
 	DownloadsDir        string
+	IncomingDir         string
 	ProviderURL         string
 	Quality             string
 	PlayQuality         string
@@ -43,11 +44,13 @@ type Config struct {
 func Load() *Config {
 	home, _ := os.UserHomeDir()
 	defaultDownload := filepath.Join(home, "Downloads/navidrums")
+	defaultIncoming := filepath.Join(home, "Downloads/navidrums/incoming")
 
 	return &Config{
 		Port:                getEnv("PORT", constants.DefaultPort),
 		DBPath:              getEnv("DB_PATH", constants.DefaultDBPath),
 		DownloadsDir:        getEnv("DOWNLOADS_DIR", defaultDownload),
+		IncomingDir:         getEnv("INCOMING_DIR", defaultIncoming),
 		ProviderURL:         getEnv("PROVIDER_URL", constants.DefaultProviderURL),
 		Quality:             getEnv("QUALITY", constants.DefaultQuality),
 		PlayQuality:         getEnv("PLAY_QUALITY", "HIGH"),
@@ -94,6 +97,11 @@ func (c *Config) Validate() error {
 	// Validate DownloadsDir
 	if c.DownloadsDir == "" {
 		errors = append(errors, "DOWNLOADS_DIR cannot be empty")
+	}
+
+	// Validate IncomingDir
+	if c.IncomingDir == "" {
+		errors = append(errors, "INCOMING_DIR cannot be empty")
 	}
 
 	// Validate ProviderURL

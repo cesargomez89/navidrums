@@ -49,6 +49,7 @@ go fmt ./...
 | `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
 | `SKIP_AUTH` | false | Disable authentication entirely |
 | `FFMPEG_PATH` | (system) | Path to ffmpeg binary |
+| `INCOMING_DIR` | ~/Downloads/navidrums/incoming | Staging area for downloads and manual track imports |
 | `FFPROBE_PATH` | (system) | Path to ffprobe binary |
 
 **Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
