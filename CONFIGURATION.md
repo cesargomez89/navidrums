@@ -9,6 +9,7 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `PORT` | `8080` | No | HTTP server port (1-65535) |
 | `DB_PATH` | `navidrums.db` | No | SQLite database file path (Docker: `/data/navidrums.db`) |
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | No | Output directory for downloaded music (Docker: `/music`) |
+| `INCOMING_DIR` | `~/Downloads/navidrums/incoming` | No | Staging area for downloads and manual track imports (Docker: `/music/incoming`) |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | No | Go template for file organization |
 | `PROVIDER_URL` | `http://127.0.0.1:8000` | No | Primary music catalog API URL (fallback providers managed via Settings UI) |
 | `QUALITY` | `LOSSLESS` | No | Audio quality preference (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
