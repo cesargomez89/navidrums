@@ -2,12 +2,17 @@ package downloader
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/cesargomez89/navidrums/internal/app"
 	"github.com/cesargomez89/navidrums/internal/catalog"
@@ -109,6 +114,15 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 	worker.dispatcher.Register(domain.JobTypeSyncMusicBrainz, syncHandler)
 	worker.dispatcher.Register(domain.JobTypeSyncHiFi, syncHandler)
 
+	importHandler := &ImportJobHandler{
+		Repo:            repo,
+		Config:          cfg,
+		ProviderManager: pm,
+		AlbumArtService: worker.albumArtService,
+		Enricher:        worker.enricher,
+	}
+	worker.dispatcher.Register(domain.JobTypeImportLocal, importHandler)
+
 	worker.loadGenreMap()
 	worker.loadGenreSeparator()
 
@@ -124,8 +138,12 @@ func (w *Worker) Start() {
 
 	w.recoverInterruptedTracks()
 
-	w.wg.Add(1)
+	_ = storage.EnsureDir(w.Config.IncomingDir)
+	_ = storage.EnsureDir(filepath.Join(w.Config.IncomingDir, ".staging"))
+
+	w.wg.Add(2)
 	go w.processJobs()
+	go w.scanIncomingDir()
 }
 
 func (w *Worker) loadGenreMap() {
@@ -318,4 +336,64 @@ func (w *Worker) isCancelled(id string) bool {
 		return false
 	}
 	return job.Status == domain.JobStatusCancelled
+}
+
+func (w *Worker) scanIncomingDir() {
+	defer w.wg.Done()
+	if w.Config.IncomingDir == "" || w.Config.IncomingDir == w.Config.DownloadsDir {
+		return
+	}
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-w.ctx.Done():
+			return
+		case <-ticker.C:
+			w.scanForNewFiles()
+		}
+	}
+}
+
+func (w *Worker) scanForNewFiles() {
+	entries, err := os.ReadDir(w.Config.IncomingDir)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			w.Logger.Error("Failed to read incoming dir", "error", err)
+		}
+		return
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		ext := strings.ToLower(filepath.Ext(name))
+		if ext != ".flac" && ext != ".mp3" && ext != ".m4a" && ext != ".mp4" {
+			continue
+		}
+
+		fullPath := filepath.Join(w.Config.IncomingDir, name)
+
+		existing, _ := w.Repo.GetActiveJobBySourceID(fullPath, domain.JobTypeImportLocal)
+		if existing != nil {
+			continue
+		}
+
+		job := &domain.Job{
+			ID:        uuid.New().String(),
+			Type:      domain.JobTypeImportLocal,
+			Status:    domain.JobStatusQueued,
+			SourceID:  sql.NullString{String: fullPath, Valid: true},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		if err := w.Repo.CreateJob(job); err != nil {
+			w.Logger.Error("Failed to create import job", "file", name, "error", err)
+		} else {
+			w.Logger.Info("Created import job for file", "file", name, "job_id", job.ID)
+		}
+	}
 }
