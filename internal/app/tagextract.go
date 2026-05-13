@@ -24,7 +24,7 @@ type ffprobeStream struct {
 }
 
 type ffprobeFormat struct {
-	Duration string           `json:"duration"`
+	Duration string            `json:"duration"`
 	Tags     map[string]string `json:"tags"`
 }
 

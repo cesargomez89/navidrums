@@ -5,7 +5,7 @@
     <div class="item border border-[var(--border)]">
         <div class="item-body">
             <div class="item-title" title="{{.SourceID}}"><span
-                    class="text-xs font-bold text-dim uppercase tracking-wider mr-2">{{.Type}}</span> {{.SourceID}}
+                    class="text-xs font-bold text-dim uppercase tracking-wider mr-2">{{if eq .Type "import_local"}}Import{{else}}{{.Type}}{{end}}</span> {{.SourceID}}
             </div>
             <div class="item-subtitle mt-1">
                 Progress: {{printf "%.0f" .Progress}}%

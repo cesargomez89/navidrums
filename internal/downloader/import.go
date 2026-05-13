@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -45,6 +46,11 @@ func (h *ImportJobHandler) Handle(ctx context.Context, job *domain.Job, logger *
 		logger.Warn("Tag extraction had issues, proceeding with partial data", "error", err)
 	}
 
+	if h.isCancelled(job.ID) {
+		logger.Info("Job cancelled after tag extraction")
+		return nil
+	}
+
 	track.ParentJobID = job.ID
 
 	provider := h.ProviderManager.GetProvider()
@@ -76,6 +82,11 @@ func (h *ImportJobHandler) Handle(ctx context.Context, job *domain.Job, logger *
 
 			h.Enricher.EnrichComplete(ctx, track, logger)
 		}
+	}
+
+	if h.isCancelled(job.ID) {
+		logger.Info("Job cancelled after provider search")
+		return nil
 	}
 
 	if track.ID == 0 {
@@ -188,11 +199,22 @@ func (h *ImportJobHandler) maybeImportCoverArt(sourcePath string, finalDir strin
 
 func (h *ImportJobHandler) cleanupSourceDir(sourcePath string) error {
 	sourceDir := filepath.Dir(sourcePath)
+	if sourceDir == h.Config.IncomingDir {
+		return nil
+	}
 	return storage.DeleteFolderWithCover(sourceDir)
 }
 
 func (h *ImportJobHandler) failJob(job *domain.Job, msg string, logger *slog.Logger) error {
 	logger.Error(msg)
 	_ = h.Repo.UpdateJobError(job.ID, msg)
-	return fmt.Errorf(msg)
+	return errors.New(msg)
+}
+
+func (h *ImportJobHandler) isCancelled(id string) bool {
+	job, err := h.Repo.GetJob(id)
+	if err != nil {
+		return false
+	}
+	return job.Status == domain.JobStatusCancelled
 }

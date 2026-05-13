@@ -2,9 +2,11 @@
 server
 navidrums
 downloads
+incoming
 .env
 tmp
 navidrome_data
+.opencode
 
 .worktrees
 worktrees

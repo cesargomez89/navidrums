@@ -377,7 +377,11 @@ func (w *Worker) scanForNewFiles() {
 
 		fullPath := filepath.Join(w.Config.IncomingDir, name)
 
-		existing, _ := w.Repo.GetActiveJobBySourceID(fullPath, domain.JobTypeImportLocal)
+		existing, err := w.Repo.GetActiveJobBySourceID(fullPath, domain.JobTypeImportLocal)
+		if err != nil {
+			w.Logger.Error("Failed to check for existing import job", "file", name, "error", err)
+			continue
+		}
 		if existing != nil {
 			continue
 		}

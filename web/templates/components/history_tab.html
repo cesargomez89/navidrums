@@ -28,7 +28,7 @@
     <div class="item item-bordered items-start">
         <div class="item-body">
             <div class="item-title flex items-center" title="{{.SourceID}}">
-                <span class="text-xs font-bold text-dim uppercase tracking-wider mr-2">{{.Type}}</span>
+                <span class="text-xs font-bold text-dim uppercase tracking-wider mr-2">{{if eq .Type "import_local"}}Import{{else}}{{.Type}}{{end}}</span>
                 <span class="text-base">{{.SourceID}}</span>
             </div>
             <div class="item-subtitle mt-1">

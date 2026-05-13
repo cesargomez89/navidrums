@@ -37,7 +37,7 @@ type TrackJobHandler struct {
 }
 
 func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	track, destPath, skipDownload, err := h.prepareTrackDownload(ctx, job, logger)
+	track, skipDownload, err := h.prepareTrackDownload(ctx, job, logger)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *s
 		return nil
 	}
 
-	finalPath, err := h.executeDownload(ctx, job, track, destPath, logger)
+	finalPath, err := h.executeDownload(ctx, job, track, logger)
 	if err != nil {
 		return err
 	}
@@ -64,14 +64,14 @@ func (h *TrackJobHandler) Handle(ctx context.Context, job *domain.Job, logger *s
 	return nil
 }
 
-func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.Job, logger *slog.Logger) (*domain.Track, string, bool, error) {
+func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.Job, logger *slog.Logger) (*domain.Track, bool, error) {
 	forceDownload := h.isForceDownload()
 
 	existingTrack, _ := h.Repo.GetTrackByProviderID(job.GetSourceID())
 	if existingTrack != nil && existingTrack.Status == domain.TrackStatusCompleted && !forceDownload {
 		logger.Info("Track already downloaded", "file_path", existingTrack.FilePath)
 		_ = h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-		return nil, "", true, nil
+		return nil, true, nil
 	}
 
 	var track *domain.Track
@@ -93,7 +93,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		err := fmt.Errorf("failed to fetch primary track metadata")
 		logger.Error(err.Error())
 		_ = h.Repo.UpdateJobError(job.ID, err.Error())
-		return nil, "", false, err
+		return nil, false, err
 	}
 
 	if existingTrack != nil {
@@ -104,7 +104,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		if err := h.Repo.CreateTrack(track); err != nil {
 			logger.Error("Failed to create track record", "error", err)
 			_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create track record: %v", err))
-			return nil, "", false, err
+			return nil, false, err
 		}
 	}
 
@@ -130,7 +130,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		logger.Error("Failed to build path from template", "error", err)
 		_ = h.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to build path: %v", err))
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to build path: %v", err))
-		return nil, "", false, err
+		return nil, false, err
 	}
 
 	fullPathNoExt = filepath.Join(h.Config.DownloadsDir, fullPathNoExt)
@@ -171,7 +171,7 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 			if match {
 				logger.Info("Track already exists and verified, skipping download", "path", predictedPath)
 				_ = h.Repo.UpdateJobStatus(job.ID, domain.JobStatusCompleted, 100)
-				return nil, "", true, nil
+				return nil, true, nil
 			} else {
 				logger.Info("Track exists but hash mismatch, redownloading", "path", predictedPath)
 				_ = storage.RemoveFile(predictedPath)
@@ -185,10 +185,10 @@ func (h *TrackJobHandler) prepareTrackDownload(ctx context.Context, job *domain.
 		}
 	}
 
-	return track, fullPathNoExt, false, nil
+	return track, false, nil
 }
 
-func (h *TrackJobHandler) executeDownload(ctx context.Context, job *domain.Job, track *domain.Track, destPath string, logger *slog.Logger) (string, error) {
+func (h *TrackJobHandler) executeDownload(ctx context.Context, job *domain.Job, track *domain.Track, logger *slog.Logger) (string, error) {
 	if updateErr := h.Repo.UpdateTrackStatus(track.ID, domain.TrackStatusDownloading, ""); updateErr != nil {
 		logger.Error("Failed to update track status to downloading", "error", updateErr)
 		return "", updateErr
