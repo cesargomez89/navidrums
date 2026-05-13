@@ -1,0 +1,99 @@
+{
+  "maximum_bit_depth": 24,
+  "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+  "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Omar Alcaide, Producer, StudioProducer - andres yuma, Producer, StudioProducer, Mixer, MasteringEngineer, RecordingEngineer",
+  "audio_info": {
+    "replaygain_track_peak": 0.999542,
+    "replaygain_track_gain": -5.21
+  },
+  "performer": {
+    "name": "Rels B",
+    "id": 3467343
+  },
+  "album": {
+    "image": {
+      "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+      "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+      "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+    },
+    "maximum_bit_depth": 24,
+    "media_count": 1,
+    "artist": {
+      "image": null,
+      "name": "Rels B",
+      "id": 3467343,
+      "albums_count": 150,
+      "slug": "relsb-10003467343",
+      "picture": null
+    },
+    "upc": "0820233213622",
+    "released_at": 1778191200,
+    "label": {
+      "name": "DALE PLAY Records  -  Flakk Team",
+      "id": 4598528,
+      "albums_count": 61,
+      "supplier_id": 17,
+      "slug": "dale-play-records-flakk-team"
+    },
+    "title": "love love FLAKK",
+    "qobuz_id": 416711617,
+    "version": null,
+    "duration": 1375,
+    "parental_warning": true,
+    "tracks_count": 11,
+    "genre": {
+      "path": [
+        117
+      ],
+      "name": "Pop",
+      "id": 117,
+      "slug": "pop"
+    },
+    "maximum_channel_count": 2,
+    "id": "sef9i244rd865",
+    "maximum_sampling_rate": 44.1,
+    "previewable": true,
+    "sampleable": true,
+    "displayable": true,
+    "streamable": true,
+    "streamable_at": 1778130000,
+    "downloadable": false,
+    "purchasable_at": null,
+    "purchasable": false,
+    "release_date_original": "2026-05-08",
+    "release_date_download": "2026-05-08",
+    "release_date_stream": "2026-05-08",
+    "release_date_purchase": "2026-05-08",
+    "hires": true,
+    "hires_streamable": true
+  },
+  "work": null,
+  "composer": {
+    "name": "Daniel Heredia Vidal",
+    "id": 4497392
+  },
+  "isrc": "UYB282636622",
+  "title": "EL MUNDO X TI",
+  "version": null,
+  "duration": 116,
+  "parental_warning": false,
+  "track_number": 1,
+  "maximum_channel_count": 2,
+  "id": 416711618,
+  "media_number": 1,
+  "maximum_sampling_rate": 44.1,
+  "release_date_original": "2026-05-08",
+  "release_date_download": "2026-05-08",
+  "release_date_stream": "2026-05-08",
+  "release_date_purchase": "2026-05-08",
+  "purchasable": false,
+  "streamable": true,
+  "previewable": true,
+  "sampleable": true,
+  "downloadable": false,
+  "displayable": true,
+  "purchasable_at": null,
+  "streamable_at": 1778130000,
+  "hires": true,
+  "hires_streamable": true
+}

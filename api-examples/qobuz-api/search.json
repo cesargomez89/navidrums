@@ -1,0 +1,3579 @@
+{
+  "success": true,
+  "data": {
+    "query": "love love flak",
+    "albums": {
+      "limit": 10,
+      "offset": 0,
+      "analytics": {
+        "search_external_id": "f72bd6534814fee6137451a478e63bc5"
+      },
+      "total": 1000,
+      "items": [
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Rels B",
+            "id": 3467343,
+            "albums_count": 150,
+            "slug": "relsb-10003467343",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 3467343,
+              "name": "Rels B",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "0820233213622",
+          "released_at": 1778191200,
+          "label": {
+            "name": "DALE PLAY Records  -  Flakk Team",
+            "id": 4598528,
+            "albums_count": 61,
+            "supplier_id": 17,
+            "slug": "dale-play-records-flakk-team"
+          },
+          "title": "love love FLAKK",
+          "qobuz_id": 416711617,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/love-love-flakk-rels-b/sef9i244rd865",
+          "slug": "love-love-flakk-rels-b",
+          "duration": 1375,
+          "parental_warning": true,
+          "popularity": 0,
+          "tracks_count": 11,
+          "genre": {
+            "path": [
+              117
+            ],
+            "color": "#0070ef",
+            "name": "Pop",
+            "id": 117,
+            "slug": "pop"
+          },
+          "maximum_channel_count": 2,
+          "id": "sef9i244rd865",
+          "maximum_sampling_rate": 44.1,
+          "articles": [],
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 16,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/jx/zu/c9uddhidqzujx_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/jx/zu/c9uddhidqzujx_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/jx/zu/c9uddhidqzujx_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "The Love House",
+            "id": 25034100,
+            "albums_count": 5,
+            "slug": "the-love-house",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 25034100,
+              "name": "The Love House",
+              "roles": [
+                "main-artist"
+              ]
+            },
+            {
+              "id": 18754934,
+              "name": "Tursty T",
+              "roles": [
+                "main-artist"
+              ]
+            },
+            {
+              "id": 18880251,
+              "name": "Fabri Love",
+              "roles": [
+                "main-artist"
+              ]
+            },
+            {
+              "id": 31995542,
+              "name": "C Flakkk 767",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "7300349239431",
+          "released_at": 1777154400,
+          "label": {
+            "name": "The Love House",
+            "id": 10066877,
+            "albums_count": 3,
+            "supplier_id": 278,
+            "slug": "the-love-house"
+          },
+          "title": "Desde Que No Estás",
+          "qobuz_id": 402802554,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/desde-que-no-estas-the-love-house/c9uddhidqzujx",
+          "slug": "desde-que-no-estas-the-love-house",
+          "duration": 256,
+          "parental_warning": true,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              149,
+              181,
+              182
+            ],
+            "color": "#0070ef",
+            "name": "Reggaeton",
+            "id": 182,
+            "slug": "reggaeton"
+          },
+          "maximum_channel_count": 2,
+          "id": "c9uddhidqzujx",
+          "maximum_sampling_rate": 44.1,
+          "articles": [],
+          "release_date_original": "2026-04-26",
+          "release_date_download": "2026-04-26",
+          "release_date_stream": "2026-04-26",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1777179600,
+          "hires": false,
+          "hires_streamable": false
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/fa/t1/vgbv3k9blt1fa_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/fa/t1/vgbv3k9blt1fa_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/fa/t1/vgbv3k9blt1fa_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Flaka Kiki",
+            "id": 13540076,
+            "albums_count": 14,
+            "slug": "flaka-kiki",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 13540076,
+              "name": "Flaka Kiki",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "0859788405893",
+          "released_at": 1716242400,
+          "label": {
+            "name": "Flaka Kiki",
+            "id": 3091222,
+            "albums_count": 8,
+            "supplier_id": 95,
+            "slug": "flaka-kiki"
+          },
+          "title": "Into Love",
+          "qobuz_id": 267227530,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/into-love-flaka-kiki/vgbv3k9blt1fa",
+          "slug": "into-love-flaka-kiki",
+          "duration": 182,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              117
+            ],
+            "color": "#0070ef",
+            "name": "Pop",
+            "id": 117,
+            "slug": "pop"
+          },
+          "maximum_channel_count": 2,
+          "id": "vgbv3k9blt1fa",
+          "maximum_sampling_rate": 44.1,
+          "articles": [],
+          "release_date_original": "2024-05-21",
+          "release_date_download": "2024-05-21",
+          "release_date_stream": "2024-05-21",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1738386000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/ya/ns/oz24uwzprnsya_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/ya/ns/oz24uwzprnsya_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/ya/ns/oz24uwzprnsya_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Pile of Love",
+            "id": 12051065,
+            "albums_count": 6,
+            "slug": "pile-of-love",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 12051065,
+              "name": "Pile of Love",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "0197208766422",
+          "released_at": 1667516400,
+          "label": {
+            "name": "Pile of Love",
+            "id": 2562613,
+            "albums_count": 6,
+            "supplier_id": 128,
+            "slug": "pile-of-love"
+          },
+          "title": "Flake on the Future",
+          "qobuz_id": 177857894,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/flake-on-the-future-pile-of-love/oz24uwzprnsya",
+          "slug": "flake-on-the-future-pile-of-love",
+          "duration": 168,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              119
+            ],
+            "color": "#0070ef",
+            "name": "Rock",
+            "id": 119,
+            "slug": "rock"
+          },
+          "maximum_channel_count": 2,
+          "id": "oz24uwzprnsya",
+          "maximum_sampling_rate": 48,
+          "articles": [],
+          "release_date_original": "2022-11-04",
+          "release_date_download": "2022-11-04",
+          "release_date_stream": "2022-11-04",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1739163600,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/na/3x/lkmgfhzjj3xna_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/na/3x/lkmgfhzjj3xna_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/na/3x/lkmgfhzjj3xna_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Polo Baby Flako",
+            "id": 10951262,
+            "albums_count": 23,
+            "slug": "polo-baby-flako",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 10951262,
+              "name": "Polo Baby Flako",
+              "roles": [
+                "main-artist"
+              ]
+            },
+            {
+              "id": 7524882,
+              "name": "Block Forever",
+              "roles": [
+                "featured-artist"
+              ]
+            },
+            {
+              "id": 12582381,
+              "name": "Toast187",
+              "roles": [
+                "featured-artist"
+              ]
+            }
+          ],
+          "upc": "0197852734457",
+          "released_at": 1684792800,
+          "label": {
+            "name": "1534855 Records DK",
+            "id": 2174217,
+            "albums_count": 14,
+            "supplier_id": 128,
+            "slug": "1534855-records-dk"
+          },
+          "title": "No Love In The Jungle (feat. Block Forever & Toast187)",
+          "qobuz_id": 216438114,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/no-love-in-the-jungle-feat-block-forever-toast187-polo-baby-flako/lkmgfhzjj3xna",
+          "slug": "no-love-in-the-jungle-feat-block-forever-toast187-polo-baby-flako",
+          "duration": 185,
+          "parental_warning": true,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              133
+            ],
+            "color": "#0070ef",
+            "name": "Hip-Hop/Rap",
+            "id": 133,
+            "slug": "rap-hip-hop"
+          },
+          "maximum_channel_count": 2,
+          "id": "lkmgfhzjj3xna",
+          "maximum_sampling_rate": 48,
+          "articles": [],
+          "release_date_original": "2023-05-23",
+          "release_date_download": "2023-05-23",
+          "release_date_stream": "2023-05-23",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1708146000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/rb/s9/itw4pt75is9rb_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/rb/s9/itw4pt75is9rb_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/rb/s9/itw4pt75is9rb_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Lelepower",
+            "id": 1205558,
+            "albums_count": 1027,
+            "slug": "lelepower",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 1205558,
+              "name": "Lelepower",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "0198657419914",
+          "released_at": 1733439600,
+          "label": {
+            "name": "lelepower",
+            "id": 7483708,
+            "albums_count": 504,
+            "supplier_id": 95,
+            "slug": "lelepower"
+          },
+          "title": "Flake of Love",
+          "qobuz_id": 305963078,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/flake-of-love-lelepower/itw4pt75is9rb",
+          "slug": "flake-of-love-lelepower",
+          "duration": 180,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              64,
+              129
+            ],
+            "color": "#0070ef",
+            "name": "Dance",
+            "id": 129,
+            "slug": "dance"
+          },
+          "maximum_channel_count": 2,
+          "id": "itw4pt75is9rb",
+          "maximum_sampling_rate": 44.1,
+          "articles": [],
+          "release_date_original": "2024-12-06",
+          "release_date_download": "2024-12-06",
+          "release_date_stream": "2024-12-06",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1738299600,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/mc/1d/mxijllg0g1dmc_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/mc/1d/mxijllg0g1dmc_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/mc/1d/mxijllg0g1dmc_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Nandy Versátil",
+            "id": 10047802,
+            "albums_count": 35,
+            "slug": "nandy-versatil",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 10047802,
+              "name": "Nandy Versátil",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "0197999267238",
+          "released_at": 1699570800,
+          "label": {
+            "name": "Vision Versatil",
+            "id": 5003043,
+            "albums_count": 18,
+            "supplier_id": 65,
+            "slug": "vision-versatil"
+          },
+          "title": "I LOVE U FLAKA",
+          "qobuz_id": 234002728,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/i-love-u-flaka-nandy-versatil/mxijllg0g1dmc",
+          "slug": "i-love-u-flaka-nandy-versatil",
+          "duration": 202,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              149
+            ],
+            "color": "#0070ef",
+            "name": "América Latina",
+            "id": 149,
+            "slug": "amerique-latine"
+          },
+          "maximum_channel_count": 2,
+          "id": "mxijllg0g1dmc",
+          "maximum_sampling_rate": 48,
+          "articles": [],
+          "release_date_original": "2023-11-10",
+          "release_date_download": "2023-11-10",
+          "release_date_stream": "2023-11-10",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1743483600,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/wa/bc/fwilhn3m0bcwa_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/wa/bc/fwilhn3m0bcwa_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/wa/bc/fwilhn3m0bcwa_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Rosa Perreo",
+            "id": 6744952,
+            "albums_count": 12,
+            "slug": "rosa-perreo",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 6744952,
+              "name": "Rosa Perreo",
+              "roles": [
+                "main-artist"
+              ]
+            },
+            {
+              "id": 4175922,
+              "name": "Dos Flakos",
+              "roles": [
+                "featured-artist"
+              ]
+            },
+            {
+              "id": 13740879,
+              "name": "lili love",
+              "roles": [
+                "featured-artist"
+              ]
+            }
+          ],
+          "upc": "0198890711943",
+          "released_at": 1725228000,
+          "label": {
+            "name": "Reggaeton Rave, LLC",
+            "id": 6774936,
+            "albums_count": 5,
+            "supplier_id": 128,
+            "slug": "reggaeton-rave-llc"
+          },
+          "title": "Bellakeo (feat. Dos Flakos & Lili Love)",
+          "qobuz_id": 287196968,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/bellakeo-feat-dos-flakos-lili-love-rosa-perreo/fwilhn3m0bcwa",
+          "slug": "bellakeo-feat-dos-flakos-lili-love-rosa-perreo",
+          "duration": 198,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 1,
+          "genre": {
+            "path": [
+              149,
+              181,
+              182
+            ],
+            "color": "#0070ef",
+            "name": "Reggaeton",
+            "id": 182,
+            "slug": "reggaeton"
+          },
+          "maximum_channel_count": 2,
+          "id": "fwilhn3m0bcwa",
+          "maximum_sampling_rate": 44.1,
+          "articles": [],
+          "release_date_original": "2024-09-02",
+          "release_date_download": "2024-09-02",
+          "release_date_stream": "2024-09-02",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1725685200,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/cc/v4/cugi0l65yv4cc_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/cc/v4/cugi0l65yv4cc_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/cc/v4/cugi0l65yv4cc_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Pile of Love",
+            "id": 12051065,
+            "albums_count": 6,
+            "slug": "pile-of-love",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 12051065,
+              "name": "Pile of Love",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "0197273464094",
+          "released_at": 1668121200,
+          "label": {
+            "name": "Pile of Love",
+            "id": 2562613,
+            "albums_count": 6,
+            "supplier_id": 128,
+            "slug": "pile-of-love"
+          },
+          "title": "Flake on the Future",
+          "qobuz_id": 180383393,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/flake-on-the-future-pile-of-love/cugi0l65yv4cc",
+          "slug": "flake-on-the-future-pile-of-love",
+          "duration": 640,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 4,
+          "genre": {
+            "path": [
+              119
+            ],
+            "color": "#0070ef",
+            "name": "Rock",
+            "id": 119,
+            "slug": "rock"
+          },
+          "maximum_channel_count": 2,
+          "id": "cugi0l65yv4cc",
+          "maximum_sampling_rate": 48,
+          "articles": [],
+          "release_date_original": "2022-11-11",
+          "release_date_download": "2022-11-11",
+          "release_date_stream": "2022-11-11",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1720069200,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 16,
+          "image": {
+            "small": "https://static.qobuz.com/images/covers/mc/hd/ylnc433cahdmc_230.jpg",
+            "thumbnail": "https://static.qobuz.com/images/covers/mc/hd/ylnc433cahdmc_50.jpg",
+            "large": "https://static.qobuz.com/images/covers/mc/hd/ylnc433cahdmc_600.jpg",
+            "back": null
+          },
+          "media_count": 1,
+          "artist": {
+            "image": null,
+            "name": "Jimmy Elf and the Blue Flakes",
+            "id": 3721746,
+            "albums_count": 31,
+            "slug": "jimmyelfandtheblueflakes-10003721746",
+            "picture": null
+          },
+          "artists": [
+            {
+              "id": 3721746,
+              "name": "Jimmy Elf and the Blue Flakes",
+              "roles": [
+                "main-artist"
+              ]
+            }
+          ],
+          "upc": "4260149822543",
+          "released_at": 1322175600,
+          "label": {
+            "name": "Blue Door Swing",
+            "id": 227157,
+            "albums_count": 38,
+            "supplier_id": 17,
+            "slug": "bluedoorswing"
+          },
+          "title": "I Love You - My Christmas Present for You! (Incl. Last Christmas, River Flows in You, Hallelujah and Many More)",
+          "qobuz_id": 49851808,
+          "version": null,
+          "url": "https://www.qobuz.com/fr-fr/album/i-love-you-my-christmas-present-for-you-incl-last-christmas-river-flows-in-you-hallelujah-and-many-more-jimmy-elf-and-the-blue-flakes/ylnc433cahdmc",
+          "slug": "i-love-you-my-christmas-present-for-you-incl-last-christmas-river-flows-in-you-hallelujah-and-many-more-jimmy-elf-and-the-blue-flakes",
+          "duration": 4475,
+          "parental_warning": false,
+          "popularity": 0,
+          "tracks_count": 20,
+          "genre": {
+            "path": [
+              64
+            ],
+            "color": "#0070ef",
+            "name": "Eletrônica",
+            "id": 64,
+            "slug": "electro"
+          },
+          "maximum_channel_count": 2,
+          "id": "ylnc433cahdmc",
+          "maximum_sampling_rate": 44.1,
+          "articles": [],
+          "release_date_original": "2011-11-25",
+          "release_date_download": "2011-11-25",
+          "release_date_stream": "2011-11-25",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1706677200,
+          "hires": false,
+          "hires_streamable": false
+        }
+      ]
+    },
+    "tracks": {
+      "limit": 10,
+      "offset": 0,
+      "analytics": {
+        "search_external_id": "2e09988420838fee3515a8d0b2a52b74"
+      },
+      "total": 1000,
+      "items": [
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Omar Alcaide, Producer, StudioProducer - andres yuma, Producer, StudioProducer, Mixer, MasteringEngineer, RecordingEngineer",
+          "audio_info": {
+            "replaygain_track_peak": 0.999542,
+            "replaygain_track_gain": -5.21
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282636622",
+          "title": "EL MUNDO X TI",
+          "version": null,
+          "duration": 116,
+          "parental_warning": false,
+          "track_number": 1,
+          "maximum_channel_count": 2,
+          "id": 416711618,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Fianchetto Beats, Producer, StudioProducer - andres yuma, RecordingEngineer, Mixer, MasteringEngineer - Omar Alcaide, CoMixer",
+          "audio_info": {
+            "replaygain_track_peak": 1,
+            "replaygain_track_gain": -8.7
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282639197",
+          "title": "LLEVA AL SOL",
+          "version": null,
+          "duration": 119,
+          "parental_warning": false,
+          "track_number": 2,
+          "maximum_channel_count": 2,
+          "id": 416711619,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Kali Uchis, MainArtist - Daniel Heredia Vidal, Composer - Karly-Marina Loiza, Composer - Omar Alcaide, Producer, StudioProducer - andres yuma, Producer, StudioProducer, Mixer, MasteringEngineer, RecordingEngineer - Soundsbyhugo, Producer, StudioProducer",
+          "audio_info": {
+            "replaygain_track_peak": 0.999969,
+            "replaygain_track_gain": -8.73
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282620874",
+          "title": "EL CIELO",
+          "version": null,
+          "duration": 155,
+          "parental_warning": true,
+          "track_number": 7,
+          "maximum_channel_count": 2,
+          "id": 416711624,
+          "media_number": 1,
+          "maximum_sampling_rate": 48,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Omar Alcaide, Producer, StudioProducer - andres yuma, Producer, StudioProducer, RecordingEngineer, Mixer, MasteringEngineer",
+          "audio_info": {
+            "replaygain_track_peak": 0.999969,
+            "replaygain_track_gain": -8.33
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282657291",
+          "title": "APRENDÍ A DECIR NO",
+          "version": null,
+          "duration": 112,
+          "parental_warning": false,
+          "track_number": 3,
+          "maximum_channel_count": 2,
+          "id": 416711620,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - B Noize, Producer, StudioProducer - Makumba is here, Producer, StudioProducer - andres yuma, Mixer, MasteringEngineer, RecordingEngineer - Omar Alcaide, CoMixer",
+          "audio_info": {
+            "replaygain_track_peak": 0.999878,
+            "replaygain_track_gain": -7.27
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282696112",
+          "title": "SUEÑO",
+          "version": null,
+          "duration": 159,
+          "parental_warning": false,
+          "track_number": 4,
+          "maximum_channel_count": 2,
+          "id": 416711621,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Omar Alcaide, Producer, StudioProducer - andres yuma, Producer, StudioProducer, Mixer, MasteringEngineer, RecordingEngineer",
+          "audio_info": {
+            "replaygain_track_peak": 0.988464,
+            "replaygain_track_gain": -10.18
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282619426",
+          "title": "QUIÉN TE VE",
+          "version": null,
+          "duration": 156,
+          "parental_warning": true,
+          "track_number": 5,
+          "maximum_channel_count": 2,
+          "id": 416711622,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Dj Swet, MainArtist, Producer, StudioProducer - Daniel Heredia Vidal, Composer - Alba Farelo Sole, Composer - Hugo Douster, Composer - B Noize, Producer, StudioProducer - Makumba is here, Producer, StudioProducer - andres yuma, Mixer, MasteringEngineer, RecordingEngineer - Omar Alcaide, CoMixer",
+          "audio_info": {
+            "replaygain_track_peak": 0.988464,
+            "replaygain_track_gain": -9.07
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282659304",
+          "title": "UN PLACER CONOCERTE",
+          "version": null,
+          "duration": 128,
+          "parental_warning": false,
+          "track_number": 8,
+          "maximum_channel_count": 2,
+          "id": 416711625,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Omar Alcaide, Producer, StudioProducer - andres yuma, Producer, StudioProducer, Mixer, MasteringEngineer, RecordingEngineer",
+          "audio_info": {
+            "replaygain_track_peak": 0.995911,
+            "replaygain_track_gain": -5.58
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282644785",
+          "title": "MÁS QUE TÚ",
+          "version": null,
+          "duration": 133,
+          "parental_warning": false,
+          "track_number": 6,
+          "maximum_channel_count": 2,
+          "id": 416711623,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer - Masy Beats, Producer, StudioProducer - andres yuma, RecordingEngineer, Mixer, MasteringEngineer - Omar Alcaide, CoMixer",
+          "audio_info": {
+            "replaygain_track_peak": 0.997803,
+            "replaygain_track_gain": -9.95
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Daniel Heredia Vidal",
+            "id": 4497392
+          },
+          "isrc": "UYB282680242",
+          "title": "PAÑUELITO DE SEDA",
+          "version": null,
+          "duration": 131,
+          "parental_warning": false,
+          "track_number": 9,
+          "maximum_channel_count": 2,
+          "id": 416711626,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        },
+        {
+          "maximum_bit_depth": 24,
+          "copyright": "(P) 2026 DALE PLAY Records / Flakk Team",
+          "performers": "Rels B, MainArtist - Allen Iverson, Composer - -, Producer",
+          "audio_info": {
+            "replaygain_track_peak": 0.989838,
+            "replaygain_track_gain": -4.27
+          },
+          "performer": {
+            "name": "Rels B",
+            "id": 3467343
+          },
+          "album": {
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg"
+            },
+            "maximum_bit_depth": 24,
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "duration": 1375,
+            "parental_warning": true,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "previewable": true,
+            "sampleable": true,
+            "displayable": true,
+            "streamable": true,
+            "streamable_at": 1778130000,
+            "downloadable": false,
+            "purchasable_at": null,
+            "purchasable": false,
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "release_date_purchase": "2026-05-08",
+            "hires": true,
+            "hires_streamable": true
+          },
+          "work": null,
+          "composer": {
+            "name": "Allen Iverson",
+            "id": 8612327
+          },
+          "isrc": "UYB282683400",
+          "title": "...",
+          "version": null,
+          "duration": 31,
+          "parental_warning": false,
+          "track_number": 10,
+          "maximum_channel_count": 2,
+          "id": 416711627,
+          "media_number": 1,
+          "maximum_sampling_rate": 44.1,
+          "release_date_original": "2026-05-08",
+          "release_date_download": "2026-05-08",
+          "release_date_stream": "2026-05-08",
+          "release_date_purchase": "2026-05-08",
+          "purchasable": false,
+          "streamable": true,
+          "previewable": true,
+          "sampleable": true,
+          "downloadable": false,
+          "displayable": true,
+          "purchasable_at": null,
+          "streamable_at": 1778130000,
+          "hires": true,
+          "hires_streamable": true
+        }
+      ]
+    },
+    "artists": {
+      "limit": 10,
+      "offset": 0,
+      "analytics": {
+        "search_external_id": "a5deee86b3d76551711ac06fee274308"
+      },
+      "total": 1,
+      "items": [
+        {
+          "picture": null,
+          "image": null,
+          "name": "LoveFlake",
+          "slug": "loveflake",
+          "albums_count": 13,
+          "id": 15152039
+        }
+      ]
+    },
+    "playlists": {
+      "limit": 10,
+      "offset": 0,
+      "analytics": {
+        "search_external_id": "b9a50d6bd6b499775ff6d32b110ce8de"
+      },
+      "total": 16,
+      "items": [
+        {
+          "id": 14168101,
+          "name": "Hi-Res Masters: Elvis no Cinema",
+          "description": "Elvis Presley estrelou em 31 filmes de Hollywood. A maioria deles é lembrada por suas canções, e não por seu enredo. Você encontrará nesta playlist em alta resolução músicas tiradas de todos os seus filmes, em nenhuma ordem específica. Você as reconhecerá?\r\n\r\n1. Love Me Tender (1956)\r\n2. Loving You (1957)\r\n3. Jailhouse Rock (1957)\r\n4. King Creole (1958)\r\n5. G.I. Blues (1960)\r\n6. Flaming Star (1960)\r\n7. Wild in the Country (1961)\r\n8. Blue Hawaii (1961)\r\n9. Follow That Dream (1962)\r\n10. Kid Galahad (1962)\r\n11. Girls! Girls! Girls! (1962)\r\n12. It Happened At the Worlds Fair (1963)\r\n13. Fun in Acapulco (1963)\r\n14. Kissin Cousins (1964)\r\n15. Viva Las Vegas (1964)\r\n16. Roustabout (1964)\r\n17. Girl Happy (1965)\r\n18. Tickle Me (1965)\r\n19. Harum Scarum (1965)\r\n20. Frankie & Johnny (1966)\r\n21. Paradise Hawaiian Style (1966)\r\n22. Spinout (1966)\r\n23. Easy Come, Easy Go (1967)\r\n24. Double Trouble (1967)\r\n25. Clambake (1967)\r\n26. Stay Away, Joe (1968)\r\n27. Speedway (1968)\r\n28. Live A Little, Love A Little (1968)\r\n29. Charro! (1969)\r\n30. The Trouble With Girls (1969)\r\n31. Change of Habit (1969)\r\n\r\nFoto: Elvis Presley and actresses promoting Girls! Girls! Girls! (Photo by Sunset Boulevard/Corbis via Getty Images)",
+          "tracks_count": 60,
+          "users_count": 31,
+          "duration": 8149,
+          "public_at": 1679868000,
+          "created_at": 1679924568,
+          "updated_at": 1774003233,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 1752418,
+            "name": "Qobuz BR e PT"
+          },
+          "indexed_at": 1774003233,
+          "slug": "elvis-no-cinema",
+          "genres": [
+            {
+              "id": 119,
+              "name": "Rock",
+              "path": [
+                112,
+                119
+              ],
+              "slug": "rock"
+            },
+            {
+              "id": 91,
+              "name": "Film",
+              "path": [
+                91
+              ],
+              "slug": "musique-de-films"
+            }
+          ],
+          "images": [
+            "https://static.qobuz.com/images/covers/50/97/0886445009750_50.jpg",
+            "https://static.qobuz.com/images/covers/71/54/0886444095471_50.jpg",
+            "https://static.qobuz.com/images/covers/58/99/0886445009958_50.jpg",
+            "https://static.qobuz.com/images/covers/97/52/0886444095297_50.jpg"
+          ],
+          "is_published": true,
+          "is_featured": true,
+          "published_from": 1732750680,
+          "published_to": 1893509100,
+          "stores": [
+            "BR-pt",
+            "PT-pt"
+          ],
+          "tags": [
+            {
+              "featured_tag_id": "51",
+              "name_json": "{\"fr\":\"Hi-Res\",\"en\":\"Hi-Res\",\"de\":\"Hi-Res\",\"it\":\"Hi-Res\",\"nl\":\"Hi-Res\",\"es\":\"Hi-Res\",\"pt\":\"Hi-Res\",\"ja\":\"\\u30cf\\u30a4\\u30ec\\u30be\"}",
+              "slug": "hi-res",
+              "genre_tag": null,
+              "is_discover": true
+            },
+            {
+              "featured_tag_id": "55",
+              "name_json": "{\"fr\":\"Rock\",\"en\":\"Rock\",\"de\":\"Rock\",\"it\":\"Rock\",\"nl\":\"Rock\",\"es\":\"Rock\",\"pt\":\"Rock\"}",
+              "slug": "rock",
+              "genre_tag": {
+                "genre_id": "119",
+                "name": "Rock"
+              },
+              "is_discover": false
+            },
+            {
+              "featured_tag_id": "12",
+              "name_json": "{\"fr\":\"Film\",\"en\":\"Soundtracks\",\"de\":\"Soundtracks\",\"it\":\"Colonne sonore\",\"nl\":\"Soundtracks\",\"es\":\"Cine\",\"pt\":\"Bandas sonoras\"}",
+              "slug": "soundtracks",
+              "genre_tag": {
+                "genre_id": "91",
+                "name": "Film"
+              },
+              "is_discover": false
+            }
+          ],
+          "image_rectangle": [
+            "https://static.qobuz.com/images/playlists/14168101_5090af8da2c86f28c1138f98d94415c1_rectangle.jpg"
+          ],
+          "image_rectangle_mini": [
+            "https://static.qobuz.com/images/playlists/14168101_5090af8da2c86f28c1138f98d94415c1_rectangle_mini.jpg"
+          ],
+          "featured_artists": [],
+          "timestamp_position": 1732750680,
+          "images150": [
+            "https://static.qobuz.com/images/covers/50/97/0886445009750_150.jpg",
+            "https://static.qobuz.com/images/covers/71/54/0886444095471_150.jpg",
+            "https://static.qobuz.com/images/covers/58/99/0886445009958_150.jpg",
+            "https://static.qobuz.com/images/covers/97/52/0886444095297_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/50/97/0886445009750_300.jpg",
+            "https://static.qobuz.com/images/covers/71/54/0886444095471_300.jpg",
+            "https://static.qobuz.com/images/covers/58/99/0886445009958_300.jpg",
+            "https://static.qobuz.com/images/covers/97/52/0886444095297_300.jpg"
+          ]
+        },
+        {
+          "id": 60371578,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 307,
+          "users_count": 0,
+          "duration": 74871,
+          "public_at": 1773529200,
+          "created_at": 1773583308,
+          "updated_at": 1773583311,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 2033064,
+            "name": "idalmirneves"
+          },
+          "indexed_at": 1773583311,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_50.jpg",
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_150.jpg",
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_300.jpg",
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg"
+          ]
+        },
+        {
+          "id": 51969941,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 295,
+          "users_count": 0,
+          "duration": 71885,
+          "public_at": 1767654000,
+          "created_at": 1767739840,
+          "updated_at": 1767739843,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 9675131,
+            "name": "henriquesodre065"
+          },
+          "indexed_at": 1767739843,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_50.jpg",
+            "https://static.qobuz.com/images/covers/nb/yr/nuz0rcfhayrnb_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_150.jpg",
+            "https://static.qobuz.com/images/covers/nb/yr/nuz0rcfhayrnb_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_300.jpg",
+            "https://static.qobuz.com/images/covers/nb/yr/nuz0rcfhayrnb_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg"
+          ]
+        },
+        {
+          "id": 43130026,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 291,
+          "users_count": 0,
+          "duration": 70960,
+          "public_at": 1762210800,
+          "created_at": 1762253364,
+          "updated_at": 1762253367,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 8203012,
+            "name": "telecinetorrent2015"
+          },
+          "indexed_at": 1762253367,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_300.jpg"
+          ]
+        },
+        {
+          "id": 41823936,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 290,
+          "users_count": 0,
+          "duration": 70837,
+          "public_at": 1761606000,
+          "created_at": 1761680855,
+          "updated_at": 1761680858,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 8190963,
+            "name": "jorggethyagopessoa"
+          },
+          "indexed_at": 1761680858,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs-1",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_300.jpg"
+          ]
+        },
+        {
+          "id": 41807786,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 290,
+          "users_count": 0,
+          "duration": 70837,
+          "public_at": 1761606000,
+          "created_at": 1761675760,
+          "updated_at": 1761675763,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 8190963,
+            "name": "jorggethyagopessoa"
+          },
+          "indexed_at": 1761675764,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_300.jpg"
+          ]
+        },
+        {
+          "id": 31903601,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 277,
+          "users_count": 0,
+          "duration": 68298,
+          "public_at": 1746223200,
+          "created_at": 1746252346,
+          "updated_at": 1746252350,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 4287727,
+            "name": "Igor"
+          },
+          "indexed_at": 1759165421,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg",
+            "https://static.qobuz.com/images/covers/83/24/0698458812483_300.jpg"
+          ]
+        },
+        {
+          "id": 59583131,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 196,
+          "users_count": 0,
+          "duration": 48510,
+          "public_at": 1772665200,
+          "created_at": 1772721256,
+          "updated_at": 1772721258,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 11056471,
+            "name": "lua.cctv"
+          },
+          "indexed_at": 1772721258,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_50.jpg",
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_150.jpg",
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_300.jpg",
+            "https://static.qobuz.com/images/covers/xc/og/qwedn8o0qogxc_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg"
+          ]
+        },
+        {
+          "id": 56883261,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 196,
+          "users_count": 0,
+          "duration": 48507,
+          "public_at": 1770764400,
+          "created_at": 1770820182,
+          "updated_at": 1770820185,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 10263264,
+            "name": "Fabian I"
+          },
+          "indexed_at": 1770820185,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_50.jpg",
+            "https://static.qobuz.com/images/covers/93/68/0060255736893_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_150.jpg",
+            "https://static.qobuz.com/images/covers/93/68/0060255736893_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_300.jpg",
+            "https://static.qobuz.com/images/covers/93/68/0060255736893_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg"
+          ]
+        },
+        {
+          "id": 53564479,
+          "name": "❤️‍ FLASH BACK - Anos 70,  Anos 80 e  Anos 90 - Românticas Internacionais - Love Songs",
+          "description": "antena 1, Romantic Songs, Amor, Românticas internacionais, flash back internacional love songs,love songs,flash back anos 80, anos 70s 80s, anos 80s 90s,flash",
+          "tracks_count": 196,
+          "users_count": 0,
+          "duration": 48457,
+          "public_at": 1768950000,
+          "created_at": 1769009991,
+          "updated_at": 1769009993,
+          "is_public": true,
+          "is_collaborative": false,
+          "owner": {
+            "id": 9909222,
+            "name": "kalebe.ctk"
+          },
+          "indexed_at": 1769009993,
+          "slug": "flash-back-anos-70-anos-80-e-anos-90-romanticas-internacionais-love-songs",
+          "genres": [],
+          "images": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_50.jpg",
+            "https://static.qobuz.com/images/covers/93/68/0060255736893_50.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_50.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_50.jpg"
+          ],
+          "is_published": false,
+          "is_featured": false,
+          "published_from": null,
+          "published_to": null,
+          "images150": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_150.jpg",
+            "https://static.qobuz.com/images/covers/93/68/0060255736893_150.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_150.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_150.jpg"
+          ],
+          "images300": [
+            "https://static.qobuz.com/images/covers/34/87/0603497878734_300.jpg",
+            "https://static.qobuz.com/images/covers/93/68/0060255736893_300.jpg",
+            "https://static.qobuz.com/images/covers/54/51/5099991905154_300.jpg",
+            "https://static.qobuz.com/images/covers/22/04/0828765220422_300.jpg"
+          ]
+        }
+      ]
+    },
+    "stories": {
+      "limit": 10,
+      "offset": 0,
+      "analytics": {
+        "search_external_id": "26dbde96433f9b649fc2e4c6cc7844df"
+      },
+      "total": 0,
+      "items": []
+    },
+    "most_popular": {
+      "limit": 30,
+      "offset": 0,
+      "analytics": {
+        "search_external_id": "de51e54c28495d1980bcabeb2cdf9f47"
+      },
+      "total": 719,
+      "items": [
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "(C) 2023 DALE PLAY Records / Flakk Team (P) 2023 DALE PLAY Records / Flakk Team",
+            "performers": "Rels B, MainArtist - Daniel Heredia Vidal, Composer",
+            "audio_info": {
+              "replaygain_track_peak": 0.986786,
+              "replaygain_track_gain": -8.78
+            },
+            "performer": {
+              "name": "Rels B",
+              "id": 3467343
+            },
+            "article_ids": {
+              "LLS": 220364666,
+              "SMR": 220364667,
+              "SM2": 382617240
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/ub/ut/jzoezacu0utub_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/ub/ut/jzoezacu0utub_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/ub/ut/jzoezacu0utub_600.jpg"
+              },
+              "maximum_bit_depth": 24,
+              "media_count": 1,
+              "artist": {
+                "image": null,
+                "name": "Rels B",
+                "id": 3467343,
+                "albums_count": 150,
+                "slug": "relsb-10003467343",
+                "picture": null
+              },
+              "upc": "0194491665852",
+              "released_at": 1522965600,
+              "label": {
+                "name": "DALE PLAY Records  -  Flakk Team",
+                "id": 4598528,
+                "albums_count": 61,
+                "supplier_id": 17,
+                "slug": "dale-play-records-flakk-team"
+              },
+              "title": "Flakk Daniel's Lp",
+              "qobuz_id": 81836217,
+              "version": null,
+              "duration": 1764,
+              "parental_warning": true,
+              "tracks_count": 10,
+              "genre": {
+                "path": [
+                  94
+                ],
+                "name": "World music",
+                "id": 94,
+                "slug": "musiques-du-monde"
+              },
+              "maximum_channel_count": 2,
+              "id": "jzoezacu0utub",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1778130000,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2018-04-06",
+              "release_date_download": "2018-04-06",
+              "release_date_stream": "2018-04-06",
+              "release_date_purchase": "2018-04-06",
+              "hires": true,
+              "hires_streamable": true
+            },
+            "work": null,
+            "composer": {
+              "name": "Daniel Heredia Vidal",
+              "id": 4497392
+            },
+            "isrc": "QMDA71869143",
+            "title": "Love It",
+            "version": null,
+            "duration": 189,
+            "parental_warning": true,
+            "track_number": 2,
+            "maximum_channel_count": 2,
+            "id": 81836219,
+            "media_number": 1,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2018-04-06",
+            "release_date_download": "2018-04-06",
+            "release_date_stream": "2018-04-06",
+            "release_date_purchase": "2018-04-06",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1778130000,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "albums",
+          "content": {
+            "type": "albums",
+            "maximum_bit_depth": 24,
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/ab/46/lufxw5n7346ab_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/ab/46/lufxw5n7346ab_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/ab/46/lufxw5n7346ab_600.jpg",
+              "back": null
+            },
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "HYNN",
+              "id": 6457640,
+              "albums_count": 45,
+              "slug": "hynn",
+              "picture": null
+            },
+            "artists": [
+              {
+                "id": 6457640,
+                "name": "HYNN",
+                "roles": [
+                  "main-artist"
+                ]
+              }
+            ],
+            "upc": "8804775136610",
+            "released_at": 1573513200,
+            "label": {
+              "name": "ENTERTAINMENT NEWORDER",
+              "id": 3061937,
+              "albums_count": 5,
+              "supplier_id": 141,
+              "slug": "entertainment-neworder"
+            },
+            "title": "Bad Love",
+            "qobuz_id": 151834949,
+            "version": null,
+            "url": "https://www.qobuz.com/fr-fr/album/bad-love-hynn/lufxw5n7346ab",
+            "slug": "bad-love-hynn",
+            "duration": 1792,
+            "parental_warning": false,
+            "popularity": 0,
+            "tracks_count": 8,
+            "genre": {
+              "path": [
+                94,
+                97
+              ],
+              "color": "#0070ef",
+              "name": "Ásia",
+              "id": 97,
+              "slug": "asie"
+            },
+            "maximum_channel_count": 2,
+            "id": "lufxw5n7346ab",
+            "maximum_sampling_rate": 48,
+            "articles": [],
+            "release_date_original": "2019-11-12",
+            "release_date_download": "2019-11-12",
+            "release_date_stream": "2019-11-12",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1718600400,
+            "hires": true,
+            "hires_streamable": true
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "(C) 2012 Charly (P) 1968 Immediate",
+            "performers": "Marriott, Composer - Lane, Composer - Small Faces, MainArtist",
+            "audio_info": {
+              "replaygain_track_peak": 0.966064,
+              "replaygain_track_gain": -6.15
+            },
+            "performer": {
+              "name": "Small Faces",
+              "id": 126263
+            },
+            "article_ids": {
+              "LLS": 11928024,
+              "SMR": 25426018,
+              "SM2": 310620501
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/62/77/0886788897762_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/62/77/0886788897762_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/62/77/0886788897762_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 3,
+              "artist": {
+                "image": null,
+                "name": "Small Faces",
+                "id": 126263,
+                "albums_count": 87,
+                "slug": "the-small-faces",
+                "picture": null
+              },
+              "upc": "0886788897762",
+              "released_at": 1336341600,
+              "label": {
+                "name": "Charly Digital",
+                "id": 4405,
+                "albums_count": 105,
+                "supplier_id": 17,
+                "slug": "charly-digital"
+              },
+              "title": "Ogdens' Nut Gone Flake (Deluxe Edition)",
+              "qobuz_id": 5655405,
+              "version": null,
+              "duration": 7075,
+              "parental_warning": false,
+              "tracks_count": 38,
+              "genre": {
+                "path": [
+                  119
+                ],
+                "name": "Rock",
+                "id": 119,
+                "slug": "rock"
+              },
+              "maximum_channel_count": 2,
+              "id": "0886788897762",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1778389200,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2012-05-07",
+              "release_date_download": "2012-05-07",
+              "release_date_stream": "2012-05-07",
+              "release_date_purchase": "2012-05-07",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "Marriott",
+              "id": 221528
+            },
+            "isrc": "GBA7H1143344",
+            "title": "Afterglow of Your Love (Mono)",
+            "version": null,
+            "duration": 210,
+            "parental_warning": false,
+            "track_number": 2,
+            "maximum_channel_count": 2,
+            "id": 5655368,
+            "media_number": 1,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2012-05-07",
+            "release_date_download": "2012-05-07",
+            "release_date_stream": "2012-05-07",
+            "release_date_purchase": "2012-05-07",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1778389200,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "(C) 2012 Charly (P) 1968 Immediate",
+            "performers": "Marriott, Composer - Lane, Composer - Small Faces, MainArtist",
+            "audio_info": {
+              "replaygain_track_peak": 0.966156,
+              "replaygain_track_gain": -7.6
+            },
+            "performer": {
+              "name": "Small Faces",
+              "id": 126263
+            },
+            "article_ids": {
+              "LLS": 11928026,
+              "SMR": 25426044,
+              "SM2": 310620527
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/62/77/0886788897762_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/62/77/0886788897762_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/62/77/0886788897762_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 3,
+              "artist": {
+                "image": null,
+                "name": "Small Faces",
+                "id": 126263,
+                "albums_count": 87,
+                "slug": "the-small-faces",
+                "picture": null
+              },
+              "upc": "0886788897762",
+              "released_at": 1336341600,
+              "label": {
+                "name": "Charly Digital",
+                "id": 4405,
+                "albums_count": 105,
+                "supplier_id": 17,
+                "slug": "charly-digital"
+              },
+              "title": "Ogdens' Nut Gone Flake (Deluxe Edition)",
+              "qobuz_id": 5655405,
+              "version": null,
+              "duration": 7075,
+              "parental_warning": false,
+              "tracks_count": 38,
+              "genre": {
+                "path": [
+                  119
+                ],
+                "name": "Rock",
+                "id": 119,
+                "slug": "rock"
+              },
+              "maximum_channel_count": 2,
+              "id": "0886788897762",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1778389200,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2012-05-07",
+              "release_date_download": "2012-05-07",
+              "release_date_stream": "2012-05-07",
+              "release_date_purchase": "2012-05-07",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "Marriott",
+              "id": 221528
+            },
+            "isrc": "GBA7H1143380",
+            "title": "Afterglow of Your Love (Stereo)",
+            "version": null,
+            "duration": 209,
+            "parental_warning": false,
+            "track_number": 2,
+            "maximum_channel_count": 2,
+            "id": 5655394,
+            "media_number": 3,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2012-05-07",
+            "release_date_download": "2012-05-07",
+            "release_date_stream": "2012-05-07",
+            "release_date_purchase": "2012-05-07",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1778389200,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "(C) 2012 Charly (P) 1968 Immediate",
+            "performers": "Marriott, Composer - Lane, Composer - Small Faces, MainArtist",
+            "audio_info": {
+              "replaygain_track_peak": 0.966156,
+              "replaygain_track_gain": -8.88
+            },
+            "performer": {
+              "name": "Small Faces",
+              "id": 126263
+            },
+            "article_ids": {
+              "LLS": 11928025,
+              "SMR": 25426030,
+              "SM2": 310620513
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/62/77/0886788897762_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/62/77/0886788897762_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/62/77/0886788897762_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 3,
+              "artist": {
+                "image": null,
+                "name": "Small Faces",
+                "id": 126263,
+                "albums_count": 87,
+                "slug": "the-small-faces",
+                "picture": null
+              },
+              "upc": "0886788897762",
+              "released_at": 1336341600,
+              "label": {
+                "name": "Charly Digital",
+                "id": 4405,
+                "albums_count": 105,
+                "supplier_id": 17,
+                "slug": "charly-digital"
+              },
+              "title": "Ogdens' Nut Gone Flake (Deluxe Edition)",
+              "qobuz_id": 5655405,
+              "version": null,
+              "duration": 7075,
+              "parental_warning": false,
+              "tracks_count": 38,
+              "genre": {
+                "path": [
+                  119
+                ],
+                "name": "Rock",
+                "id": 119,
+                "slug": "rock"
+              },
+              "maximum_channel_count": 2,
+              "id": "0886788897762",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1778389200,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2012-05-07",
+              "release_date_download": "2012-05-07",
+              "release_date_stream": "2012-05-07",
+              "release_date_purchase": "2012-05-07",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "Marriott",
+              "id": 221528
+            },
+            "isrc": "GBA7H1143356",
+            "title": "Afterglow of Your Love (Alternate Usa Mix - Stereo)",
+            "version": null,
+            "duration": 183,
+            "parental_warning": false,
+            "track_number": 2,
+            "maximum_channel_count": 2,
+            "id": 5655380,
+            "media_number": 2,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2012-05-07",
+            "release_date_download": "2012-05-07",
+            "release_date_stream": "2012-05-07",
+            "release_date_purchase": "2012-05-07",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1778389200,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "albums",
+          "content": {
+            "type": "albums",
+            "maximum_bit_depth": 24,
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/65/d8/sef9i244rd865_600.jpg",
+              "back": null
+            },
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Rels B",
+              "id": 3467343,
+              "albums_count": 150,
+              "slug": "relsb-10003467343",
+              "picture": null
+            },
+            "artists": [
+              {
+                "id": 3467343,
+                "name": "Rels B",
+                "roles": [
+                  "main-artist"
+                ]
+              }
+            ],
+            "upc": "0820233213622",
+            "released_at": 1778191200,
+            "label": {
+              "name": "DALE PLAY Records  -  Flakk Team",
+              "id": 4598528,
+              "albums_count": 61,
+              "supplier_id": 17,
+              "slug": "dale-play-records-flakk-team"
+            },
+            "title": "love love FLAKK",
+            "qobuz_id": 416711617,
+            "version": null,
+            "url": "https://www.qobuz.com/fr-fr/album/love-love-flakk-rels-b/sef9i244rd865",
+            "slug": "love-love-flakk-rels-b",
+            "duration": 1375,
+            "parental_warning": true,
+            "popularity": 0,
+            "tracks_count": 11,
+            "genre": {
+              "path": [
+                117
+              ],
+              "color": "#0070ef",
+              "name": "Pop",
+              "id": 117,
+              "slug": "pop"
+            },
+            "maximum_channel_count": 2,
+            "id": "sef9i244rd865",
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2026-05-08",
+            "release_date_download": "2026-05-08",
+            "release_date_stream": "2026-05-08",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1778130000,
+            "hires": true,
+            "hires_streamable": true
+          }
+        },
+        {
+          "type": "albums",
+          "content": {
+            "type": "albums",
+            "maximum_bit_depth": 16,
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/ub/wd/rry36920zwdub_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/ub/wd/rry36920zwdub_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/ub/wd/rry36920zwdub_600.jpg",
+              "back": null
+            },
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Bruce",
+              "id": 55661,
+              "albums_count": 201,
+              "slug": "bruce",
+              "picture": null
+            },
+            "artists": [
+              {
+                "id": 55661,
+                "name": "Bruce",
+                "roles": [
+                  "main-artist"
+                ]
+              }
+            ],
+            "upc": "3617380839983",
+            "released_at": 1702594800,
+            "label": {
+              "name": "Timedance",
+              "id": 4319246,
+              "albums_count": 78,
+              "supplier_id": 3,
+              "slug": "timedance-3"
+            },
+            "title": "Not Ready For Love",
+            "qobuz_id": 238320265,
+            "version": null,
+            "url": "https://www.qobuz.com/fr-fr/album/not-ready-for-love-bruce/rry36920zwdub",
+            "slug": "not-ready-for-love-bruce",
+            "duration": 3136,
+            "parental_warning": true,
+            "popularity": 0,
+            "tracks_count": 14,
+            "genre": {
+              "path": [
+                64
+              ],
+              "color": "#0070ef",
+              "name": "Eletrônica",
+              "id": 64,
+              "slug": "electro"
+            },
+            "maximum_channel_count": 2,
+            "id": "rry36920zwdub",
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2023-12-15",
+            "release_date_download": "2023-12-15",
+            "release_date_stream": "2023-12-15",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1758690000,
+            "hires": false,
+            "hires_streamable": false
+          }
+        },
+        {
+          "type": "albums",
+          "content": {
+            "type": "albums",
+            "maximum_bit_depth": 24,
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/sb/mv/ecvokbytdmvsb_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/sb/mv/ecvokbytdmvsb_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/sb/mv/ecvokbytdmvsb_600.jpg",
+              "back": null
+            },
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Chihiro Murata",
+              "id": 9935739,
+              "albums_count": 3,
+              "slug": "chihiro-murata",
+              "picture": null
+            },
+            "artists": [
+              {
+                "id": 9935739,
+                "name": "Chihiro Murata",
+                "roles": [
+                  "main-artist"
+                ]
+              }
+            ],
+            "upc": "0859759617676",
+            "released_at": 1627423200,
+            "label": {
+              "name": "Cjazz'M",
+              "id": 7280213,
+              "albums_count": 1,
+              "supplier_id": 155,
+              "slug": "cjazzm"
+            },
+            "title": "'Tis love",
+            "qobuz_id": 296473764,
+            "version": null,
+            "url": "https://www.qobuz.com/fr-fr/album/tis-love-chihiro-murata-/ecvokbytdmvsb",
+            "slug": "tis-love-chihiro-murata-",
+            "duration": 2982,
+            "parental_warning": false,
+            "popularity": 0,
+            "tracks_count": 9,
+            "genre": {
+              "path": [
+                80
+              ],
+              "color": "#0070ef",
+              "name": "Jazz",
+              "id": 80,
+              "slug": "jazz"
+            },
+            "maximum_channel_count": 2,
+            "id": "ecvokbytdmvsb",
+            "maximum_sampling_rate": 96,
+            "articles": [],
+            "release_date_original": "2021-07-28",
+            "release_date_download": "2021-07-28",
+            "release_date_stream": "2021-07-28",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1736917200,
+            "hires": true,
+            "hires_streamable": true
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "2021 Youth Energy 2021 Youth Energy",
+            "performers": "Tim Mosley, Composer - Nate Hills, Composer - Justin Timberlake, Composer - Clifford Joseph Harris, Composer - Sarriá, Producer, MainArtist - Flakkë, Producer, MainArtist",
+            "audio_info": {
+              "replaygain_track_peak": 0.988678,
+              "replaygain_track_gain": -11.21
+            },
+            "performer": {
+              "name": "Flakkë",
+              "id": 1047963
+            },
+            "article_ids": {
+              "LLS": 544255679,
+              "SMR": 544255680,
+              "SM2": 544255681
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/tc/nk/uc8vu1x5tnktc_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/tc/nk/uc8vu1x5tnktc_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/tc/nk/uc8vu1x5tnktc_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 1,
+              "artist": {
+                "image": null,
+                "name": "Flakkë",
+                "id": 1047963,
+                "albums_count": 19,
+                "slug": "gran-fran",
+                "picture": null
+              },
+              "upc": "0192231644853",
+              "released_at": 1639090800,
+              "label": {
+                "name": "Youth Energy",
+                "id": 1749628,
+                "albums_count": 333,
+                "supplier_id": 89,
+                "slug": "youth-energy-2"
+              },
+              "title": "My Love",
+              "qobuz_id": 139984355,
+              "version": null,
+              "duration": 153,
+              "parental_warning": false,
+              "tracks_count": 1,
+              "genre": {
+                "path": [
+                  64,
+                  68
+                ],
+                "name": "House",
+                "id": 68,
+                "slug": "house"
+              },
+              "maximum_channel_count": 2,
+              "id": "uc8vu1x5tnktc",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1749186000,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2021-12-10",
+              "release_date_download": "2021-12-10",
+              "release_date_stream": "2021-12-10",
+              "release_date_purchase": "2021-12-10",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "Justin Timberlake",
+              "id": 39953
+            },
+            "isrc": "DEZZ52151001",
+            "title": "My Love",
+            "version": null,
+            "duration": 153,
+            "parental_warning": false,
+            "track_number": 1,
+            "maximum_channel_count": 2,
+            "id": 139984356,
+            "media_number": 1,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2021-12-10",
+            "release_date_download": "2021-12-10",
+            "release_date_stream": "2021-12-10",
+            "release_date_purchase": "2021-12-10",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1749186000,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "albums",
+          "content": {
+            "type": "albums",
+            "maximum_bit_depth": 16,
+            "image": {
+              "small": "https://static.qobuz.com/images/covers/tc/nk/uc8vu1x5tnktc_230.jpg",
+              "thumbnail": "https://static.qobuz.com/images/covers/tc/nk/uc8vu1x5tnktc_50.jpg",
+              "large": "https://static.qobuz.com/images/covers/tc/nk/uc8vu1x5tnktc_600.jpg",
+              "back": null
+            },
+            "media_count": 1,
+            "artist": {
+              "image": null,
+              "name": "Flakkë",
+              "id": 1047963,
+              "albums_count": 19,
+              "slug": "gran-fran",
+              "picture": null
+            },
+            "artists": [
+              {
+                "id": 1047963,
+                "name": "Flakkë",
+                "roles": [
+                  "main-artist"
+                ]
+              },
+              {
+                "id": 3598447,
+                "name": "Sarriá",
+                "roles": [
+                  "main-artist"
+                ]
+              }
+            ],
+            "upc": "0192231644853",
+            "released_at": 1639090800,
+            "label": {
+              "name": "Youth Energy",
+              "id": 1749628,
+              "albums_count": 333,
+              "supplier_id": 89,
+              "slug": "youth-energy-2"
+            },
+            "title": "My Love",
+            "qobuz_id": 139984355,
+            "version": null,
+            "url": "https://www.qobuz.com/fr-fr/album/my-love-flakke-sarria/uc8vu1x5tnktc",
+            "slug": "my-love-flakke-sarria",
+            "duration": 153,
+            "parental_warning": false,
+            "popularity": 0,
+            "tracks_count": 1,
+            "genre": {
+              "path": [
+                64,
+                68
+              ],
+              "color": "#0070ef",
+              "name": "House",
+              "id": 68,
+              "slug": "house"
+            },
+            "maximum_channel_count": 2,
+            "id": "uc8vu1x5tnktc",
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2021-12-10",
+            "release_date_download": "2021-12-10",
+            "release_date_stream": "2021-12-10",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1749186000,
+            "hires": false,
+            "hires_streamable": false
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "1971 du Monde Music 1971 du Monde Music",
+            "performers": "Copyright Control, MusicPublisher - Newell, Composer, Lyricist - Cipriani, Composer, Lyricist - Sharon Sims, MainArtist",
+            "audio_info": {
+              "replaygain_track_peak": 0.794678,
+              "replaygain_track_gain": -8.5
+            },
+            "performer": {
+              "name": "Sharon Sims",
+              "id": 11452668
+            },
+            "article_ids": {
+              "LLS": 522602443,
+              "SMR": 522602444,
+              "SM2": 522602445
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/cb/m8/uhrf7pdgxm8cb_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/cb/m8/uhrf7pdgxm8cb_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/cb/m8/uhrf7pdgxm8cb_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 1,
+              "artist": {
+                "image": null,
+                "name": "Flake",
+                "id": 317970,
+                "albums_count": 148,
+                "slug": "flake",
+                "picture": null
+              },
+              "upc": "9325425040433",
+              "released_at": -76467600,
+              "label": {
+                "name": "du Monde Music. A Timeless Music Company Label",
+                "id": 8465944,
+                "albums_count": 14,
+                "supplier_id": 41,
+                "slug": "du-monde-music-a-timeless-music-company-label"
+              },
+              "title": "How's Your Mother",
+              "qobuz_id": 135018498,
+              "version": null,
+              "duration": 3717,
+              "parental_warning": false,
+              "tracks_count": 16,
+              "genre": {
+                "path": [
+                  117
+                ],
+                "name": "Pop",
+                "id": 117,
+                "slug": "pop"
+              },
+              "maximum_channel_count": 2,
+              "id": "uhrf7pdgxm8cb",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1751950800,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "1967-07-31",
+              "release_date_download": "1967-07-31",
+              "release_date_stream": "1967-07-31",
+              "release_date_purchase": "1967-07-31",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "Cipriani",
+              "id": 206234
+            },
+            "isrc": "AULB41600011",
+            "title": "To Be the One You Love",
+            "version": null,
+            "duration": 228,
+            "parental_warning": false,
+            "track_number": 11,
+            "maximum_channel_count": 2,
+            "id": 135018509,
+            "media_number": 1,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "1967-07-31",
+            "release_date_download": "1967-07-31",
+            "release_date_stream": "1967-07-31",
+            "release_date_purchase": "1967-07-31",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1751950800,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "(C) 2017 Flake (P) 2017 Flake",
+            "performers": "Flake, MainArtist - Thierry Luethy, Composer",
+            "audio_info": {
+              "replaygain_track_peak": 0.930634,
+              "replaygain_track_gain": -7.3
+            },
+            "performer": {
+              "name": "Flake",
+              "id": 317970
+            },
+            "article_ids": {
+              "LLS": 549486823,
+              "SMR": 549486824,
+              "SM2": 549486825
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/5b/jt/sfxb46fnljt5b_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/5b/jt/sfxb46fnljt5b_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/5b/jt/sfxb46fnljt5b_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 1,
+              "artist": {
+                "image": null,
+                "name": "Flake",
+                "id": 317970,
+                "albums_count": 143,
+                "slug": "flake",
+                "picture": null
+              },
+              "upc": "3614978008455",
+              "released_at": 1510873200,
+              "label": {
+                "name": "Radicalis",
+                "id": 228515,
+                "albums_count": 690,
+                "supplier_id": 17,
+                "slug": "radicalis-2"
+              },
+              "title": "Flake",
+              "qobuz_id": 141186528,
+              "version": null,
+              "duration": 2766,
+              "parental_warning": false,
+              "tracks_count": 11,
+              "genre": {
+                "path": [
+                  117
+                ],
+                "name": "Pop",
+                "id": 117,
+                "slug": "pop"
+              },
+              "maximum_channel_count": 2,
+              "id": "sfxb46fnljt5b",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1706418000,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2017-11-17",
+              "release_date_download": "2017-11-17",
+              "release_date_stream": "2017-11-17",
+              "release_date_purchase": "2017-11-17",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "Thierry Luethy",
+              "id": 2832798
+            },
+            "isrc": "CH8091700324",
+            "title": "All the Things You Love",
+            "version": null,
+            "duration": 272,
+            "parental_warning": false,
+            "track_number": 2,
+            "maximum_channel_count": 2,
+            "id": 141186530,
+            "media_number": 1,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2017-11-17",
+            "release_date_download": "2017-11-17",
+            "release_date_stream": "2017-11-17",
+            "release_date_purchase": "2017-11-17",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1706418000,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        },
+        {
+          "type": "tracks",
+          "content": {
+            "type": "tracks",
+            "maximum_bit_depth": 16,
+            "copyright": "2002 The Bran Flakes 2002 The Bran Flakes",
+            "performers": "The Bran Flakes, Composer, MainArtist",
+            "audio_info": {
+              "replaygain_track_peak": 0.988556,
+              "replaygain_track_gain": -5.47
+            },
+            "performer": {
+              "name": "The Bran Flakes",
+              "id": 976787
+            },
+            "article_ids": {
+              "LLS": 179548644,
+              "SMR": 179548645,
+              "SM2": 368057593
+            },
+            "album": {
+              "image": {
+                "small": "https://static.qobuz.com/images/covers/vc/wp/kl7t6akykwpvc_230.jpg",
+                "thumbnail": "https://static.qobuz.com/images/covers/vc/wp/kl7t6akykwpvc_50.jpg",
+                "large": "https://static.qobuz.com/images/covers/vc/wp/kl7t6akykwpvc_600.jpg"
+              },
+              "maximum_bit_depth": 16,
+              "media_count": 1,
+              "artist": {
+                "image": null,
+                "name": "The Bran Flakes",
+                "id": 976787,
+                "albums_count": 7,
+                "slug": "the-bran-flakes",
+                "picture": null
+              },
+              "upc": "0823687000428",
+              "released_at": 1009839600,
+              "label": {
+                "name": "Happi Tyme Records",
+                "id": 497734,
+                "albums_count": 8,
+                "supplier_id": 92,
+                "slug": "happi-tyme-records"
+              },
+              "title": "Bounces",
+              "qobuz_id": 68609797,
+              "version": null,
+              "duration": 4278,
+              "parental_warning": false,
+              "tracks_count": 31,
+              "genre": {
+                "path": [
+                  117
+                ],
+                "name": "Pop",
+                "id": 117,
+                "slug": "pop"
+              },
+              "maximum_channel_count": 2,
+              "id": "kl7t6akykwpvc",
+              "maximum_sampling_rate": 44.1,
+              "previewable": true,
+              "sampleable": true,
+              "displayable": true,
+              "streamable": true,
+              "streamable_at": 1752642000,
+              "downloadable": false,
+              "purchasable_at": null,
+              "purchasable": false,
+              "release_date_original": "2002-01-01",
+              "release_date_download": "2002-01-01",
+              "release_date_stream": "2002-01-01",
+              "release_date_purchase": "2002-01-01",
+              "hires": false,
+              "hires_streamable": false,
+              "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+            },
+            "work": null,
+            "composer": {
+              "name": "The Bran Flakes",
+              "id": 976787
+            },
+            "isrc": "USCGH0644543",
+            "title": "Pure Love",
+            "version": null,
+            "duration": 225,
+            "parental_warning": false,
+            "track_number": 28,
+            "maximum_channel_count": 2,
+            "id": 68609825,
+            "media_number": 1,
+            "maximum_sampling_rate": 44.1,
+            "articles": [],
+            "release_date_original": "2002-01-01",
+            "release_date_download": "2002-01-01",
+            "release_date_stream": "2002-01-01",
+            "release_date_purchase": "2002-01-01",
+            "purchasable": false,
+            "streamable": true,
+            "previewable": true,
+            "sampleable": true,
+            "downloadable": false,
+            "displayable": true,
+            "purchasable_at": null,
+            "streamable_at": 1752642000,
+            "hires": false,
+            "hires_streamable": false,
+            "maximum_technical_specifications": "16 bits / 44.1 kHz - Stereo "
+          }
+        }
+      ]
+    },
+    "switchTo": null
+  }
+}
