@@ -194,16 +194,17 @@ func (h *TrackJobHandler) executeDownload(ctx context.Context, job *domain.Job, 
 		return "", updateErr
 	}
 
-	finalDir := filepath.Dir(destPath)
-	if dirErr := storage.EnsureDir(finalDir); dirErr != nil {
-		logger.Error("Failed to create directory", "error", dirErr)
-		_ = h.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create directory: %v", dirErr))
-		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create directory: %v", dirErr))
+	stagingDir := filepath.Join(h.Config.IncomingDir, ".staging", job.ID)
+	if dirErr := storage.EnsureDir(stagingDir); dirErr != nil {
+		logger.Error("Failed to create staging directory", "error", dirErr)
+		_ = h.Repo.MarkTrackFailed(track.ID, fmt.Sprintf("Failed to create staging directory: %v", dirErr))
+		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to create staging directory: %v", dirErr))
 		return "", dirErr
 	}
 
+	stagingPathNoExt := filepath.Join(stagingDir, track.ProviderID)
 	quality := h.getQuality()
-	finalPath, err := h.Downloader.Download(ctx, track, destPath, quality, logger)
+	finalPath, err := h.Downloader.Download(ctx, track, stagingPathNoExt, quality, logger)
 	if err != nil {
 		logger.Error("Download failed", "error", err)
 		_ = h.Repo.MarkTrackFailed(track.ID, err.Error())
@@ -261,18 +262,64 @@ func (h *TrackJobHandler) postProcessTrack(ctx context.Context, track *domain.Tr
 }
 
 func (h *TrackJobHandler) finalizeTrackDownload(job *domain.Job, track *domain.Track, finalPath string, logger *slog.Logger) {
-	fileHash, err := storage.HashFile(finalPath)
-	if err != nil {
-		logger.Error("Failed to hash file", "error", err)
-	}
-
 	ext := filepath.Ext(finalPath)
 	if ext == "" {
 		ext = ".flac"
 	}
 	track.FileExtension = ext
+
+	artistForFolder := track.PathArtist
+	if artistForFolder == "" {
+		artistForFolder = track.AlbumArtist
+	}
+	if artistForFolder == "" {
+		artistForFolder = track.Artist
+	}
+
+	templateData := storage.BuildPathTemplateData(
+		artistForFolder,
+		track.Year,
+		track.Album,
+		track.DiscNumber,
+		track.TrackNumber,
+		track.Title,
+	)
+
+	destPath, err := storage.BuildFullPath(h.Config.DownloadsDir, h.Config.SubdirTemplate, templateData, ext)
+	if err != nil {
+		logger.Error("Failed to build final path", "error", err)
+		destPath = finalPath
+	}
+
+	if destPath != finalPath {
+		destDir := filepath.Dir(destPath)
+		if dirErr := storage.EnsureDir(destDir); dirErr != nil {
+			logger.Error("Failed to create final directory", "error", dirErr)
+		}
+
+		stagingDir := filepath.Dir(finalPath)
+
+		srcCover := filepath.Join(stagingDir, "cover.jpg")
+		dstCover := filepath.Join(destDir, "cover.jpg")
+		if _, statErr := os.Stat(srcCover); statErr == nil {
+			_ = storage.CopyFile(srcCover, dstCover)
+		}
+
+		if moveErr := storage.MoveFile(finalPath, destPath); moveErr != nil {
+			logger.Error("Failed to move file from staging", "error", moveErr)
+			destPath = finalPath
+		} else {
+			_ = storage.DeleteFolderWithCover(stagingDir)
+		}
+	}
+
+	fileHash, hashErr := storage.HashFile(destPath)
+	if hashErr != nil {
+		logger.Error("Failed to hash file", "error", hashErr)
+	}
+
 	track.Status = domain.TrackStatusCompleted
-	track.FilePath = finalPath
+	track.FilePath = destPath
 	track.FileHash = fileHash
 	now := time.Now()
 	track.CompletedAt = &now
