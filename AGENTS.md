@@ -1,183 +1,65 @@
 ## What this project is
 
-Navidrums is a download orchestrator and metadata browser. It is NOT a streaming server - all downloads happen asynchronously via background jobs and workers.
+Navidrums is a Go download orchestrator and metadata browser. NOT a streaming server — all downloads are async via background workers.
 
 ---
 
-## Build/Test/Lint Commands
+## Build/Test/Lint/Dev Commands
 
 ```bash
-# Build
-go build -o navidrums ./cmd/server
-
-# Run
-go run ./cmd/server
-
-# Test
-go test ./...
-go test -race ./...
-
-# Lint
-golangci-lint run
-
-# Format
-go fmt ./...
+go build -o navidrums ./cmd/server      # Build
+go run ./cmd/server                      # Run
+air                                      # Hot reload (see .air.toml)
+go test ./...                            # Test
+go test -race ./...                      # CI runs with -race
+golangci-lint run                        # Lint (uses .golangci.yml v2 config)
+go fmt ./...                             # Format
 ```
-
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | 8080 | HTTP server port |
-| `DB_PATH` | navidrums.db | SQLite database path |
-| `DOWNLOADS_DIR` | ~/Downloads/navidrums | Download destination |
-| `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Template for subdirectory and filename structure |
-| `PROVIDER_URL` | http://127.0.0.1:8000 | Primary music catalog API URL (fallback providers managed via Settings UI) |
-| `QUALITY` | LOSSLESS | Audio quality |
-| `LOG_LEVEL` | info | Logging level |
-| `LOG_FORMAT` | text | Log format (text, json) |
-| `NAVIDRUMS_USERNAME` | navidrums | Basic auth username |
-| `NAVIDRUMS_PASSWORD` | (empty) | Basic auth password |
-| `CACHE_TTL` | 12h | Provider response cache TTL |
-| `MUSICBRAINZ_CACHE_TTL` | 7d | MusicBrainz API response cache TTL |
-| `MUSICBRAINZ_URL` | https://musicbrainz.org/ws/2 | MusicBrainz API endpoint for metadata enrichment |
-| `RATE_LIMIT_REQUESTS` | 200 | Maximum requests per rate limit window |
-| `RATE_LIMIT_WINDOW` | 1m | Rate limit time window |
-| `RATE_LIMIT_BURST` | 10 | Burst requests allowed beyond rate limit |
-
-**Rate limiting**: Each provider enforces a 200ms minimum interval between requests. The global rate limit (`RATE_LIMIT_*` vars) applies across all providers.
-| `DISABLE_RATE_LIMIT` | false | Disable rate limiting (use when behind Cloudflare) |
-| `SKIP_AUTH` | false | Disable authentication entirely |
-| `FFMPEG_PATH` | (system) | Path to ffmpeg binary |
-| `FFPROBE_PATH` | (system) | Path to ffprobe binary |
-
-**Template Variables:** Uses Go's `text/template` syntax. Available: `AlbumArtist`, `OriginalYear`, `Album`, `Disc`, `Track`, `Title`. File extension appended automatically.
 
 ---
 
-## Code Style
+## Key Architecture Facts
 
-**Imports order**: stdlib → third-party → internal (separate groups with blank lines)
+**Entry point**: `cmd/server/main.go`. Module: `github.com/cesargomez89/navidrums`. Go 1.25+.
 
-**Naming**:
-- PascalCase for types, interfaces, exported functions
-- camelCase for variables, unexported functions
-- `Err` prefix for exported errors (e.g., `ErrJobCancelled`)
+**Tech stack**: `chi/v5` router, `modernc.org/sqlite` (pure Go, no CGO), HTMX frontend with embedded templates (`web/embed.go` `//go:embed`), `go-playground/form/v4`.
 
-**Error handling**:
-- Services: `fmt.Errorf("failed to X: %w", err)`
-- Handlers: `http.Error()` with appropriate status codes
-- Workers: `defer` with `recover()` to catch panics
-
-**Formatting**: `go fmt`, tabs, aim for 100 chars, hard limit 120
-
----
-
-## Architecture Rules
-
-**Flow**: http request → app workflow → store state
-worker observes state → downloader executes → storage writes → app finalizes
-
-**Allowed**:
+**Dependency flow**:
 ```
-handlers → services
-services → repository, providers, storage
+handlers → services → repository, providers, storage
 worker → services, providers, storage, tagging
 ```
 
-**Forbidden**:
-```
-repository → services
-providers → repository
-handlers → repository, providers, storage
-downloading inside handlers
-spawning goroutines in handlers
-```
+**Forbidden**: reverse directions above, plus downloads/goroutines in handlers, DB access outside store, file writes outside `internal/storage`.
 
-**Filesystem writes ONLY in `internal/storage` package**
+**Implementation order**: services (`internal/app`) → repository (`internal/store`) → worker (`internal/downloader`) → handlers LAST (`internal/http`).
+
+**Releases**: tag `v*` on main triggers goreleaser (binary-only format) + Docker push to GHCR. Docker uses `CGO_ENABLED=0`.
 
 ---
 
-## Job Lifecycle (Invariant)
+## Job Lifecycle
 
 ```
-queued → running → completed | failed | cancelled | decomposed
+queued → running → [decomposed] → completed | failed | cancelled
 ```
 
-**Container jobs** (album/playlist/artist): fetch tracks from provider → create Track records → create child track jobs → decomposed (waiting for children) → completed
+Container jobs (album/playlist/artist/discography): fetch tracks → create Track records → create child track jobs → **decomposed** → completed when all children finish.
 
-**Track jobs**: lookup stored Track metadata → check if downloaded → download stream → tag → save art → update Track record
+Track jobs: lookup stored Track → check downloaded → download → tag → save art → update Track.
 
-Rules:
-- Cancelled jobs must stop work
-- Jobs cannot return to queued
-- Workers persist all state transitions
+**Rules**: Cancelled must stop work. No return to queued. Workers persist all transitions. Stuck `running` jobs reset to `queued` on startup.
 
 ---
 
 ## Data Invariants
 
 - Track file must exist before tagging
-- Providers are stateless, responses not stored raw
+- `provider_id` UNIQUE in tracks prevents duplicate downloads
 - Container jobs decompose into track jobs via Track records
-- Duplicate downloads prevented via tracks table (provider_id unique)
-- Deleting job does not delete files
-- Job.SourceID links to Track.ProviderID
-- Tracks table stores full metadata; Jobs table stores minimal state
-
----
-
-## Domain Models
-
-### Job (Work Queue)
-Minimal state for work tracking:
-- `ID`, `Type`, `Status`, `SourceID`, `Progress`, `Error`, timestamps
-- Status: queued | running | completed | failed | cancelled | decomposed
-- Types: track, album, playlist, artist, sync_file, sync_musicbrainz, sync_hifi
-
-### Track (Download Domain)
-Full metadata for downloaded/pending tracks:
-- Identity: `ID`, `ProviderID`, `AlbumID`, `ReleaseID`, `RecordingID`
-- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
-- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
-- Genre/Label: `Genre`, `Mood`, `Style`, `Tags`, `Label`, `Compilation`
-- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
-- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
-- Credit: `Credit`, `Composer`
-- Lyrics: `Lyrics`, `Subtitles`
-- Commercial: `ISRC`, `Copyright`, `Version`, `Description`, `URL`, `AlbumArtURL`
-- Explicit: `Explicit`
-- Position: `TotalTracks`, `TotalDiscs`
-- Processing: `Status`, `Error`, `ParentJobID`
-- File: `FilePath`, `FileExtension`, `FileHash`, `ETag`
-- Verification: `LastVerifiedAt`, `CompletedAt`
-- Status: missing | queued | downloading | downloaded | processing | completed | failed
-
-### CatalogTrack (Provider Data)
-Used by catalog providers for search results:
-- Identity: `ID`, `ProviderID`, `AlbumID`, `ArtistID`
-- Basic: `Title`, `Artist`, `Album`, `AlbumArtist`, `TrackNumber`, `DiscNumber`, `Year`, `Duration`
-- Artist info: `Artists`, `AlbumArtists`, `ArtistIDs`, `AlbumArtistIDs`
-- Genre/Label: `Genre`, `Label`, `Compilation`
-- Release: `ReleaseDate`, `ReleaseType`, `Barcode`, `CatalogNumber`
-- Audio: `BPM`, `Key`, `KeyScale`, `ReplayGain`, `Peak`, `AudioQuality`, `AudioModes`
-- Lyrics: `Lyrics`, `Subtitles`
-- Commercial: `ISRC`, `Copyright`, `Composer`, `Version`, `Description`, `URL`, `AlbumArtURL`
-- Explicit: `ExplicitLyrics`
-- Position: `TotalTracks`, `TotalDiscs`
-- Converted to Track when persisting to database
-
----
-
-## Implementing Features
-
-Order matters:
-1. Add/modify service (`internal/app`)
-2. Update repository if needed (`internal/store`)
-3. Extend worker (`internal/downloader`)
-4. Update handler LAST (`internal/http`)
-
-Never start from handlers.
+- Deleting a job does not delete the downloaded files
+- `Job.SourceID` links to `Track.ProviderID`
+- Tracks = full metadata, Jobs = minimal state
 
 ---
 
@@ -186,18 +68,40 @@ Never start from handlers.
 - no downloads in http
 - no goroutines in http
 - no DB access outside store
-- no blocking requests
-- no provider calls from UI
-- no file writes outside storage
-- no job mutation outside app
+- no blocking requests in handlers
+- no provider calls from UI code
+- no file writes outside `internal/storage`
+- no job mutation outside app services
 
 ---
 
-## Project Notes
+## Key Env Vars
 
-- The application requires a writable downloads directory
-- Workers start automatically with the server
-- SQLite database is created automatically on first run
-- Stuck jobs (running) are reset on startup
-- Two-table architecture: `jobs` (work queue) + `tracks` (metadata)
+See `CONFIGURATION.md` / `README.md` for the full list. These are the ones agents most often miss:
 
+| Variable | Default | Note |
+|---|---|---|
+| `PLAY_QUALITY` | HIGH | Streaming preview quality |
+| `THEME` | golden | UI theme |
+| `SKIP_AUTH` | false | Behind reverse proxy? set true |
+| `DISABLE_RATE_LIMIT` | false | Behind Cloudflare? set true |
+
+---
+
+## Code Style (non-obvious)
+
+**Imports**: stdlib → third-party → internal (blank-line separated groups).
+
+**Errors**: `Err` prefix for exported sentinels, `fmt.Errorf("failed to X: %w")` in services, `http.Error()` in handlers, `defer recover()` in workers.
+
+**Formatting**: tabs, aim 100 chars, hard limit 120.
+
+---
+
+## Reference Docs
+
+- `DOMAIN.md` — full domain model field specifications (Job, Track, CatalogTrack, etc.)
+- `ARCHITECTURE.md` — package structure, layer flow, metadata enrichment, sync jobs
+- `CONFIGURATION.md` — all env vars, template examples, genre mapping
+- `DESIGN_SYSTEM.md` — CSS/HTML patterns for UI work
+- `HIFI_API.md` — external catalog API endpoints
