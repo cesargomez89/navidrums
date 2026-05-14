@@ -68,5 +68,4 @@ Override via `PROVIDER_URL` environment variable.
 - Artist view uses a capped concurrency (6) for track aggregation when `skip_tracks=false`.
 - API requests are throttled to ~1.2 requests per second (1100ms intervals) to prevent rate limiting.
 
-### JSON Examples
-See the `api-examples/hifi-api/` directory for example responses from all endpoints.
+See `api-examples/hifi-api/` for example responses.

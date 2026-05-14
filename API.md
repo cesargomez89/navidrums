@@ -76,22 +76,7 @@ Download types accepted:
 HTMX endpoints return HTML fragments for DOM replacement.
 
 ### JSON (Providers)
-Provider configuration endpoints return JSON:
-```json
-{
-  "predefined": [{"name": "...", "url": "..."}],
-  "custom": [{"name": "...", "url": "..."}],
-  "active": "http://...",
-  "default": "http://..."
-}
-```
+`{"predefined": [...], "custom": [...], "active": "url", "default": "url"}`
 
 ### JSON (Genre Map)
-Genre map endpoints return JSON:
-```json
-{
-  "default": {"death metal": "Metal", "indie pop": "Pop", ...},
-  "custom": {"ambient techno": "Electronic", ...}
-}
-```
-`custom` is `null` if no custom map is set.
+`{"default": {...}, "custom": {...}}` — `custom` is null if not set.

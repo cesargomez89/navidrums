@@ -9,18 +9,29 @@ Navidrums is a Go download orchestrator and metadata browser. NOT a streaming se
 ```bash
 go build -o navidrums ./cmd/server      # Build
 go run ./cmd/server                      # Run
-air                                      # Hot reload (see .air.toml)
+air                                      # Hot reload (builds to ./tmp/main)
 go test ./...                            # Test
 go test -race ./...                      # CI runs with -race
 golangci-lint run                        # Lint (uses .golangci.yml v2 config)
 go fmt ./...                             # Format
 ```
 
+**Lint notes**: `navidrome_data/` is excluded from linting. Test files skip `errcheck`, `ineffassign`, `unused`, and `gosec`.
+
+---
+
+## Testing
+
+- **stdlib only** — no testify, no assert/require. Use `if got != want { t.Errorf(...) }`.
+- **Table-driven** with `t.Run()` sub-tests everywhere.
+- **`setupTestDB(t)` helper** returns `(*sql.DB, func())` — duplicated identically in `internal/store/db_test.go` and `internal/app/job_service_test.go`. Use it for any test that hits SQLite.
+- **No `t.Parallel()`** — config tests mutate real env vars via `os.Setenv`/`os.Unsetenv` (not `t.Setenv()`). Adding `t.Parallel()` would race.
+
 ---
 
 ## Key Architecture Facts
 
-**Entry point**: `cmd/server/main.go`. Module: `github.com/cesargomez89/navidrums`. Go 1.25+.
+**Entry point**: `cmd/server/main.go`. Module: `github.com/cesargomez89/navidrums`. Go 1.25.6.
 
 **Tech stack**: `chi/v5` router, `modernc.org/sqlite` (pure Go, no CGO), HTMX frontend with embedded templates (`web/embed.go` `//go:embed`), `go-playground/form/v4`.
 
@@ -31,6 +42,8 @@ worker → services, providers, storage, tagging
 ```
 
 **Forbidden**: reverse directions above, plus downloads/goroutines in handlers, DB access outside store, file writes outside `internal/storage`.
+
+**Tagging**: FLAC and MP3 are tagged via Go libraries (`go-flac`, `id3v2/v2`). MP4/M4A requires external `ffmpeg` binary — verify it exists before relying on MP4 tagging.
 
 **Implementation order**: services (`internal/app`) → repository (`internal/store`) → worker (`internal/downloader`) → handlers LAST (`internal/http`).
 
