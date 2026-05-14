@@ -64,7 +64,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 			},
 		}
 
-		enricher := app.NewMetadataEnricher(mockClient, nil)
+		enricher := app.NewMetadataEnricher(mockClient, nil, nil)
 		track := &domain.Track{
 			ISRC: "USABC1234567",
 		}
@@ -103,7 +103,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 
 	t.Run("no_id_isrc_skips", func(t *testing.T) {
 		mockClient := &mockMBClient{}
-		enricher := app.NewMetadataEnricher(mockClient, nil)
+		enricher := app.NewMetadataEnricher(mockClient, nil, nil)
 		track := &domain.Track{}
 
 		err := enricher.EnrichTrack(context.Background(), track, logger)
@@ -121,7 +121,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 			},
 		}
 
-		enricher := app.NewMetadataEnricher(mockClient, nil)
+		enricher := app.NewMetadataEnricher(mockClient, nil, nil)
 		track := &domain.Track{
 			ISRC:   "USABC1234567",
 			Artist: "Keep Me",
@@ -149,7 +149,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 			},
 		}
 
-		enricher := app.NewMetadataEnricher(mockClient, nil)
+		enricher := app.NewMetadataEnricher(mockClient, nil, nil)
 		track := &domain.Track{
 			ISRC: "USABC1234567",
 		}
@@ -163,7 +163,7 @@ func TestMetadataEnricher_EnrichTrack(t *testing.T) {
 
 	t.Run("skips_api_if_fully_populated", func(t *testing.T) {
 		mockClient := &mockMBClient{}
-		enricher := app.NewMetadataEnricher(mockClient, nil)
+		enricher := app.NewMetadataEnricher(mockClient, nil, nil)
 
 		id := "mb-rec-1"
 		track := &domain.Track{

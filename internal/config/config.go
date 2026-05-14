@@ -14,27 +14,29 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Port                string
-	DBPath              string
-	DownloadsDir        string
-	Quality             string
-	PlayQuality         string
-	LogLevel            string
-	LogFormat           string
-	Username            string
-	Password            string
-	SubdirTemplate      string
-	MusicBrainzURL      string
-	FFmpegPath          string
-	FFprobePath         string
-	Theme               string
-	CacheTTL            time.Duration
-	MusicBrainzCacheTTL time.Duration
-	RateLimitWindow     time.Duration
-	RateLimitRequests   int
-	RateLimitBurst      int
-	SkipAuth            bool
-	DisableRateLimit    bool
+	Port                  string
+	DBPath                string
+	DownloadsDir          string
+	Quality               string
+	PlayQuality           string
+	LogLevel              string
+	LogFormat             string
+	Username              string
+	Password              string
+	SubdirTemplate        string
+	MusicBrainzURL        string
+	FFmpegPath            string
+	FFprobePath           string
+	Theme                 string
+	CacheTTL              time.Duration
+	MusicBrainzCacheTTL   time.Duration
+	RateLimitWindow       time.Duration
+	RateLimitRequests     int
+	RateLimitBurst        int
+	SkipAuth              bool
+	DisableRateLimit      bool
+	LyricsFallbackEnabled bool
+	LyricsFallbackURL     string
 }
 
 // Load loads configuration from environment variables with defaults
@@ -43,27 +45,29 @@ func Load() *Config {
 	defaultDownload := filepath.Join(home, "Downloads/navidrums")
 
 	return &Config{
-		Port:                getEnv("PORT", constants.DefaultPort),
-		DBPath:              getEnv("DB_PATH", constants.DefaultDBPath),
-		DownloadsDir:        getEnv("DOWNLOADS_DIR", defaultDownload),
-		Quality:             getEnv("QUALITY", constants.DefaultQuality),
-		PlayQuality:         getEnv("PLAY_QUALITY", "HIGH"),
-		LogLevel:            getEnv("LOG_LEVEL", "info"),
-		LogFormat:           getEnv("LOG_FORMAT", "text"),
-		Username:            getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
-		Password:            getEnv("NAVIDRUMS_PASSWORD", ""),
-		SubdirTemplate:      getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
-		CacheTTL:            getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
-		MusicBrainzCacheTTL: getEnvDuration("MUSICBRAINZ_CACHE_TTL", constants.DefaultMusicBrainzCacheTTL),
-		MusicBrainzURL:      getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
-		RateLimitRequests:   getEnvInt("RATE_LIMIT_REQUESTS", 200),
-		RateLimitWindow:     getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
-		RateLimitBurst:      getEnvInt("RATE_LIMIT_BURST", 10),
-		SkipAuth:            getEnvBool("SKIP_AUTH", false),
-		DisableRateLimit:    getEnvBool("DISABLE_RATE_LIMIT", false),
-		Theme:               getEnv("THEME", "golden"),
-		FFmpegPath:          getEnv("FFMPEG_PATH", ""),
-		FFprobePath:         getEnv("FFPROBE_PATH", ""),
+		Port:                  getEnv("PORT", constants.DefaultPort),
+		DBPath:                getEnv("DB_PATH", constants.DefaultDBPath),
+		DownloadsDir:          getEnv("DOWNLOADS_DIR", defaultDownload),
+		Quality:               getEnv("QUALITY", constants.DefaultQuality),
+		PlayQuality:           getEnv("PLAY_QUALITY", "HIGH"),
+		LogLevel:              getEnv("LOG_LEVEL", "info"),
+		LogFormat:             getEnv("LOG_FORMAT", "text"),
+		Username:              getEnv("NAVIDRUMS_USERNAME", constants.DefaultUsername),
+		Password:              getEnv("NAVIDRUMS_PASSWORD", ""),
+		SubdirTemplate:        getEnv("SUBDIR_TEMPLATE", constants.DefaultSubdirTemplate),
+		CacheTTL:              getEnvDuration("CACHE_TTL", constants.DefaultCacheTTL),
+		MusicBrainzCacheTTL:   getEnvDuration("MUSICBRAINZ_CACHE_TTL", constants.DefaultMusicBrainzCacheTTL),
+		MusicBrainzURL:        getEnv("MUSICBRAINZ_URL", "https://musicbrainz.org/ws/2"),
+		RateLimitRequests:     getEnvInt("RATE_LIMIT_REQUESTS", 200),
+		RateLimitWindow:       getEnvDuration("RATE_LIMIT_WINDOW", time.Minute),
+		RateLimitBurst:        getEnvInt("RATE_LIMIT_BURST", 10),
+		SkipAuth:              getEnvBool("SKIP_AUTH", false),
+		DisableRateLimit:      getEnvBool("DISABLE_RATE_LIMIT", false),
+		Theme:                 getEnv("THEME", "golden"),
+		FFmpegPath:            getEnv("FFMPEG_PATH", ""),
+		FFprobePath:           getEnv("FFPROBE_PATH", ""),
+		LyricsFallbackEnabled: getEnvBool("LYRICS_FALLBACK_ENABLED", true),
+		LyricsFallbackURL:     getEnv("LYRICS_FALLBACK_URL", "https://lrclib.net/api/get"),
 	}
 }
 

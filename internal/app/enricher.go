@@ -15,12 +15,14 @@ import (
 type MetadataEnricher struct {
 	mbClient        musicbrainz.ClientInterface
 	providerManager *catalog.ProviderManager
+	lyricsFallback  *LyricsFallback
 }
 
-func NewMetadataEnricher(mbClient musicbrainz.ClientInterface, pm *catalog.ProviderManager) *MetadataEnricher {
+func NewMetadataEnricher(mbClient musicbrainz.ClientInterface, pm *catalog.ProviderManager, lf *LyricsFallback) *MetadataEnricher {
 	return &MetadataEnricher{
 		mbClient:        mbClient,
 		providerManager: pm,
+		lyricsFallback:  lf,
 	}
 }
 
@@ -90,6 +92,9 @@ func (e *MetadataEnricher) enrichComplete(ctx context.Context, track *domain.Tra
 
 	// 3. Lyrics
 	e.fetchLyrics(ctx, track, hifiProvider, logger)
+	if e.lyricsFallback != nil && (track.Lyrics == "" || track.Subtitles == "") {
+		e.lyricsFallback.Fetch(ctx, track, logger)
+	}
 	logger.Debug("EnrichComplete: done", "track_year", track.Year)
 
 	// 4. Final Fallbacks

@@ -11,7 +11,7 @@ import (
 
 func TestMetadataEnricher_UpdateTrackFromCatalog_Version(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	enricher := app.NewMetadataEnricher(nil, nil)
+	enricher := app.NewMetadataEnricher(nil, nil, nil)
 
 	tests := []struct {
 		name      string

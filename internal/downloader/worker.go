@@ -69,7 +69,15 @@ func NewWorker(repo *store.DB, settingsRepo *store.SettingsRepo, pm *catalog.Pro
 
 	baseMBClient := musicbrainz.NewClient(cfg.MusicBrainzURL)
 	worker.musicBrainzClient = musicbrainz.NewCachedClient(baseMBClient, repo, cfg.MusicBrainzCacheTTL)
-	worker.enricher = app.NewMetadataEnricher(worker.musicBrainzClient, pm)
+
+	var lyricsFallback *app.LyricsFallback
+	if cfg.LyricsFallbackEnabled {
+		providers := []catalog.LyricsProvider{
+			catalog.NewLrcLibProvider(cfg.LyricsFallbackURL),
+		}
+		lyricsFallback = app.NewLyricsFallback(true, providers)
+	}
+	worker.enricher = app.NewMetadataEnricher(worker.musicBrainzClient, pm, lyricsFallback)
 
 	worker.dispatcher = NewDispatcher()
 
