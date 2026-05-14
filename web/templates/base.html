@@ -31,7 +31,7 @@
         var currentButton = null;
         var isPlaying = false;
 
-        function playTrack(btn, providerId, title, artist, artUrl, album) {
+        function playTrack(btn, providerId, isrc, title, artist, artUrl, album) {
             var quality = 'HIGH';
 
             if (currentTrackId === providerId && isPlaying) {
@@ -51,6 +51,9 @@
             currentTrackId = providerId;
             currentButton = btn;
             var streamUrl = '/stream/' + encodeURIComponent(providerId) + '?quality=' + quality;
+            if (isrc) {
+                streamUrl += '&isrc=' + encodeURIComponent(isrc);
+            }
 
             currentAudio = new Audio(streamUrl);
             currentAudio.play().then(function() {

@@ -78,10 +78,10 @@ func (f *FallbackProvider) GetTrack(ctx context.Context, id string) (*domain.Cat
 	return fallbackWith(f, "GetTrack", func(p Provider) (*domain.CatalogTrack, error) { return p.GetTrack(ctx, id) })
 }
 
-func (f *FallbackProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
+func (f *FallbackProvider) GetStream(ctx context.Context, trackID string, isrc string, quality string) (io.ReadCloser, string, error) {
 	var lastErr error
 	for _, provider := range f.getProviders() {
-		stream, contentType, err := provider.GetStream(ctx, trackID, quality)
+		stream, contentType, err := provider.GetStream(ctx, trackID, isrc, quality)
 		if err == nil {
 			return stream, contentType, nil
 		}

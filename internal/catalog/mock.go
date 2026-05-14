@@ -70,7 +70,7 @@ func (p *MockProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 	return &domain.CatalogTrack{ID: id, Title: "Mock Track", ArtistID: "1", Artist: "Mock Artist", AlbumID: "1", Album: "Mock Album", TrackNumber: 1}, nil
 }
 
-func (p *MockProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
+func (p *MockProvider) GetStream(ctx context.Context, trackID string, isrc string, quality string) (io.ReadCloser, string, error) {
 	return io.NopCloser(strings.NewReader("dummy audio content")), "audio/flac", nil
 }
 
