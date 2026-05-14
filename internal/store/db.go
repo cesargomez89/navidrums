@@ -423,6 +423,18 @@ var migrations = []migration{
 			return nil
 		},
 	},
+	{
+		version:     15,
+		description: "Add type column to providers table",
+		up: func(tx *sqlx.Tx) error {
+			_, err := tx.Exec("ALTER TABLE providers ADD COLUMN type TEXT NOT NULL DEFAULT 'hifi'")
+			if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
+				return err
+			}
+			_, err = tx.Exec("UPDATE providers SET type = 'hifi' WHERE type IS NULL OR type = ''")
+			return err
+		},
+	},
 }
 
 type dbOps interface {
