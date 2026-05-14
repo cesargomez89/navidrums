@@ -42,13 +42,6 @@ func (f *FallbackProvider) getProviders() []Provider {
 	return providers
 }
 
-func (f *FallbackProvider) invalidateCache() {
-	f.cacheMu.Lock()
-	defer f.cacheMu.Unlock()
-	f.cachedProviders = nil
-	f.cacheExpiry = time.Time{}
-}
-
 func fallbackWith[T any](f *FallbackProvider, opName string, op func(Provider) (T, error)) (T, error) {
 	var lastErr error
 	var zero T

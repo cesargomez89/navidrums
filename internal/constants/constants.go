@@ -8,7 +8,6 @@ const (
 	DefaultPort                = "8080"
 	DefaultDBPath              = "navidrums.db"
 	DefaultQuality             = "LOSSLESS"
-	DefaultProviderURL         = "http://127.0.0.1:8000"
 	DefaultConcurrency         = 2
 	DefaultPollInterval        = 2 * time.Second
 	DefaultHTTPTimeout         = 1 * time.Minute

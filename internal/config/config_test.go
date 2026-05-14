@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -20,10 +19,6 @@ func TestLoad(t *testing.T) {
 
 	if cfg.DBPath != constants.DefaultDBPath {
 		t.Errorf("Expected DBPath to be %s, got %s", constants.DefaultDBPath, cfg.DBPath)
-	}
-
-	if cfg.ProviderURL != constants.DefaultProviderURL {
-		t.Errorf("Expected ProviderURL to be %s, got %s", constants.DefaultProviderURL, cfg.ProviderURL)
 	}
 
 	if cfg.Quality != constants.DefaultQuality {
@@ -44,9 +39,6 @@ func TestLoadWithEnvVars(t *testing.T) {
 	if err := os.Setenv("DB_PATH", "/tmp/test.db"); err != nil {
 		t.Fatalf("Setenv failed: %v", err)
 	}
-	if err := os.Setenv("PROVIDER_URL", "http://example.com:8000"); err != nil {
-		t.Fatalf("Setenv failed: %v", err)
-	}
 	if err := os.Setenv("QUALITY", "HIGH"); err != nil {
 		t.Fatalf("Setenv failed: %v", err)
 	}
@@ -55,9 +47,6 @@ func TestLoadWithEnvVars(t *testing.T) {
 			t.Logf("Unsetenv error: %v", err)
 		}
 		if err := os.Unsetenv("DB_PATH"); err != nil {
-			t.Logf("Unsetenv error: %v", err)
-		}
-		if err := os.Unsetenv("PROVIDER_URL"); err != nil {
 			t.Logf("Unsetenv error: %v", err)
 		}
 		if err := os.Unsetenv("QUALITY"); err != nil {
@@ -75,10 +64,6 @@ func TestLoadWithEnvVars(t *testing.T) {
 		t.Errorf("Expected DBPath to be /tmp/test.db, got %s", cfg.DBPath)
 	}
 
-	if cfg.ProviderURL != "http://example.com:8000" {
-		t.Errorf("Expected ProviderURL to be http://example.com:8000, got %s", cfg.ProviderURL)
-	}
-
 	if cfg.Quality != "HIGH" {
 		t.Errorf("Expected Quality to be HIGH, got %s", cfg.Quality)
 	}
@@ -93,10 +78,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "valid config",
 			config: Config{
-				Port:                "8080",
-				DBPath:              "test.db",
-				DownloadsDir:        "/tmp/downloads",
-				ProviderURL:         "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:             "LOSSLESS",
 				LogLevel:            "info",
 				LogFormat:           "text",
@@ -114,10 +99,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid port - not a number",
 			config: Config{
-				Port:           "abc",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "abc",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -128,10 +113,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid port - out of range",
 			config: Config{
-				Port:           "99999",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "99999",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -142,10 +127,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "empty port",
 			config: Config{
-				Port:           "",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -156,10 +141,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "empty db path",
 			config: Config{
-				Port:           "8080",
-				DBPath:         "",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -170,10 +155,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid quality",
 			config: Config{
-				Port:           "8080",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "INVALID",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -184,10 +169,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid log level",
 			config: Config{
-				Port:           "8080",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "invalid",
 				LogFormat:      "text",
@@ -198,10 +183,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid log format",
 			config: Config{
-				Port:           "8080",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "xml",
@@ -212,10 +197,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "empty subdir template",
 			config: Config{
-				Port:           "8080",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -226,10 +211,10 @@ func TestValidate(t *testing.T) {
 		{
 			name: "invalid subdir template syntax",
 			config: Config{
-				Port:           "8080",
-				DBPath:         "test.db",
-				DownloadsDir:   "/tmp/downloads",
-				ProviderURL:    "http://localhost:8000",
+				Port:         "8080",
+				DBPath:       "test.db",
+				DownloadsDir: "/tmp/downloads",
+
 				Quality:        "LOSSLESS",
 				LogLevel:       "info",
 				LogFormat:      "text",
@@ -283,92 +268,5 @@ func TestDownloadsDirDefault(t *testing.T) {
 	expectedDir := filepath.Join(home, "Downloads/navidrums")
 	if cfg.DownloadsDir != expectedDir {
 		t.Errorf("Expected DownloadsDir to be %s, got %s", expectedDir, cfg.DownloadsDir)
-	}
-}
-
-func TestValidateProviderURLs(t *testing.T) {
-	baseConfig := Config{
-		Port:                "8080",
-		DBPath:              "test.db",
-		DownloadsDir:        "/tmp/downloads",
-		Quality:             "LOSSLESS",
-		LogLevel:            "info",
-		LogFormat:           "text",
-		SubdirTemplate:      "{{.AlbumArtist}}/{{.Album}}/{{.Title}}",
-		CacheTTL:            12 * time.Hour,
-		MusicBrainzCacheTTL: 7 * 24 * time.Hour,
-		RateLimitRequests:   60,
-		RateLimitWindow:     time.Minute,
-		RateLimitBurst:      10,
-	}
-
-	//nolint:govet // test struct, optimization not needed
-	tests := []struct {
-		name    string
-		config  Config
-		wantErr bool
-		errMsg  string
-	}{
-		{
-			name: "valid PROVIDER_URL",
-			config: Config{
-				ProviderURL: "http://localhost:8000",
-			},
-			wantErr: false,
-		},
-		{
-			name: "empty PROVIDER_URL",
-			config: Config{
-				ProviderURL: "",
-			},
-			wantErr: true,
-			errMsg:  "PROVIDER_URL cannot be empty",
-		},
-		{
-			name: "invalid PROVIDER_URL",
-			config: Config{
-				ProviderURL: "not-a-valid-url",
-			},
-			wantErr: true,
-			errMsg:  "PROVIDER_URL is not a valid absolute URL",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cfg := baseConfig
-			cfg.ProviderURL = tt.config.ProviderURL
-
-			err := cfg.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.wantErr && tt.errMsg != "" {
-				if err == nil || !strings.Contains(err.Error(), tt.errMsg) {
-					t.Errorf("Validate() error = %v, should contain %v", err, tt.errMsg)
-				}
-			}
-		})
-	}
-}
-
-func TestLoadProviderURL(t *testing.T) {
-	originalProviderURL := os.Getenv("PROVIDER_URL")
-	defer func() {
-		if originalProviderURL != "" {
-			_ = os.Setenv("PROVIDER_URL", originalProviderURL)
-		} else {
-			_ = os.Unsetenv("PROVIDER_URL")
-		}
-	}()
-
-	_ = os.Unsetenv("PROVIDER_URL")
-
-	_ = os.Setenv("PROVIDER_URL", "http://example.com")
-
-	cfg := Load()
-
-	if cfg.ProviderURL != "http://example.com" {
-		t.Errorf("Expected ProviderURL to be 'http://example.com', got '%s'", cfg.ProviderURL)
 	}
 }

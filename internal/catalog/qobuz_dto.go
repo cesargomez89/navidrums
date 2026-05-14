@@ -59,8 +59,13 @@ type QobuzTrackResponse struct {
 	HiresStreamable     bool             `json:"hires_streamable"`
 }
 
-type QobuzDownloadResponse struct {
+type QobuzDownloadData struct {
 	URL string `json:"url"`
+}
+
+type QobuzDownloadResponse struct {
+	Success bool               `json:"success"`
+	Data    *QobuzDownloadData `json:"data"`
 }
 
 // Shared types

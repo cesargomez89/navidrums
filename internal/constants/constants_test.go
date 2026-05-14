@@ -19,9 +19,6 @@ func TestDefaultValues(t *testing.T) {
 		t.Errorf("Expected DefaultQuality to be 'LOSSLESS', got '%s'", DefaultQuality)
 	}
 
-	if DefaultProviderURL != "http://127.0.0.1:8000" {
-		t.Errorf("Expected DefaultProviderURL to be 'http://127.0.0.1:8000', got '%s'", DefaultProviderURL)
-	}
 }
 
 func TestQualityLevels(t *testing.T) {

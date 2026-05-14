@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,7 +17,6 @@ type Config struct {
 	Port                string
 	DBPath              string
 	DownloadsDir        string
-	ProviderURL         string
 	Quality             string
 	PlayQuality         string
 	LogLevel            string
@@ -48,7 +46,6 @@ func Load() *Config {
 		Port:                getEnv("PORT", constants.DefaultPort),
 		DBPath:              getEnv("DB_PATH", constants.DefaultDBPath),
 		DownloadsDir:        getEnv("DOWNLOADS_DIR", defaultDownload),
-		ProviderURL:         getEnv("PROVIDER_URL", constants.DefaultProviderURL),
 		Quality:             getEnv("QUALITY", constants.DefaultQuality),
 		PlayQuality:         getEnv("PLAY_QUALITY", "HIGH"),
 		LogLevel:            getEnv("LOG_LEVEL", "info"),
@@ -94,15 +91,6 @@ func (c *Config) Validate() error {
 	// Validate DownloadsDir
 	if c.DownloadsDir == "" {
 		errors = append(errors, "DOWNLOADS_DIR cannot be empty")
-	}
-
-	// Validate ProviderURL
-	if c.ProviderURL == "" {
-		errors = append(errors, "PROVIDER_URL cannot be empty")
-	} else {
-		if u, err := url.Parse(c.ProviderURL); err != nil || u.Scheme == "" || u.Host == "" {
-			errors = append(errors, fmt.Sprintf("PROVIDER_URL is not a valid absolute URL: %s", c.ProviderURL))
-		}
 	}
 
 	// Validate Quality

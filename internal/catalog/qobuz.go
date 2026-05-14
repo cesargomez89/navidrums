@@ -117,7 +117,15 @@ func (p *QobuzProvider) GetStream(ctx context.Context, trackID string, quality s
 		return nil, "", fmt.Errorf("qobuz get stream failed: %w", downloadErr)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadResp.URL, nil)
+	if !downloadResp.Success {
+		return nil, "", fmt.Errorf("qobuz download request failed for track %d", tid)
+	}
+
+	if downloadResp.Data == nil || downloadResp.Data.URL == "" {
+		return nil, "", fmt.Errorf("qobuz download response missing stream URL for track %d", tid)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadResp.Data.URL, nil)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create stream request: %w", err)
 	}

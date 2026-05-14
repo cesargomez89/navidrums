@@ -94,6 +94,9 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/provider", h.AddProviderHTMX)
 	r.Delete("/htmx/provider", h.RemoveProviderHTMX)
 
+	r.Get("/htmx/default-apis", h.GetDefaultAPIsHTMX)
+	r.Post("/htmx/default-apis", h.SetDefaultAPIHTMX)
+
 	r.Get("/htmx/genre-map", h.GetGenreMapHTMX)
 	r.Post("/htmx/genre-map", h.SetGenreMapHTMX)
 	r.Post("/htmx/genre-map/reset", h.ResetGenreMapHTMX)

@@ -222,7 +222,6 @@ func (h *Handler) DownloadHTMX(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 	h.RenderPage(w, "settings.html", map[string]interface{}{
 		"ActivePage": "settings",
-		"DefaultURL": h.Config.ProviderURL,
 	})
 }
 
@@ -406,6 +405,66 @@ func (h *Handler) RemoveProviderHTMX(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.ProvidersRepo.Delete(id); err != nil {
 		h.Logger.Error("Failed to delete provider", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	h.ProviderManager.InvalidateAllCaches()
+
+	_, _ = w.Write([]byte(`{"success":true}`))
+}
+
+func (h *Handler) GetDefaultAPIsHTMX(w http.ResponseWriter, r *http.Request) {
+	keys := []string{"active_metadata_provider", "active_download_provider", "active_streaming_provider"}
+	defaults := map[string]string{
+		"active_metadata_provider":  "hifi",
+		"active_download_provider":  "hifi",
+		"active_streaming_provider": "hifi",
+	}
+
+	response := make(map[string]string)
+	for _, key := range keys {
+		val, err := h.SettingsRepo.Get(key)
+		if err != nil || val == "" {
+			val = defaults[key]
+		}
+		response[key] = val
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		h.Logger.Error("Failed to encode default APIs response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handler) SetDefaultAPIHTMX(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	validKeys := map[string]bool{
+		"active_metadata_provider":  true,
+		"active_download_provider":  true,
+		"active_streaming_provider": true,
+	}
+	if !validKeys[body.Key] {
+		http.Error(w, "Invalid key", http.StatusBadRequest)
+		return
+	}
+
+	if body.Value != "hifi" && body.Value != "qobuz" {
+		http.Error(w, "Value must be 'hifi' or 'qobuz'", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.SettingsRepo.Set(body.Key, body.Value); err != nil {
+		h.Logger.Error("Failed to save default API setting", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

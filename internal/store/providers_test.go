@@ -296,6 +296,107 @@ func TestProvidersRepo_Reorder_PartialUpdate(t *testing.T) {
 	}
 }
 
+func TestProvidersRepo_Types(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+	repo := NewProvidersRepo(db)
+
+	id1, err := repo.Create("hifi", "http://hifi.example.com", "Hifi One")
+	if err != nil {
+		t.Fatalf("Create hifi failed: %v", err)
+	}
+	if id1 == 0 {
+		t.Fatal("Expected non-zero ID for hifi")
+	}
+
+	id2, err := repo.Create("qobuz", "http://qobuz.example.com", "Qobuz One")
+	if err != nil {
+		t.Fatalf("Create qobuz failed: %v", err)
+	}
+	if id2 == 0 {
+		t.Fatal("Expected non-zero ID for qobuz")
+	}
+
+	hifi, err := repo.ListByType("hifi")
+	if err != nil {
+		t.Fatalf("ListByType hifi failed: %v", err)
+	}
+	if len(hifi) != 1 {
+		t.Fatalf("Expected 1 hifi provider, got %d", len(hifi))
+	}
+	if hifi[0].URL != "http://hifi.example.com" {
+		t.Errorf("URL = %q, want %q", hifi[0].URL, "http://hifi.example.com")
+	}
+
+	qobuz, err := repo.ListByType("qobuz")
+	if err != nil {
+		t.Fatalf("ListByType qobuz failed: %v", err)
+	}
+	if len(qobuz) != 1 {
+		t.Fatalf("Expected 1 qobuz provider, got %d", len(qobuz))
+	}
+	if qobuz[0].URL != "http://qobuz.example.com" {
+		t.Errorf("URL = %q, want %q", qobuz[0].URL, "http://qobuz.example.com")
+	}
+
+	if hifi[0].Position != 0 {
+		t.Errorf("Hifi position = %d, want 0", hifi[0].Position)
+	}
+	if qobuz[0].Position != 0 {
+		t.Errorf("Qobuz position = %d, want 0", qobuz[0].Position)
+	}
+
+	id3, err := repo.Create("hifi", "http://hifi2.example.com", "Hifi Two")
+	if err != nil {
+		t.Fatalf("Create hifi two failed: %v", err)
+	}
+	if id3 == 0 {
+		t.Fatal("Expected non-zero ID for hifi two")
+	}
+
+	hifiAll, err := repo.ListByType("hifi")
+	if err != nil {
+		t.Fatalf("ListByType hifi failed: %v", err)
+	}
+	if len(hifiAll) != 2 {
+		t.Fatalf("Expected 2 hifi providers, got %d", len(hifiAll))
+	}
+	if hifiAll[1].Position != 1 {
+		t.Errorf("Hifi two position = %d, want 1", hifiAll[1].Position)
+	}
+
+	ids := []int64{hifiAll[1].ID, hifiAll[0].ID}
+	err = repo.Reorder(ids)
+	if err != nil {
+		t.Fatalf("Reorder hifi failed: %v", err)
+	}
+
+	hifiAfter, err := repo.ListByType("hifi")
+	if err != nil {
+		t.Fatalf("ListByType hifi after reorder failed: %v", err)
+	}
+	if len(hifiAfter) != 2 {
+		t.Fatalf("Expected 2 hifi providers after reorder, got %d", len(hifiAfter))
+	}
+	if hifiAfter[0].ID != hifiAll[1].ID {
+		t.Errorf("After reorder position 0 id = %d, want %d", hifiAfter[0].ID, hifiAll[1].ID)
+	}
+	if hifiAfter[1].ID != hifiAll[0].ID {
+		t.Errorf("After reorder position 1 id = %d, want %d", hifiAfter[1].ID, hifiAll[0].ID)
+	}
+
+	qobuzAfter, err := repo.ListByType("qobuz")
+	if err != nil {
+		t.Fatalf("ListByType qobuz after reorder failed: %v", err)
+	}
+	if len(qobuzAfter) != 1 {
+		t.Fatalf("Expected 1 qobuz provider, got %d", len(qobuzAfter))
+	}
+	if qobuzAfter[0].Position != 0 {
+		t.Errorf("Qobuz position after hifi reorder = %d, want 0", qobuzAfter[0].Position)
+	}
+}
+
 func TestProvidersRepo_Reorder_Empty(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()
