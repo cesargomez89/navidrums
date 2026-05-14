@@ -37,15 +37,16 @@ func (r *SettingsRepo) Delete(key string) error {
 }
 
 const (
-	SettingActiveProvider         = "active_provider"
-	SettingActiveMetadataProvider = "active_metadata_provider"
-	SettingActiveDownloadProvider = "active_download_provider"
-	SettingCustomProviders        = "custom_providers"
-	SettingGenreMap               = "genre_map"
-	SettingGenreSeparator         = "genre_separator"
-	SettingTheme                  = "theme"
-	SettingForceDownload          = "force_download"
-	SettingQuality                = "quality"
-	SettingMoodList               = "mood_list"
-	SettingLanguageList           = "language_list"
+	SettingActiveProvider          = "active_provider"
+	SettingActiveMetadataProvider  = "active_metadata_provider"
+	SettingActiveDownloadProvider  = "active_download_provider"
+	SettingActiveStreamingProvider = "active_streaming_provider"
+	SettingCustomProviders         = "custom_providers"
+	SettingGenreMap                = "genre_map"
+	SettingGenreSeparator          = "genre_separator"
+	SettingTheme                   = "theme"
+	SettingForceDownload           = "force_download"
+	SettingQuality                 = "quality"
+	SettingMoodList                = "mood_list"
+	SettingLanguageList            = "language_list"
 )

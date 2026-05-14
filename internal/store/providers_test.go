@@ -9,12 +9,12 @@ func TestProvidersRepo_Create(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id1, _ := repo.Create("http://provider1.example", "Provider 1")
+	id1, _ := repo.Create("hifi", "http://provider1.example", "Provider 1")
 	if id1 == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
 
-	id2, _ := repo.Create("http://provider2.example", "Provider 2")
+	id2, _ := repo.Create("hifi", "http://provider2.example", "Provider 2")
 	if id2 == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -23,7 +23,7 @@ func TestProvidersRepo_Create(t *testing.T) {
 		t.Errorf("Expected id2 > id1, got id1=%d, id2=%d", id1, id2)
 	}
 
-	p1, err := repo.GetByPosition(0)
+	p1, err := repo.GetByPosition("hifi", 0)
 	if err != nil {
 		t.Fatalf("GetByPosition failed: %v", err)
 	}
@@ -31,7 +31,7 @@ func TestProvidersRepo_Create(t *testing.T) {
 		t.Errorf("Position 0 should have id %d, got %d", id1, p1.ID)
 	}
 
-	p2, err := repo.GetByPosition(1)
+	p2, err := repo.GetByPosition("hifi", 1)
 	if err != nil {
 		t.Fatalf("GetByPosition failed: %v", err)
 	}
@@ -45,19 +45,19 @@ func TestProvidersRepo_CreateDuplicate(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id1, _ := repo.Create("http://dup.example", "First")
+	id1, _ := repo.Create("hifi", "http://dup.example", "First")
 	if id1 == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
 
-	id2, _ := repo.Create("http://dup.example", "Second")
+	id2, _ := repo.Create("hifi", "http://dup.example", "Second")
 	if id2 != 0 {
 		t.Errorf("Expected id=0 for duplicate, got %d", id2)
 	}
 
-	list, err := repo.ListOrdered()
+	list, err := repo.ListByType("hifi")
 	if err != nil {
-		t.Fatalf("ListOrdered failed: %v", err)
+		t.Fatalf("ListByType failed: %v", err)
 	}
 	if len(list) != 1 {
 		t.Errorf("Expected 1 provider after duplicate insert, got %d", len(list))
@@ -69,13 +69,13 @@ func TestProvidersRepo_ListOrdered(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	_, _ = repo.Create("http://c.example", "C")
-	_, _ = repo.Create("http://a.example", "A")
-	_, _ = repo.Create("http://b.example", "B")
+	_, _ = repo.Create("hifi", "http://c.example", "C")
+	_, _ = repo.Create("hifi", "http://a.example", "A")
+	_, _ = repo.Create("hifi", "http://b.example", "B")
 
-	providers, err := repo.ListOrdered()
+	providers, err := repo.ListByType("hifi")
 	if err != nil {
-		t.Fatalf("ListOrdered failed: %v", err)
+		t.Fatalf("ListByType failed: %v", err)
 	}
 
 	if len(providers) != 3 {
@@ -98,9 +98,9 @@ func TestProvidersRepo_ListOrdered_Empty(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	providers, err := repo.ListOrdered()
+	providers, err := repo.ListByType("hifi")
 	if err != nil {
-		t.Fatalf("ListOrdered failed: %v", err)
+		t.Fatalf("ListByType failed: %v", err)
 	}
 	if len(providers) != 0 {
 		t.Errorf("Expected 0 providers, got %d", len(providers))
@@ -112,12 +112,12 @@ func TestProvidersRepo_GetByPosition(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id, _ := repo.Create("http://test.example", "Test")
+	id, _ := repo.Create("hifi", "http://test.example", "Test")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
 
-	p, err := repo.GetByPosition(0)
+	p, err := repo.GetByPosition("hifi", 0)
 	if err != nil {
 		t.Fatalf("GetByPosition failed: %v", err)
 	}
@@ -131,7 +131,7 @@ func TestProvidersRepo_GetByPosition_NotFound(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	_, err := repo.GetByPosition(999)
+	_, err := repo.GetByPosition("hifi", 999)
 	if err == nil {
 		t.Error("Expected error for non-existent position")
 	}
@@ -142,7 +142,7 @@ func TestProvidersRepo_Update(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id, _ := repo.Create("http://old.example", "Old Name")
+	id, _ := repo.Create("hifi", "http://old.example", "Old Name")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -152,7 +152,7 @@ func TestProvidersRepo_Update(t *testing.T) {
 		t.Fatalf("Update failed: %v", err)
 	}
 
-	p, err := repo.GetByPosition(0)
+	p, err := repo.GetByPosition("hifi", 0)
 	if err != nil {
 		t.Fatalf("GetByPosition failed: %v", err)
 	}
@@ -180,7 +180,7 @@ func TestProvidersRepo_Delete(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id, _ := repo.Create("http://delete.example", "Delete Me")
+	id, _ := repo.Create("hifi", "http://delete.example", "Delete Me")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -190,14 +190,14 @@ func TestProvidersRepo_Delete(t *testing.T) {
 		t.Fatalf("Delete failed: %v", err)
 	}
 
-	_, err = repo.GetByPosition(0)
+	_, err = repo.GetByPosition("hifi", 0)
 	if err == nil {
 		t.Error("Expected error after delete")
 	}
 
-	list, err := repo.ListOrdered()
+	list, err := repo.ListByType("hifi")
 	if err != nil {
-		t.Fatalf("ListOrdered failed: %v", err)
+		t.Fatalf("ListByType failed: %v", err)
 	}
 	if len(list) != 0 {
 		t.Errorf("Expected 0 providers after delete, got %d", len(list))
@@ -220,7 +220,7 @@ func TestProvidersRepo_Exists(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id, _ := repo.Create("http://exists.example", "Exists")
+	id, _ := repo.Create("hifi", "http://exists.example", "Exists")
 	if id == 0 {
 		t.Fatal("Expected non-zero ID")
 	}
@@ -239,18 +239,18 @@ func TestProvidersRepo_Reorder(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	id1, _ := repo.Create("http://a.example", "A")
-	id2, _ := repo.Create("http://b.example", "B")
-	id3, _ := repo.Create("http://c.example", "C")
+	id1, _ := repo.Create("hifi", "http://a.example", "A")
+	id2, _ := repo.Create("hifi", "http://b.example", "B")
+	id3, _ := repo.Create("hifi", "http://c.example", "C")
 
 	err := repo.Reorder([]int64{id3, id1, id2})
 	if err != nil {
 		t.Fatalf("Reorder failed: %v", err)
 	}
 
-	providers, err := repo.ListOrdered()
+	providers, err := repo.ListByType("hifi")
 	if err != nil {
-		t.Fatalf("ListOrdered failed: %v", err)
+		t.Fatalf("ListByType failed: %v", err)
 	}
 
 	if len(providers) != 3 {
@@ -273,18 +273,18 @@ func TestProvidersRepo_Reorder_PartialUpdate(t *testing.T) {
 	defer cleanup()
 	repo := NewProvidersRepo(db)
 
-	_, _ = repo.Create("http://a.example", "A")
-	id2, _ := repo.Create("http://b.example", "B")
-	_, _ = repo.Create("http://c.example", "C")
+	_, _ = repo.Create("hifi", "http://a.example", "A")
+	id2, _ := repo.Create("hifi", "http://b.example", "B")
+	_, _ = repo.Create("hifi", "http://c.example", "C")
 
 	err := repo.Reorder([]int64{id2})
 	if err != nil {
 		t.Fatalf("Reorder failed: %v", err)
 	}
 
-	providers, err := repo.ListOrdered()
+	providers, err := repo.ListByType("hifi")
 	if err != nil {
-		t.Fatalf("ListOrdered failed: %v", err)
+		t.Fatalf("ListByType failed: %v", err)
 	}
 
 	if providers[0].ID != id2 {

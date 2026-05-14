@@ -103,7 +103,7 @@ func (e *MetadataEnricher) FetchLyrics(ctx context.Context, track *domain.Track,
 	if track.Lyrics != "" || track.Subtitles != "" {
 		return
 	}
-	lyrics, subtitles, err := e.providerManager.GetProvider().GetLyrics(ctx, track.ProviderID)
+	lyrics, subtitles, err := e.providerManager.GetMetadataProvider().GetLyrics(ctx, track.ProviderID)
 	if err != nil {
 		logger.Debug("Failed to fetch lyrics", "error", err)
 		return
@@ -122,7 +122,7 @@ func (e *MetadataEnricher) EnrichFromHiFi(ctx context.Context, track *domain.Tra
 	var err error
 
 	if e.needsHiFiEnrichment(track) {
-		ct, err = e.providerManager.GetProvider().GetTrack(ctx, track.ProviderID)
+		ct, err = e.providerManager.GetMetadataProvider().GetTrack(ctx, track.ProviderID)
 		if err != nil {
 			logger.Warn("Failed to fetch Hi-Fi metadata for enrichment", "error", err)
 		}
@@ -146,7 +146,7 @@ func (e *MetadataEnricher) EnrichFromHiFi(ctx context.Context, track *domain.Tra
 	}
 
 	if albumID != "" && (needsAlbumArtist || !hasBasicMetadata) {
-		album, err = e.providerManager.GetProvider().GetAlbum(ctx, albumID)
+		album, err = e.providerManager.GetMetadataProvider().GetAlbum(ctx, albumID)
 		if err != nil {
 			logger.Debug("Failed to fetch album metadata", "album_id", albumID, "error", err)
 		}

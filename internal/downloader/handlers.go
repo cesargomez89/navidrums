@@ -436,7 +436,7 @@ func (h *ContainerJobHandler) Handle(ctx context.Context, job *domain.Job, logge
 }
 
 func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	album, err := h.ProviderManager.GetProvider().GetAlbum(ctx, job.GetSourceID())
+	album, err := h.ProviderManager.GetMetadataProvider().GetAlbum(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch album", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch album: %v", err))
@@ -467,7 +467,7 @@ func (h *ContainerJobHandler) processAlbumJob(ctx context.Context, job *domain.J
 }
 
 func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	pl, err := h.ProviderManager.GetProvider().GetPlaylist(ctx, job.GetSourceID())
+	pl, err := h.ProviderManager.GetMetadataProvider().GetPlaylist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch playlist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch playlist: %v", err))
@@ -527,7 +527,7 @@ func (h *ContainerJobHandler) processPlaylistJob(ctx context.Context, job *domai
 }
 
 func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.GetSourceID())
+	artist, err := h.ProviderManager.GetMetadataProvider().GetArtist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))
@@ -560,7 +560,7 @@ func (h *ContainerJobHandler) processArtistJob(ctx context.Context, job *domain.
 }
 
 func (h *ContainerJobHandler) processDiscographyJob(ctx context.Context, job *domain.Job, logger *slog.Logger) error {
-	artist, err := h.ProviderManager.GetProvider().GetArtist(ctx, job.GetSourceID())
+	artist, err := h.ProviderManager.GetMetadataProvider().GetArtist(ctx, job.GetSourceID())
 	if err != nil {
 		logger.Error("Failed to fetch artist", "error", err)
 		_ = h.Repo.UpdateJobError(job.ID, fmt.Sprintf("Failed to fetch artist: %v", err))

@@ -22,7 +22,7 @@ func (h *Handler) StreamTrack(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	provider := h.ProviderManager.GetProvider()
+	provider := h.ProviderManager.GetStreamingProvider()
 	stream, mimeType, err := provider.GetStream(r.Context(), trackID, quality)
 	if err != nil {
 		h.Logger.Error("failed to get stream", "error", err, "trackID", trackID)

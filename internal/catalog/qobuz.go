@@ -95,7 +95,7 @@ func (p *QobuzProvider) GetTrack(ctx context.Context, id string) (*domain.Catalo
 	if err != nil {
 		return nil, fmt.Errorf("invalid track id: %w", err)
 	}
-	url := fmt.Sprintf("%s/get-track?track_id=%d", p.BaseURL, trackID)
+	url := fmt.Sprintf("%s/get-track?isrc=%d", p.BaseURL, trackID)
 	var resp QobuzTrackResponse
 	if err := p.get(ctx, url, &resp); err != nil {
 		return nil, fmt.Errorf("qobuz get track failed: %w", err)
@@ -113,8 +113,8 @@ func (p *QobuzProvider) GetStream(ctx context.Context, trackID string, quality s
 
 	downloadURL := fmt.Sprintf("%s/download-music?track_id=%d&quality=%d", p.BaseURL, tid, q)
 	var downloadResp QobuzDownloadResponse
-	if err := p.get(ctx, downloadURL, &downloadResp); err != nil {
-		return nil, "", fmt.Errorf("qobuz get stream failed: %w", err)
+	if downloadErr := p.get(ctx, downloadURL, &downloadResp); downloadErr != nil {
+		return nil, "", fmt.Errorf("qobuz get stream failed: %w", downloadErr)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadResp.URL, nil)
@@ -162,7 +162,7 @@ func (p *QobuzProvider) get(ctx context.Context, targetURL string, result interf
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	decoder := json.NewDecoder(resp.Body)
 	return decoder.Decode(result)

@@ -53,14 +53,11 @@ func main() {
 		}
 	}()
 
-	// Initialize Provider Manager
-	providerManager := catalog.NewProviderManager(cfg.ProviderURL, db, cfg.CacheTTL, appLogger)
-
-	// Load saved provider from settings if exists
+	// Initialize Settings Repo (needed by ProviderManager)
 	settingsRepo := store.NewSettingsRepo(db)
-	if savedMetURL, err := settingsRepo.Get(store.SettingActiveMetadataProvider); err == nil && savedMetURL != "" {
-		providerManager.SetProvider(savedMetURL)
-	}
+
+	// Initialize Provider Manager (no system default — providers configured via UI)
+	providerManager := catalog.NewProviderManager(db, settingsRepo, cfg.CacheTTL, appLogger)
 
 	// Initialize Worker
 	w := downloader.NewWorker(db, settingsRepo, providerManager, cfg, appLogger)

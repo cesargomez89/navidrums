@@ -12,6 +12,7 @@ import (
 
 type FallbackProvider struct {
 	manager         *ProviderManager
+	providerType    ProviderType
 	cachedProviders []Provider
 	cacheExpiry     time.Time
 	cacheMu         sync.Mutex
@@ -27,17 +28,12 @@ func (f *FallbackProvider) getProviders() []Provider {
 		return f.cachedProviders
 	}
 
-	// Always start with the system default URL
-	providers := []Provider{NewHifiProvider(f.manager.defaultURL)}
+	var providers []Provider
 
 	if f.manager != nil && f.manager.providers != nil {
-		storeProviders, _ := f.manager.providers.ListOrdered()
+		storeProviders, _ := f.manager.providers.ListByType(string(f.providerType))
 		for _, p := range storeProviders {
-			// Skip if it's the same as default to avoid double-requesting
-			if p.URL == f.manager.defaultURL {
-				continue
-			}
-			providers = append(providers, NewHifiProvider(p.URL))
+			providers = append(providers, NewProvider(f.providerType, p.URL))
 		}
 	}
 

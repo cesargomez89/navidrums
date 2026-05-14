@@ -1,7 +1,6 @@
 package catalog
 
 import (
-	"encoding/json"
 	"log/slog"
 	"sync"
 	"time"
@@ -16,136 +15,116 @@ type Logger interface {
 }
 
 type ProviderManager struct {
-	defaultURL       string
-	logger           Logger
-	providers        *store.ProvidersRepo
-	cacheTTL         time.Duration
-	cache            *CachedProvider
-	fallbackProvider *FallbackProvider
-	mu               sync.RWMutex
+	logger    Logger
+	providers *store.ProvidersRepo
+	settings  *store.SettingsRepo
+	cacheTTL  time.Duration
+	db        *store.DB
+
+	chains map[ProviderType]*CachedProvider
+	mu     sync.RWMutex
 }
 
-func NewProviderManager(defaultURL string, db *store.DB, cacheTTL time.Duration, logger Logger) *ProviderManager {
+func NewProviderManager(db *store.DB, settings *store.SettingsRepo, cacheTTL time.Duration, logger Logger) *ProviderManager {
 	var providersRepo *store.ProvidersRepo
 	if db != nil {
 		providersRepo = store.NewProvidersRepo(db)
 	}
 
-	pm := &ProviderManager{
-		defaultURL: defaultURL,
-		logger:     logger,
-		providers:  providersRepo,
-		cacheTTL:   cacheTTL,
+	return &ProviderManager{
+		logger:    logger,
+		providers: providersRepo,
+		settings:  settings,
+		cacheTTL:  cacheTTL,
+		db:        db,
 	}
-
-	pm.fallbackProvider = &FallbackProvider{manager: pm}
-
-	if db != nil {
-		pm.cache = NewCachedProvider(pm.fallbackProvider, &storeCache{store: db}, cacheTTL)
-	}
-
-	return pm
 }
 
-func (m *ProviderManager) GetProvider() Provider {
+func (m *ProviderManager) readSetting(key string) ProviderType {
+	if m.settings == nil {
+		return ProviderTypeHifi
+	}
+	val, err := m.settings.Get(key)
+	if err != nil || val == "" {
+		return ProviderTypeHifi
+	}
+	pt := ProviderType(val)
+	if pt != ProviderTypeHifi && pt != ProviderTypeQobuz {
+		return ProviderTypeHifi
+	}
+	return pt
+}
+
+func (m *ProviderManager) buildChain(pt ProviderType) *CachedProvider {
+	fb := &FallbackProvider{manager: m, providerType: pt}
+	var cacheStore *storeCache
+	if m.db != nil {
+		cacheStore = &storeCache{store: m.db}
+	}
+	return NewCachedProvider(fb, cacheStore, m.cacheTTL)
+}
+
+func (m *ProviderManager) GetProvider(pt ProviderType) Provider {
 	m.mu.RLock()
-	defer m.mu.RUnlock()
-	if m.cache != nil {
-		return m.cache
-	}
-	return m.fallbackProvider
-}
+	chain := m.chains[pt]
+	m.mu.RUnlock()
 
-func (m *ProviderManager) InvalidateProviderCache() {
+	if chain != nil {
+		return chain
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.cache != nil {
-		if fb, ok := m.cache.provider.(*FallbackProvider); ok {
-			fb.invalidateCache()
-		}
+	if m.chains == nil {
+		m.chains = make(map[ProviderType]*CachedProvider)
 	}
-	if m.fallbackProvider != nil {
-		m.fallbackProvider.invalidateCache()
+	if m.chains[pt] == nil {
+		m.chains[pt] = m.buildChain(pt)
 	}
+	return m.chains[pt]
 }
 
-func (m *ProviderManager) SetProvider(url string) {
+func (m *ProviderManager) GetMetadataProvider() Provider {
+	return m.GetProvider(m.readSetting(store.SettingActiveMetadataProvider))
+}
+
+func (m *ProviderManager) GetDownloadProvider() Provider {
+	return m.GetProvider(m.readSetting(store.SettingActiveDownloadProvider))
+}
+
+func (m *ProviderManager) GetStreamingProvider() Provider {
+	return m.GetProvider(m.readSetting(store.SettingActiveStreamingProvider))
+}
+
+func (m *ProviderManager) InvalidateAllCaches() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if m.logger != nil {
-		m.logger.Info("Setting primary provider", "url", url)
-	}
-	if m.providers != nil {
-		if !m.providers.Exists(url) {
-			if _, err := m.providers.Create(url, ""); err != nil && m.logger != nil {
-				m.logger.Error("failed to create provider", "url", url, "error", err)
-			}
-		}
-		providers, _ := m.providers.ListOrdered()
-		for _, p := range providers {
-			if p.URL == url {
-				if p.Position != 0 {
-					ids := make([]int64, len(providers))
-					for i, prov := range providers {
-						ids[i] = prov.ID
-						if prov.URL == url {
-							ids[0], ids[i] = ids[i], ids[0]
-						}
-					}
-					_ = m.providers.Reorder(ids)
-				}
-				break
-			}
-		}
-	}
-	if m.cache != nil {
-		if fb, ok := m.cache.provider.(*FallbackProvider); ok {
-			fb.invalidateCache()
-		}
-	}
-}
-
-func (m *ProviderManager) GetBaseURL() string {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	return m.defaultURL
-}
-
-func (m *ProviderManager) GetSettingsJSON() string {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	settings := ProviderSettings{
-		Providers:       []CustomProvider{},
-		DefaultProvider: m.defaultURL,
-	}
-
-	if m.providers != nil {
-		providers, _ := m.providers.ListOrdered()
-		for _, p := range providers {
-			settings.Providers = append(settings.Providers, CustomProvider{
-				ID:   p.ID,
-				Name: p.Name,
-				URL:  p.URL,
-			})
-		}
-	}
-
-	data, _ := json.Marshal(settings)
-	return string(data)
+	m.chains = nil
 }
 
 type CustomProvider struct {
 	ID   int64  `json:"id,omitempty"`
 	Name string `json:"name"`
 	URL  string `json:"url"`
+	Type string `json:"type"`
 }
 
-type ProviderSettings struct {
-	Providers       []CustomProvider `json:"providers"`
-	DefaultProvider string           `json:"default_provider"`
-}
-
-func GetPredefinedProvidersJSON() string {
-	return "[]"
+func (m *ProviderManager) GetProvidersByType(providerType string) []CustomProvider {
+	if m.providers == nil {
+		return nil
+	}
+	providers, err := m.providers.ListByType(providerType)
+	if err != nil {
+		return nil
+	}
+	result := make([]CustomProvider, len(providers))
+	for i, p := range providers {
+		result[i] = CustomProvider{
+			ID:   p.ID,
+			Name: p.Name,
+			URL:  p.URL,
+			Type: p.Type,
+		}
+	}
+	return result
 }

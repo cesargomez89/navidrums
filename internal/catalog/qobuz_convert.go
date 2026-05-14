@@ -45,17 +45,17 @@ func (r *QobuzSearchData) ToDomain() *domain.SearchResult {
 
 func (item *QobuzSearchAlbumItem) ToDomain() domain.Album {
 	return domain.Album{
-		ID:           item.ID,
-		Title:        item.Title,
-		ArtistID:     strconv.Itoa(item.Artist.ID),
-		Artist:       item.Artist.Name,
-		AlbumArtURL:  item.Image.Large,
-		URL:          item.URL,
-		Genre:        item.Genre.Name,
-		Label:        item.Label.Name,
-		UPC:          item.UPC,
-		Year:         parseYear(item.ReleaseDateOriginal),
-		TotalTracks:  item.TracksCount,
+		ID:          item.ID,
+		Title:       item.Title,
+		ArtistID:    strconv.Itoa(item.Artist.ID),
+		Artist:      item.Artist.Name,
+		AlbumArtURL: item.Image.Large,
+		URL:         item.URL,
+		Genre:       item.Genre.Name,
+		Label:       item.Label.Name,
+		UPC:         item.UPC,
+		Year:        parseYear(item.ReleaseDateOriginal),
+		TotalTracks: item.TracksCount,
 	}
 }
 
@@ -94,21 +94,21 @@ func (resp *QobuzAlbumResponse) ToDomain() *domain.Album {
 	}
 
 	return &domain.Album{
-		ID:           resp.ID,
-		Title:        resp.Title,
-		ArtistID:     strconv.Itoa(resp.Artist.ID),
-		Artist:       resp.Artist.Name,
-		AlbumArtURL:  resp.Image.Large,
-		Genre:        resp.Genre.Name,
-		Label:        resp.Label.Name,
-		UPC:          resp.UPC,
-		Year:         parseYear(resp.ReleaseDateOriginal),
-		TotalTracks:  resp.TracksCount,
-		TotalDiscs:   resp.MediaCount,
-		Copyright:    resp.Copyright,
-		Tracks:       tracks,
-		ArtistIDs:    artistIDs,
-		Artists:      artists,
+		ID:          resp.ID,
+		Title:       resp.Title,
+		ArtistID:    strconv.Itoa(resp.Artist.ID),
+		Artist:      resp.Artist.Name,
+		AlbumArtURL: resp.Image.Large,
+		Genre:       resp.Genre.Name,
+		Label:       resp.Label.Name,
+		UPC:         resp.UPC,
+		Year:        parseYear(resp.ReleaseDateOriginal),
+		TotalTracks: resp.TracksCount,
+		TotalDiscs:  resp.MediaCount,
+		Copyright:   resp.Copyright,
+		Tracks:      tracks,
+		ArtistIDs:   artistIDs,
+		Artists:     artists,
 	}
 }
 
@@ -219,11 +219,11 @@ func (data *QobuzArtistData) ToDomain() *domain.Artist {
 	albums := make([]domain.Album, 0)
 	for _, a := range data.Artist.Albums.Items {
 		albums = append(albums, domain.Album{
-			ID:         a.ID,
-			Title:      a.Title,
+			ID:          a.ID,
+			Title:       a.Title,
 			AlbumArtURL: a.Image.Large,
-			Genre:      a.Genre.Name,
-			Year:       parseYear(a.ReleaseDateOriginal),
+			Genre:       a.Genre.Name,
+			Year:        parseYear(a.ReleaseDateOriginal),
 		})
 	}
 
@@ -233,11 +233,11 @@ func (data *QobuzArtistData) ToDomain() *domain.Artist {
 	}
 
 	return &domain.Artist{
-		ID:        strconv.Itoa(data.Artist.ID),
-		Name:      data.Artist.Name.Display,
+		ID:         strconv.Itoa(data.Artist.ID),
+		Name:       data.Artist.Name.Display,
 		PictureURL: picURL,
-		Albums:    albums,
-		TopTracks: topTracks,
+		Albums:     albums,
+		TopTracks:  topTracks,
 	}
 }
 

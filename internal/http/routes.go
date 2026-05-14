@@ -36,7 +36,7 @@ func (h *Handler) SearchHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	provider := h.ProviderManager.GetProvider()
+	provider := h.ProviderManager.GetMetadataProvider()
 
 	results, err := provider.Search(r.Context(), query, searchType)
 	if err != nil {
@@ -83,7 +83,7 @@ func (h *Handler) LuckyHTMX(w http.ResponseWriter, r *http.Request) {
 		ArtistSeed: seeds,
 	}
 
-	provider := h.ProviderManager.GetProvider()
+	provider := h.ProviderManager.GetMetadataProvider()
 
 	var wg sync.WaitGroup
 	var trackErr, albumErr, artistErr error
@@ -161,7 +161,7 @@ func (h *Handler) LuckyHTMX(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ArtistPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	artist, err := h.ProviderManager.GetProvider().GetArtist(r.Context(), id)
+	artist, err := h.ProviderManager.GetMetadataProvider().GetArtist(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -179,7 +179,7 @@ func (h *Handler) ArtistPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) AlbumPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	album, err := h.ProviderManager.GetProvider().GetAlbum(r.Context(), id)
+	album, err := h.ProviderManager.GetMetadataProvider().GetAlbum(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -193,7 +193,7 @@ func (h *Handler) AlbumPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) PlaylistPage(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	pl, err := h.ProviderManager.GetProvider().GetPlaylist(r.Context(), id)
+	pl, err := h.ProviderManager.GetMetadataProvider().GetPlaylist(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -310,16 +310,23 @@ func (h *Handler) RetryJobHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
-	providers, err := h.ProvidersRepo.ListOrdered()
+	hifiProviders, err := h.ProvidersRepo.ListByType("hifi")
 	if err != nil {
-		h.Logger.Error("Failed to list providers", "error", err)
+		h.Logger.Error("Failed to list hifi providers", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	qobuzProviders, err := h.ProvidersRepo.ListByType("qobuz")
+	if err != nil {
+		h.Logger.Error("Failed to list qobuz providers", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	response := map[string]interface{}{
-		"providers":  providers,
-		"defaultURL": h.ProviderManager.GetBaseURL(),
+		"hifi":  hifiProviders,
+		"qobuz": qobuzProviders,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -331,6 +338,12 @@ func (h *Handler) GetProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ReorderProvidersHTMX(w http.ResponseWriter, r *http.Request) {
+	providerType := r.URL.Query().Get("type")
+	if providerType == "" {
+		http.Error(w, "type is required", http.StatusBadRequest)
+		return
+	}
+
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "Failed to parse form", http.StatusBadRequest)
 		return
@@ -352,7 +365,7 @@ func (h *Handler) ReorderProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.ProviderManager.InvalidateProviderCache()
+	h.ProviderManager.InvalidateAllCaches()
 
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
@@ -360,19 +373,20 @@ func (h *Handler) ReorderProvidersHTMX(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) AddProviderHTMX(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	url := r.URL.Query().Get("url")
-	if name == "" || url == "" {
-		http.Error(w, "name and url are required", http.StatusBadRequest)
+	providerType := r.URL.Query().Get("type")
+	if name == "" || url == "" || providerType == "" {
+		http.Error(w, "name, url, and type are required", http.StatusBadRequest)
 		return
 	}
 
-	id, err := h.ProvidersRepo.Create(url, name)
+	id, err := h.ProvidersRepo.Create(providerType, url, name)
 	if err != nil || id == 0 {
 		h.Logger.Error("Failed to create provider", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	h.ProviderManager.InvalidateProviderCache()
+	h.ProviderManager.InvalidateAllCaches()
 
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
@@ -396,7 +410,7 @@ func (h *Handler) RemoveProviderHTMX(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.ProviderManager.InvalidateProviderCache()
+	h.ProviderManager.InvalidateAllCaches()
 
 	_, _ = w.Write([]byte(`{"success":true}`))
 }
@@ -636,7 +650,7 @@ func (h *Handler) SetGenreSeparatorHTMX(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	albums, err := h.ProviderManager.GetProvider().GetSimilarAlbums(r.Context(), id)
+	albums, err := h.ProviderManager.GetMetadataProvider().GetSimilarAlbums(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -647,7 +661,7 @@ func (h *Handler) SimilarAlbumsHTMX(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SimilarArtistsHTMX(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	artists, err := h.ProviderManager.GetProvider().GetSimilarArtists(r.Context(), id)
+	artists, err := h.ProviderManager.GetMetadataProvider().GetSimilarArtists(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

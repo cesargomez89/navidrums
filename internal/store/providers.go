@@ -3,6 +3,7 @@ package store
 // ProviderRecord represents a music provider stored in the database for fallback support.
 type ProviderRecord struct {
 	ID       int64  `json:"id"`
+	Type     string `json:"type"`
 	Position int    `json:"position"`
 	URL      string `json:"url"`
 	Name     string `json:"name"`
@@ -16,16 +17,16 @@ func NewProvidersRepo(db *DB) *ProvidersRepo {
 	return &ProvidersRepo{db: db}
 }
 
-func (r *ProvidersRepo) Create(url, name string) (int64, error) {
+func (r *ProvidersRepo) Create(providerType, url, name string) (int64, error) {
 	var id int64
 	err := r.db.RunInTx(func(txDB *DB) error {
 		var maxPos int
-		err := txDB.QueryRow(`SELECT COALESCE(MAX(position), -1) FROM providers`).Scan(&maxPos)
+		err := txDB.QueryRow(`SELECT COALESCE(MAX(position), -1) FROM providers WHERE type = ?`, providerType).Scan(&maxPos)
 		if err != nil {
 			return err
 		}
-		query := `INSERT INTO providers (url, name, position) VALUES (?, ?, ?) RETURNING id`
-		row := txDB.QueryRowx(query, url, name, maxPos+1)
+		query := `INSERT INTO providers (type, url, name, position) VALUES (?, ?, ?, ?) RETURNING id`
+		row := txDB.QueryRowx(query, providerType, url, name, maxPos+1)
 		return row.Scan(&id)
 	})
 	return id, err
@@ -36,17 +37,17 @@ func (r *ProvidersRepo) Delete(id int64) error {
 	return err
 }
 
-func (r *ProvidersRepo) ListOrdered() ([]ProviderRecord, error) {
+func (r *ProvidersRepo) ListByType(providerType string) ([]ProviderRecord, error) {
 	var providers []ProviderRecord
-	query := `SELECT id, url, name, position FROM providers ORDER BY position ASC`
-	err := r.db.Select(&providers, query)
+	query := `SELECT id, type, url, name, position FROM providers WHERE type = ? ORDER BY position ASC`
+	err := r.db.Select(&providers, query, providerType)
 	return providers, err
 }
 
-func (r *ProvidersRepo) GetByPosition(pos int) (*ProviderRecord, error) {
-	query := `SELECT id, url, name, position FROM providers WHERE position = ?`
+func (r *ProvidersRepo) GetByPosition(providerType string, pos int) (*ProviderRecord, error) {
+	query := `SELECT id, type, url, name, position FROM providers WHERE type = ? AND position = ?`
 	var provider ProviderRecord
-	err := r.db.Get(&provider, query, pos)
+	err := r.db.Get(&provider, query, providerType, pos)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,9 @@ func (r *ProvidersRepo) Reorder(ids []int64) error {
 		if len(ids) == 0 {
 			return nil
 		}
-		_, err := txDB.Exec(`UPDATE providers SET position = position + 1000`)
+		_, err := txDB.Exec(`
+			UPDATE providers SET position = position + 1000
+			WHERE type = (SELECT type FROM providers WHERE id = ?)`, ids[0])
 		if err != nil {
 			return err
 		}
