@@ -2,7 +2,7 @@
     <div class="item-media">
         <img src="{{if .AlbumArtURL}}{{.AlbumArtURL}}{{else}}https://via.placeholder.com/100?text=Trk{{end}}"
             alt="{{.Title}}" class="item-img item-img--lg">
-        <div class="item-media-play" onclick="playTrack(this, '{{.ID}}', '{{.Title}}', '{{.Artist}}', '{{.AlbumArtURL}}', '{{.Album}}')">
+        <div class="item-media-play" onclick="playTrack(this, '{{.ID}}', '{{.ISRC}}', '{{.Title}}', '{{.Artist}}', '{{.AlbumArtURL}}', '{{.Album}}')">
             <svg class="icon-sm" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
         </div>
     </div>

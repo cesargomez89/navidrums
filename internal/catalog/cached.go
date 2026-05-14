@@ -161,8 +161,8 @@ func (c *CachedProvider) GetTrack(ctx context.Context, id string) (*domain.Catal
 	return track, nil
 }
 
-func (c *CachedProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
-	return c.provider.GetStream(ctx, trackID, quality)
+func (c *CachedProvider) GetStream(ctx context.Context, trackID string, isrc string, quality string) (io.ReadCloser, string, error) {
+	return c.provider.GetStream(ctx, trackID, isrc, quality)
 }
 
 func (c *CachedProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {

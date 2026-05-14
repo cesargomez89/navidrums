@@ -109,7 +109,8 @@ func (p *HifiProvider) GetTrack(ctx context.Context, id string) (*domain.Catalog
 	return resp.ToDomain(p), nil
 }
 
-func (p *HifiProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
+func (p *HifiProvider) GetStream(ctx context.Context, trackID string, isrc string, quality string) (io.ReadCloser, string, error) {
+	// isrc is unused — Tidal resolves by trackID
 	u := fmt.Sprintf("%s/track/?id=%s&quality=%s", p.BaseURL, trackID, quality)
 
 	var resp APIStreamResponse

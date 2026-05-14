@@ -38,6 +38,10 @@ func (p *QobuzProvider) Search(ctx context.Context, query string, searchType str
 		return nil, fmt.Errorf("qobuz search failed: %w", err)
 	}
 
+	if !resp.Success {
+		return nil, fmt.Errorf("qobuz search returned unsuccessful response")
+	}
+
 	result := resp.Data.ToDomain()
 
 	if searchType != "" && searchType != "all" {
@@ -74,16 +78,22 @@ func (p *QobuzProvider) GetArtist(ctx context.Context, id string) (*domain.Artis
 	if err := p.get(ctx, url, &resp); err != nil {
 		return nil, fmt.Errorf("qobuz get artist failed: %w", err)
 	}
+	if !resp.Success {
+		return nil, fmt.Errorf("qobuz artist not found: %s", id)
+	}
 	return resp.Data.ToDomain(), nil
 }
 
 func (p *QobuzProvider) GetAlbum(ctx context.Context, id string) (*domain.Album, error) {
 	url := fmt.Sprintf("%s/get-album?album_id=%s", p.BaseURL, url.PathEscape(id))
-	var resp QobuzAlbumResponse
-	if err := p.get(ctx, url, &resp); err != nil {
+	var wrapper QobuzAlbumDataResponse
+	if err := p.get(ctx, url, &wrapper); err != nil {
 		return nil, fmt.Errorf("qobuz get album failed: %w", err)
 	}
-	return resp.ToDomain(), nil
+	if !wrapper.Success || wrapper.Data == nil {
+		return nil, fmt.Errorf("qobuz album not found: %s", id)
+	}
+	return wrapper.Data.ToDomain(), nil
 }
 
 func (p *QobuzProvider) GetPlaylist(ctx context.Context, id string) (*domain.Playlist, error) {
@@ -95,20 +105,24 @@ func (p *QobuzProvider) GetTrack(ctx context.Context, id string) (*domain.Catalo
 	if err != nil {
 		return nil, fmt.Errorf("invalid track id: %w", err)
 	}
-	url := fmt.Sprintf("%s/get-track?isrc=%d", p.BaseURL, trackID)
-	var resp QobuzTrackResponse
-	if err := p.get(ctx, url, &resp); err != nil {
+	url := fmt.Sprintf("%s/get-track?track_id=%d", p.BaseURL, trackID)
+	var wrapper QobuzTrackDataResponse
+	if err := p.get(ctx, url, &wrapper); err != nil {
 		return nil, fmt.Errorf("qobuz get track failed: %w", err)
 	}
-	track := resp.ToDomain()
+	if !wrapper.Success || wrapper.Data == nil {
+		return nil, fmt.Errorf("qobuz track not found: %s", id)
+	}
+	track := wrapper.Data.ToDomain()
 	return &track, nil
 }
 
-func (p *QobuzProvider) GetStream(ctx context.Context, trackID string, quality string) (io.ReadCloser, string, error) {
-	tid, err := strconv.Atoi(trackID)
+func (p *QobuzProvider) GetStream(ctx context.Context, trackID string, isrc string, quality string) (io.ReadCloser, string, error) {
+	tid, err := p.resolveTrackID(ctx, trackID, isrc)
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid track id: %w", err)
+		return nil, "", err
 	}
+
 	q := qobuzQualityCode(quality)
 
 	downloadURL := fmt.Sprintf("%s/download-music?track_id=%d&quality=%d", p.BaseURL, tid, q)
@@ -135,12 +149,37 @@ func (p *QobuzProvider) GetStream(ctx context.Context, trackID string, quality s
 		return nil, "", fmt.Errorf("failed to fetch stream: %w", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		_ = resp.Body.Close()
+		return nil, "", fmt.Errorf("stream fetch failed: %s", resp.Status)
+	}
+
 	mime := resp.Header.Get("Content-Type")
 	if mime == "" {
 		mime = "audio/flac"
 	}
 
 	return resp.Body, mime, nil
+}
+
+func (p *QobuzProvider) resolveTrackID(ctx context.Context, trackID string, isrc string) (int, error) {
+	if isrc != "" {
+		var lookupResp QobuzTrackLookupResponse
+		lookupURL := fmt.Sprintf("%s/get-track?isrc=%s", p.BaseURL, url.QueryEscape(isrc))
+		if err := p.get(ctx, lookupURL, &lookupResp); err != nil {
+			return 0, fmt.Errorf("qobuz isrc lookup failed: %w", err)
+		}
+		if !lookupResp.Success || lookupResp.Data == nil || lookupResp.Data.ID == 0 {
+			return 0, fmt.Errorf("qobuz track not found for isrc: %s", isrc)
+		}
+		return lookupResp.Data.ID, nil
+	}
+
+	tid, err := strconv.Atoi(trackID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid track id: %w", err)
+	}
+	return tid, nil
 }
 
 func (p *QobuzProvider) GetSimilarAlbums(ctx context.Context, id string) ([]domain.Album, error) {

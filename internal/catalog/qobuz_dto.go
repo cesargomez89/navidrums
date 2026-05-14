@@ -11,6 +11,11 @@ type QobuzArtistResponse struct {
 	Data    QobuzArtistData `json:"data"`
 }
 
+type QobuzAlbumDataResponse struct {
+	Success bool                `json:"success"`
+	Data    *QobuzAlbumResponse `json:"data"`
+}
+
 type QobuzAlbumResponse struct {
 	ID                  string               `json:"id"`
 	Title               string               `json:"title"`
@@ -27,6 +32,11 @@ type QobuzAlbumResponse struct {
 	Label               QobuzLabel           `json:"label"`
 	Genre               QobuzGenre           `json:"genre"`
 	Tracks              QobuzTracksContainer `json:"tracks"`
+}
+
+type QobuzTrackDataResponse struct {
+	Success bool                `json:"success"`
+	Data    *QobuzTrackResponse `json:"data"`
 }
 
 type QobuzTrackResponse struct {
@@ -57,6 +67,15 @@ type QobuzTrackResponse struct {
 	Displayable         bool             `json:"displayable"`
 	Hires               bool             `json:"hires"`
 	HiresStreamable     bool             `json:"hires_streamable"`
+}
+
+type QobuzTrackLookupData struct {
+	ID int `json:"id"`
+}
+
+type QobuzTrackLookupResponse struct {
+	Success bool                  `json:"success"`
+	Data    *QobuzTrackLookupData `json:"data"`
 }
 
 type QobuzDownloadData struct {

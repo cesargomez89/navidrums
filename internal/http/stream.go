@@ -14,6 +14,8 @@ func (h *Handler) StreamTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isrc := r.URL.Query().Get("isrc")
+
 	quality := r.URL.Query().Get("quality")
 	if quality == "" {
 		quality = h.Config.PlayQuality
@@ -23,7 +25,7 @@ func (h *Handler) StreamTrack(w http.ResponseWriter, r *http.Request) {
 	}
 
 	provider := h.ProviderManager.GetStreamingProvider()
-	stream, mimeType, err := provider.GetStream(r.Context(), trackID, quality)
+	stream, mimeType, err := provider.GetStream(r.Context(), trackID, isrc, quality)
 	if err != nil {
 		h.Logger.Error("failed to get stream", "error", err, "trackID", trackID)
 		http.Error(w, "failed to get stream", http.StatusInternalServerError)

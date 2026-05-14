@@ -45,7 +45,7 @@ func (d *downloader) Download(ctx context.Context, track *domain.Track, destPath
 		default:
 		}
 
-		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, quality)
+		stream, mimeType, err := provider.GetStream(ctx, track.ProviderID, track.ISRC, quality)
 		if err != nil {
 			lastErr = err
 			logger.Error("Download attempt failed",
