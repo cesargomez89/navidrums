@@ -26,7 +26,16 @@ Minimal fields: ID, Type, Status, SourceID, Progress, Error, timestamps, ParentJ
 
 ## Provider
 
-External catalog adapter interface: `Search`, `GetArtist`, `GetAlbum`, `GetPlaylist`, `GetTrack`, `GetStream`, `GetSimilarAlbums`, `GetLyrics`. Returns CatalogTrack.
+External catalog adapter interface with two implementations: **HiFi** (Tidal API proxy) and **Qobuz** (Qobuz API proxy). Methods: `Search`, `GetArtist`, `GetAlbum`, `GetPlaylist`, `GetTrack`, `GetStream`, `GetSimilarAlbums`, `GetLyrics`. Returns CatalogTrack.
+
+**ProviderManager** orchestrates three independent provider chains:
+- Metadata provider (search/browse)
+- Download provider (track downloads via `GetStream`)
+- Streaming provider (playback previews via `GetStream`)
+
+Each chain is `FallbackProvider → CachedProvider` — tries multiple URLs of the same type, caches responses. Provider type per operation is stored in settings (`active_metadata_provider`, `active_download_provider`, `active_streaming_provider`).
+
+Qobuz limitations: `GetPlaylist`, `GetSimilarAlbums`, `GetSimilarArtists`, `GetLyrics`, `GetRecommendations` return `ErrQobuzNotSupported`.
 
 ## Repository (internal/store)
 

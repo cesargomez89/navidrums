@@ -3,13 +3,15 @@
 A lightweight self-hosted web application for browsing and downloading music to your Navidrome library.
 Optimized for low-end hardware.
 
+**Multi-Provider Architecture**: Browse metadata via HiFi (Tidal API proxy) or Qobuz. Download and stream via Qobuz — the HiFi/Tidal API is unreliable for streaming/downloads.
+
 ## Features
 
 ### Core Functionality
-- **Browse & Search**: Discover artists, albums, playlists, and tracks from remote Hifi API
+- **Browse & Search**: Discover artists, albums, playlists, and tracks from HiFi (Tidal) or Qobuz catalog APIs
 - **Stream Preview**: Play tracks directly from search results with play/pause controls on track cards
 - **Download Queue**: Asynchronous job queuing with configurable concurrency control
-- **Provider Management**: Switch between multiple Hifi API endpoints and add custom providers
+- **Multi-Provider**: Separate provider selection for metadata browsing, downloads, and streaming — mix HiFi (browse) + Qobuz (download/stream) or any combination
 - **Quality Selection**: Choose from LOSSLESS, HI_RES_LOSSLESS, HIGH, or LOW audio quality
 
 ### Download Management
@@ -17,7 +19,7 @@ Optimized for low-end hardware.
 - **Downloads Browser**: Browse, search (by track, album, artist, genre), filter (by genre including "no_genre"), and manage downloaded tracks with bulk actions (delete, sync, set metadata)
 - **Bulk Metadata**: Set genre, year, mood, and style for multiple tracks at once
 - **Sync to File**: Re-tag audio files with updated metadata from Database
-- **Sync All**: Fetch missing metadata from Hifi API and MusicBrainz, update Database and sync to files
+- **Sync All**: Fetch missing metadata from provider (HiFi/Qobuz) and MusicBrainz, update Database and sync to files
 - **History Tracking**: View last 20 completed/failed/cancelled downloads
 - **Job Management**: Cancel active jobs, retry failed downloads, clear history
 - **Stuck Job Recovery**: Automatic reset of interrupted downloads on startup
@@ -42,9 +44,14 @@ Optimized for low-end hardware.
 - **Empty Directory Cleanup**: Automatic removal of empty folders after deletions
 - **Playlist Generation**: Automatic M3U file creation for playlists and artist top tracks
 
+### Multi-Provider Architecture
+- **Separate Per-Operation Selection**: Choose different providers for metadata browsing, downloads, and streaming
+- **Provider Types**: HiFi (Tidal API proxy) and Qobuz — each can have multiple endpoint URLs as fallbacks
+- **Provider Fallback**: Multiple URLs of the same type tried in order until one succeeds
+- **Per-Type Caching**: Each provider chain has its own response cache with configurable TTL
+- **API Throttling**: Built-in request throttling for external APIs (HiFi, Qobuz, MusicBrainz) to prevent rate limiting
+
 ### Performance & Reliability
-- **Caching System**: Provider response caching with configurable TTL
-- **API Throttling**: Built-in request throttling for external APIs (HiFi, MusicBrainz) to prevent rate limiting
 - **Automatic Retries**: Exponential backoff with 3 attempts for failed downloads
 - **Concurrent Downloads**: Configurable worker concurrency (default: 2)
 - **File Hash Verification**: Prevents duplicate downloads via hash matching
@@ -58,7 +65,7 @@ Optimized for low-end hardware.
 - **Track Details View**: Comprehensive file, audio, and MusicBrainz metadata display
 
 ### Settings
-- **Provider Management**: Add, switch, and remove custom Hifi API providers
+- **Provider Management**: Add, reorder, edit, and remove HiFi and Qobuz provider URLs; select which provider type to use per operation (metadata, download, streaming)
 - **Genre Mapping**: Customize how MusicBrainz genres are normalized (maps sub-genres to main genres)
 - **Genre Separator**: Configure the separator used when writing multiple genres to audio tags
 - **Theme Selector**: Override the default application theme configured via environment variable
@@ -95,7 +102,8 @@ Rate limiting is still applied as a second layer of protection.
 
 - **Docker & Docker Compose** (for Docker installation only)
 - **Go 1.22+** (for building from source)
-- **Hifi API** running (default: `http://127.0.0.1:8000`)
+- **A HiFi (Tidal) API proxy** (for metadata browsing, e.g., `http://127.0.0.1:8000`)
+- **A Qobuz API proxy** (for downloads/streaming, e.g., `https://qobuz.kennyy.com.br/api`)
 - **ffmpeg** (optional, only needed for MP4/M4A tagging - commonly required for hi-res downloads)
 
 ## Configuration
@@ -108,7 +116,7 @@ Environment variables:
 | `DB_PATH` | `navidrums.db` | SQLite database file path |
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | Output directory for downloaded music |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | Go template for file organization |
-| `PROVIDER_URL` | `http://127.0.0.1:8000` | URL of the Hifi API provider |
+| `PROVIDER_URL` | `http://127.0.0.1:8000` | Default HiFi (Tidal) API URL for metadata browsing (additional providers managed via Settings UI) |
 | `QUALITY` | `LOSSLESS` | Download audio quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `PLAY_QUALITY` | `HIGH` | Streaming playback quality (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `LOG_LEVEL` | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
@@ -129,8 +137,10 @@ Environment variables:
 
 ffmpeg and ffprobe are automatically detected most of the times, but you can override them with the above variables if needed.
 
-For HI_RES_LOSSLESS, some Hifi API providers may return a 30-second preview instead of the full-length stream.
-Switch to a different provider or change the quality to LOSSLESS to get the full-length stream.
+**HiFi/Tidal streaming limitation**: The HiFi/Tidal API is unreliable for downloads and streaming — it often returns 30-second previews instead of full tracks, especially at HI_RES_LOSSLESS quality. This is why Qobuz is the recommended provider for downloads and streaming. You can configure separate providers per operation in Settings:
+- **Metadata (search/browse)**: HiFi works well for browsing
+- **Download**: Switch to Qobuz for reliable full-track downloads
+- **Streaming**: Switch to Qobuz for full-length playback previews
 
 **Template Variables:**
 
@@ -385,9 +395,16 @@ Navidrums follows a clean layered architecture with clear separation of concerns
 - **HTTP Handlers**: Request parsing and HTML rendering only
 - **Application Services**: Business logic and workflow orchestration  
 - **Repository**: Database persistence and queries
-- **Providers**: External API adapters and catalog interface
+- **Providers**: External API adapters (HiFi/Tidal, Qobuz) with multi-provider manager, per-type fallback, and caching decorator
 - **Storage**: Filesystem operations and path management
 - **Workers**: Background job processing with concurrency control
+
+### Multi-Provider Design
+- **ProviderManager**: Central orchestrator with three independent provider chains — metadata, download, streaming
+- **FallbackProvider**: Tries multiple URLs of the same type in order until one succeeds
+- **CachedProvider**: Decorator wrapping each chain with response caching
+- **Per-Operation Selection**: Settings store which provider type (HiFi or Qobuz) to use per operation. Defaults to HiFi
+- **No Cross-Type Fallback**: Provider choice is per-operation, not automatic fallback — configure in Settings
 
 ### Key Design Principles
 - No downloads in HTTP handlers

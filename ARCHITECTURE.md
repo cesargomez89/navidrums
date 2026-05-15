@@ -82,10 +82,12 @@ web/                  # Embedded UI templates and assets
 - Database migrations with WAL mode for concurrency
 
 ### Providers (internal/catalog)
-- External API adapters
-- Music catalog interface
-- Stream fetching
-- Lyrics retrieval
+- External API adapters (HiFi/Tidal, Qobuz)
+- Music catalog interface with multi-provider support
+- ProviderManager: three independent provider chains (metadata, download, streaming)
+- FallbackProvider: tries multiple URLs of same type in order
+- CachedProvider: decorator wrapping each chain
+- Stream fetching with provider selection per operation
 
 ### Filesystem (internal/storage)
 - All local disk I/O
@@ -126,14 +128,14 @@ Two-table design: `jobs` (work queue) + `tracks` (full metadata).
 
 ### Sources
 
-**Hi-Fi API (Primary)**: All track metadata — identity, basic, position, release, audio, URLs.
+**Provider (configurable)**: Track metadata sourced from whichever provider type is selected — HiFi (Tidal) or Qobuz. Configured per operation in Settings (metadata browsing, downloads, streaming each have independent selection).
 **MusicBrainz (Secondary)**: Only fills empty fields — never overwrites existing data.
 
 *Note: MusicBrainz throttled to ~0.6 req/s to prevent IP blocking.*
 
 ### Precedence
 
-`Local Edits > Hi-Fi data > MusicBrainz data`
+`Local Edits > Provider data (HiFi or Qobuz) > MusicBrainz data`
 
 Both use "fill-in-the-blanks" — never overwrite populated fields. Skip API call if track already fully populated.
 
@@ -145,11 +147,11 @@ MusicBrainz triggers only when `ISRC` or `RecordingID` present.
 
 ### Sync Types
 
-| Job | Hi-Fi | MB | Behavior |
-|-----|-------|----|----------|
+| Job | Provider | MB | Behavior |
+|-----|----------|----|----------|
 | `sync_file` | ✗ | ✗ | Re-tag with DB metadata only |
 | `sync_musicbrainz` | ✗ | ✓ fill gaps | MB API → fill → DB → re-tag |
-| `sync_hifi` | ✓ fill gaps | ✓ fill gaps | Hi-Fi → fill → MB → fill → DB → re-tag |
+| `sync_hifi` | ✓ fill gaps (from active metadata provider) | ✓ fill gaps | Provider (HiFi/Qobuz) → fill → MB → fill → DB → re-tag |
 
 See @CONFIGURATION.md for genre map config.
 

@@ -377,3 +377,55 @@ func TestDownloadsService_EnqueueSyncJobs(t *testing.T) {
 		t.Fatal("Expected sync job for t2")
 	}
 }
+
+func TestDownloadsService_EnqueueSyncMetadataJobs(t *testing.T) {
+	db, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	log := logger.Default()
+	svc := NewDownloadsService(db, log)
+
+	tracks := []*domain.Track{
+		{ProviderID: "m1", Title: "M1", Artist: "A", Album: "A", Status: domain.TrackStatusCompleted, FilePath: "/p/1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "m2", Title: "M2", Artist: "A", Album: "A", Status: domain.TrackStatusCompleted, FilePath: "/p/2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ProviderID: "m3", Title: "M3", Artist: "A", Album: "A", Status: domain.TrackStatusQueued, FilePath: "/p/3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+
+	for _, tr := range tracks {
+		if err := db.CreateTrack(tr); err != nil {
+			t.Fatalf("CreateTrack failed: %v", err)
+		}
+	}
+
+	existingJob := &domain.Job{
+		ID:       "existing-mb",
+		Type:     domain.JobTypeSyncMusicBrainz,
+		Status:   domain.JobStatusRunning,
+		SourceID: sql.NullString{String: "m1", Valid: true},
+	}
+	if err := db.CreateJob(existingJob); err != nil {
+		t.Fatalf("CreateJob failed: %v", err)
+	}
+
+	count, err := svc.EnqueueSyncMetadataJobs()
+	if err != nil {
+		t.Fatalf("EnqueueSyncMetadataJobs failed: %v", err)
+	}
+
+	if count != 1 {
+		t.Errorf("Expected 1 job enqueued, got %d", count)
+	}
+
+	job, _ := db.GetActiveJobBySourceID("m2", domain.JobTypeSyncMusicBrainz)
+	if job == nil {
+		t.Fatal("Expected MusicBrainz sync job for m2")
+	}
+	if job.Type != domain.JobTypeSyncMusicBrainz {
+		t.Errorf("Expected job type %s, got %s", domain.JobTypeSyncMusicBrainz, job.Type)
+	}
+
+	existingCheck, _ := db.GetActiveJobBySourceID("m1", domain.JobTypeSyncMusicBrainz)
+	if existingCheck == nil {
+		t.Fatal("Existing MusicBrainz job for m1 should still exist")
+	}
+}

@@ -1157,6 +1157,78 @@ func (h *Handler) SyncAllHTMX(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) BulkEnrichHiFiHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	ids := r.Form["ids[]"]
+	var count int
+	var err error
+
+	if len(ids) == 0 {
+		count, err = h.DownloadsService.EnqueueSyncJobs()
+	} else {
+		count = 0
+		for _, id := range ids {
+			if e := h.DownloadsService.EnqueueSyncHiFiJob(id); e != nil {
+				h.Logger.Error("Failed to enqueue HiFi job", "id", id, "error", e)
+				continue
+			}
+			count++
+		}
+	}
+
+	if err != nil {
+		h.Logger.Error("Failed to enqueue HiFi jobs", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tracks, _, _ := h.DownloadsService.ListDownloads(1, constants.MaxSearchResults)
+	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
+		"Downloads":    tracks,
+		"SyncEnqueued": count,
+	})
+}
+
+func (h *Handler) BulkEnrichMusicBrainzHTMX(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	ids := r.Form["ids[]"]
+	var count int
+	var err error
+
+	if len(ids) == 0 {
+		count, err = h.DownloadsService.EnqueueSyncMetadataJobs()
+	} else {
+		count = 0
+		for _, id := range ids {
+			if e := h.DownloadsService.EnqueueSyncMetadataJob(id); e != nil {
+				h.Logger.Error("Failed to enqueue MusicBrainz job", "id", id, "error", e)
+				continue
+			}
+			count++
+		}
+	}
+
+	if err != nil {
+		h.Logger.Error("Failed to enqueue MusicBrainz jobs", "error", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tracks, _, _ := h.DownloadsService.ListDownloads(1, constants.MaxSearchResults)
+	h.RenderFragment(w, "components/downloads_list.html", map[string]interface{}{
+		"Downloads":    tracks,
+		"SyncEnqueued": count,
+	})
+}
+
 func (h *Handler) GetThemeHTMX(w http.ResponseWriter, r *http.Request) {
 	theme, err := h.SettingsRepo.Get(store.SettingTheme)
 	if err != nil {
