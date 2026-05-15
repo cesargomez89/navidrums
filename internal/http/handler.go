@@ -77,6 +77,8 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/htmx/downloads/sync", h.SyncAllHTMX)
 	r.Post("/htmx/downloads/bulk-delete", h.BulkDeleteHTMX)
 	r.Post("/htmx/downloads/bulk-sync", h.BulkSyncHTMX)
+	r.Post("/htmx/downloads/enrich-hifi", h.BulkEnrichHiFiHTMX)
+	r.Post("/htmx/downloads/enrich-musicbrainz", h.BulkEnrichMusicBrainzHTMX)
 	r.Post("/htmx/downloads/bulk-genre", h.BulkUpdateGenreHTMX)
 	r.Delete("/htmx/download/{id}", h.DeleteDownloadHTMX)
 
