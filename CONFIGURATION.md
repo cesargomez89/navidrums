@@ -10,7 +10,7 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `DB_PATH` | `navidrums.db` | No | SQLite database file path (Docker: `/data/navidrums.db`) |
 | `DOWNLOADS_DIR` | `~/Downloads/navidrums` | No | Output directory for downloaded music (Docker: `/music`) |
 | `SUBDIR_TEMPLATE` | `{{.AlbumArtist}}/{{.OriginalYear}} - {{.Album}}/{{.Disc}}-{{.Track}} {{.Title}}` | No | Go template for file organization |
-| `PROVIDER_URL` | `http://127.0.0.1:8000` | No | Primary music catalog API URL (fallback providers managed via Settings UI) |
+| `PROVIDER_URL` | `http://127.0.0.1:8000` | No | Default HiFi (Tidal) API URL for metadata browsing (additional providers managed via Settings UI) |
 | `QUALITY` | `LOSSLESS` | No | Audio quality preference (`LOSSLESS`, `HI_RES_LOSSLESS`, `HIGH`, `LOW`) |
 | `LOG_LEVEL` | `info` | No | Logging level (`debug`, `info`, `warn`, `error`) |
 | `LOG_FORMAT` | `text` | No | Log output format (`text`, `json`) |
@@ -22,12 +22,12 @@ Navidrums is configured via environment variables with sensible defaults. All co
 | `RATE_LIMIT_REQUESTS` | `200` | No | Maximum requests per rate limit window |
 | `RATE_LIMIT_WINDOW` | `1m` | No | Rate limit time window (e.g., `30s`, `1m`) |
 | `RATE_LIMIT_BURST` | `10` | No | Burst requests allowed beyond rate limit |
-
-**Rate limiting**: Each provider enforces a 200ms minimum interval between requests. The global rate limit (`RATE_LIMIT_*`) applies across all providers.
 | `SKIP_AUTH` | `false` | No | Set to `true` to disable authentication entirely |
 | `THEME` | `golden` | No | Default application theme (can be overridden in Settings) |
 | `FFMPEG_PATH` | (system) | No | Path to ffmpeg binary (required for MP4/M4A tagging - hi-res downloads often come as MP4) |
 | `FFPROBE_PATH` | (system) | No | Path to ffprobe binary |
+
+**Rate limiting**: Each provider enforces a 200ms minimum interval between requests. The global rate limit (`RATE_LIMIT_*`) applies across all providers.
 
 **Note:** ffmpeg is only required when tagging MP4/M4A files (common for hi-res audio). FLAC and MP3 files are tagged using native Go libraries.
 
@@ -72,7 +72,19 @@ Basic HTTP authentication is optional:
 
 ## Provider Management
 
-Primary provider via `PROVIDER_URL`. Fallback providers managed in Settings UI — add, reorder (drag), edit, delete. Primary auto-added on first run.
+Navidrums supports two provider types: **HiFi** (Tidal API proxy) and **Qobuz** (Qobuz API proxy). Each type can have multiple endpoint URLs configured as fallbacks.
+
+**Per-operation selection**: Three independent settings control which provider type is used for each operation:
+- **Metadata (search/browse)**: defaults to HiFi
+- **Download**: defaults to HiFi (switch to Qobuz for reliable full-track downloads)
+- **Streaming**: defaults to HiFi (switch to Qobuz for full-length playback previews)
+
+**Why separate providers**: The HiFi/Tidal API is reliable for metadata browsing but frequently returns 30-second previews instead of full tracks for downloads and streaming. Qobuz provides reliable full-track downloads and streaming.
+
+Managing providers:
+- **Primary provider**: Sets the default HiFi URL via `PROVIDER_URL` environment variable
+- **Settings UI**: Add, reorder (drag), edit, delete provider URLs per type; select which provider type per operation
+- **Fallback within type**: Multiple URLs of the same type are tried in position order until one succeeds
 
 ## Validation
 
